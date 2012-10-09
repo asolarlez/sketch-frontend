@@ -12,9 +12,9 @@ import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -729,16 +729,17 @@ public class NodesToSuperCpp extends NodesToJava {
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
+        final String funName = exp.getName();
         String result = "";
-        String name = getCppFunName(exp.getName());
+        String name = getCppFunName(funName);
         result = name + "(";
         boolean first = true;
-        Function f = nres.getFun(exp.getName());
         Iterator<Expression> actuals = exp.getParams().iterator();
 
         Map<String, Expression> rmap = new HashMap<String, Expression>();
         VarSetReplacer vsr = new VarSetReplacer(rmap);
         
+        Function f = nres.getFun(funName);
         for (Parameter p : f.getParams()) {
             if (!first)
                 result += ", ";
@@ -806,10 +807,7 @@ public class NodesToSuperCpp extends NodesToJava {
 
     @Override
     public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
-        String result = indent + "spmdfork (";
-        result += stmt.getNProc().accept(this);
-        result += stmt.getBody().accept(this);
-        return result;
+        return stmt.getBody().accept(this);
     }
 
     @Override

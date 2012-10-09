@@ -40,6 +40,7 @@ public class ArrFunction{
 	////////////////////////////////////////////////////////////////
 
 	String arrName;
+    String arrMsg; // the original assert message for the assert statement
 	String suffix;
 	Type arrType;
 	int max_size=0;
@@ -99,7 +100,17 @@ public class ArrFunction{
 		return idxAss.size();
 	}
 
-	public ArrFunction(String arrName, Type arrType, List<Expression> dimensions, String suffix, ParamTree pt, ParamTree.treeNode declarationSite, int condsPos){
+    public void setArrMsg(String msg) {
+        this.arrMsg = msg;
+    }
+
+    public String getArrMsg() {
+        return arrMsg;
+    }
+
+    public ArrFunction(String arrName, Type arrType, List<Expression> dimensions,
+            String suffix, ParamTree pt, ParamTree.treeNode declarationSite, int condsPos)
+    {
 		this.arrName = arrName;
 		this.dimensions = dimensions;
 		idxParams = new ArrayList<StmtVarDecl>();

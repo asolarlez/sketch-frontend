@@ -6,8 +6,8 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -93,7 +93,10 @@ public class PerformFlowChecks extends PartialEvaluator {
                 if( stmt.getInit(i) != null ){
                     CfcValue init = (CfcValue) stmt.getInit(i).accept(this);
                     ninit = exprRV;
-                    if(! init.maybeinit()){ report(stmt,  "There is a variable in the initializer that may not have been itself initialized. All variables must be statically initialized."); }
+                if (!init.maybeinit()) {
+                    report(stmt,
+                            "There is a variable in the initializer that may not have been itself initialized. All variables must be statically initialized.");
+                }
                     state.setVarValue(nm, init);
                 }
                 /* else{

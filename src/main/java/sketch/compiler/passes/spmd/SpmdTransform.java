@@ -11,9 +11,9 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -41,10 +41,12 @@ import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.ASTQuery;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.datastructures.TypedHashSet;
+import sketch.util.exceptions.SketchSolverException;
 import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -106,7 +108,17 @@ public class SpmdTransform  extends SymbolTableVisitor {
         allFcns.addAll(allProcFcns);
         allFcns.addAll(someProcFcns);
 //	System.out.println("allFcns: " + allFcns.toString());
+
+        SimpleCodePrinter pr = new SimpleCodePrinter();
+        pr.setNres(nres);
+
+        System.out.println("before SpmdTransform:");
+        spec.accept(pr);
+
         spec = spec.newFromFcns(allFcns);
+
+        System.out.println("after SpmdTransform:");
+        spec.accept(pr);
         return spec;
     }
 
@@ -306,7 +318,24 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         List<Statement> t = it.peekAllNext();
                         prevIt = it.clone();
                         Statement s = it.next();
-                        if ((new ContainsAllProcElt()).run(s)) {
+                        // TODO xzl: this is used to provide an extra
+                        // barrier when you forgot to put one for global assignment
+                        // whenever you write to a global variable and only use globals,
+                        // we use a pair of barriers to enclose this assignment
+                        // and we only do the assignment once
+                        // is this good or bad?
+                        // example:
+                        // global int x, y;
+                        // fork { y = x+1; x = y+1; }
+                        // will be break to y=x+1; x=y+1;
+                        if (s instanceof StmtVarDecl) {
+                            for (int i=0; i<((StmtVarDecl) s).getNumVars(); ++i) {
+                                symtab.registerVar(((StmtVarDecl) s).getName(i),
+                                        ((StmtVarDecl) s).getType(i), s,
+                                        SymbolTable.KIND_LOCAL);
+                            }
+                        }
+                        if ((new ContainsAllProcElt(this)).run(s)) {
                             nextAllProcStmt = s;
                             afterSomeProcStmts = t;
                             break;
@@ -412,11 +441,39 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         stmts.addAll(addStmts);
                         StmtAssert none_at_end = new StmtAssert(FEContext.artificalFrom("allproc while loop", stmt), noneCond, false);
                         flushAndAdd(stmts, procLoopStmts, none_at_end);
-                    } else {
+                    } else if (stmt instanceof StmtAssign) {
 //                        printWarning("Assuming that subtree transformers "
 //                                + "will take care of allthreads version of ",
 //                                stmt.getClass());
-                        flushAndAdd(stmts, procLoopStmts, (Statement)stmt.accept(this));
+                        // TODO xzl: this is used to provide an extra
+                        // barrier when you forgot to put one for global assignment
+                        // whenever you write to a global variable and only use globals,
+                        // we use a pair of barriers to enclose this assignment
+                        // and we only do the assignment once
+                        // is this good or bad?
+                        // example:
+                        // global int x, y;
+                        // fork { y = x+1; x = y+1; }
+                        // will be break to y=x+1; x=y+1;
+                        boolean rhsLocal = (new ASTQuery() {
+                            public Object visitExprVar(ExprVar var) {
+                                if (getType(var).getCudaMemType() != CudaMemoryType.GLOBAL) {
+                                    result = true;
+                                    return var;
+                                }
+                                return super.visitExprVar(var);
+                            }
+                        }).run(((StmtAssign) stmt).getRHS());
+                        if (rhsLocal) {
+                            flushAndAdd(stmts, procLoopStmts);
+                            Vector<Statement> s = new Vector<Statement>(1);
+                            s.add((Statement) stmt.accept(this));
+                            flushAndAdd(stmts, s);
+                        } else {
+                            flushAndAdd(stmts, procLoopStmts, (Statement) stmt.accept(this));
+                        }
+                    } else {
+                        flushAndAdd(stmts, procLoopStmts, (Statement) stmt.accept(this));
                     }
                     //System.out.println("stmts:" + stmts);
                 }
@@ -538,6 +595,11 @@ public class SpmdTransform  extends SymbolTableVisitor {
     }
 
     protected class ContainsAllProcElt extends ASTQuery {
+        SymbolTableVisitor stv;
+
+        ContainsAllProcElt(SymbolTableVisitor s) {
+            stv = s;
+        }
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             if (!result) result = cg.callsFcnWithBarrier(cg.getTarget(exp));
@@ -554,6 +616,30 @@ public class SpmdTransform  extends SymbolTableVisitor {
         public Object visitStmtReturn(StmtReturn stmt) {
             result = true;
             return stmt;
+        }
+
+        // boolean inLHS = false;
+        @Override
+        public Object visitStmtAssign(StmtAssign stmt) {
+//            boolean oldInLHS = inLHS;
+//            stmt.getLHS().accept(this);
+//            inLHS = oldInLHS;
+//            stmt.getRHS().accept(this);
+            try {
+                // if the global is an array a
+                // then a[i] won't be global
+                // and we allow a[i] = local[pid]
+                // thus we won't set result=true
+                // TODO xzl: seems this new feature is not very useful
+                // and it needs more checking
+            if (stv.getType(stmt.getLHS()).getCudaMemType() == CudaMemoryType.GLOBAL) {
+                result = true;
+                return stmt;
+            }
+            } catch (SketchSolverException e) {
+                // TODO silently fail
+            }
+            return super.visitStmtAssign(stmt);
         }
     }
 

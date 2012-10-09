@@ -49,7 +49,6 @@ import sketch.compiler.passes.cuda.*;
 import sketch.compiler.passes.lowering.ConstantReplacer;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
-import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
@@ -214,12 +213,14 @@ public class SequentialSketchMain extends CommonSketchMain
         protected Program postRun(Program prog) {
             final SemanticCheckPass semanticCheck =
                     new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
-            ExtractComplexLoopConditions ec =
-                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
+            // ExtractComplexLoopConditions ec =
+            // new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
             // final FunctionParamExtension paramExt = new FunctionParamExtension();
 
             prog = (Program) semanticCheck.visitProgram(prog);
-            prog = (Program) ec.visitProgram(prog);
+            // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
+            // prog = (Program) ec.visitProgram(prog);
             // prog = (Program) paramExt.visitProgram(prog);
 
             return prog;
@@ -244,12 +245,14 @@ public class SequentialSketchMain extends CommonSketchMain
         protected Program postRun(Program prog) {
             final SemanticCheckPass semanticCheck =
                     new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
-            ExtractComplexLoopConditions ec =
-                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
+            // ExtractComplexLoopConditions ec =
+            // new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
             // final FunctionParamExtension paramExt = new FunctionParamExtension();
 
             prog = (Program) semanticCheck.visitProgram(prog);
-            prog = (Program) ec.visitProgram(prog);
+            // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
+            // prog = (Program) ec.visitProgram(prog);
             // prog = (Program) paramExt.visitProgram(prog);
             return prog;
         }
@@ -578,6 +581,7 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
+                e.printStackTrace();
                 System.exit(1);
             }
         }

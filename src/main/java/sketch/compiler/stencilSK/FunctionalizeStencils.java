@@ -14,15 +14,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtExpr;
-import sketch.compiler.ast.core.stmts.StmtFor;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtReturn;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -32,7 +24,6 @@ import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.passes.lowering.AddArraySizeAssertions;
-import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 import sketch.compiler.passes.lowering.FunctionParamExtension;
@@ -197,10 +188,11 @@ public class FunctionalizeStencils extends FEReplacer {
 
 
 	private Map<Function, Map<String, ArrFunction>>  assertsPerFunction;
+    private final int maxArrSize;
 	
 	
 	
-	public FunctionalizeStencils(TempVarGen varGen) {
+    public FunctionalizeStencils(TempVarGen varGen, int maxArrSz) {
 		super();
 		this.varGen = varGen;
 		superParams = new TreeMap<String, Type>();
@@ -208,6 +200,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		globalInVars = new HashMap<String, Map<String, Function> >();
 		userFuns = new ArrayList<Function>();
 		assertsPerFunction = new HashMap<Function, Map<String, ArrFunction>>();
+        maxArrSize = maxArrSz;
 	}
 
 
@@ -255,13 +248,13 @@ public class FunctionalizeStencils extends FEReplacer {
             List<Function> functions = strs.getFuncs();
             // TODO xzl: is this correct? can we just clear all old functions?
             // change this later
-            functions.clear();
-            // for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
-            // Function fun = it.next();
-            // if (fun.isStencil()) {
-            // it.remove();
-            // }
-            // }
+            // functions.clear();
+            for (Iterator<Function> it = functions.iterator(); it.hasNext();) {
+                Function fun = it.next();
+                if (fun.isStencil()) {
+                    it.remove();
+                }
+            }
         }
         Package strs = (Package) prog.getPackages().get(0);
         List<Function> functions = strs.getFuncs();
@@ -301,7 +294,7 @@ public class FunctionalizeStencils extends FEReplacer {
 				outpType = ((TypeArray) outpType).getBase();
 			}
 
-			assert outp.isParameterOutput();
+            assert outp.isParameterOutput() : "no output parameter!";
 			String outfname=outp.getName()+"_"+f.getName();
 			ArrFunction outf=funmap.get(outfname);
 			assert outf!=null;
@@ -375,7 +368,8 @@ public class FunctionalizeStencils extends FEReplacer {
 				Statement asscall=new StmtExpr(new ExprFunCall(body,assfun.getFullName(),assArgs));				
 				// assert its result.
 				lst.add(asscall);
-				lst.add( new StmtAssert( new ExprUnary("!",  new ExprVar(body, name)  ), false) );
+                lst.add(new StmtAssert(new ExprUnary("!", new ExprVar(body, name)),
+                        assfun.getArrMsg(), false));
 			}
 			
             Function fun =
@@ -457,7 +451,7 @@ public class FunctionalizeStencils extends FEReplacer {
         v24.setNres(nres);
         FEReplacer erp = new EliminateReferenceParameters(varGen);
         erp.setNres(nres);
-	        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext(); ){
+        for (Iterator<Function> iter = funcs.iterator(); iter.hasNext();) {
 	        	Function f = iter.next();
 	        	f = ((Function)f.accept(v0));
 
@@ -465,7 +459,7 @@ public class FunctionalizeStencils extends FEReplacer {
             elr.setNres(nres);
             f = (Function) f.accept(elr);
 
-            EliminateFinalStructs efs = new EliminateFinalStructs(varGen);
+            EliminateFinalStructs efs = new EliminateFinalStructs(varGen, maxArrSize);
             efs.setNres(nres);
 
             f = (Function) f.accept(v01);
@@ -475,26 +469,39 @@ public class FunctionalizeStencils extends FEReplacer {
             System.out.println("after efs:");
             f.accept(new SimpleCodePrinter());
 
+            f = (Function) f.accept(erp);
+
+            f = ((Function) f.accept(v1));
+
+            f = ((Function) f.accept(v23));
+            // System.out.println("after v23:");
+            // f.accept(new SimpleCodePrinter());
+
+            f = ((Function) f.accept(v24));
+            // System.out.println("after v24:");
+            // f.accept(new SimpleCodePrinter());
+
+            f = ((Function) f.accept(new FlattenStmtBlocks()));
+            // TODO xzl: why do we need this? can we turn this off?
+            // f = ((Function) f.accept(new AssembleInitializers()));
+
+            // System.out.println("before rst:");
+            // f.accept(new SimpleCodePrinter());
+            f = ((Function) f.accept(new RemoveShallowTempVars(20)));
+            // System.out.println("after rst:");
+            // f.accept(new SimpleCodePrinter());
+
+	        	f = ((Function)f.accept(v01));
+	        	
+	        	//System.out.println(f.toString());
+            f = ((Function) f.accept(v2));
+
             f = ((Function) f.accept(new AddArraySizeAssertions()));
 
             f =
                     ((Function) f.accept(new ProtectDangerousExprsAndShortCircuit(
                             FailurePolicy.ASSERTION, varGen)));
 
-            f = (Function) f.accept(erp);
-
-            f = ((Function) f.accept(v1));
-
-            f = ((Function) f.accept(v23));
-
-            f = ((Function) f.accept(v24));
-            f = ((Function) f.accept(new FlattenStmtBlocks()));
-            f = ((Function) f.accept(new AssembleInitializers()));
-            f = ((Function) f.accept(new RemoveShallowTempVars(20)));
-	        	f = ((Function)f.accept(v01));
-	        	
-	        	//System.out.println(f.toString());
-            f = ((Function) f.accept(v2));
 	        	nfuns.add(f);	        	
 	        }
 	        
@@ -694,6 +701,16 @@ class ProcessStencil extends FEReplacer {
 	        return ptree;
 	    }
 
+        public Object visitStmtWhile(StmtWhile stmt) {
+            assert false : "FunctionalizeStencil: cannot handle while loop " + stmt;
+            return null;
+        }
+
+        public Object visitStmtDoWhile(StmtDoWhile stmt) {
+            assert false : "FunctionalizeStencil: cannot handle do while loop " + stmt;
+            return null;
+        }
+
 		public Object visitStmtFor(StmtFor stmt)
 		{
 			FENode context = stmt;
@@ -827,15 +844,18 @@ class ProcessStencil extends FEReplacer {
    	 		scopeStack.peek().funs.add(fun);
 	    }
 
-		ArrFunction createArrFunctionForAssert(String var, Type type, List<Expression> dimensions){
+    ArrFunction createArrFunctionForAssert(String var, Type type,
+            List<Expression> dimensions, String msg)
+    {
 	    	//assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
 	    	ArrFunction fun = new ArrFunction(var, type, dimensions, suffix, ptree, ptree.getRoot(), 0);
+        fun.setArrMsg(msg);
 	    	initArrFun(fun, dimensions);
    	 		return fun;
 	    }
 	    
 	    
-		ArrFunction createArrFunction(String var, Type type, List<Expression> dimensions){
+    ArrFunction createArrFunction(String var, Type type, List<Expression> dimensions) {
 	    	//assert ainf.sfun.size()==0; //added by LT after removing this from the constructor to ArrFunction
 	    	ArrFunction fun = new ArrFunction(var, type, dimensions, suffix, ptree, currentTN, conds.size());
 	    	initArrFun(fun, dimensions);
@@ -1320,7 +1340,9 @@ class ProcessStencil extends FEReplacer {
 	    		indices.add( new ExprVar(svd, svd.getName(0)) );
 	    		dims.add(null);
 	    	}
-	    	ArrFunction af = createArrFunctionForAssert(name, TypePrimitive.bittype, dims);
+        ArrFunction af =
+                createArrFunctionForAssert(name, TypePrimitive.bittype, dims,
+                        stmt.getMsg());
 	    	assmap.put(name, af);
 	    	smap.put(name, af);
         processArrAssign(stmt, name, indices, rhs);

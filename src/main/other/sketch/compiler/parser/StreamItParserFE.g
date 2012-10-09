@@ -573,7 +573,7 @@ for_init_statement returns [Statement s] { s = null; }
 	:	(variable_decl) => s=variable_decl
     // |   (implicit_type_variable_decl) => s=implicit_type_variable_decl
 	|	(expr_statement) => s=expr_statement
-	|   (t:SEMI) /* empty */ => { s = new StmtEmpty(getContext(t)); }
+	|   /* empty */ { s = new StmtEmpty((FEContext)null); }
 	;
 
 for_incr_statement returns [Statement s] { s = null; }

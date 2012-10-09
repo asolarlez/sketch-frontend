@@ -1,0 +1,17 @@
+/*
+ * triggers a bug in frontend
+ */
+pragma options "-p preproc  --spmd-max-nproc 1 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 4 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 1"; //  --be:showDAG
+
+int spec(global int N) {
+	return N+2;
+}
+
+int sk(global int N) implements spec {
+	global int n;
+	spmdfork(2) {
+		n = N;
+		n = n+1;
+	}
+	return n;
+ }

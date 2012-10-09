@@ -42,7 +42,9 @@ public class PreprocessStage extends MetaStage {
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
-        prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
+
+        // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
+        // prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 

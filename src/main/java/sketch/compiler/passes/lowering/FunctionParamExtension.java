@@ -12,9 +12,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -30,6 +30,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -94,6 +95,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					func=addVarCopy(func,param,newName);
 				}
 			}
+
 			return func.creator().params(parameters).create();
 		}
 
@@ -307,6 +309,13 @@ public class FunctionParamExtension extends SymbolTableVisitor
         symtab = new SymbolTable(symtab);
         nres = new NameResolver();
 
+        // SimpleCodePrinter pr = new SimpleCodePrinter();
+        // pr.setNres(nres);
+        //
+        // System.out.println("before FunctionParameterExtension:");
+        // prog.accept(pr);
+
+
         List<Package> oldStreams = new ArrayList<Package>();
         for (Package spec : prog.getPackages()) {
             List<Function> funs = new ArrayList<Function>();
@@ -335,6 +344,10 @@ public class FunctionParamExtension extends SymbolTableVisitor
         Program o = prog.creator().streams(newStreams).create();
 
         symtab = oldSymTab;
+
+        // System.out.println("after FunctionParameterExtension:");
+        // o.accept(pr);
+
         return o;
     }
 
@@ -343,6 +356,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	Set<String> currentRefParams = new HashSet<String>();
 
     String retVar = null;
+    CudaMemoryType retVarMemType;
 
     public Object visitExprVar(ExprVar ev) {
         if (ev.getName().equals(retVar)) {
@@ -477,10 +491,21 @@ public class FunctionParamExtension extends SymbolTableVisitor
                     if (retVar == null) {
                         return svd;
                     }
-                    for (String nm : svd.getNames()) {
+                    
+                    for (int i = 0; i<svd.getNumVars(); ++i) {
+                        String nm = svd.getName(i);
                         if (nm.equals(retVar)) {
                             if (hasDecl || isForDecl) {
                                 retVar = null;
+                            } else {
+                                CudaMemoryType t = svd.getType(i).getCudaMemType();
+                                if (retVarMemType == null) {
+                                    retVarMemType = t;
+                                } else {
+                                    if (retVarMemType != t) {
+                                        retVar = null;
+                                    }
+                                }
                             }
                             hasDecl = true;
                         }
@@ -499,6 +524,15 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 }
             };
             func.accept(checkProperDecl);
+
+            if (retVar != null) {
+                for (Parameter p : func.getParams()) {
+                    if (p.getName() == getOutParamName()) {
+                        p.getType().setCudaMemType(retVarMemType);
+                        break;
+                    }
+                }
+            }
         }
 		currentFunction=func;
         // outCounter=0;
