@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -32,6 +33,8 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	public static final Type FLOAT = TypePrimitive.floattype;
     public static final Type DOUBLE = TypePrimitive.doubletype;
 	
+    public static final double epsilon = 1e-10;
+
 	TempVarGen varGen;
 	
 	Map<Float, Function> floatConstants = new HashMap<Float, Function>();		
@@ -58,8 +61,12 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	
 	public Object visitExprConstFloat(ExprConstFloat fexp){
-		String name = null;
-		
+        String name = null;
+        double flc = fexp.getVal();
+        if (flc <= epsilon && flc >= -epsilon) {
+            return ExprConstInt.zero;
+        }
+
 		Float fl = new Float(fexp.getVal());
 		if(floatConstants.containsKey(fl)){
 			name = floatConstants.get(fl).getName();
@@ -77,8 +84,8 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 
     public Object visitExprTypeCast(ExprTypeCast exp) {
         Expression expr = doExpression(exp.getExpr());
-        Type told = getType(exp);
-        Type tnew = (Type) exp.getType().accept(this);
+        Type told = getType(exp.getExpr());
+        Type tnew = exp.getType();
         if (told.equals(TypePrimitive.inttype) && isFloat(tnew)) {
             throw new ExceptionAtNode(
                     "You can't cast from ints to doubles/floats if you are using --fe-fencoding TO_BIT." +
@@ -151,7 +158,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
                 case ExprBinary.BINOP_EQ: newOp = ExprBinary.BINOP_EQ; break;
         	default:
                 throw new ExceptionAtNode(
-                        "You can't apply this floating point operation if you are using --fe-fencoding TO_BIT." +
+                        "You can't apply this floating point operation if you are using --fe-fencoding TO_BIT. " +
                                 exp + " " + exp.getOp(), exp);
         }        
         if (left == exp.getLeft() && right == exp.getRight() && newOp == exp.getOp())

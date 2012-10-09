@@ -41,8 +41,9 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Determine which encoding to use for floats/doubles. \n"
             + "With AS_BIT, it will encode floats with a single bit. \n"
-            + "With AS_FFIELD, it will encode them using the field of integers mod 7.")
-    public FloatEncoding fencoding = FloatEncoding.AS_BIT;
+            + "With AS_FFIELD, it will encode them using the field of integers mod 7. \n"
+            + "With AS_FIXPOINT, it will encode them using fixedpoint arithmetic. \n")
+    public FloatEncoding fpencoding = FloatEncoding.AS_BIT;
 
     @CliParameter(help = "Set the name of the output C files. By default it is the "
             + "name of the first input file.")
@@ -63,6 +64,6 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public String tprintPython = null;
 
     public enum FloatEncoding {
-        AS_BIT, AS_FFIELD
+        AS_BIT, AS_FFIELD, AS_FIXPOINT
     }
 }

@@ -1,0 +1,11 @@
+pragma options "--fe-fpencoding AS_FIXPOINT";
+
+harness void main(int i, int j){
+    float ii = (float)i;
+    float tt =  ii * (float)j;
+    
+    if(j != 0){
+        assert tt / (float)j == ii; 
+    }
+    
+}

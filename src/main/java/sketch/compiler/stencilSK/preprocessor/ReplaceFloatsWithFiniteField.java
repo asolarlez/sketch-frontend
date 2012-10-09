@@ -79,10 +79,11 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
         return null;
     }
 
+
     public Object visitExprTypeCast(ExprTypeCast exp) {
         Expression expr = doExpression(exp.getExpr());
-        Type told = getType(exp);
-        Type tnew = (Type) exp.getType().accept(this);
+        Type told = getType(exp.getExpr());
+        Type tnew = exp.getType();
         if (told.equals(TypePrimitive.inttype) && isFloat(tnew)) {
             throw new ExceptionAtNode(
                     "You can't cast from ints to doubles/floats if you are using --fe-fencoding TO_BIT." +
@@ -102,17 +103,18 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
     public Object visitExprConstFloat(ExprConstFloat fexp) {
         String name = null;
         double flc = fexp.getVal();
-        if (flc <= 1e-10 && flc >= -1e-10) {
+        if (flc <= epsilon && flc >= -epsilon) {
             return ExprConstInt.zero;
         }
-        flc = fexp.getVal() - 1.0;
-        if (flc <= 1e-10 && flc >= -1e-10) {
-            return ExprConstInt.one;
-        }
+
         for (int i = 1; i < BASE.getVal(); ++i) {
             flc = fexp.getVal() - (1.0 / ((double) i));
-            if (flc <= 1e-10 && flc >= -1e-10) {
+            if (flc <= epsilon && flc >= -epsilon) {
                 return DIVTABLE.getElements().get(i);
+            }
+            flc = fexp.getVal() - ((double) i);
+            if (flc <= epsilon && flc >= -epsilon) {
+                return ExprConstInt.createConstant(i);
             }
         }
 

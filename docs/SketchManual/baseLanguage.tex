@@ -2,10 +2,16 @@
 The core sketch language is a simple imperative language that borrows most of its syntax from Java and C. 
 
 \subsection{Primitive Types}
-The sketch language contains four primitive types, \C{int}, \C{char}, \C{double} and \C{bit}. There is a subtyping relation between them:
-\C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever an character or integer is required. There is no subtyping relation with double, so for example, you cannot use $1$ in place of $1.0$. 
+The sketch language contains five primitive types, \C{bit}, \C{int}, \C{char}, \C{double} and \C{float}. There is a subtyping relation between three of them:
+\C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever a character or integer is required. 
+\C{float} and \C{double} are completely interchangeable, but there is no subtyping relationship between them and the other types, so for example, you cannot use $1$ in place of $1.0$, or $0$ in place of $0.0$. 
 
 There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. In the case of characters, you can use the standard C syntax to represent character constants. 
+
+\paragraph{Modeling floating point} Floating point values (either \C{float} or \C{double}) are not handled natively by the synthesizer, so they have to be modeled using other mechanisms. The sketch synthesizer currently supports three different encodings for floating point values, which can be controlled by the flag \C{--fe-fpencoding}.
+
+\flagdoc{fe-fpencoding}{ This flag controls which of three possible encodings are used for floating point values. \C{AS_BIT} encodes floating point values using a single bit; addition and subtraction are replaced with \C{xor}, and multiplication is replaced with \C{and}. Division and comparisons are not supported in this representation, nor are casts to and from integers. \C{AS_FFIELD} will encode floating points using a finite field of integers mod 7. This representation does support division, but not comparisons or casts. Finally, \C{AS_FIXPOINT} represents floats as fixed point values; this representation supports all the operations, but it is the most expensive. }
+
 
 \subsection{Structs}
 More interesting types can be constructed from simpler types in two ways: by creating arrays of them (see \secref{array}) and by defining new types of heap allocated records. 

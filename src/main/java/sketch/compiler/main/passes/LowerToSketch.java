@@ -10,6 +10,7 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFiniteField;
+import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFixpoint;
 
 public class LowerToSketch extends MetaStage {
     protected final MetaStage stencilTransform;
@@ -72,10 +73,12 @@ public class LowerToSketch extends MetaStage {
         // prog = (Program)prog.accept(new NoRefTypes());
         // prog.debugDump("Before SVA");
 
-        if (options.feOpts.fencoding == FloatEncoding.AS_BIT) {
+        if (options.feOpts.fpencoding == FloatEncoding.AS_BIT) {
             prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
-        } else if (options.feOpts.fencoding == FloatEncoding.AS_FFIELD) {
+        } else if (options.feOpts.fpencoding == FloatEncoding.AS_FFIELD) {
             prog = (Program) prog.accept(new ReplaceFloatsWithFiniteField(varGen));
+        } else if (options.feOpts.fpencoding == FloatEncoding.AS_FIXPOINT) {
+            prog = (Program) prog.accept(new ReplaceFloatsWithFixpoint(varGen));
         }
 
 

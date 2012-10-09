@@ -1,0 +1,16 @@
+pragma options "--be:showDAG";
+
+bit[4] choices = ??;
+
+harness void main(int i){
+    if(i<i-1){
+        foo();
+    }    
+}
+
+void foo(){
+    if(??){
+    h_assert choices[0];
+    }
+    
+}
