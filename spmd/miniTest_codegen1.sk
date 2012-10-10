@@ -1,16 +1,11 @@
 /*
  * triggers a bug in frontend
  */
-pragma options "--fe-output-code  --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 1"; //  --be:showDAG
+pragma options "--fe-output-code --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 1"; //  --be:showDAG
 
 struct LState {
 	int L;
 	int[L] arr;
-}
-
-struct data {
-	int Len;
-	float [len] arr;
 }
 
 LState movein1(int P, int rank, global int N,  global int[N] ga) {
@@ -30,20 +25,20 @@ void moveout1(int P, int rank, global int N, ref global int[N] ga, LState s) {
 }
 
 
-stencil void spec(int P, int N, ref global int[N] a) {
+ void spec(int P, int N, ref global int[N] a) {
 	if (P>=1 && P<=2 && N%P==0) {
 		for (int i=0; i<N; ++i) {
-			a[i] = a[i]+a[i];
+			a[i] = a[i]+a[i]+a[i] + 1;
 		}
 	}
 }
 
-stencil void sk(int P, int N, ref global int[N] a) implements spec {
+ void sk(int P, int N, ref global int[N] a) implements spec {
 	if (P>=1 && P<=2 && N%P==0) {
 		spmdfork(P) {
 			LState s = movein1(P, spmdpid, N, a);
 			for (int i=0; i<s.L; ++i) {
-				s.arr[i] = s.arr[i]*2;
+				s.arr[i] = s.arr[i]*?? + ??;
 			}
 			spmdbarrier();
 			moveout1(P, spmdpid, N, a, s);

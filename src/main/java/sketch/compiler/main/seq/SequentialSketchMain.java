@@ -566,6 +566,7 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
+                e.printStackTrace();
                 System.exit(1);
             }
         } catch (java.lang.Error e) {

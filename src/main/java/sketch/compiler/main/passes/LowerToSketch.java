@@ -2,12 +2,13 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.cmdline.FrontendOptions.FloatEncoding;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.stencilSK.EliminateFinalStructs;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFiniteField;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFixpoint;
@@ -26,6 +27,18 @@ public class LowerToSketch extends MetaStage {
     public Program visitProgramInner(Program prog) {
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
+
+        // FIXME xzl: use efs instead of es, can generate wrong program!
+        prog = (Program) prog.accept(new SeparateInitializers());
+        SimpleCodePrinter prt = new SimpleCodePrinter();
+        System.out.println("before efs:");
+        prog.accept(prt);
+        prog =
+                (Program) prog.accept(new EliminateFinalStructs(varGen,
+                        options.bndOpts.arrSize));
+        System.out.println("after efs:");
+        prog.accept(prt);
+
         // prog.debugDump("After aaa");
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
@@ -34,7 +47,6 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new MakeBodiesBlocks());
         // dump (prog, "MBB:");
-
 
         prog = stencilTransform.visitProgram(prog);
 
@@ -52,10 +64,10 @@ public class LowerToSketch extends MetaStage {
 
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
-
-        prog =
-                (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
-                        options.bndOpts.arrSize)));
+        
+//        prog =
+//                (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
+//                        options.bndOpts.arrSize)));
 
         // prog.debugDump("After ES");
 
