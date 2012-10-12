@@ -16,9 +16,15 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
  *          changes, please consider contributing back!
  */
 public class AbstractCostFcnAssert extends FEReplacer {
+    int size;
+
+    public AbstractCostFcnAssert(int size) {
+        this.size = size;
+    }
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         return new StmtAssert(new ExprBinary(stmtMinimize.getMinimizeExpr(), "<",
-                new ExprSpecialStar(stmtMinimize, "MINVAR", 10, TypePrimitive.inttype)), false);
+ new ExprSpecialStar(
+                        stmtMinimize, "MINVAR", size, TypePrimitive.inttype)), false);
     }
 }

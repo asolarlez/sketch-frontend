@@ -36,7 +36,6 @@ import sketch.util.wrapper.ScRichString;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
 
@@ -105,16 +104,10 @@ public class SATBackend {
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
-            if (options.feOpts.minimize) {
-                assert false : "deprecated";
-                // use the frontend
-//                bestValueFile = new File(tmpSketchFilename + ".best");
-//                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
-            } else {
+            {
                 // use the backend
-                printNote("enabling scripting backend due to presence of minimize()");
-                options.solverOpts.useScripting = true;
-                final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
+                final AbstractCostFcnAssert costFcnAssert =
+                        new AbstractCostFcnAssert(options.bndOpts.mbits);
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
                 try {
                     worked = solve(oracle, true, options.solverOpts.timeout);
