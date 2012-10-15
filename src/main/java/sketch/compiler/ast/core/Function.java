@@ -204,7 +204,11 @@ public class Function extends FENode {
         public FunctionCreator annotations(
                 final HashmapList<String, Annotation> annotations)
         {
-            this.annotations = annotations;
+            if (annotations == null) {
+                this.annotations.clear();
+            } else {
+                this.annotations = annotations;
+            }
             return this;
         }
 

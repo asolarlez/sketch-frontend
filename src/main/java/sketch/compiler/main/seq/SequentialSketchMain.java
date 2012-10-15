@@ -45,27 +45,27 @@ import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
-import sketch.compiler.passes.cuda.*;
+import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
+import sketch.compiler.passes.cuda.DeleteInstrumentCalls;
+import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
+import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
+import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
+import sketch.compiler.passes.cuda.LowerInstrumentation;
+import sketch.compiler.passes.cuda.ReplaceParforLoops;
+import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
+import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ConstantReplacer;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
-import sketch.compiler.passes.lowering.GlobalsToParams;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
-import sketch.compiler.passes.optimization.ReplaceMinLoops;
-import sketch.compiler.passes.preprocessing.AllthreadsTprintFcnCall;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
-import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
-import sketch.compiler.passes.preprocessing.TprintFcnCall;
-import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
-import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
-import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
@@ -149,12 +149,12 @@ public class SequentialSketchMain extends CommonSketchMain
         public BeforeSemanticCheckStage() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new MinimizeFcnCall(), new TprintFcnCall(),
+                    { new MinimizeFcnCall(), /* new TprintFcnCall(), */
  new SpmdbarrierCall(),
-                            new PidReplacer(),
+            /* new PidReplacer(), */
  new RemoveFunctionParameters(varGen),
-                            new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options),
-                            new InstrumentFcnCall(), new SyncthreadsCall() };
+                    /* new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options), */
+                    /* new InstrumentFcnCall(), new SyncthreadsCall() */};
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
@@ -164,8 +164,9 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     {
-                            new ReplaceMinLoops(varGen),
-                            new MainMethodCreateNospec(),
+                            /*
+                             * new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
+                             */
                             new SetDeterministicFcns(),
                             new ReplaceParforLoops(options.cudaOpts.threadBlockDim,
                                     varGen), new ReplaceImplicitVarDecl(),
@@ -180,7 +181,8 @@ public class SequentialSketchMain extends CommonSketchMain
         public LowerHighLevelConstructs() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new GlobalsToParams(varGen), new LowerInstrumentation(varGen)
+ { // new GlobalsToParams(varGen),
+                    new LowerInstrumentation(varGen)
                     // , new FlattenCommaMultidimArrays(null)
                     };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
@@ -312,7 +314,7 @@ public class SequentialSketchMain extends CommonSketchMain
     // [end]
 
     protected Program preprocessProgram(Program lprog, boolean partialEval) {
-        return (new PreprocessStage(varGen, options, getPreProcStage1(), getIRStage1(),
+        return (new PreprocessStage(varGen, options, /* getPreProcStage1(), getIRStage1(), */
                 visibleRControl(lprog), partialEval)).visitProgram(lprog);
     }
 
@@ -371,7 +373,7 @@ public class SequentialSketchMain extends CommonSketchMain
         Program highLevelC = prog;
         prog = getIRStage2_LLC(prog).run(prog);
         Program afterSPMDSeq = prog;
-        prog = getIRStage3().run(prog);
+        // prog = getIRStage3().run(prog);
         StencilTransforms stenTf = new StencilTransforms(varGen, options);
         prog = (new LowerToSketch(varGen, options, stenTf)).visitProgram(prog);
         return new SketchLoweringResult(prog, highLevelC, afterSPMDSeq);
