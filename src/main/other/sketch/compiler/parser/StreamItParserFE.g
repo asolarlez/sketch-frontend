@@ -387,9 +387,9 @@ annotation returns [Annotation an]{
 ;
 
 annotation_list returns [HashmapList<String, Annotation>  amap] {
-	 amap = new HashmapList<String, Annotation>(); Annotation an; }
+	 amap=null; Annotation an; }
 	:	
-		( an=annotation { amap.append(an.tag, an); })*
+		( an=annotation {if(amap==null){amap = new HashmapList<String, Annotation>();} amap.append(an.tag, an); })*
 	;
 
 function_decl returns [Function f] {
@@ -635,12 +635,15 @@ expr_named_param_only returns [ Expression x ] { x = null; Token t = null; }
     :   id:ID ASSIGN x=right_expr { x = new ExprNamedParam(getContext(id), id.getText(), x); }
     ;
 
-left_expr returns [Expression x] { x = null; }
-	:	x=minic_value_exprnofo
+left_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
+	:	x=uminic_value_expr
+		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
+		|	l:LSQUARE
+					rl=array_range { x = new ExprArrayRange(x, x, rl); }
+			RSQUARE
+		)*
 	;
-	/*|   r:REGEN
-        { x = new ExprRegen (getContext (r), r.getText ()); } 
-        */
+
         
 right_expr_not_agmax returns [Expression x] { x = null; }
 	:	x=ternaryExpr	
@@ -846,15 +849,6 @@ minic_value_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeL
 		)*
 	;
 
-
-minic_value_exprnofo returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
-	:	x=uminic_value_expr
-		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
-		|	l:LSQUARE
-					rl=array_range { x = new ExprArrayRange(x, x, rl); }
-			RSQUARE
-		)*
-	;
 
 
 uminic_value_expr returns [Expression x] { x = null; }

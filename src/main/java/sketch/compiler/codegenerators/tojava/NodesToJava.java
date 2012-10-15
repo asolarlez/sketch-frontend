@@ -787,6 +787,6 @@ public class NodesToJava extends SymbolTableVisitor
     
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
-        return "minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ")";
+        return "/* minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ") */";
     }
 }

@@ -9,9 +9,9 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -864,7 +864,7 @@ public class PartialEvaluator extends FEReplacer {
         // Put context label at the start of the block, too.
         Statement s = null;
         int level = state.getLevel();
-        Stack<String> prevLS = state.getLevelStack();
+        // Stack<String> prevLS = state.getLevelStack();
         int ctlevel = state.getCTlevel();
         Level lvl = null;
         Exception e = null;

@@ -1,0 +1,16 @@
+pragma options "--fe-fpencoding AS_FIXPOINT --bnd-unroll-amnt 32";
+
+harness void main(int i, int j){
+    float ii = (float)i;
+    float jj =  (float)j;
+    
+    if(ii*jj < 10.0){
+        float qq = 0.0;
+        int h = ??;
+        float bnd = ((float)h);
+        for(int t=0; t<j; ++t){
+            qq += ii;
+            assert qq < bnd;
+        }
+    }
+}

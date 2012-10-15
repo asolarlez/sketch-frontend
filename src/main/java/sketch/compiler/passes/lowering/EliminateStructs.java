@@ -17,9 +17,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -118,7 +118,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	            newParams.add ((Parameter) param.accept (this));
 	        }
 
-	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
+            List<Statement> newBodyStmts = new ArrayList<Statement>();
             // ExprStar es = new ExprStar(func, 2);
             // es.setType(TypePrimitive.inttype);
             // newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,

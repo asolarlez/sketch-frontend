@@ -18,6 +18,7 @@ public class ExprSpecialStar extends ExprStar {
     public ExprSpecialStar(FENode context, String name, int size, Type typ) {
         super(context, size, typ);
         this.name = name;
+        this.starName = "H__BOUND";
     }
     
     @Override
