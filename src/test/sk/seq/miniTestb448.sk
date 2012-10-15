@@ -1,0 +1,19 @@
+pragma options "--bnd-unroll-amnt 32";
+
+harness int foo(int n, int[n] x){
+    if(n>3){
+        x[0] = ??;
+        assert x[0] > 2;
+        return x[0];
+    }
+    return 5;
+}
+
+harness void main(int n, int[n] x){
+    if(n>3){
+        int t = x[0];
+        int v = foo(n, x);
+        assert t == x[0];
+        assert v == 4;
+    }    
+}
