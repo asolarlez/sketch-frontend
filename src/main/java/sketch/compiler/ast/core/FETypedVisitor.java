@@ -32,6 +32,7 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -226,6 +227,10 @@ public class FETypedVisitor<T> implements FEVisitor {
 
     public T visitSpmdPid(SpmdPid stmt) {
         throw new FEVisitorException(this, stmt);
+    }
+
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        throw new FEVisitorException(this, spmdnproc);
     }
 
     public T visitStmtIfThen(StmtIfThen stmt) {

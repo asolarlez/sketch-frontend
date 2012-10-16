@@ -189,6 +189,7 @@ SELECT: "{|}";
 NDANGELIC: "**";
 AT: "@";
 BACKSLASH: "\\";
+LESS_COLON: "<:";
 
 REGEN   { int open = 0; }
     :   "{|"

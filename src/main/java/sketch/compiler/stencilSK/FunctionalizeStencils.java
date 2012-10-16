@@ -459,15 +459,16 @@ public class FunctionalizeStencils extends FEReplacer {
             elr.setNres(nres);
             f = (Function) f.accept(elr);
 
-            EliminateFinalStructs efs = new EliminateFinalStructs(varGen, maxArrSize);
-            efs.setNres(nres);
+            // TODO xzl: moved efs to lowerToSketch
+            // EliminateFinalStructs efs = new EliminateFinalStructs(varGen, maxArrSize);
+            // efs.setNres(nres);
 
-            f = (Function) f.accept(v01);
-            System.out.println("before efs:");
-            f.accept(new SimpleCodePrinter());
-            f = (Function) f.accept(efs);
-            System.out.println("after efs:");
-            f.accept(new SimpleCodePrinter());
+            // f = (Function) f.accept(v01);
+            // System.out.println("before efs:");
+            // f.accept(new SimpleCodePrinter());
+            // f = (Function) f.accept(efs);
+            // System.out.println("after efs:");
+            // f.accept(new SimpleCodePrinter());
 
             f = (Function) f.accept(erp);
 

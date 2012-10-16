@@ -148,13 +148,13 @@ public interface StreamItParserFETokenTypes {
 	int NDANGELIC = 103;
 	int AT = 104;
 	int BACKSLASH = 105;
-	int REGEN = 106;
-	int CHAR_LITERAL = 107;
-	int STRING_LITERAL = 108;
-	int ESC = 109;
-	int DIGIT = 110;
-	int HQUAN = 111;
-	int NUMBER = 112;
-	int ID = 113;
-	int LESS_COLON = 114;
+	int LESS_COLON = 106;
+	int REGEN = 107;
+	int CHAR_LITERAL = 108;
+	int STRING_LITERAL = 109;
+	int ESC = 110;
+	int DIGIT = 111;
+	int HQUAN = 112;
+	int NUMBER = 113;
+	int ID = 114;
 }

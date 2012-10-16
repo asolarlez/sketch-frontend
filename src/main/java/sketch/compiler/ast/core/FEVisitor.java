@@ -36,6 +36,7 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -127,5 +128,8 @@ public interface FEVisitor
     public Object visitExprType(ExprType exprtyp);
     public Object visitStmtSpmdfork(StmtSpmdfork stmtSpmdfork);
     public Object visitSpmdBarrier(SpmdBarrier spmdBarrier);
-    public Object visitSpmdPid(SpmdPid spmdBarrier);
+
+    public Object visitSpmdPid(SpmdPid spmdpid);
+
+    public Object visitSpmdNProc(SpmdNProc spmdnproc);
 }

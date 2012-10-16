@@ -31,13 +31,18 @@ public class LowerToSketch extends MetaStage {
         // FIXME xzl: use efs instead of es, can generate wrong program!
         prog = (Program) prog.accept(new SeparateInitializers());
         SimpleCodePrinter prt = new SimpleCodePrinter();
-        System.out.println("before efs:");
-        prog.accept(prt);
+        // System.out.println("before efs:");
+        // prog.accept(prt);
         prog =
                 (Program) prog.accept(new EliminateFinalStructs(varGen,
-                        options.bndOpts.arrSize));
+                        options.bndOpts.arr1dSize));
         System.out.println("after efs:");
         prog.accept(prt);
+
+        // FIXME xzl: add this!
+        // prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
+        // System.out.println("after mmde:");
+        // prog.accept(prt);
 
         // prog.debugDump("After aaa");
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
@@ -54,13 +59,19 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
 
         prog = (Program) prog.accept(new EliminateArrayRange(varGen));
+        // System.out.println("after ear:");
+        // prog.accept(prt);
 
 
         prog = (Program) prog.accept(new EliminateMDCopies(varGen));
+        // System.out.println("after emdcp:");
+        // prog.accept(prt);
 
 
 
         prog = (Program) prog.accept(new EliminateMultiDimArrays(true, varGen));
+        // System.out.println("after emda:");
+        // prog.accept(prt);
 
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));

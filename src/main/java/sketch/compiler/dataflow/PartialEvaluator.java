@@ -9,9 +9,9 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -24,6 +24,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
@@ -215,6 +216,14 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitSpmdPid(SpmdPid pid) {
         if (isReplacer) {
             exprRV = (Expression) super.visitSpmdPid(pid);
+        }
+        return vtype.BOTTOM(TypePrimitive.inttype);
+    }
+
+    @Override
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        if (isReplacer) {
+            exprRV = (Expression) super.visitSpmdNProc(spmdnproc);
         }
         return vtype.BOTTOM(TypePrimitive.inttype);
     }

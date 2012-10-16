@@ -35,6 +35,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -46,7 +47,6 @@ import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.ASTQuery;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.datastructures.TypedHashSet;
-import sketch.util.exceptions.SketchSolverException;
 import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -54,8 +54,8 @@ import static sketch.util.DebugOut.assertFalse;
 @CompilerPassDeps(runsBefore = { }, runsAfter = { })
 public class SpmdTransform  extends SymbolTableVisitor {
     protected int SpmdMaxNProc;
-    protected static final String SpmdNProcVar = "spmdnproc";
-    protected static final String SpmdPidVar = "spmdpid";
+    protected static final String SpmdNProcVar = "_spmdnproc";
+    protected static final String SpmdPidVar = "_spmdpid";
 
     protected final TempVarGen varGen;
     protected SpmdCallGraph cg;
@@ -528,6 +528,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
         }
         
         @Override
+        public Object visitSpmdNProc(SpmdNProc stmt) {
+            ExprVar var = new ExprVar(stmt, SpmdNProcVar);
+            return var;
+        }
+
+        @Override
         public Object visitExprVar(ExprVar exp) {
             exp = (ExprVar) super.visitExprVar(exp);
 //System.out.println("exp: " + exp);
@@ -636,7 +642,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 result = true;
                 return stmt;
             }
-            } catch (SketchSolverException e) {
+            } catch (Exception e) {
                 // TODO silently fail
             }
             return super.visitStmtAssign(stmt);

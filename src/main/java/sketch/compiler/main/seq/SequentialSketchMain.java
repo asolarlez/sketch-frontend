@@ -66,6 +66,7 @@ import sketch.compiler.passes.preprocessing.cuda.SyncthreadsCall;
 import sketch.compiler.passes.preprocessing.cuda.ThreadIdReplacer;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
@@ -330,6 +331,10 @@ public class SequentialSketchMain extends CommonSketchMain
                 solver.activateTracing();
             }
             backendParameters();
+
+            SimpleCodePrinter prt = new SimpleCodePrinter();
+            System.out.println("before solve:");
+            sketchProg.result.accept(prt);
             solver.partialEvalAndSolve(sketchProg.result);
 
             return new SynthesisResult(sketchProg, solver.getOracle(),
