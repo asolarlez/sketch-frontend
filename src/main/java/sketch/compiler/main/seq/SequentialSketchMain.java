@@ -35,6 +35,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.CleanupFinalCode;
+import sketch.compiler.main.passes.InsertAssumptions;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
 import sketch.compiler.main.passes.ParseProgramStage;
@@ -47,6 +48,7 @@ import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.*;
 import sketch.compiler.passes.lowering.ConstantReplacer;
+import sketch.compiler.passes.lowering.EliminateComplexForLoops;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
 import sketch.compiler.passes.lowering.GlobalsToParams;
@@ -236,6 +238,7 @@ public class SequentialSketchMain extends CommonSketchMain
             // this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new FlattenStmtBlocks2());
+            this.passes.add(new EliminateComplexForLoops(varGen));
             SpmdTransform tf = new SpmdTransform(options, varGen);
             this.passes.add(tf);
             this.passes.add(new GlobalToLocalCasts(varGen, tf));
@@ -316,6 +319,8 @@ public class SequentialSketchMain extends CommonSketchMain
     // [end]
 
     protected Program preprocessProgram(Program lprog, boolean partialEval) {
+        lprog = (Program) lprog.accept(new InsertAssumptions());
+
         return (new PreprocessStage(varGen, options, getPreProcStage1(), getIRStage1(),
                 visibleRControl(lprog), partialEval)).visitProgram(lprog);
     }

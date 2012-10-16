@@ -25,7 +25,6 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
-
         prog = (Program) prog.accept(new AddArraySizeAssertions());
 
         // FIXME xzl: use efs instead of es, can generate wrong program!

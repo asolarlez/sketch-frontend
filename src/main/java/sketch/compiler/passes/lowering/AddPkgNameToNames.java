@@ -7,9 +7,10 @@ import java.util.List;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
-import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -67,12 +68,14 @@ public class AddPkgNameToNames extends FEReplacer {
         nres = new NameResolver(prog);
         List<Function> lf = new ArrayList<Function>();
         List<TypeStruct> ts = new ArrayList<TypeStruct>();
+        List<Expression> as = new ArrayList<Expression>();
         for (Package ssOrig : prog.getPackages()) {
             Package pkg = (Package) ssOrig.accept(this);
             lf.addAll(pkg.getFuncs());
             ts.addAll(pkg.getStructs());
+                as.addAll(pkg.getAssumptions());
         }
-        Package global = new Package(prog, "GLOBAL", ts, new ArrayList(), lf);
+            Package global = new Package(prog, "GLOBAL", ts, new ArrayList(), lf, as);
 
         return prog.creator().streams(Collections.singletonList(global)).create();
         } else {

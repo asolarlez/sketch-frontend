@@ -742,7 +742,8 @@ public class FEReplacer implements FEVisitor
         // newFuncs = oldNewFuncs;
         if (!changed)
             return spec;
-        return new Package(spec, spec.getName(), newStructs, newVars, nf);
+        return new Package(spec, spec.getName(), newStructs, newVars, nf,
+                spec.getAssumptions());
 
     }
 

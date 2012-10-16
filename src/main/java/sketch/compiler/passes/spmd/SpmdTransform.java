@@ -22,15 +22,7 @@ import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtFor;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtReturn;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -41,6 +33,7 @@ import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.lowering.EliminateComplexForLoops;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ASTObjQuery;
@@ -51,7 +44,7 @@ import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
 
-@CompilerPassDeps(runsBefore = { }, runsAfter = { })
+@CompilerPassDeps(runsBefore = {}, runsAfter = { EliminateComplexForLoops.class })
 public class SpmdTransform  extends SymbolTableVisitor {
     protected int SpmdMaxNProc;
     protected static final String SpmdNProcVar = "_spmdnproc";
@@ -134,6 +127,16 @@ public class SpmdTransform  extends SymbolTableVisitor {
     }
 
     public class AllProcTransform extends SymbolTableVisitor {
+        private final class NotTotallyGlobal extends ASTQuery {
+            public Object visitExprVar(ExprVar var) {
+                if (getType(var).getCudaMemType() != CudaMemoryType.GLOBAL) {
+                    result = true;
+                    return var;
+                }
+                return super.visitExprVar(var);
+            }
+        }
+
         boolean needAllProc;
 
         public AllProcTransform(SymbolTable symtab) {
@@ -455,15 +458,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         // global int x, y;
                         // fork { y = x+1; x = y+1; }
                         // will be break to y=x+1; x=y+1;
-                        boolean rhsLocal = (new ASTQuery() {
-                            public Object visitExprVar(ExprVar var) {
-                                if (getType(var).getCudaMemType() != CudaMemoryType.GLOBAL) {
-                                    result = true;
-                                    return var;
-                                }
-                                return super.visitExprVar(var);
-                            }
-                        }).run(((StmtAssign) stmt).getRHS());
+                        boolean rhsLocal = (new NotTotallyGlobal()).run(((StmtAssign) stmt).getRHS());
                         if (rhsLocal) {
                             flushAndAdd(stmts, procLoopStmts);
                             Vector<Statement> s = new Vector<Statement>(1);
@@ -472,7 +467,27 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         } else {
                             flushAndAdd(stmts, procLoopStmts, (Statement) stmt.accept(this));
                         }
+                    } else if (stmt instanceof StmtFor) {
+                        StmtFor sf = (StmtFor) stmt;
+                        StmtAssign init = (StmtAssign) sf.getInit();
+                        ExprVar v = (ExprVar) init.getLHS();
+                        assert getType(v).getCudaMemType() == CudaMemoryType.GLOBAL : "Not yet implemented: change the iterator " +
+                                v + " to global type";
+                        Expression low = init.getRHS();
+                        Expression high = ((ExprBinary)sf.getCond()).getRight();
+                        if (new NotTotallyGlobal().run(low) || new NotTotallyGlobal().run(high)) {
+                            // TODO xzl: implement
+                            assert false : "Not yet implemented: the for loop must be only use global vars as low/high, please check " +
+                                    sf;
+                        }
+                        Statement body = sf.getBody();
+                        Object nb = body.accept(this);
+                        if (nb != body) {
+                            sf = new StmtFor(sf, sf.getInit(), sf.getCond(), sf.getIncr(), (Statement) nb);
+                        }
+                        flushAndAdd(stmts, procLoopStmts, sf);
                     } else {
+                        assert !(stmt instanceof StmtDoWhile) : "DoWhile not yet implemented in Spmd!";
                         flushAndAdd(stmts, procLoopStmts, (Statement) stmt.accept(this));
                     }
                     //System.out.println("stmts:" + stmts);

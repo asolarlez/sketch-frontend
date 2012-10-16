@@ -46,6 +46,8 @@ tokens {
 	"new";
 	"null";
 	"reorder";
+	
+	"assume";
 
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";

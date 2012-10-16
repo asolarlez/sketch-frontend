@@ -7,9 +7,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -823,7 +823,8 @@ public class SATSynthesizer implements Synthesizer {
 
 		List<Package> streams = Collections.singletonList(
 new Package(current, "MAIN",
-                        Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs));
+                        Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs,
+                        new ArrayList<Expression>()));
         current =
  current.creator().streams(streams).create();
 

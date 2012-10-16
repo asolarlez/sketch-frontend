@@ -13,8 +13,8 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.spmd.ChangeGlobalStateType;
 import sketch.compiler.passes.structure.ContainsCudaCode;
-import sketch.compiler.stencilSK.ChangeGlobalStateType;
 
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printError;
@@ -43,8 +43,9 @@ public class OutputCCode extends MetaStage {
         String resultFile = SequentialSketchMain.getOutputFileName(options);
         final boolean tprintPyStyle = options.feOpts.tprintPython != null;
         
-        Program pprog =
-                (Program) prog.accept(new EliminateMultiDimArrays(
+        Program pprog = (Program) prog.accept(new RemoveAssumptions());
+        pprog =
+                (Program) pprog.accept(new EliminateMultiDimArrays(
                         !options.feOpts.killAsserts, new TempVarGen()));
         pprog = (Program) pprog.accept(new ChangeGlobalStateType());
         String hcode = (String) pprog.accept(new NodesToSuperH(resultFile, tprintPyStyle));

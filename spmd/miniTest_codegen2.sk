@@ -1,70 +1,19 @@
-pragma options "-P preproc";
-
-void forkproc_sk (int P_4, ref bit A_5)  implements spec/*miniTes..floop2.sk:18*/
-{
-  if(P_4 == 1)/*miniTes..floop2.sk:19*/
-  {
-    {
-      int _spmdnproc;
-      _spmdnproc = P_4;
-      assert (_spmdnproc <= 1); //Assert at miniTes..floop2.sk:20 (-5595269204303551715)
-      {
-        bit[1 * 1] s_2_arr_s4;
-        for(int _spmdpid = 0; _spmdpid < _spmdnproc; _spmdpid = _spmdpid + 1)
-        {
-          bit[1] s_s1_3_arr_s5;
-          someproc_movein(_spmdnproc, _spmdpid, A_5, s_s1_3_arr_s5);
-          assert (_spmdpid < 1); //start must < size
-          assert ((_spmdpid >= 0) && (_spmdpid < 1)); //miniTes..floop2.sk:21: Array out of bounds-1630907957
-          int _pac_s9 = 0 + ((1 * 1) * _spmdpid);
-          assert ((_pac_s9 >= 0) && ((_pac_s9 + (1 * 1)) <= (1 * 1))); //miniTes..floop2.sk:21: Either null pointer or Array out of bounds
-          {
-            for(int __sa12 = 0; __sa12 < 1; __sa12 = __sa12 + 1)
-            {
-              s_2_arr_s4[__sa12 + _pac_s9] = s_s1_3_arr_s5[__sa12];
-            }
-            for(int __sa13 = 1; __sa13 < (1 * 1); __sa13 = __sa13 + 1)
-            {
-              s_2_arr_s4[__sa13 + _pac_s9] = 0;
-            }
-          }
-        }
-        for(int _spmdpid = 0; _spmdpid < _spmdnproc; _spmdpid = _spmdpid + 1)
-        {
-          assert ((_spmdpid >= 0) && (_spmdpid < 1)); //miniTes..floop2.sk:21: Array out of bounds-1754588467
-          assert ((0 >= 0) && (0 < 1)); //miniTes..floop2.sk:21: Array out of bounds1210139475
-          int _pac_s10 = (0 + ((1 * 1) * _spmdpid)) + (1 * 0);
-          assert ((_pac_s10 >= 0) && (_pac_s10 < (1 * 1))); //miniTes..floop2.sk:21: Array out of bounds
-          A_5 = s_2_arr_s4[_pac_s10];
-        }
-      }
-    }
-  }
+void _nop() {
+	
 }
-/*miniTes..floop2.sk:7*/
 
-
-void someproc_movein (int _spmdnproc, int _spmdpid, bit a_6, ref bit[1] _out_7_arr_s6)/*miniTes..floop2.sk:7*/
-{
-  int w_8;
-  assert (_spmdnproc != 0); //miniTes..floop2.sk:8: Division by zero
-  w_8 = 1 / _spmdnproc;
-  bit[w_8] la_9;
-  bit _pac_s11 = 0;
-  assert ((_pac_s11 >= 0) && (_pac_s11 < w_8)); //miniTes..floop2.sk:10: Either null pointer or Array out of bounds
-  la_9[_pac_s11] = a_6;
-  assert (1 >= w_8); //Array Length Mismatch miniTes..floop2.sk:11
-  assert (w_8 <= 1); //Assert at miniTes..floop2.sk:9 (-8940527493105876287)
-  for(int iter_s7 = 0; iter_s7 < w_8; iter_s7 = iter_s7 + 1)
-  {
-    assert ((iter_s7 >= 0) && (iter_s7 < w_8)); //null: Array out of bounds
-    assert ((iter_s7 >= 0) && (iter_s7 < 1)); //null: Either null pointer or Array out of bounds
-    _out_7_arr_s6[iter_s7] = la_9[iter_s7];
-  }
-  return;
+int f(int x) {
+	if (x>0) {
+		return x+x;
+	} else {
+		_nop();
+	}
 }
-/*miniTes..floop2.sk:15*/
 
-void spec (int P_4, ref bit A_5)/*miniTes..floop2.sk:15*/
-{
+int g(int x) implements f {
+	if (x>0) {
+		return x*??;
+	} else {
+		_nop();
+	}
 }

@@ -12,8 +12,8 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -262,7 +262,8 @@ public class Preprocessor extends FEReplacer {
 
         if (!changed)
             return spec;
-        return new Package(spec, spec.getName(), spec.getStructs(), newVars, newFuncs);
+        return new Package(spec, spec.getName(), spec.getStructs(), newVars, newFuncs,
+                spec.getAssumptions());
 
     }
 

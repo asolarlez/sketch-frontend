@@ -10,8 +10,8 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.NameResolver;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -100,7 +100,8 @@ public class ReplaceMinLoops extends FEReplacer {
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         fcns.add(getMinimizeFcn());
 
-        return new Package(spec, spec.getName(), spec.getStructs(), vars, fcns);
+        return new Package(spec, spec.getName(), spec.getStructs(), vars, fcns,
+                spec.getAssumptions());
     }
 
     @Override

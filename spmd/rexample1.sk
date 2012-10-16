@@ -1,8 +1,12 @@
-pragma options "--spmd-max-nproc 3 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+pragma options "-p preproc --spmd-max-nproc 3 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
 
 #define SPMD_MAX_NPROC 3
 #define SPMD_MAX_BUF_LEN 1
 #include "spmd2.skh"
+
+assume P>0 && P<=3;
+assume W%P==0 && W>1 && W<=6;
+assume H>1 && H<=3;
 
 struct LState {
 	int height;
@@ -32,14 +36,12 @@ void moveout(global int H, global int W, ref global float[W][H] ga, LState s) {
 }
 
 void spec(global int P, global int H, global int W, ref global float[W][H] A) {
-    if ( P>0 && P<=3 && W%P==0 && W>1 && W<=6 && H>1 && H<=3){
-        for(int t=1; t<H; ++t) {
-        		A[t][0] = A[t-1][W-1] + A[t-1][1];
-        		A[t][W-1] = A[t-1][W-2] + A[t-1][0];
-            for(int x=1; x<W-1; ++x){
-                A[t][x] = A[t-1][x-1] + A[t-1][x+1];
-            }   
-        }
+    for(int t=1; t<H; ++t) {
+    		A[t][0] = A[t-1][W-1] + A[t-1][1];
+    		A[t][W-1] = A[t-1][W-2] + A[t-1][0];
+        for(int x=1; x<W-1; ++x){
+            A[t][x] = A[t-1][x-1] + A[t-1][x+1];
+        }   
     }
 }
 
@@ -67,23 +69,22 @@ void exchange(global int t, ref LState s) {
 }
 
 void sk(global int P, global int H, global int W, ref global float[W][H] A) implements spec {
-    if ( P>0 && P<=3 && W%P==0 && W>1 && W<=6 && H>1 && H<=3){
-    		spmdfork(P) {
-    			LState s;
-    			s = movein(H, W, A);
-    			spmdbarrier();
-    			
-    			global int t = 1;
-    			while (t < H) {
-    				exchange(t-1, s);
-    				
-    				for (int x=0; x<s.width; ++x) {
-    					s.arr[t][1+x] = s.arr[t-1][x] + s.arr[t-1][x+2];
-    				}
-   				++t;
-    			}
-    			spmdbarrier();
-    			moveout(H, W, A, s);
-    		}
-    }
+	spmdfork(P) {
+		LState s;
+		s = movein(H, W, A);
+		spmdbarrier();
+		
+//    			global int t = 1;
+//    			while (t < H) {
+		for (global int t = 1; t<H; ++t) {
+			exchange(t-1, s);
+			
+			for (int x=0; x<s.width; ++x) {
+				s.arr[t][1+x] = s.arr[t-1][x] + s.arr[t-1][x+2];
+			}
+//   				++t;
+		}
+		spmdbarrier();
+		moveout(H, W, A, s);
+	}
 }
