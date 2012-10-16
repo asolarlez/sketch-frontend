@@ -23,7 +23,7 @@ spmdinfo newspmdinfo(int nproc, int maxlen)
 }
 
 
-@Native("{ MPI_Status status; if (scond) { if (rcond) { MPI_Sendrecv(src_buff, size, MPI_FLOAT, recipient, 0, dest_buff, size, MPI_FLOAT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status); } else { MPI_Send(src_buff, size, MPI_FLOAT, recipient, 0, MPI_COMM_WORLD); } } else { MPI_Recv(dest_buff, size, MPI_FLOAT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status); }}" )
+@Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
 void spmdtransfer(global spmdinfo info, global int size, float [size] src_buff, bit scond, int recipient, ref float [size] dest_buff, bit rcond)
 {
   assert recipient>=0 && recipient<spmdnproc;
