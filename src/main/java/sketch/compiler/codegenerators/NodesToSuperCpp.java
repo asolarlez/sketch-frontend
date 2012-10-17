@@ -439,6 +439,9 @@ public class NodesToSuperCpp extends NodesToJava {
 
     public String getCppFunName(String name) {
         String s = nres.getFunName(name);
+        if (s == null) {
+            return name;
+        }
         int i = s.indexOf('@');
         if (i < 0) {
             return s;

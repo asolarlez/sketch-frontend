@@ -7,16 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.Function.FunctionCreator;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -31,6 +26,8 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.parallelEncoder.VarSetReplacer;
+import sketch.compiler.parallelEncoder.VarSetReplacer.IgnoreNamesInStruct;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -64,15 +61,13 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			super(null);
 		}
 
-		private Function addVarCopy(Function func, Parameter param, String newName)
+        private void addVarCopy(List<Statement> s, FENode ctx, Parameter param,
+                String newName)
 		{
-			StmtBlock body=(StmtBlock) func.getBody();
-			StmtVarDecl decl=new StmtVarDecl(func,param.getType(),param.getName(),
-					new ExprVar(func,newName));
-			List<Statement> stmts = new ArrayList<Statement> (body.getStmts().size()+2);
-			stmts.add(decl);
-			stmts.addAll(body.getStmts());
-            return func.creator().body(new StmtBlock(body, stmts)).create();
+            StmtVarDecl decl =
+                    new StmtVarDecl(ctx, param.getType(), newName,
+					new ExprVar(ctx, param.getName()));
+            s.add(decl);
 		}
 		@Override
 		public Object visitFunction(Function func)
@@ -84,19 +79,34 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				unmodifiedParams.put(param.getName(),param);
 			}
 			func=(Function) super.visitFunction(func);
+            VarSetReplacer.IgnoreNamesInStruct vsr = null;
+            List<Statement> newbody = null;
 			List<Parameter> parameters=new ArrayList<Parameter>(func.getParams());
+
 			for(int i=0;i<parameters.size();i++) {
 				Parameter param=parameters.get(i);
 				if(param.isParameterOutput()) continue;
 				if(!unmodifiedParams.containsValue(param)) {
 					String newName=getNewInCpID(param.getName());
-					Parameter newPar=new Parameter(param.getType(),newName,param.getPtype());
-					parameters.set(i,newPar);
-					func=addVarCopy(func,param,newName);
+                    // Parameter newPar=new
+                    // Parameter(param.getType(),newName,param.getPtype());
+                    // parameters.set(i,newPar);
+                    if (newbody == null) {
+                        newbody = new Vector<Statement>();
+                        vsr = new IgnoreNamesInStruct();
+                    }
+                    vsr.addPair(param.getName(), new ExprVar(func, newName));
+                    addVarCopy(newbody, func, param, newName);
 				}
 			}
 
-			return func.creator().params(parameters).create();
+            FunctionCreator creator = func.creator();
+            if (newbody != null) {
+                newbody.add((Statement) func.getBody().accept(vsr));
+                creator = creator.body(new StmtBlock(newbody));
+            }
+
+            return creator.params(parameters).create();
 		}
 
         private void modify(Expression lhs) {

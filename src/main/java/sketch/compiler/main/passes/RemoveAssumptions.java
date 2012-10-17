@@ -1,7 +1,6 @@
 package sketch.compiler.main.passes;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,22 +50,23 @@ public class RemoveAssumptions extends FEReplacer {
     @Override
     public Object visitStreamSpec(Package p) {
         List<Function> fs = p.getFuncs();
-        topFuncs = new HashSet<String>(fs.size());
-        for (Function f : fs) {
-            if (f.isSketchHarness()) {
-                topFuncs.add(f.getName());
-            }
-            String g = f.getSpecification();
-            if (g != null) {
-                topFuncs.add(f.getName());
-                topFuncs.add(g);
-            }
-        }
+        // topFuncs = new HashSet<String>(fs.size());
+        // for (Function f : fs) {
+        // if (f.isSketchHarness()) {
+        // topFuncs.add(f.getName());
+        // }
+        // String g = f.getSpecification();
+        // if (g != null) {
+        // topFuncs.add(f.getName());
+        // topFuncs.add(g);
+        // }
+        // }
         
         List<Function> newfs = new ArrayList<Function>(fs.size());
         for (Function f : fs) {
             if (f.getName() != nopName) {
-                Function newf = topFuncs.contains(f.getName()) ? changeFunction(f) : f;
+                // Function newf = topFuncs.contains(f.getName()) ? changeFunction(f) : f;
+                Function newf = changeFunction(f);
                 newfs.add(newf);
             }
         }
