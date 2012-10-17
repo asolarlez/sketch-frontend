@@ -255,9 +255,21 @@ public class SpmdTransform  extends SymbolTableVisitor {
             final SomeProcTransform tf = new SomeProcTransform(symtab);
             tf.setNres(nres);
             StmtBlock body = tf.visitStmtList((Vector<Statement>)stmts.clone());
-            final ExprVar nProc = new ExprVar(ctx, SpmdNProc);
- 
-            return new StmtFor(SpmdPid, nProc, body);
+            ExprVar nproc = new ExprVar(ctx, SpmdNProc);
+            ExprVar pid = new ExprVar(ctx, SpmdPid);
+            Vector<Statement> s = new Vector<Statement>();
+            s.add(new StmtVarDecl(ctx, TypePrimitive.inttype, SpmdPid, null));
+            for (int i = 0; i < SpmdMaxNProc; ++i) {
+                Expression ei = new ExprConstInt(i);
+                Vector<Statement> sl = new Vector<Statement>();
+                sl.add(new StmtAssign(pid, ei));
+                sl.addAll(body.getStmts());
+                s.add(new StmtIfThen(ctx, new ExprBinary(nproc, ">", ei), new StmtBlock(
+                        sl), null));
+            }
+            return new StmtBlock(s);
+            // final ExprVar nProc = new ExprVar(ctx, SpmdNProc);
+            // return new StmtFor(SpmdPid, nProc, body);
         }
 
         public void flushAndAdd(final Vector<Statement> statements,
