@@ -133,7 +133,7 @@ light-distr:
 	cp -r src/test  ../sketch-distr
 	cp src/testrunner.mk ../sketch-distr
 	make assemble-noarch
-	cp $$(ls -d target/sketch-1.6.0-noarch-launchers*)/*.jar ../sketch-distr/.
+	cp $$(ls -d target/sketch-$(VERSION)-noarch-launchers*)/*.jar ../sketch-distr/.
 	cp -r scripts ../sketch-distr
 	cp docs/SketchManual/manual.pdf ../sketch-distr/LanguageReference.pdf
 	cp scripts/windows/final/sketch ../sketch-distr/.
