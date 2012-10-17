@@ -73,16 +73,16 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		LState s;
 		s = movein(H, W, A);
 		spmdbarrier();
-		
-//    			global int t = 1;
-//    			while (t < H) {
+
+//		global int t = 1;
+//		while (t < H) {
 		for (global int t = 1; t<H; ++t) {
 			exchange(t-1, s);
 			
 			for (int x=0; x<s.width; ++x) {
 				s.arr[t][1+x] = s.arr[t-1][x] + s.arr[t-1][x+2];
 			}
-//   				++t;
+//			++t;
 		}
 		spmdbarrier();
 		moveout(H, W, A, s);

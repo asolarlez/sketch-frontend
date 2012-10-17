@@ -26,13 +26,13 @@ void init() {
   }
 }
 
-void output(LState const * ls) {
+void output(int height, int width, float * arr) {
   stringstream fname;
   fname << "rex1.output" << spmdpid;
   ofstream fout(fname.str().c_str());
-  for (int x=0; x<ls->width+2; ++x) {
-    for (int t=0; t<ls->height; ++t) {
-      fout << ls->arr[(ls->width+2)*t+x] << " ";
+  for (int x=0; x<width; ++x) {
+    for (int t=0; t<height; ++t) {
+      fout << arr[width*t+x] << " ";
     }
     fout << endl;
   }
@@ -62,6 +62,6 @@ int main(int argc, char ** argv) {
   mpiBarrier();
   time(&totalEnd);
   mpiFinalize();
-  output(ls);
+  output(ls->height, ls->width+2, ls->arr);
   return 0;
 }

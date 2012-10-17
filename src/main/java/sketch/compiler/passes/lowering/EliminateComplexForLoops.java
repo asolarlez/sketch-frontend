@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -39,16 +40,29 @@ public class EliminateComplexForLoops extends FEReplacer {
 	
 	static class UsedVar extends FEReplacer {
 	    Set<String> result = new HashSet<String>();
+        StringBuilder baseName = new StringBuilder();
 	    @Override
         public Object visitExprVar(ExprVar v) {
-            result.add(v.getName());
+            String name = v.getName();
+            result.add(name);
+            baseName.setLength(0);
+            baseName.append(name);
             return v;
+        }
+
+        @Override
+        public Object visitExprField(ExprField ef) {
+            ef.getLeft().accept(this);
+            baseName.append(".").append(ef.getName());
+            result.add(baseName.toString());
+            return ef;
         }
 	}
 	
     class VarChanged extends ASTQuery {
         Set<String> vs;
         boolean isAssignee;
+        StringBuilder baseName = new StringBuilder();
 
         VarChanged(Set<String> s) {
             vs = s;
@@ -56,14 +70,44 @@ public class EliminateComplexForLoops extends FEReplacer {
 
         @Override
         public Object visitExprVar(ExprVar v) {
-            if (isAssignee) {
-                result = result || vs.contains(v);
+            if (!result) {
+                String name = v.getName();
+                if (isAssignee && vs.contains(name)) {
+                    result = true;
+                } else {
+                    baseName.setLength(0);
+                    baseName.append(name);
+                }
             }
+
             return v;
         }
 
         @Override
+        public Object visitExprField(ExprField ef) {
+            if (!result) {
+                boolean oldIsA = isAssignee;
+                isAssignee = false;
+                ef.getLeft().accept(this);
+                if (result) {
+                    return ef;
+                }
+                baseName.append(".").append(ef.getName());
+                if (oldIsA) {
+                    isAssignee = oldIsA;
+                    if (vs.contains(baseName.toString())) {
+                        result = true;
+                    }
+                }
+            }
+            return ef;
+        }
+
+        @Override
         public Object visitExprFunCall(ExprFunCall e) {
+            if (result) {
+                return e;
+            }
             List<Expression> p = e.getParams();
             if (p.isEmpty()) {
                 return e;
@@ -75,6 +119,9 @@ public class EliminateComplexForLoops extends FEReplacer {
                 for (int i=0; i<p.size(); ++i) {
                     if (f.getParams().get(i).isParameterOutput()) {
                         p.get(i).accept(this);
+                        if (result) {
+                            return e;
+                        }
                     }
                 }
             }
@@ -84,9 +131,15 @@ public class EliminateComplexForLoops extends FEReplacer {
 
         @Override
         public Object visitStmtAssign(StmtAssign s) {
+            if (result) {
+                return s;
+            }
             assert !isAssignee : "StmtAssign cannot be in assignee position!";
             isAssignee = true;
             s.getLHS().accept(this);
+            if (result) {
+                return s;
+            }
             isAssignee = false;
             s.getRHS().accept(this);
             return s;
@@ -94,12 +147,18 @@ public class EliminateComplexForLoops extends FEReplacer {
 
         @Override
         public Object visitExprArrayRange(ExprArrayRange e) {
+            if (result) {
+                return e;
+            }
             e.getBase().accept(this);
+            if (result) {
+                return e;
+            }
             boolean oldIsA = isAssignee;
             isAssignee = false;
             RangeLen rl = e.getSelection();
             rl.start().accept(this);
-            if (rl.hasLen()) {
+            if (!result && rl.hasLen()) {
                 rl.getLenExpression().accept(this);
             }
             isAssignee = oldIsA;

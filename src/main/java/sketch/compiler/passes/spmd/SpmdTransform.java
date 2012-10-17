@@ -47,8 +47,8 @@ import static sketch.util.DebugOut.assertFalse;
 @CompilerPassDeps(runsBefore = {}, runsAfter = { EliminateComplexForLoops.class })
 public class SpmdTransform  extends SymbolTableVisitor {
     protected int SpmdMaxNProc;
-    protected static final String SpmdNProcVar = "_spmdnproc";
-    protected static final String SpmdPidVar = "_spmdpid";
+    protected static final String SpmdNProc = "_spmdnproc";
+    protected static final String SpmdPid = "_spmdpid";
 
     protected final TempVarGen varGen;
     protected SpmdCallGraph cg;
@@ -213,7 +213,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
             Function.FunctionCreator creator = fcn.creator().name(prefix + fcn.getName());
             if (needAllProc) {
                 Vector<Parameter> params = new Vector<Parameter>();
-                params.add(new Parameter(TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL), SpmdNProcVar, Parameter.IN));
+                params.add(new Parameter(TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL), SpmdNProc, Parameter.IN));
                 params.addAll(fcn.getParams());
                 creator = creator.params(params);
             }
@@ -231,9 +231,9 @@ public class SpmdTransform  extends SymbolTableVisitor {
             }
             
             needAllProc = true;
-            StmtVarDecl nProcDecl = new StmtVarDecl(fork, TypePrimitive.inttype, SpmdNProcVar, null);
+            StmtVarDecl nProcDecl = new StmtVarDecl(fork, TypePrimitive.inttype, SpmdNProc, null);
             super.visitStmtVarDecl(nProcDecl);
-            final ExprVar vref = new ExprVar(fork, SpmdNProcVar);
+            final ExprVar vref = new ExprVar(fork, SpmdNProc);
             Statement nProcAssgn = (Statement)new StmtAssign(vref, fork.getNProc()).accept(this);
             ExprBinary cond = new ExprBinary(vref, "<=", new ExprConstInt(SpmdMaxNProc));
             StmtAssert assertion = new StmtAssert(fork, cond, false);
@@ -255,9 +255,9 @@ public class SpmdTransform  extends SymbolTableVisitor {
             final SomeProcTransform tf = new SomeProcTransform(symtab);
             tf.setNres(nres);
             StmtBlock body = tf.visitStmtList((Vector<Statement>)stmts.clone());
-            final ExprVar nProc = new ExprVar(ctx, SpmdNProcVar);
+            final ExprVar nProc = new ExprVar(ctx, SpmdNProc);
  
-            return new StmtFor(SpmdPidVar, nProc, body);
+            return new StmtFor(SpmdPid, nProc, body);
         }
 
         public void flushAndAdd(final Vector<Statement> statements,
@@ -272,13 +272,46 @@ public class SpmdTransform  extends SymbolTableVisitor {
             }
         }
 
-        protected Expression getAllOrNoneExpr(final Vector<Statement> additionalStmts, boolean value, final ExprVar arrvar, FENode ctx) {
+        protected Expression nProcLE(FENode context, int i) {
+            return new ExprBinary(new ExprVar(context, SpmdNProc), "<=",
+                    new ExprConstInt(i));
+        }
+
+        protected Expression underNProc(int i, Expression exp) {
+            return new ExprBinary(nProcLE(exp, i), "||", exp);
+        }
+
+        protected Expression getAllOrNoneExpr(final Vector<Statement> addStmts,
+                boolean value, final ExprVar arrvar, FENode ctx)
+        {
+            String name = varGen.nextVar("allCond");
+            StmtVarDecl decl = new StmtVarDecl(ctx, TypePrimitive.bittype, name, null);
+            ExprVar v = new ExprVar(ctx, name);
+            Expression result =
+                    new ExprBinary(new ExprArrayRange(arrvar, new ExprConstInt(0)), "==",
+                            new ExprConstInt(
+                            value ? 1 : 0));
+            for (int i = 1; i < SpmdMaxNProc; ++i) {
+                result =
+                        new ExprBinary(result, "&&", underNProc(i, new ExprBinary(
+                                new ExprArrayRange(arrvar, new ExprConstInt(i)), "==",
+                                new ExprConstInt(value ? 1 : 0))));
+            }
+            Statement assgn = new StmtAssign(v, result);
+            addStmts.add(decl);
+            addStmts.add(assgn);
+            return v;
+        }
+
+        protected Expression getAllOrNoneExprOld(final Vector<Statement> additionalStmts,
+                boolean value, final ExprVar arrvar, FENode ctx)
+        {
             String currName = varGen.nextVar("curr");
             StmtVarDecl decl = new StmtVarDecl(ctx, TypePrimitive.bittype, currName, null);
             ExprVar curr = new ExprVar(ctx, currName);
             Statement currAssgn = new StmtAssign(curr, ExprConstInt.one);
 
-            ExprVar nproc = new ExprVar(ctx, SpmdNProcVar);
+            ExprVar nproc = new ExprVar(ctx, SpmdNProc);
             String iterName = varGen.nextVar("iter");
             ExprVar iter = new ExprVar(ctx, iterName);
 
@@ -397,7 +430,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
                        
                         Vector<Statement> addStmts = new Vector<Statement>();
                         Expression allCond = getAllOrNoneExpr(addStmts, true, vref, stmt);
-                        Expression noneCond = getAllOrNoneExpr(addStmts, false, vref, stmt);
+                        Expression noneCond =
+                                getAllOrNoneExpr(addStmts, false, vref, stmt);
                         stmts.addAll(addStmts);
 
                         final Statement allProcThen = (Statement) ((StmtIfThen) stmt).getCons().accept(this);
@@ -433,16 +467,23 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         // iterate while all threads agree on c, and then check that no
                         // threads agree on c.
                         final StmtBlock nextBody = (StmtBlock) visitStmtBlock(new StmtBlock(ws.getBody(), newBody));
-                        Vector<Statement> topBody = new Vector<Statement>(nextBody.getStmts());
-                        addStmts.remove(0);     //FIXME: depend on the detail of getAllOrNoneExpr: the first statement is declaration
+                        Vector<Statement> topBody =
+                                new Vector<Statement>(nextBody.getStmts());
+                        addStmts.remove(0); // FIXME: depend on the detail of
+                                            // getAllOrNoneExpr: the first statement is
+                                            // declaration
                         topBody.addAll(addStmts);
-                        StmtWhile next_ws = new StmtWhile(ws, allCond, new StmtBlock(ws.getBody(), topBody));
+                        StmtWhile next_ws =
+                                new StmtWhile(ws, allCond, new StmtBlock(ws.getBody(),
+                                        topBody));
                         flushAndAdd(stmts, procLoopStmts, next_ws);
 
                         addStmts.clear();
-                        Expression noneCond = getAllOrNoneExpr(addStmts, false, vref, stmt);
+                        Expression noneCond =
+                                getAllOrNoneExpr(addStmts, false, vref, stmt);
                         stmts.addAll(addStmts);
                         StmtAssert none_at_end = new StmtAssert(FEContext.artificalFrom("allproc while loop", stmt), noneCond, false);
+                        none_at_end.setMsg("All while conds must be false at the end");
                         flushAndAdd(stmts, procLoopStmts, none_at_end);
                     } else if (stmt instanceof StmtAssign) {
 //                        printWarning("Assuming that subtree transformers "
@@ -508,7 +549,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 assert !cg.isForkProcFcn(target);
                 if (cg.needAllProcFcn(target)) {
                     Vector<Expression> nextArgs = new Vector<Expression>();
-                    nextArgs.add(new ExprVar(exp, SpmdNProcVar));
+                    nextArgs.add(new ExprVar(exp, SpmdNProc));
                     nextArgs.addAll(exp.getParams());
                     return new ExprFunCall(exp, "allproc_" + exp.getName(), nextArgs);
                 } else {
@@ -538,13 +579,13 @@ public class SpmdTransform  extends SymbolTableVisitor {
 
         @Override
         public Object visitSpmdPid(SpmdPid stmt) {
-            ExprVar var = new ExprVar(stmt, SpmdPidVar);
+            ExprVar var = new ExprVar(stmt, SpmdPid);
             return var;
         }
         
         @Override
         public Object visitSpmdNProc(SpmdNProc stmt) {
-            ExprVar var = new ExprVar(stmt, SpmdNProcVar);
+            ExprVar var = new ExprVar(stmt, SpmdNProc);
             return var;
         }
 
@@ -553,7 +594,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
             exp = (ExprVar) super.visitExprVar(exp);
 //System.out.println("exp: " + exp);
             if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL_TARR) {
-                return new ExprArrayRange(exp, new ExprVar(exp, SpmdPidVar));
+                return new ExprArrayRange(exp, new ExprVar(exp, SpmdPid));
             } else {
                 return exp;
             }
@@ -577,8 +618,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitFunction(Function func) {
             Vector<Parameter> params = new Vector<Parameter>();
-            params.add(new Parameter(TypePrimitive.inttype, SpmdNProcVar, Parameter.IN));
-            params.add(new Parameter(TypePrimitive.inttype, SpmdPidVar, Parameter.IN));
+            params.add(new Parameter(TypePrimitive.inttype, SpmdNProc, Parameter.IN));
+            params.add(new Parameter(TypePrimitive.inttype, SpmdPid, Parameter.IN));
             params.addAll(func.getParams());
             Function f2 = func.creator().name("someproc_" + func.getName()).params(params).create();
             return super.visitFunction(f2);
@@ -591,8 +632,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
             if (cg.needSomeProcFcn(target)) {
                 assert !cg.isForkProcFcn(target);
                 Vector<Expression> nextArgs = new Vector<Expression>();
-                nextArgs.add(new ExprVar(exp, SpmdNProcVar));
-                nextArgs.add(new ExprVar(exp, SpmdPidVar));
+                nextArgs.add(new ExprVar(exp, SpmdNProc));
+                nextArgs.add(new ExprVar(exp, SpmdPid));
                 nextArgs.addAll(exp.getParams());
                 return new ExprFunCall(exp, "someproc_" + exp.getName(), nextArgs);
             } else {
