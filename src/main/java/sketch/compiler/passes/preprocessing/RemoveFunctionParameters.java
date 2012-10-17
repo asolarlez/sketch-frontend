@@ -6,9 +6,10 @@ import java.util.*;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -372,6 +373,12 @@ public class RemoveFunctionParameters extends FEReplacer {
                             throw new TypeErrorException(exp.getCx().toString() +
                                     ": An inner function can not use a function parameter passed to its parent function");
                         }
+                        int kind =
+                                InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
+                                        exp);
+                        if (kind == SymbolTable.KIND_GLOBAL) {
+                            return exp;
+                        }
                         String name = exp.getName();
                         ParamInfo info = nfi.paramsToAdd.get(name);
                         TreeSet<String> oldDependent = dependent;
@@ -489,7 +496,8 @@ public class RemoveFunctionParameters extends FEReplacer {
             newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
                     pkg.getVars(), nflistMap.get(pkg.getName())));
         }
-        return p.creator().streams(newPkges).create().accept(new ThreadClosure());
+        Program np = p.creator().streams(newPkges).create();
+        return np.accept(new ThreadClosure());
 
     }
 

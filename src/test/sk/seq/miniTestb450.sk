@@ -1,0 +1,1086 @@
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 4 --bnd-arr-size 4";
+int INTEGER = 0;
+int LIST = 1;
+int STRING = 2;
+
+int ADD_OP = 0;
+int SUB_OP = 1;
+int MUL_OP = 2;
+int DIV_OP = 3;
+int POW_OP = 4;
+int MOD_OP = 5;
+
+int USub = 0;
+int UAdd = 1;
+int UNot = 2;
+int UInvert = 3;
+
+int EQ_COMP = 0;
+int NEQ_COMP = 1;
+int LT_COMP = 2;
+int LTE_COMP = 3;
+int GT_COMP = 4;
+int GTE_COMP = 5;
+
+MultiType intTypeMT = new MultiType(val = 0, flag = INTEGER);
+MultiType noneMT = new MultiType(val =0, flag = INTEGER);
+MultiType trueMT = new MultiType(val = 1, flag = INTEGER);
+MultiType falseMT = new MultiType(val = 0, flag = INTEGER);
+
+
+struct MultiType{
+  int val;
+  int flag;
+  MTList lst;
+  MTDict dict;
+}
+
+  struct MTDict{
+    KeyValuePair[len] kvpairs;
+    int len;
+  }
+
+    struct KeyValuePair{
+      MultiType Key;
+      MultiType Value;
+    }
+
+struct MTList{
+  int len;
+  MultiType[len] listValues;
+}
+
+
+MultiType listTypeMT = new MultiType(flag = LIST, lst = new MTList(len = 0, listValues={}));
+
+int nchanges = 0;
+bit choiceAssign0 = 0;
+bit choiceAssign1 = 0;
+bit choiceAssign2 = 0;
+bit choiceAssign3 = 0;
+bit choiceAssign4 = 0;
+bit choiceAssign5 = 0;
+bit choiceOperator0 = 0;
+bit choiceOperator1 = 0;
+bit choiceOperator2 = 0;
+bit choiceOperator3 = 0;
+bit choiceOperator4 = 0;
+bit choiceOperator5 = 0;
+bit choiceOperator6 = 0;
+bit choiceCompOperator0 = 0;
+bit choiceCompOperator1 = 0;
+bit choiceInit0 = 0;
+bit choiceInit1 = 0;
+bit choiceInit2 = 0;
+bit choiceInit3 = 0;
+bit choiceInit4 = 0;
+bit choiceInit5 = 0;
+bit choiceInit6 = 0;
+bit choiceInit7 = 0;
+bit choiceInit8 = 0;
+bit choiceInit9 = 0;
+bit choiceInit10 = 0;
+bit choiceInit11 = 0;
+bit choiceInit12 = 0;
+bit choiceInit13 = 0;
+bit choiceInit14 = 0;
+bit choiceLoopIter0 = 0;
+bit choiceLoopIter1 = 0;
+bit choiceBaseCase0 = 0;
+void calculateChanges(){
+if(choiceAssign0) nchanges = nchanges + 1;
+if(choiceAssign1) nchanges = nchanges + 1;
+if(choiceAssign2) nchanges = nchanges + 1;
+if(choiceAssign3) nchanges = nchanges + 1;
+if(choiceAssign4) nchanges = nchanges + 1;
+if(choiceAssign5) nchanges = nchanges + 1;
+if(choiceOperator0) nchanges = nchanges + 1;
+if(choiceOperator1) nchanges = nchanges + 1;
+if(choiceOperator2) nchanges = nchanges + 1;
+if(choiceOperator3) nchanges = nchanges + 1;
+if(choiceOperator4) nchanges = nchanges + 1;
+if(choiceOperator5) nchanges = nchanges + 1;
+if(choiceOperator6) nchanges = nchanges + 1;
+if(choiceCompOperator0) nchanges = nchanges + 1;
+if(choiceCompOperator1) nchanges = nchanges + 1;
+if(choiceInit0) nchanges = nchanges + 1;
+if(choiceInit1) nchanges = nchanges + 1;
+if(choiceInit2) nchanges = nchanges + 1;
+if(choiceInit3) nchanges = nchanges + 1;
+if(choiceInit4) nchanges = nchanges + 1;
+if(choiceInit5) nchanges = nchanges + 1;
+if(choiceInit6) nchanges = nchanges + 1;
+if(choiceInit7) nchanges = nchanges + 1;
+if(choiceInit8) nchanges = nchanges + 1;
+if(choiceInit9) nchanges = nchanges + 1;
+if(choiceInit10) nchanges = nchanges + 1;
+if(choiceInit11) nchanges = nchanges + 1;
+if(choiceInit12) nchanges = nchanges + 1;
+if(choiceInit13) nchanges = nchanges + 1;
+if(choiceInit14) nchanges = nchanges + 1;
+if(choiceLoopIter0) nchanges = nchanges + 1;
+if(choiceLoopIter1) nchanges = nchanges + 1;
+if(choiceBaseCase0) nchanges = nchanges + 1;
+minimize(nchanges);
+}
+MultiType fuzzAssign0(MultiType i){
+if(!(??)) return i;
+else{
+choiceAssign0 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else return setOne(i);
+}
+}
+MultiType fuzzAssign1(MultiType i){
+if(!(??)) return i;
+else{
+choiceAssign1 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else return setOne(i);
+}
+}
+MultiType fuzzAssign2(MultiType i){
+if(!(??)) return i;
+else{
+choiceAssign2 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else return setOne(i);
+}
+}
+MultiType fuzzAssign3(MultiType i){
+if(!(??)) return i;
+else{
+choiceAssign3 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else return setOne(i);
+}
+}
+MultiType fuzzAssign4(MultiType i){
+if(!(??)) return i;
+else{
+choiceAssign4 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else return setOne(i);
+}
+}
+MultiType fuzzAssign5(MultiType i){
+if(!(??)) return i;
+else{
+choiceAssign5 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else return setOne(i);
+}
+}
+MultiType fuzzOperator0(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator0 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+MultiType fuzzOperator1(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator1 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+MultiType fuzzOperator2(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator2 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+MultiType fuzzOperator3(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator3 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+MultiType fuzzOperator4(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator4 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+MultiType fuzzOperator5(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator5 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+MultiType fuzzOperator6(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyBinOp(lhs, rhs, op);
+else{
+choiceOperator6 = 1;
+if(??) return applyAddBinOp(lhs, rhs);
+else if(??) return applySubBinOp(lhs, rhs);
+else return applyMulBinOp(lhs, rhs);
+}}
+bit fuzzCompOperator0(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyCompOp(lhs, rhs, op);
+else{
+choiceCompOperator0 = 1;
+if(??) return applyEQCompOp(lhs, rhs);
+else if(??) return applyNEQCompOp(lhs, rhs);
+else if(??) return applyLTCompOp(lhs, rhs);
+else if(??) return applyLTECompOp(lhs, rhs);
+else if(??) return applyGTCompOp(lhs, rhs);
+else if(??) return setTrue();
+else if(??) return setFalse();
+else return applyGTECompOp(lhs, rhs);
+}}
+bit fuzzCompOperator1(MultiType lhs, MultiType rhs, int op){
+if(!(??)) return applyCompOp(lhs, rhs, op);
+else{
+choiceCompOperator1 = 1;
+if(??) return applyEQCompOp(lhs, rhs);
+else if(??) return applyNEQCompOp(lhs, rhs);
+else if(??) return applyLTCompOp(lhs, rhs);
+else if(??) return applyLTECompOp(lhs, rhs);
+else if(??) return applyGTCompOp(lhs, rhs);
+else if(??) return setTrue();
+else if(??) return setFalse();
+else return applyGTECompOp(lhs, rhs);
+}}
+MultiType fuzzInit0(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit0 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit1(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit1 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit2(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit2 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit3(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit3 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit4(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit4 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit5(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit5 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit6(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit6 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit7(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit7 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit8(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit8 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit9(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit9 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit10(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit10 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit11(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit11 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit12(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit12 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit13(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit13 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzInit14(MultiType i){
+if(!(??)) return i;
+else{
+choiceInit14 = 1;
+if(??) return incrementOne(i);
+else if(??) return incrementTwo(i);
+else if(??) return decrementOne(i);
+else if(??) return decrementTwo(i);
+else if(??) return setZero(i);
+else if(??) return len(i);
+else return setOne(i);
+}
+}
+MultiType fuzzLoopIter0(MultiType i){
+if(!(??)) return i;
+else{
+choiceLoopIter0 = 1;
+return range1(i);
+}
+}
+MultiType fuzzLoopIter1(MultiType i){
+if(!(??)) return i;
+else{
+choiceLoopIter1 = 1;
+return range1(i);
+}
+}
+void fuzzBaseCase0(ref bit x){
+if(??) {choiceBaseCase0 = 1;
+x = 1;
+}
+else x = 0;
+}
+
+
+MultiType evaluate_poly(MultiType poly,MultiType x){
+MultiType n;
+assignMT(n, fuzzAssign0(new MultiType(val=0,flag=INTEGER)));
+void body0(MultiType i){
+assignMT(n, fuzzAssign1(fuzzOperator0((n), (fuzzOperator1((subscriptMTi(poly, i)), (fuzzOperator2((x), (i), POW_OP)), MUL_OP)), ADD_OP)));
+}
+foreach(body0, fuzzLoopIter0(range2(fuzzInit0(new MultiType(val=0,flag=INTEGER)), fuzzInit1(len(fuzzInit2(poly))))));
+return n;
+}
+
+
+
+@Native("{if(v->flag == 0){ printf(\"%s  Int=%d\n\", s, v->val); }    if(v->flag == 1){ printf(\"%s  List len = %d\n\", s, v->lst->len);} }")
+void printMT(int n, char[n] s, MultiType v){
+
+}
+
+MultiType compute_deriv(MultiType poly){
+MultiType listTypeMT1 = listTypeMT;
+
+assignMT(listTypeMT, new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST));
+if(poly.lst.len == 1){
+return new MultiType(lst=new MTList(len=1, listValues={new MultiType(val=0,flag=INTEGER)}), flag=LIST);
+}
+else{
+void body1(MultiType i){
+appendList(listTypeMT, applyBinOp((i), (subscriptMTi(poly, i)), MUL_OP));
+}
+foreach(body1, range2(new MultiType(val=1,flag=INTEGER), len(poly)));
+printMT(??, {'P','O','L',0}, poly);
+//printMT(??, {'M','T','1',0}, listTypeMT1);
+printMT(??, {'O','T','R',0}, listTypeMT1);
+return listTypeMT;
+}
+}
+
+MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
+MultiType guess;
+MultiType n;
+assignMT(guess, fuzzAssign3(x_0));
+assignMT(n, fuzzAssign4(new MultiType(val=1,flag=INTEGER)));
+while((fuzzCompOperator1(abs(fuzzInit7(evaluate_poly(fuzzInit8(poly), fuzzInit9(guess)))), epsilon, GT_COMP))){
+assignMT(guess, fuzzAssign5(fuzzOperator4((guess), (fuzzOperator5((evaluate_poly(fuzzInit10(poly), fuzzInit11(guess))), (evaluate_poly(fuzzInit12(compute_deriv(fuzzInit13(poly))), fuzzInit14(guess))), DIV_OP)), SUB_OP)));
+assignMT(n, fuzzOperator6(n, new MultiType(val=1,flag=INTEGER), ADD_OP));
+}
+return new MultiType(lst=new MTList(len=2, listValues={guess,n}), flag=LIST);
+}
+
+
+MultiType compute_deriv_teacher_list_int(MultiType poly_list_int){
+MultiType result;
+if((applyCompOp(len(poly_list_int), new MultiType(val=1,flag=INTEGER), LTE_COMP))){
+return new MultiType(lst=new MTList(len=1, listValues={new MultiType(val=0,flag=INTEGER)}), flag=LIST);
+}
+assignMT(result, new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST));
+void body0(MultiType i){
+assignMT(result, applyBinOp(result, new MultiType(lst=new MTList(len=1, listValues={applyBinOp((i), (subscriptMTi(poly_list_int, i)), MUL_OP)}), flag=LIST), ADD_OP));
+}
+foreach(body0, range2(new MultiType(val=1,flag=INTEGER), len(poly_list_int)));
+return result;
+}
+
+int[N] compute_deriv_teacher_list_int_driver(int N, int[N] poly_list_int){
+if (N==0) return 0;
+int[N] result = 0;
+MultiType poly_list_intMT = createMTFromArray(N, poly_list_int);
+MultiType result1 = compute_deriv_teacher_list_int(poly_list_intMT);
+result = computeArrayFromMT(N,result1);
+return result;
+}
+
+//harness int[N] compute_deriv_driver(int N, int[N] poly_list_int){
+int[N] compute_deriv_driver(int N, int[N] poly_list_int) implements compute_deriv_teacher_list_int_driver{
+if (N==0) return 0;
+int[N] result = 0;
+MultiType poly_list_intMT = createMTFromArray(N, poly_list_int);
+MultiType result1 = compute_deriv(poly_list_intMT);
+result = computeArrayFromMT(N,result1);
+calculateChanges();
+return result;
+}
+
+
+
+void foreach(fun body, MultiType lst){
+  assert lst.flag == LIST;
+  MTList ma = lst.lst;
+  for(int i101=0; i101<ma.len; i101++){
+    body(ma.listValues[i101]);
+  }
+}
+
+MultiType range1(MultiType x){
+  assert x.flag == INTEGER;
+  int ub = x.val;
+  MultiType[ub] A;
+  for(int i=0; i<ub; ++i){
+    A[i] = new MultiType(val=i, flag=INTEGER);
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=ub), flag=LIST);
+  return m;
+}
+
+MultiType range2(MultiType x, MultiType y){
+  assert x.flag == INTEGER;
+  assert y.flag == INTEGER;
+  int lb = x.val;
+  int ub = y.val;
+  int newLen = ub - lb;
+  MultiType[newLen] A;
+  for(int i=lb; i< ub; ++i){
+    A[i-lb] = new MultiType(val=i, flag=INTEGER);
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=newLen), flag=LIST);
+  return m;
+}
+
+MultiType range3(MultiType x, MultiType y, MultiType step){
+  assert x.flag == INTEGER;
+  assert y.flag == INTEGER;
+  assert step.flag == INTEGER;
+  int lb = x.val;
+  int ub = y.val;
+  int stepdiff = step.val;
+  int newLen = 0;
+  for(int i=lb; i<ub; i=i+stepdiff)
+    newLen = newLen + 1;
+  int newLen1 = newLen;
+  MultiType[newLen1] A;
+  int count = 0;
+  for(int i=lb; i< ub; i=i+stepdiff){
+    A[count] = new MultiType(val=i, flag=INTEGER);
+    count = count + 1;
+  }
+  MultiType m = new MultiType(lst=new MTList(listValues=A, len=newLen), flag=LIST);
+  return m;
+}
+
+MultiType len(MultiType x){
+    assert x.flag == LIST;
+    return new MultiType(val = x.lst.len, flag=INTEGER);
+}
+
+
+// x[i]
+MultiType subscriptMTi(MultiType list, MultiType index){
+  assert list.flag == LIST;
+  assert index.flag == INTEGER;
+  assert index.val < list.lst.len;
+  return list.lst.listValues[index.val];
+}
+
+// x[:]
+MultiType subscriptMT(MultiType list, MultiType index){
+  assert list.flag == LIST;
+  assert index.flag == INTEGER;
+  return list;
+}
+
+// x[:4]
+MultiType subscriptMTu(MultiType list, MultiType rightIndex){
+  assert list.flag == LIST;
+  assert rightIndex.flag == INTEGER;
+  return new MultiType(lst= new MTList(listValues = list.lst.listValues[0:rightIndex.val], len=rightIndex.val), flag = LIST);
+}
+
+
+// x[1:]
+MultiType subscriptMTl(MultiType list, MultiType leftIndex){
+  assert list.flag == LIST;
+  assert leftIndex.flag == INTEGER;
+  assert leftIndex.val < list.lst.len;
+  int newLen = list.lst.len - leftIndex.val;
+  MultiType[newLen] newListValues;
+  for(int i=leftIndex.val; i < list.lst.len; i++)
+    newListValues[i-leftIndex.val] = list.lst.listValues[i];
+  return new MultiType(lst= new MTList(listValues=newListValues, len=newLen), flag = LIST);
+}
+
+// x[i:j]
+MultiType subscriptMTul(MultiType list, MultiType leftIndex, MultiType rightIndex){
+  assert list.flag == LIST;
+  assert leftIndex.flag == INTEGER;
+  assert rightIndex.flag == INTEGER;
+  int newLen = rightIndex.val - leftIndex.val;
+  MultiType[newLen] newListValues;
+  for(int i=leftIndex.val; i < rightIndex.val; i++)
+    newListValues[i-leftIndex.val] = list.lst.listValues[i];
+  return new MultiType(lst= new MTList(listValues=newListValues, len=newLen), flag = LIST);
+}
+
+
+// x < y, applyCompOp(x,y, LT_COMP)
+
+bit applyCompOp(MultiType left, MultiType right, int compop){
+  if(left.flag != right.flag) return 0;
+  if(compop == EQ_COMP)
+    return applyEQCompOp(left,right);
+  else if(compop == NEQ_COMP)
+    return applyNEQCompOp(left,right);
+  else if(compop == LT_COMP)
+    return applyLTCompOp(left,right);
+  else if(compop == LTE_COMP)
+    return applyLTECompOp(left,right);
+  else if(compop == GT_COMP)
+    return applyGTCompOp(left,right);
+  else if(compop == GTE_COMP)
+    return applyGTECompOp(left,right);
+}
+
+
+//-x, not y
+
+MultiType applyUnaryOp(MultiType operand, int op){
+  if(op == USub) return applyUnarySubOp(operand);
+  else if(op == UAdd) return applyUnaryAddOp(operand);
+  else if(op == UNot) return applyUnaryNotOp(operand);
+}
+
+MultiType applyUnarySubOp(MultiType operand){
+  assert operand.flag == INTEGER;
+  return new MultiType(flag = INTEGER, val = -operand.val);
+}
+
+MultiType applyUnaryAddOp(MultiType operand){
+  assert operand.flag == INTEGER;
+  return operand;
+}
+
+
+
+// x + y, x -y
+
+MultiType applyBinOp(MultiType left, MultiType right, int op){
+  if(op == ADD_OP) return applyAddBinOp(left, right);
+  else if(op == SUB_OP) return applySubBinOp(left,right);
+  else if(op == MUL_OP) return applyMulBinOp(left,right);
+  else if(op == DIV_OP) return applyDivBinOp(left,right);
+  else if(op == POW_OP) return applyPowBinOp(left,right);
+  else if(op == MOD_OP) return applyModBinOp(left,right);
+ 
+}
+
+
+
+MultiType applyAddBinOp(MultiType left, MultiType right){
+    assert left.flag == right.flag; // can add same types only
+    if(left.flag == INTEGER){
+      return new MultiType(val = (left.val + right.val), flag = INTEGER);
+    }
+    else if(left.flag == LIST){
+      int newLen = left.lst.len + right.lst.len;
+      MultiType[newLen] newListValues = left.lst.listValues;
+      for(int i=0; i<right.lst.len; i++)
+    newListValues[i+left.lst.len] = right.lst.listValues[i];
+      return new MultiType(flag=LIST,lst = new MTList(len = newLen, listValues = newListValues));
+    }
+}
+
+
+MultiType applySubBinOp(MultiType left, MultiType right){
+    assert left.flag == INTEGER; // python supports subtraction for only integers and floats
+    assert right.flag == INTEGER;
+    return new MultiType(val = left.val - right.val, flag = INTEGER);
+}
+
+MultiType applyMulBinOp(MultiType left, MultiType right){
+  if(left.flag == INTEGER && right.flag == INTEGER) return applyMulBinOpInt(left, right);
+  if(left.flag == LIST && right.flag == INTEGER) return applyMulBinOpList(left, right);
+  if(left.flag == INTEGER && right.flag == LIST) return applyMulBinOpList(right, left);
+  assert false;
+}
+
+MultiType applyMulBinOpInt(MultiType left, MultiType right){
+    return new MultiType(val=intMul(left.val, right.val), flag = INTEGER);
+}
+
+MultiType applyMulBinOpList(MultiType left, MultiType right){
+  if(right.val == 0) return new MultiType(flag = LIST, lst=new MTList(len = 0, listValues={}));
+  int newLen = left.lst.len * right.val;
+  MultiType[newLen] newListValues;
+  int count = 0;
+  for(int i = 0; i< newLen; i++){
+    newListValues[i] = left.lst.listValues[count];
+    count = count + 1;
+    if(count == left.lst.len) count = 0;
+  }
+  return new MultiType(flag = LIST, lst = new MTList(len = newLen, listValues = newListValues));
+}
+
+
+MultiType applyDivBinOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER; // python supports division for only integers and floats
+  assert right.flag == INTEGER;
+  return new MultiType(val = intDiv(left.val,right.val), flag = INTEGER);
+}
+
+MultiType applyPowBinOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER; // python supports division for only integers and floats
+  assert right.flag == INTEGER;
+  return new MultiType(val = intPow(left.val,right.val), flag = INTEGER);
+}
+
+MultiType applyModBinOp(MultiType left, MultiType right){
+  assert left.flag == INTEGER; // python supports division for only integers and floats
+  assert right.flag == INTEGER;
+  return new MultiType(val = intMod(left.val,right.val), flag = INTEGER);
+}
+
+
+bit applyEQCompOp(MultiType left, MultiType right){
+  if (left.flag != right.flag) return 0;
+  if(left.flag == LIST) return applyEQCompOpList(left, right);
+  if(left.flag == INTEGER) return applyEQCompOpInt(left,right);
+  return 0;
+}
+
+bit applyEQCompOpList(MultiType left, MultiType right){
+  if(left.lst.len != right.lst.len) return 0;
+  for(int i =0; i<left.lst.len; i++)
+    if(!applyEQCompOpInt(left.lst.listValues[i], right.lst.listValues[i])) return 0;
+  return 1;
+}
+
+bit applyEQCompOpInt(MultiType left, MultiType right){
+  return left.val == right.val;
+}
+
+bit applyNEQCompOp(MultiType left, MultiType right){
+  return !applyEQCompOp(left,right);
+}
+
+
+bit applyLTCompOp(MultiType left, MultiType right){
+  if(left.flag == LIST) return applyLTCompOpList(left, right);
+  if(left.flag == INTEGER) return applyLTCompOpInt(left,right);
+  return 0;
+}
+
+bit applyLTCompOpList(MultiType left, MultiType right){
+  for(int i =0; i<min(right.lst.len,left.lst.len); i++)
+    if(!applyLTCompOpInt(left.lst.listValues[i], right.lst.listValues[i])) return 0;
+  return 1;
+}
+
+bit applyLTCompOpInt(MultiType left, MultiType right){
+  return left.val < right.val;
+}
+
+bit applyLTECompOp(MultiType left, MultiType right){
+  if(left.flag == LIST) return applyLTECompOpList(left, right);
+  if(left.flag == INTEGER) return applyLTECompOpInt(left,right);
+  return 0;
+}
+
+bit applyLTECompOpList(MultiType left, MultiType right){
+  for(int i =0; i<min(right.lst.len,left.lst.len); i++)
+    if(!applyLTECompOpInt(left.lst.listValues[i], right.lst.listValues[i])) return 0;
+  return 1;
+}
+
+bit applyLTECompOpInt(MultiType left, MultiType right){
+  return left.val <= right.val;
+}
+
+
+bit applyGTCompOp(MultiType left, MultiType right){
+  return !applyLTECompOp(left,right);
+}
+
+bit applyGTECompOp(MultiType left, MultiType right){
+  return !applyLTCompOp(left,right);
+}
+
+bit setTrue(){
+  return 1;
+}
+
+bit setFalse(){
+  return 0;
+}
+
+MultiType incrementOne(MultiType x){
+  assert x.flag == INTEGER;
+  //x.val = x.val + 1;
+  //return x;
+  return new MultiType(val=x.val+1, flag = INTEGER);
+}
+
+MultiType incrementTwo(MultiType x){
+  assert x.flag == INTEGER;
+  //x.val = x.val + 2;
+  //return x;
+  return new MultiType(val=x.val+2, flag = INTEGER);
+}
+
+MultiType decrementOne(MultiType x){
+  assert x.flag == INTEGER;
+  //x.val = x.val - 1;
+  //return x;
+  return new MultiType(val=x.val-1, flag = INTEGER);
+}
+
+MultiType decrementTwo(MultiType x){
+  assert x.flag == INTEGER;
+  //x.val = x.val - 2;
+  //return x;
+  return new MultiType(val=x.val-2, flag = INTEGER);
+}
+
+MultiType setOne(MultiType x){
+  assert x.flag == INTEGER;
+  //x.val = 1;
+  //return x;
+  return new MultiType(val=1, flag = INTEGER);
+}
+
+MultiType setZero(MultiType x){
+  assert x.flag == INTEGER;
+  //x.val = 0;
+  //return x;
+  return new MultiType(val=0, flag = INTEGER);
+}
+
+
+int intMul(int x, int y){
+  if(x>y) return intMul1(x,y);
+  else return intMul1(y,x);
+  //  return (x*y);
+}
+
+int intMul1(int x, int y);
+int intDiv(int x, int y);
+int intPow(int x, int y);
+int intMod(int x, int y){
+  return x%y;
+}
+
+void assignMT(ref MultiType lhs, MultiType rhs){
+  lhs = rhs;
+}
+
+void assignMTArray(MultiType arrayName, MultiType index, MultiType rhs){
+  assert arrayName.flag == LIST;
+  assert index.flag == INTEGER;
+  assert index.val < arrayName.lst.len;
+  arrayName.lst.listValues[index.val] = rhs;
+}
+
+MultiType abs(MultiType x){
+  assert x.flag == INTEGER;
+  if(x.val < 0) x.val = -x.val;
+  return x;
+}
+
+
+MultiType popList(ref MultiType left, MultiType index){
+  MultiType result;
+  assert left.flag == LIST;
+  assert index.flag == INTEGER;
+  assert left.lst.len > 0;
+  int prevLen = left.lst.len;
+  int removeIndex;
+  if(index.val >= 0) removeIndex = index.val;
+  else removeIndex = left.lst.len + index.val;
+  
+  assert removeIndex < left.lst.len && removeIndex >= 0;
+  int newLen = left.lst.len-1;
+  MultiType[newLen] newListValues;
+  result = left.lst.listValues[removeIndex];  
+  int count = 0;
+  for(int i=0; i<left.lst.len; i++){
+    if(i != removeIndex){
+      newListValues[count] = left.lst.listValues[i];
+      count = count + 1;
+    }
+
+  }
+  left = new MultiType(flag = LIST, lst = new MTList(len = newLen, listValues=newListValues));
+  return result;
+}
+
+void appendList(ref MultiType left, MultiType right){
+    assert left.flag == LIST; // can append to list only
+    int newLen = left.lst.len + 1;
+    MultiType[newLen] newListValues;
+    for(int i=0; i<left.lst.len; i++)
+      newListValues[i] = left.lst.listValues[i];
+    newListValues[left.lst.len] = right;
+    left = new MultiType(flag=LIST,lst = new MTList(len = newLen, listValues = newListValues));
+
+}
+
+void extendList(ref MultiType left, MultiType right){
+    assert left.flag == LIST;
+    assert right.flag == LIST;
+    int newLen = left.lst.len + right.lst.len;
+    MultiType[newLen] newListValues = left.lst.listValues;
+    for(int i=0; i<right.lst.len; i++)
+      newListValues[i+left.lst.len] = right.lst.listValues[i];
+    left = new MultiType(flag=LIST,lst = new MTList(len = newLen, listValues = newListValues));
+}
+
+void insertList(ref MultiType left, MultiType index, MultiType right){
+  assert left.flag == LIST;
+  assert index.flag == INTEGER;
+  int newLen = left.lst.len + 1;
+  MultiType[newLen] newListValues;
+  int midIndex = min(left.lst.len, index.val);
+  for(int i=0; i<midIndex; i++)
+    newListValues[i] = left.lst.listValues[i];
+  newListValues[midIndex] = right;
+  for(int i=midIndex+1; i<left.lst.len; i++)
+    newListValues[i] = left.lst.listValues[i-1];
+  left = new MultiType(flag = LIST, lst = new MTList(len = newLen, listValues=newListValues));
+}
+
+MultiType indexList(ref MultiType left, MultiType value){
+  MultiType result;
+  assert left.flag == LIST;
+  for(int i=0; i<left.lst.len; i++){
+    if(applyEQCompOp(left.lst.listValues[i], value))
+      return new MultiType(val = i, flag = INTEGER);
+  }
+  assert false;
+}
+
+void removeList(ref MultiType left, MultiType value){
+  MultiType result;
+  assert left.flag == LIST;
+  assert left.lst.len > 0;
+  int newLen = left.lst.len - 1;
+  MultiType[newLen] newListValues;
+  bit found = 0;
+  int count = 0;
+  for(int i=0; i<left.lst.len; i++){
+    if(found == 0 && applyEQCompOp(left.lst.listValues[i], value))
+      found = 1;
+    else{
+      newListValues[count] = left.lst.listValues[i];
+      count = count + 1;
+    }
+  }
+  assert found;
+  left = new MultiType(flag = LIST, lst = new MTList(len = newLen, listValues = newListValues));
+}
+
+
+MultiType getTypeMT(MultiType x){
+  if(x.flag == INTEGER) return intTypeMT;
+  return intTypeMT;
+}
+
+MultiType unknownTypeMT(){
+ return intTypeMT;
+}
+
+
+int min(int a, int b){
+  if(a>=b) return b;
+  else return a;
+}
+
+
+MultiType createMTFromInt(int x){
+  return new MultiType(val = x, flag=INTEGER);
+}
+
+MultiType createMTFromArray(int N, int[N] a){
+  MultiType[N] lvalues;
+  for(int i=0; i<N;i++)
+    lvalues[i] = new MultiType(val=a[i], flag =INTEGER);
+  return new MultiType(flag = LIST, lst = new MTList(len=N, listValues=lvalues));
+}
+
+int[N] computeArrayFromMT(int N, MultiType a){
+  int[N] result = 1;
+  assert a.flag == LIST;
+  assert a.lst.len <= N;
+  for(int i=0; i<a.lst.len; i++){
+    assert a.lst.listValues[i].flag == INTEGER;
+    result[i] = a.lst.listValues[i].val;
+  }
+  return result;
+}
+
+int computeIntFromMT(MultiType a){
+  assert a.flag == INTEGER;
+  return a.val;
+}

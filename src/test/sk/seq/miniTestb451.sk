@@ -1,0 +1,15 @@
+
+
+int x=0;
+
+harness void main(){
+    
+    void foo(){
+        x = x + 1;
+    }
+    dostuff(foo);
+    assert x == 3;
+}
+void dostuff(fun f){
+    f(); f(); f();
+}

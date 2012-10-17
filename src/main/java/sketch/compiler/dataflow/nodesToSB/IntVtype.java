@@ -359,9 +359,7 @@ public class IntVtype extends abstractValueType {
 		if(v1.isBottom() ){
 			return v1;
 		}
-
-		assert false : "Can't cast " + v1 + " into " + type;
-		return null;
+        return BOTTOM(type.toString());
 	}
 
 	public abstractValue not(abstractValue v1) {
