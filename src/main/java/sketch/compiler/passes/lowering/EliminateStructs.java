@@ -121,7 +121,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	            newParams.add ((Parameter) param.accept (this));
 	        }
 
-	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
+            List<Statement> newBodyStmts = new ArrayList<Statement>();
             // ExprStar es = new ExprStar(func, 2);
             // es.setType(TypePrimitive.inttype);
             // newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,

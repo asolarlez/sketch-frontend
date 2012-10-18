@@ -114,11 +114,7 @@ public class PlatformLocalization {
         if (options.feOpts.cegisPath != null) {
             return options.feOpts.cegisPath;
         } else {
-            if (options.solverOpts.useScripting) {
-                return getCegisPathInner("hscegis");
-            } else {
-                return getCegisPathInner("cegis");
-            }
+            return getCegisPathInner("cegis");
         }
     }
 

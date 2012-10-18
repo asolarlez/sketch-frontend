@@ -46,7 +46,7 @@ public class ExprStar extends Expression
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
-	private String starName="ANON";
+    protected String starName = "ANON";
     public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
 	private static String HOLE_BASE="H__";

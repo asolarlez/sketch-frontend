@@ -1,0 +1,14 @@
+pragma options "--be:-minvarHole";
+
+harness void minVarTest(){
+    int k1 = ??(3);
+    int k2 = ??(3);
+    minimize(k1);
+    assert 2*k1 + k2 > 18;
+    simpleCheck(k1);
+}
+
+@Native("{assert( x == 6); }")
+void simpleCheck(int x){    
+    
+}

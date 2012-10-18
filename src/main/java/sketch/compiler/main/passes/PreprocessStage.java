@@ -8,8 +8,9 @@ import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
-import sketch.compiler.main.seq.CompilerStage;
 import sketch.compiler.passes.lowering.*;
+import sketch.compiler.passes.optimization.ReplaceMinLoops;
+import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.types.CheckProperFinality;
 
 /**
@@ -19,19 +20,19 @@ import sketch.compiler.passes.types.CheckProperFinality;
  *          changes, please consider contributing back!
  */
 public class PreprocessStage extends MetaStage {
-    protected final CompilerStage preproc1;
-    protected final CompilerStage ir1;
+    // protected final CompilerStage preproc1;
+    // protected final CompilerStage ir1;
     protected final RecursionControl rctrl;
     protected final boolean partialEval;
 
     public PreprocessStage(TempVarGen varGen, SketchOptions options,
-            CompilerStage preproc1, CompilerStage ir1, RecursionControl rctrl,
+    /* CompilerStage preproc1, CompilerStage ir1, */RecursionControl rctrl,
             boolean partialEval)
     {
         super("preproc", "Preprocessing (used for all further transformations)", varGen,
                 options);
-        this.preproc1 = preproc1;
-        this.ir1 = ir1;
+        // this.preproc1 = preproc1;
+        // this.ir1 = ir1;
         this.rctrl = rctrl;
         this.partialEval = partialEval;
     }
@@ -52,7 +53,10 @@ public class PreprocessStage extends MetaStage {
 
         prog.accept(new CheckProperFinality());
 
-        prog = preproc1.run(prog);
+        prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
+        prog = (Program) prog.accept(new MainMethodCreateNospec());
+
+        // prog = preproc1.run(prog);
 
         // prog = (Program)prog.accept (new BoundUnboundedLoops (varGen, params.flagValue
         // ("unrollamnt")));
@@ -66,8 +70,9 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 
+        prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
-        prog = ir1.run(prog);
+        // prog = ir1.run(prog);
 
 
 

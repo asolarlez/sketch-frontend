@@ -56,8 +56,6 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public boolean outputTest;
     // @CliParameter(help = "Enable Fortran output")
     // public boolean outputFortran;
-    @CliParameter(help = "Disable the new Python backend to minimize expressions")
-    public boolean minimize = false;
     @CliParameter(shortname="n", help = "Do not print out code (useful when using printfcn's")
     public boolean noOutputPrint = false;
     @CliParameter(shortname = "y", help = "Print Python code from tprint statements to file")

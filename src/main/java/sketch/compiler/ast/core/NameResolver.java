@@ -84,6 +84,16 @@ public class NameResolver {
         return name + "@" + pkgName;
     }
 
+    public FieldDecl getVar(String name) {
+        String full = getFullName(name, pkgForVar, varMap, this.pkg.getName());
+        if (full == null) {
+            return null;
+        }
+        FieldDecl f = varMap.get(full);
+
+        return f;
+    }
+
     public Function getFun(String name) {
         String full = getFullName(name, pkgForFun, funMap, this.pkg.getName());
         if (full == null) {

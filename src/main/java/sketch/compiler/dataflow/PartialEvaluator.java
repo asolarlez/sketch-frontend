@@ -873,7 +873,7 @@ public class PartialEvaluator extends FEReplacer {
         // Put context label at the start of the block, too.
         Statement s = null;
         int level = state.getLevel();
-        Stack<String> prevLS = state.getLevelStack();
+        // Stack<String> prevLS = state.getLevelStack();
         int ctlevel = state.getCTlevel();
         Level lvl = null;
         Exception e = null;

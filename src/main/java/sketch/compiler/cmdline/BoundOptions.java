@@ -26,6 +26,10 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     public int branchAmnt = 15;
     @CliParameter(help = "The number of bits to use for integer holes.")
     public int cbits = 5;
+
+    @CliParameter(help = "The number of bits to use for minimize bound.")
+    public int mbits = 5;
+
     @CliParameter(help = "The number of bits to use for integer inputs.")
     public int inbits = 5;
     @CliParameter(help = "(Deprecated) System will ignore this flag.")

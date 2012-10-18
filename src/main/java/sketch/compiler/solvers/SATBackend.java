@@ -1,14 +1,6 @@
 package sketch.compiler.solvers;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -36,7 +28,6 @@ import sketch.util.wrapper.ScRichString;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
-import static sketch.util.DebugOut.printNote;
 
 public class SATBackend {
 
@@ -78,15 +69,18 @@ public class SATBackend {
     }
 
     protected void partialEval(Program prog, OutputStream outStream) {
+        PrintStream pstream = new PrintStream(outStream, false);
         sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions partialEval =
                 new sketch.compiler.dataflow.nodesToSB.ProduceBooleanFunctions(varGen,
-                        oracle, new PrintStream(outStream)
+                        oracle,
+                        pstream
                         // System.out
                         , options.bndOpts.unrollAmnt, options.bndOpts.arrSize , rcontrol, tracing);
         log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
         
         prog.accept(partialEval);
+        pstream.flush();
         log("After prog.accept(partialEval)");
     }
 
@@ -105,16 +99,10 @@ public class SATBackend {
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
-            if (options.feOpts.minimize) {
-                assert false : "deprecated";
-                // use the frontend
-//                bestValueFile = new File(tmpSketchFilename + ".best");
-//                worked = frontendMinimize(prog, sketchOutputFile, bestValueFile, worked);
-            } else {
+            {
                 // use the backend
-                printNote("enabling scripting backend due to presence of minimize()");
-                options.solverOpts.useScripting = true;
-                final AbstractCostFcnAssert costFcnAssert = new AbstractCostFcnAssert();
+                final AbstractCostFcnAssert costFcnAssert =
+                        new AbstractCostFcnAssert(options.bndOpts.mbits);
                 writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
                 try {
                     worked = solve(oracle, true, options.solverOpts.timeout);
@@ -209,7 +197,9 @@ public class SATBackend {
                 outStream = NullStream.INSTANCE;
             else
                 // if (options.getTmpName != null)
-                outStream = new FileOutputStream(options.getTmpSketchFilename());
+                outStream =
+                        new BufferedOutputStream(new FileOutputStream(
+                                options.getTmpSketchFilename()), 4096);
             // else
             // DebugOut.assertFalse("no temporary filename defined.");
             // outStream = System.out;
