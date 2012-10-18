@@ -1,0 +1,1 @@
+for x in $(ls "$1"?); do sed '1d;$d' $x; done
