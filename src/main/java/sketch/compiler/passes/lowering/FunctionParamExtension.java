@@ -12,15 +12,7 @@ import java.util.Vector;
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FunctionCreator;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -119,12 +111,30 @@ public class FunctionParamExtension extends SymbolTableVisitor
             }
         }
 
+        public Object visitExprUnary(ExprUnary exp) {
+            int op = exp.getOp();
+            if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_POSTINC ||
+                    op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_PREINC)
+            {
+                modify(exp.getExpr());
+            }
+            return exp;
+        }
+
+        public Object visitExprArrayInit(ExprArrayInit init) {
+            for (Expression e : init.getElements()) {
+                e.accept(this);
+            }
+            return init;
+        }
+
 		public Object visitStmtAssign(StmtAssign stmt)
 		{
 			Expression lhs=(Expression) stmt.getLHS().accept(this);
             modify(lhs);
 			return super.visitStmtAssign(stmt);
 		}
+
 		public Object visitStmtVarDecl(StmtVarDecl stmt)
 		{
 			int n=stmt.getNumVars();
@@ -151,8 +161,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
             for (int i = 0; i < params.size(); i++) {
                 Parameter p = params.get(i);
-                int ptype = p.getPtype();
-                if (ptype == Parameter.REF) {
+                if (p.isParameterOutput()) {
                     modify(existingArgs.get(i));
                 }
             }

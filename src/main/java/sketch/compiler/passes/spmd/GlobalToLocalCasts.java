@@ -21,6 +21,7 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.CallGraph;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -46,19 +47,17 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
     public Object visitStreamSpec(Package spec) {
         super.visitStreamSpec(spec);
         
-//        final CodePrinterVisitor pr1 = new CodePrinterVisitor();
-//        pr1.setNres(nres);
-//        System.out.println("before global to local casts:");
-//        spec.accept(pr1);
+        final SimpleCodePrinter pr1 = new SimpleCodePrinter();
+        pr1.setNres(nres);
+        System.out.println("before global to local casts:");
+        spec.accept(pr1);
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
         Package result = (Package) cr.visitStreamSpec(spec);
         
-        // System.out.println("after global to local casts:");
-        // final CodePrinterVisitor pr2 = new CodePrinterVisitor();
-        // pr2.setNres(nres);
-        // result.accept(pr2);
+        System.out.println("after global to local casts:");
+        result.accept(pr1);
         
         return result;
     }

@@ -1,21 +1,28 @@
 package sketch.compiler.passes.types;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.SymbolTable.Finality;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.TypeErrorException;
+import sketch.util.exceptions.UnrecognizedVariableException;
 
 public class CheckProperFinality extends SymbolTableVisitor {
 
@@ -81,6 +88,11 @@ public class CheckProperFinality extends SymbolTableVisitor {
     };
 
     FEReplacer markAsNoFinal = new FEReplacer() {
+        @Override
+        public Object visitExprArrayInit(ExprArrayInit init) {
+            return init;
+        }
+
         @Override
         public Object visitExprArrayRange(ExprArrayRange ar) {
             ar.getBase().accept(this);
@@ -153,4 +165,27 @@ public class CheckProperFinality extends SymbolTableVisitor {
         return sa;
     }
 
+    @Override
+    public Object visitExprFunCall(ExprFunCall exp) {
+        Function fun;
+        try {
+            fun = nres.getFun(exp.getName(), exp);
+        } catch (UnrecognizedVariableException e) {
+            // FIXME -- restore error noise
+            throw e;
+            // throw new UnrecognizedVariableException(exp + ": Function name " +
+            // e.getMessage() + " not found" );
+        }
+        // now we create a temp (or several?) to store the result
+        List<Expression> existingArgs = exp.getParams();
+        List<Parameter> params = fun.getParams();
+
+        for (int i = 0; i < params.size(); i++) {
+            Parameter p = params.get(i);
+            if (p.isParameterOutput()) {
+                existingArgs.get(i).accept(markAsNoFinal);
+            }
+        }
+        return super.visitExprFunCall(exp);
+    }
 }

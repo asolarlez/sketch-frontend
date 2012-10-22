@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.passes.annotations.CompilerPassDeps;
 
 /**
  * Separate variable initializers into separate statements.  Given
@@ -44,6 +45,7 @@ import sketch.compiler.ast.promela.stmts.StmtFork;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
+@CompilerPassDeps(runsBefore = {}, runsAfter = { EliminateComplexForLoops.class })
 public class SeparateInitializers extends FEReplacer
 {
     public Object visitStmtVarDecl(StmtVarDecl stmt)

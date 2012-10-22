@@ -242,6 +242,12 @@ public class SequentialSketchMain extends CommonSketchMain
             this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new FlattenStmtBlocks2());
             this.passes.add(new EliminateComplexForLoops(varGen));
+            // TODO: should not add tf here
+            // should do this after LowerToSketch
+            // there, all structs are eliminated
+            // and bulk array operations are turned to loops
+            // array bounds checking are performed
+            // we want to add [SpmdMaxNProc] to be the inner most (least significant) dimension
             SpmdTransform tf = new SpmdTransform(options, varGen);
             this.passes.add(tf);
             this.passes.add(new GlobalToLocalCasts(varGen, tf));

@@ -30,8 +30,8 @@ public class LowerToSketch extends MetaStage {
         // FIXME xzl: use efs instead of es, can generate wrong program!
         prog = (Program) prog.accept(new SeparateInitializers());
         SimpleCodePrinter prt = new SimpleCodePrinter();
-        // System.out.println("before efs:");
-        // prog.accept(prt);
+        System.out.println("before efs:");
+        prog.accept(prt);
         prog =
                 (Program) prog.accept(new EliminateFinalStructs(varGen,
                         options.bndOpts.arr1dSize));

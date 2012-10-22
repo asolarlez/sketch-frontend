@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
@@ -200,8 +201,18 @@ public class SpmdTransform  extends SymbolTableVisitor {
         }*/
 // end of handling variable length array in parameters
 
+        class ChangeCudaMemType extends FEReplacer {
+            @Override
+            public Object visitTypeArray(TypeArray t) {
+                return t.withMemType(CudaMemoryType.LOCAL_TARR);
+            }
+        }
+
+        private ChangeCudaMemType changeCudaMemType = new ChangeCudaMemType();
+
         private TypeArray localArrayType(Type base) {
-            return new TypeArray(CudaMemoryType.LOCAL_TARR, base, SpmdMaxNProc);
+            Type b = (Type) base.accept(changeCudaMemType);
+            return new TypeArray(CudaMemoryType.LOCAL_TARR, b, SpmdMaxNProc);
         }
 
         @Override

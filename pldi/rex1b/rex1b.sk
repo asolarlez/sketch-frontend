@@ -3,7 +3,7 @@ pragma options "-p preproc --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 3 --beo
 #define SPMD_MAX_NPROC 3
 #define SPMD_MAX_BUF_LEN 1
 
-include "spmd2.skh";
+include "spmd.skh";
 include "generators.skh";
 
 assume P>0 && P<=4;

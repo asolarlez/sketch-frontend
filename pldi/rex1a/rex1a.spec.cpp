@@ -11,24 +11,22 @@ time_t start;
 time_t end;
 time_t totalEnd;
 
-#include "rexample1.cpp"
+#include "rex1a.cpp"
 using namespace ANONYMOUS;
 
 int W, H;
-LState * ls;
+float * A;
 
 void init() {
-  int w = W/spmdnproc;
-  int base = w*spmdpid;
-  ls = new LState(H, NULL, 0, w);
-  for (int i=0; i<w; ++i) {
-    ls->arr[1+i] = base+i;
+  A = new float[W*H];
+  for (int i=0; i<W; ++i) {
+    A[i] = i;
   }
 }
 
 void output(int height, int width, float * arr) {
   stringstream fname;
-  fname << "rex1.output" << spmdpid;
+  fname << "rex1.sout";
   ofstream fout(fname.str().c_str());
   for (int x=0; x<width; ++x) {
     for (int t=0; t<height; ++t) {
@@ -41,27 +39,17 @@ void output(int height, int width, float * arr) {
 
 int main(int argc, char ** argv) {
   if (argc<3) {
-    cerr << "Usage: mpirun -np <nproc> " << argv[0] << " <H> <W>" << endl;
+    cerr << "Usage: " << argv[0] << " <H> <W>" << endl;
     exit(1);
   }
   H = atoi(argv[1]);
   W = atoi(argv[2]);
   
-  mpiInit(&argc, &argv);
-  if (W%spmdnproc != 0) {
-    cerr << "W must be multiple of nproc" << endl;
-    exit(2);
-  }
-
   init();
   
   time(&start);
-  sk(spmdnproc, H, W, ls);
+  spec(1, H, W, A);
   time(&end);
-  
-  mpiBarrier();
-  time(&totalEnd);
-  mpiFinalize();
-  output(ls->height, ls->width+2, ls->arr);
+  output(H, W, A);
   return 0;
 }

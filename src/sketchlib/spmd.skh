@@ -1,13 +1,8 @@
 #ifndef _SPMD_H
 #define _SPMD_H
 
-#ifndef SPMD_MAX_NPROC
-#define SPMD_MAX_NPROC 4
-#endif
-
-#ifndef SPMD_MAX_BUF_LEN
-#define SPMD_MAX_BUF_LEN 8
-#endif  //SPMD_MAX_BUF_LEN
+#define SPMD_MAX_NPROC 7
+#define SPMD_MAX_BUF_LEN 1
 
 struct spmdinfo {
   float [SPMD_MAX_BUF_LEN][SPMD_MAX_NPROC] buf;
