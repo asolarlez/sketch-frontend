@@ -142,7 +142,7 @@ void exchange(global int t, ref LState s) {
 //			sbuf[0] = s.arr[t][index()];
 			r = cond() ? pid() : pid();
 		}
-		spmdtransfer(info, 1, s.arr[t][index()], scond, r, s.arr[t][index()], rcond);
+		spmdtransfer(info, 1, s.arr[t][index()::1], scond, r, s.arr[t][index()::1], rcond);
 		if (cond()) {
 			s.arr[t][index()] = 0.0;
 		}

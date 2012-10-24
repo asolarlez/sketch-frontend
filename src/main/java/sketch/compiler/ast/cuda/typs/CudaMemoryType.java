@@ -10,7 +10,7 @@ package sketch.compiler.ast.cuda.typs;
  */
 public enum CudaMemoryType {
     GLOBAL("Global or shared memory", "global"), LOCAL("Thread-local variables", "local"), LOCAL_TARR(
-            "Thread-local variables, already converted into an array", "local-arr"), UNDEFINED(
+            "Thread-local variables, already converted into an array", "/* local-arr */"), UNDEFINED(
             "Code added for compatibility; these nodes should not be encountered for mem type checking passes",
             "");
 

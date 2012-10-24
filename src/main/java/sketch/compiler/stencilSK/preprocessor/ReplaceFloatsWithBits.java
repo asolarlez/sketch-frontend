@@ -111,7 +111,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 	
 	public Object visitTypePrimitive(TypePrimitive t) {
         if (isFloat(t)) {
-            return replType();
+            return replType().withMemType(t.getCudaMemType());
 		}
     	return t; 
     }

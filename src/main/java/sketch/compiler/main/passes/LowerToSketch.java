@@ -8,6 +8,9 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.spmd.GlobalToLocalCasts;
+import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
+import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.stencilSK.EliminateFinalStructs;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFiniteField;
@@ -25,21 +28,25 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
+        SimpleCodePrinter prt = new SimpleCodePrinter();
+        System.out.println("before aasa:");
+        // prog.accept(prt);
         prog = (Program) prog.accept(new AddArraySizeAssertions());
 
         // FIXME xzl: use efs instead of es, can generate wrong program!
+        // System.out.println("before si:");
+        // prog.accept(prt);
         prog = (Program) prog.accept(new SeparateInitializers());
-        SimpleCodePrinter prt = new SimpleCodePrinter();
-        System.out.println("before efs:");
-        prog.accept(prt);
+        // System.out.println("before efs:");
+        // prog.accept(prt);
         prog =
                 (Program) prog.accept(new EliminateFinalStructs(varGen,
                         options.bndOpts.arr1dSize));
-        System.out.println("after efs:");
-        prog.accept(prt);
+        // System.out.println("after efs:");
+        // prog.accept(prt);
 
         // FIXME xzl: add this!
-        // prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
+        prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
         // System.out.println("after mmde:");
         // prog.accept(prt);
 
@@ -114,6 +121,21 @@ public class LowerToSketch extends MetaStage {
         // prog.debugDump("After SVA");
 
         prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
+
+        prog = (Program) prog.accept(new FlattenStmtBlocks());
+        SpmdTransform tf = new SpmdTransform(options, varGen);
+        prog = (Program) prog.accept(tf);
+        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
+        prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
+        System.out.println("after rpear:");
+        prog.accept(prt);
+
+        prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
+        prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
+
+        System.out.println("after emda2:");
+        prog.accept(prt);
+
         return prog;
     }
 }
