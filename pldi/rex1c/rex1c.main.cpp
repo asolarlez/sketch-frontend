@@ -11,7 +11,7 @@ time_t start;
 time_t end;
 time_t totalEnd;
 
-#include "rex1b.cpp"
+#include "rex1c.cpp"
 using namespace ANONYMOUS;
 
 int W, H;
