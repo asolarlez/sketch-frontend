@@ -1,0 +1,187 @@
+pragma options "--spmd-max-nproc 1 --bnd-inbits 3 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
+
+int SPMD_MAX_NPROC = 1;
+int SPMD_MAX_BUF_LEN = 4;
+include "spmd.skh";
+
+include "generators.skh";
+
+assume P>0 && P<=1;
+assume W>=P && W>1 && W<=4 && W%P==0;
+assume H>=3 && H<=3;
+
+struct LState {
+	int height;
+	int base;
+	int width;
+	int glen;
+	float[width+glen*2 <: 8][height <: 3] arr;
+}
+
+//void partition(int P, int p, int W, ref int base, ref int width) {
+//	if (pid == 0	) {
+//		width = W/P + W%P;
+//		base = 0;
+//	} else {
+//		width = W/P;
+//		base = W%P + p*width;
+//	}
+//}
+
+//void part(int p, int P, int N, ref int ibeg, ref int iend){
+//    if(p< expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS}) ){
+//        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+//        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+//    }else{
+//        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+//        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+//    }
+//}
+//
+//void partition(int P, int p, int W, ref int base, ref int width) {
+//	int iend;
+//	part(p, P, W, base, iend);
+//	width = iend - base;
+//}
+
+//void partition(int P, int p, int N, ref int base, ref int width){
+//	generator int num() {
+//		return expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});
+//	}
+//    if(p < num()){
+//        base = num();
+//        width = num();
+//    }else{
+//        base =  num();
+//        width =  num();
+//    }
+//}
+
+
+//harness void testPartition(int PP, int p, int N){
+//    if(p<PP){
+//        int b1, w1;
+//        partition(PP, p, N, b1, w1);
+//        assert w1 >= N/PP;
+//        assert w1 <= N/PP+1;
+//        if(p==0){ assert b1 == 0; }
+//        if(p==PP-1){ assert b1+w1 == N; }
+//        if(p+1 < PP){
+//            int b2, w2;
+//            partition(PP, p+1, N, b2, w2);
+//            assert b1+w1 == b2;
+//        }
+//    }
+//}
+
+
+LState movein(global int H, global int W, global float[W][H] ga) {
+	int b, w, g;
+	//partition(spmdnproc, spmdpid, W, b, w);
+	w = W/spmdnproc;
+	b = w*spmdpid;
+	g = (H+1)/2;
+	float[w+g*2][H] la;
+	for (int t=0; t<H; ++t) {
+		for (int x=0; x<w; ++x) {
+			la[t][g+x] = ga[t][b + x];
+		}
+	}
+	LState s = new LState(height=H, base=b, width=w, glen=g, arr=la);
+	return s;
+}
+
+void moveout(global int H, global int W, ref global float[W][H] ga, LState s) {
+	for (int t=0; t<H; ++t) {
+		for (int x=0; x<s.width; ++x) {
+			ga[t][s.base+x] = s.arr[t][s.glen + x];
+		}
+	}
+}
+
+void spec(global int P, global int H, global int W, ref global float[W][H] A) {
+    for(int t=1; t<H; ++t) {
+	    	// Zero Bound:
+//	    	A[t][0] = A[t-1][1];
+//	    	A[t][W-1] = A[t-1][W-2];
+	    	// Periodic Bound:
+		A[t][0] = (A[t-1][W-1] + A[t-1][1]);
+		A[t][W-1] = (A[t-1][W-2] + A[t-1][0]);
+        for(int x=1; x<W-1; ++x){
+            A[t][x] = (A[t-1][x-1] + A[t-1][x+1]);
+        }   
+    }
+}
+
+void trapezoid(ref LState s) {
+    	for (int t=1; t<s.height; ++t) {
+		for (int x=t; x<s.width-t; ++x) {
+			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
+		}
+	}
+}
+
+void fastLeft(ref LState s) {
+	int h = s.height;
+	int w = s.width;
+	int g = s.glen;
+	
+	int r = (spmdpid== (spmdnproc-1) ) ? 0 : spmdpid+1;
+	float[h-1] send_buf;
+	float[h-1] recv_buf;
+
+	for (int i=0; i<h-1; ++i) {
+		send_buf[i] = s.arr[i/2][g + w - 1 - (i/2 + i%2)];
+	}
+	spmdtransfer(h-1, send_buf, 1, r, recv_buf, 1);
+	for (int i=0; i<h-1; ++i) {
+		s.arr[i/2][g - 1 - (i/2 + i%2)] = recv_buf[i];
+	}
+	
+	for (int j=0; j<h-1; ++j) {
+		int bottom = j/2 +1;
+		for (int t=bottom; t<h; ++t) {
+			int x = g - 1 - j + t;
+			s.arr[t][x] = s.arr[t-1][x-1]+s.arr[t-1][x+1];
+		}
+	}
+}
+
+void fastRight(ref LState s) {
+	int h = s.height;
+	int w = s.width;
+	int g = s.glen;
+	
+	int r = (spmdpid==0) ? (spmdnproc-1) : spmdpid-1;
+	float[h-1] send_buf;
+	float[h-1] recv_buf;
+
+	for (int i=0; i<h-1; ++i) {
+		send_buf[i] = s.arr[i/2][g + (i/2 + i%2)];
+	}
+	spmdtransfer(h-1, send_buf, 1, r, recv_buf, 1);
+	for (int i=0; i<h-1; ++i) {
+		s.arr[i/2][g + w + (i/2 + i%2)] = recv_buf[i];
+	}
+	
+	for (int j=0; j<h-1; ++j) {
+		int bottom = j/2 +1;
+		for (int t=bottom; t<h; ++t) {
+			int x = g - 1 - j + t;
+			s.arr[t][x] = s.arr[t-1][x-1]+s.arr[t-1][x+1];
+		}
+	}
+}
+
+void sk(global int P, global int H, global int W, ref global float[W][H] A) implements spec {
+	spmdfork(P) {
+		LState s;
+		s = movein(H, W, A);
+		spmdbarrier();
+		trapezoid(s);
+		fastLeft(s);
+		fastRight(s);
+		spmdbarrier();
+		moveout(H, W, A, s);
+	}
+}

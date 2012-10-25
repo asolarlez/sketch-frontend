@@ -11,7 +11,7 @@ time_t start;
 time_t end;
 time_t totalEnd;
 
-#include "rex1b.cpp"
+#include "rex1d.cpp"
 using namespace ANONYMOUS;
 
 int W, H;
@@ -28,7 +28,7 @@ void init() {
 
 void output(int height, int width, float * arr) {
   stringstream fname;
-  fname << "rex1b.output" << spmdpid;
+  fname << "rex1d.output" << spmdpid;
   ofstream fout(fname.str().c_str());
   for (int x=0; x<width; ++x) {
     for (int t=0; t<height; ++t) {

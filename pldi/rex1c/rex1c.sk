@@ -111,8 +111,6 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
 }
 
 void exchange(global int t, ref LState s) {
-	global spmdinfo info = new spmdinfo() /*= newspmdinfo(spmdnproc, 1)*/ ;
-	
 	int r = 0;
 	
 	generator int index() {
@@ -144,7 +142,7 @@ void exchange(global int t, ref LState s) {
 		}
 		int i = index();
 		int j = index();
-		spmdtransfer(info, 1, s.arr[t][i::1], scond, r, s.arr[t][j::1], rcond);
+		spmdtransfer(1, s.arr[t][i::1], scond, r, s.arr[t][j::1], rcond);
 		if (!rcond) {
 			s.arr[t][j] = 0.0;
 		}

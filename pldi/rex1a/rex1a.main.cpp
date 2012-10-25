@@ -28,7 +28,7 @@ void init() {
 
 void output(int height, int width, float * arr) {
   stringstream fname;
-  fname << "rex1.output" << spmdpid;
+  fname << "rex1a.output" << spmdpid;
   ofstream fout(fname.str().c_str());
   for (int x=0; x<width; ++x) {
     for (int t=0; t<height; ++t) {
