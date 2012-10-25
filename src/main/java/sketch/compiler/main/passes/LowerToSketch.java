@@ -9,7 +9,6 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
-import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.stencilSK.EliminateFinalStructs;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
@@ -126,7 +125,7 @@ public class LowerToSketch extends MetaStage {
         SpmdTransform tf = new SpmdTransform(options, varGen);
         prog = (Program) prog.accept(tf);
         prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
-        prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
+        // prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
         // System.out.println("after rpear:");
         // prog.accept(prt);
 
