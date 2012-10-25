@@ -77,7 +77,7 @@ public class TypeStructRef extends Type
 
     public String toString()
  {
-        return name;
+        return this.getCudaMemType().syntaxNameSpace() + name;
     }
     
     @Override

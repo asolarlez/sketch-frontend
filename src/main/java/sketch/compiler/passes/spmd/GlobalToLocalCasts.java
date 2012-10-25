@@ -49,15 +49,15 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
         
         final SimpleCodePrinter pr1 = new SimpleCodePrinter();
         pr1.setNres(nres);
-        System.out.println("before global to local casts:");
-        spec.accept(pr1);
+        // System.out.println("before global to local casts:");
+        // spec.accept(pr1);
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
         Package result = (Package) cr.visitStreamSpec(spec);
         
-        System.out.println("after global to local casts:");
-        result.accept(pr1);
+        // System.out.println("after global to local casts:");
+        // result.accept(pr1);
         
         return result;
     }

@@ -1419,7 +1419,13 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue avlen = (abstractValue) t.getLength().accept(this);
         Expression nlen = exprRV;
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return isReplacer ? new TypeArray(nbase, nlen, t.getMaxlength()) : t;
+        if (isReplacer) {
+            TypeArray newtype = new TypeArray(nbase, nlen, t.getMaxlength());
+            newtype.setCudaMemType(t.getCudaMemType());
+            return newtype;
+        } else {
+            return t;
+        }
     }
 
     public Object visitTypeStruct(TypeStruct ts) {

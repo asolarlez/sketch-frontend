@@ -247,6 +247,10 @@ public class TypeArray extends Type
         return new TypeArray(memtyp, base, length, dims, maxlength);
     }
 
+    public TypeArray withBaseAndMemType(Type base, CudaMemoryType memtyp) {
+        return new TypeArray(memtyp, base, length, dims, maxlength);
+    }
+
     public TypeArray createWithLength(Expression length) {
         return new TypeArray(this.base, length, this.getMaxlength());
     }

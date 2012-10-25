@@ -1,19 +1,19 @@
 #ifndef _SPMD_H
 #define _SPMD_H
 
-#define SPMD_MAX_NPROC 7
-#define SPMD_MAX_BUF_LEN 1
+// need to define SPMD_MAX_BUF_LEN and SPMD_MAX_NPROC before including!
 
 struct spmdinfo {
-  float [SPMD_MAX_BUF_LEN][SPMD_MAX_NPROC] buf;
+  float [SPMD_MAX_BUF_LEN * SPMD_MAX_NPROC] buf;
+  bit [SPMD_MAX_NPROC] pendingData;
 }
 
 @Native("{ _out = NULL; }")
-spmdinfo newspmdinfo(int nproc, int maxlen)
+global spmdinfo newspmdinfo(global int nproc, global int maxlen)
 {
     assert nproc <= SPMD_MAX_NPROC;
     assert maxlen <= SPMD_MAX_BUF_LEN;
-    spmdinfo info = new spmdinfo();
+    global spmdinfo info = new spmdinfo();
     return info;
 }
 
@@ -21,18 +21,26 @@ spmdinfo newspmdinfo(int nproc, int maxlen)
 @Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
 void spmdtransfer(global spmdinfo info, global int size, float [size] src_buff, bit scond, int recipient, ref float [size] dest_buff, bit rcond)
 {
-  assert recipient>=0 && recipient<spmdnproc;
   spmdbarrier();
-//  if (scond) {
-    for (int i=0; i<size; ++i) {
-      info.buf[recipient][i] = src_buff[i];
-    }
-//  }
+  assert recipient>=0 && recipient<spmdnproc;
+  assert size>0 && size<=SPMD_MAX_BUF_LEN;
+  info.pendingData[spmdpid] = 0;
+  spmdbarrier();
+  for (int i=0; i<size; ++i) {
+    info.buf[recipient*SPMD_MAX_BUF_LEN + i] = src_buff[i];
+  }
+  if (scond) {
+    assert !info.pendingData[recipient] : "two senders trying to send to the same recipient!";
+    info.pendingData[recipient] = 1;
+  }
   spmdbarrier();
   if (rcond) {
+    assert info.pendingData[spmdpid] : "trying to receive but no one sent!";
     for (int i=0; i<size; ++i) {
-      dest_buff[i] = info.buf[spmdpid][i];
+      dest_buff[i] = info.buf[spmdpid*SPMD_MAX_BUF_LEN + i];
     }
+  } else {
+    assert !info.pendingData[spmdpid] : "pending data but not receiving!";
   }
 }
 

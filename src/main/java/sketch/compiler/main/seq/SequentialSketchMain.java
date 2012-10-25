@@ -69,10 +69,6 @@ import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
-import sketch.compiler.passes.spmd.GlobalToLocalCasts;
-import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
-import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
@@ -248,10 +244,10 @@ public class SequentialSketchMain extends CommonSketchMain
             // and bulk array operations are turned to loops
             // array bounds checking are performed
             // we want to add [SpmdMaxNProc] to be the inner most (least significant) dimension
-            SpmdTransform tf = new SpmdTransform(options, varGen);
-            this.passes.add(tf);
-            this.passes.add(new GlobalToLocalCasts(varGen, tf));
-            this.passes.add(new ReplaceParamExprArrayRange(varGen));
+            // SpmdTransform tf = new SpmdTransform(options, varGen);
+            // this.passes.add(tf);
+            // this.passes.add(new GlobalToLocalCasts(varGen, tf));
+            // this.passes.add(new ReplaceParamExprArrayRange(varGen));
         }
 
         @Override
@@ -346,9 +342,9 @@ public class SequentialSketchMain extends CommonSketchMain
             }
             backendParameters();
 
-            SimpleCodePrinter prt = new SimpleCodePrinter();
-            System.out.println("before solve:");
-            sketchProg.result.accept(prt);
+            // SimpleCodePrinter prt = new SimpleCodePrinter();
+            // System.out.println("before solve:");
+            // sketchProg.result.accept(prt);
             solver.partialEvalAndSolve(sketchProg.result);
 
             return new SynthesisResult(sketchProg, solver.getOracle(),

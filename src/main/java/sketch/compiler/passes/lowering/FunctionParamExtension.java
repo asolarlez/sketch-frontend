@@ -546,8 +546,16 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
             if (retVar != null) {
                 for (Parameter p : func.getParams()) {
-                    if (p.getName() == getOutParamName()) {
-                        p.getType().setCudaMemType(retVarMemType);
+                    if (p.getName() == getOutParamName() &&
+                            retVarMemType != CudaMemoryType.UNDEFINED)
+                    {
+                        Type t = p.getType();
+                        if (t.getCudaMemType() == CudaMemoryType.UNDEFINED) {
+                            t.setCudaMemType(retVarMemType);
+                        } else {
+                            assert t.getCudaMemType() == retVarMemType : "return var memtype mismatch! " +
+                                    p + " in " + func;
+                        }
                         break;
                     }
                 }

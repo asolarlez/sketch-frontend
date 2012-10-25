@@ -1,7 +1,7 @@
-pragma options "-p preproc --spmd-max-nproc 3 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+pragma options "--spmd-max-nproc 3 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
 
-#define SPMD_MAX_NPROC 3
-#define SPMD_MAX_BUF_LEN 1
+int SPMD_MAX_NPROC = 5;
+int SPMD_MAX_BUF_LEN = 1;
 include "spmd.skh";
 
 assume P>0 && P<=3;

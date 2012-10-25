@@ -10,7 +10,6 @@ import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
@@ -50,6 +49,10 @@ public class SpmdTransform  extends SymbolTableVisitor {
     protected int SpmdMaxNProc;
     protected static final String SpmdNProc = "_spmdnproc";
     protected static final String SpmdPid = "_spmdpid";
+
+    static final Type localBit = TypePrimitive.bittype.withMemType(CudaMemoryType.LOCAL);
+    static final Type globalInt =
+            TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL);
 
     protected final TempVarGen varGen;
     protected SpmdCallGraph cg;
@@ -127,10 +130,15 @@ public class SpmdTransform  extends SymbolTableVisitor {
         }
     }
 
+    TypeArray localArrayType(Type base) {
+        return new TypeArray(CudaMemoryType.LOCAL_TARR, base, SpmdMaxNProc);
+    }
+
     public class AllProcTransform extends SymbolTableVisitor {
         private final class NotTotallyGlobal extends ASTQuery {
             public Object visitExprVar(ExprVar var) {
-                if (getType(var).getCudaMemType() != CudaMemoryType.GLOBAL) {
+                Type t = getType(var);
+                if (t.getCudaMemType() != CudaMemoryType.GLOBAL) {
                     result = true;
                     return var;
                 }
@@ -146,73 +154,15 @@ public class SpmdTransform  extends SymbolTableVisitor {
 
         @Override
         public Object visitStmtVarDecl(StmtVarDecl decl) {
-            if (needAllProc && decl.getType(0).getCudaMemType() != CudaMemoryType.GLOBAL) {
-//System.out.println("decl: " + decl);
-                assert decl.getTypes().size() == 1;
-                final Type type = localArrayType(decl.getType(0));
-                decl = new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
+            if (needAllProc) {
+                Type t = decl.getType(0);
+                if (t.getCudaMemType() != CudaMemoryType.GLOBAL) {
+                    assert decl.getTypes().size() == 1;
+                    final Type type = localArrayType(t);
+                    decl = new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
+                }
             }
             return super.visitStmtVarDecl(decl);
-        }
-
-        @Override
-        public Object visitParameter(Parameter par) {
-//System.out.println("par: " + par + " " + par.getType().getCudaMemType());
-            if (needAllProc && par.getType().getCudaMemType() != CudaMemoryType.GLOBAL) {
-                final Type type = localArrayType(par.getType());
-                par = new Parameter(type, par.getName(), par.getPtype());
-            }
-            return super.visitParameter(par);
-        }
-
-// handling variable length array in parameters
-/*
-        int trickInsideTypeArray = 0;
-
-        @Override
-        public Object visitExprVar(ExprVar exp) {
-            if (needAllProc && trickInsideTypeArray>0 && getType(exp).getCudaMemType() != CudaMemoryType.GLOBAL) {
-                exp = (ExprVar) super.visitExprVar(exp);
-                if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL_TARR) {
-                    System.out.println("here exp " + exp);
-                    return new ExprArrayRange(exp, new ExprConstInt(0));
-                } else {
-                    return exp;
-                }
-            } else {
-                return super.visitExprVar(exp);
-            }
-        }
-
-        @Override
-        public Object visitTypeArray(TypeArray arr) {
-            if (needAllProc) {
-                ++trickInsideTypeArray;
-                Object base = arr.getBase().accept(this);
-                Object len = arr.getLength().accept(this);
-                System.out.println("hhere: " + base + " " + len);
-                if (base != arr.getBase() || len != arr.getLength()) {
-                    System.out.println("tthere");
-                    arr = new TypeArray(arr.getCudaMemType(), (Type)base, (Expression)len, null);
-                }
-                --trickInsideTypeArray;
-            }
-            return arr;
-        }*/
-// end of handling variable length array in parameters
-
-        class ChangeCudaMemType extends FEReplacer {
-            @Override
-            public Object visitTypeArray(TypeArray t) {
-                return t.withMemType(CudaMemoryType.LOCAL_TARR);
-            }
-        }
-
-        private ChangeCudaMemType changeCudaMemType = new ChangeCudaMemType();
-
-        private TypeArray localArrayType(Type base) {
-            Type b = (Type) base.accept(changeCudaMemType);
-            return new TypeArray(CudaMemoryType.LOCAL_TARR, b, SpmdMaxNProc);
         }
 
         @Override
@@ -224,14 +174,23 @@ public class SpmdTransform  extends SymbolTableVisitor {
             Function.FunctionCreator creator = fcn.creator().name(prefix + fcn.getName());
             if (needAllProc) {
                 Vector<Parameter> params = new Vector<Parameter>();
-                params.add(new Parameter(TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL), SpmdNProc, Parameter.IN));
-                params.addAll(fcn.getParams());
+                params.add(new Parameter(globalInt, SpmdNProc, Parameter.IN));
+                for (Parameter p : fcn.getParams()) {
+                    Type t = p.getType();
+                    if (t.getCudaMemType() == CudaMemoryType.GLOBAL) {
+                        params.add(p);
+                    } else {
+                        Type newt = localArrayType(t);
+                        params.add(new Parameter(newt, p.getName(), p.getPtype()));
+                    }
+                }
                 creator = creator.params(params);
             }
             Function f2 = creator.create();
-            Function func = (Function) super.visitFunction(f2);
+            Function newfun = (Function) super.visitFunction(f2);
+
             needAllProc = oldNeedAllProc;
-            return func;
+            return newfun;
         }
 
         @Override
@@ -242,7 +201,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
             }
             
             needAllProc = true;
-            StmtVarDecl nProcDecl = new StmtVarDecl(fork, TypePrimitive.inttype, SpmdNProc, null);
+            StmtVarDecl nProcDecl = new StmtVarDecl(fork, globalInt, SpmdNProc, null);
             super.visitStmtVarDecl(nProcDecl);
             final ExprVar vref = new ExprVar(fork, SpmdNProc);
             Statement nProcAssgn = (Statement)new StmtAssign(vref, fork.getNProc()).accept(this);
@@ -260,7 +219,6 @@ public class SpmdTransform  extends SymbolTableVisitor {
          * Create a loop over all processes for simple functions Expects that stmts are
          * already in somethreads form.
          */
-        @SuppressWarnings("unchecked")
         public Statement createProcLoop(final Vector<Statement> stmts) {
             final FEContext ctx = stmts.get(0).getCx();
             final SomeProcTransform tf = new SomeProcTransform(symtab);
@@ -326,33 +284,6 @@ public class SpmdTransform  extends SymbolTableVisitor {
             return v;
         }
 
-        protected Expression getAllOrNoneExprOld(final Vector<Statement> additionalStmts,
-                boolean value, final ExprVar arrvar, FENode ctx)
-        {
-            String currName = varGen.nextVar("curr");
-            StmtVarDecl decl = new StmtVarDecl(ctx, TypePrimitive.bittype, currName, null);
-            ExprVar curr = new ExprVar(ctx, currName);
-            Statement currAssgn = new StmtAssign(curr, ExprConstInt.one);
-
-            ExprVar nproc = new ExprVar(ctx, SpmdNProc);
-            String iterName = varGen.nextVar("iter");
-            ExprVar iter = new ExprVar(ctx, iterName);
-
-            final ExprArrayRange deref = new ExprArrayRange(arrvar, iter);
-            ExprBinary next =
-                    new ExprBinary(deref, "==", new ExprConstInt(value ? 1 : 0));
-            Statement assgn = new StmtAssign(curr, new ExprBinary(curr, "&&", next));
-            StmtFor loop = new StmtFor(iterName, nproc, assgn);
-
-            additionalStmts.add(decl);
-            additionalStmts.add(currAssgn);
-            additionalStmts.add(loop);
-
-            return curr;
-        }
-
-        final Type localBit = TypePrimitive.bittype.withMemType(CudaMemoryType.LOCAL);
-        
         @SuppressWarnings("deprecation")
         @Override
         public Object visitStmtBlock(StmtBlock block) {
@@ -377,7 +308,11 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         List<Statement> t = it.peekAllNext();
                         prevIt = it.clone();
                         Statement s = it.next();
-                        // TODO xzl: this is used to provide an extra
+                        // TODO xzl:
+                        // two purposes:
+                        // 1. when check for "StmtFor", need to run NotTotallyGlobal, so
+                        // need to register var
+                        // 2. (decided to disable this feature) used to provide an extra
                         // barrier when you forgot to put one for global assignment
                         // whenever you write to a global variable and only use globals,
                         // we use a pair of barriers to enclose this assignment
@@ -388,13 +323,13 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         // fork { y = x+1; x = y+1; }
                         // will be break to y=x+1; x=y+1;
                         if (s instanceof StmtVarDecl) {
-                            for (int i=0; i<((StmtVarDecl) s).getNumVars(); ++i) {
+                            for (int i = 0; i < ((StmtVarDecl) s).getNumVars(); ++i) {
                                 symtab.registerVar(((StmtVarDecl) s).getName(i),
                                         ((StmtVarDecl) s).getType(i), s,
                                         SymbolTable.KIND_LOCAL);
                             }
                         }
-                        if ((new ContainsAllProcElt(this)).run(s)) {
+                        if ((new ContainsAllProcElt()).run(s)) {
                             nextAllProcStmt = s;
                             afterSomeProcStmts = t;
                             break;
@@ -412,19 +347,25 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         nextSomeProcStmts.add(s);
                     }
 
-                    TypedHashSet<String> varrefs = (new GetVariableRefSet()).run(new StmtBlock(afterSomeProcStmts));
-                    TypedHashSet<String> vardefs = (new GetVariableDeclSet()).run(new StmtBlock(nextSomeProcStmts));
-                    // remove variable declarations referenced later
-                    TypedHashSet<String> referencedLater = vardefs.intersect(varrefs);
-                    if (!referencedLater.isEmpty()) {
-                        Iterator<Statement> it2 = nextSomeProcStmts.iterator();
-                        while (it2.hasNext()) {
-                            Statement s = it2.next();
-                            if ((new ContainsVarDeclWithName(referencedLater)).run(s)) {
-                                it2.remove();
-                                // order doesn't really matter here so long as the
-                                // declarations come first
-                                stmts.add((Statement) s.accept(this));
+                    StmtBlock nextSomeProcBlock = new StmtBlock(nextSomeProcStmts);
+                    TypedHashSet<String> vardefs =
+                            (new GetVariableDeclSet()).run(nextSomeProcBlock);
+                    if (!vardefs.isEmpty()) {
+                        TypedHashSet<String> varused =
+                                (new GetVariableRefSet()).run(new StmtBlock(afterSomeProcStmts));
+                        // remove variable declarations referenced later
+                        TypedHashSet<String> referencedLater = vardefs.intersect(varused);
+                        if (!referencedLater.isEmpty()) {
+                            Iterator<Statement> it2 = nextSomeProcStmts.iterator();
+                            while (it2.hasNext()) {
+                                Statement s = it2.next();
+                                if ((new ContainsVarDeclWithName(referencedLater)).run(s))
+                                {
+                                    it2.remove();
+                                    // order doesn't really matter here so long as the
+                                    // declarations come first
+                                    stmts.add((Statement) s.accept(this));
+                                }
                             }
                         }
                     }
@@ -509,6 +450,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         none_at_end.setMsg("All while conds must be false at the end");
                         flushAndAdd(stmts, procLoopStmts, none_at_end);
                     } else if (stmt instanceof StmtAssign) {
+                        assert false : "the next allproc cannot be StmtAssign! " + stmt;
 //                        printWarning("Assuming that subtree transformers "
 //                                + "will take care of allthreads version of ",
 //                                stmt.getClass());
@@ -522,15 +464,17 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         // global int x, y;
                         // fork { y = x+1; x = y+1; }
                         // will be break to y=x+1; x=y+1;
-                        boolean rhsLocal = (new NotTotallyGlobal()).run(((StmtAssign) stmt).getRHS());
-                        if (rhsLocal) {
-                            flushAndAdd(stmts, procLoopStmts);
-                            Vector<Statement> s = new Vector<Statement>(1);
-                            s.add((Statement) stmt.accept(this));
-                            flushAndAdd(stmts, s);
-                        } else {
-                            flushAndAdd(stmts, procLoopStmts, (Statement) stmt.accept(this));
-                        }
+                        // boolean rhsLocal = (new NotTotallyGlobal()).run(((StmtAssign)
+                        // stmt).getRHS());
+                        // if (rhsLocal) {
+                        // flushAndAdd(stmts, procLoopStmts);
+                        // Vector<Statement> s = new Vector<Statement>(1);
+                        // s.add((Statement) stmt.accept(this));
+                        // flushAndAdd(stmts, s);
+                        // } else {
+                        // flushAndAdd(stmts, procLoopStmts, (Statement)
+                        // stmt.accept(this));
+                        // }
                     } else if (stmt instanceof StmtFor) {
                         StmtFor sf = (StmtFor) stmt;
                         StmtAssign init = (StmtAssign) sf.getInit();
@@ -615,7 +559,6 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitExprVar(ExprVar exp) {
             exp = (ExprVar) super.visitExprVar(exp);
-//System.out.println("exp: " + exp);
             if (this.getType(exp).getCudaMemType() == CudaMemoryType.LOCAL_TARR) {
                 return new ExprArrayRange(exp, new ExprVar(exp, SpmdPid));
             } else {
@@ -623,25 +566,10 @@ public class SpmdTransform  extends SymbolTableVisitor {
             }
         }
 
-/*  handling variable length array in parameters
-        @Override
-        public Object visitTypeArray(TypeArray arr) {
-            Object base = arr.getBase().accept(this);
-            Object len = arr.getLength().accept(this);
-            System.out.println("here: " + base + " " + len);
-            if (base == arr.getBase() && len == arr.getLength()) {
-                return arr;
-            } else {
-                System.out.println("there");
-                return new TypeArray(arr.getCudaMemType(), (Type)base, (Expression)len, null);
-            }
-        }
-*/
-
         @Override
         public Object visitFunction(Function func) {
             Vector<Parameter> params = new Vector<Parameter>();
-            params.add(new Parameter(TypePrimitive.inttype, SpmdNProc, Parameter.IN));
+            params.add(new Parameter(globalInt, SpmdNProc, Parameter.IN));
             params.add(new Parameter(TypePrimitive.inttype, SpmdPid, Parameter.IN));
             params.addAll(func.getParams());
             Function f2 = func.creator().name("someproc_" + func.getName()).params(params).create();
@@ -680,11 +608,6 @@ public class SpmdTransform  extends SymbolTableVisitor {
     }
 
     protected class ContainsAllProcElt extends ASTQuery {
-        SymbolTableVisitor stv;
-
-        ContainsAllProcElt(SymbolTableVisitor s) {
-            stv = s;
-        }
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             if (!result) result = cg.callsFcnWithBarrier(cg.getTarget(exp));
@@ -701,30 +624,6 @@ public class SpmdTransform  extends SymbolTableVisitor {
         public Object visitStmtReturn(StmtReturn stmt) {
             result = true;
             return stmt;
-        }
-
-        // boolean inLHS = false;
-        @Override
-        public Object visitStmtAssign(StmtAssign stmt) {
-//            boolean oldInLHS = inLHS;
-//            stmt.getLHS().accept(this);
-//            inLHS = oldInLHS;
-//            stmt.getRHS().accept(this);
-            try {
-                // if the global is an array a
-                // then a[i] won't be global
-                // and we allow a[i] = local[pid]
-                // thus we won't set result=true
-                // TODO xzl: seems this new feature is not very useful
-                // and it needs more checking
-            if (stv.getType(stmt.getLHS()).getCudaMemType() == CudaMemoryType.GLOBAL) {
-                result = true;
-                return stmt;
-            }
-            } catch (Exception e) {
-                // TODO silently fail
-            }
-            return super.visitStmtAssign(stmt);
         }
     }
 

@@ -427,7 +427,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                     outerRange = true;
                     Expression len = (Expression) index.getLenExpression().accept(this);
                     addStmts.add(new StmtAssert(new ExprBinary(new ExprBinary(start, "+",
-                            len), "<=", lens.get(1)), "start+len must <= size", false));
+                            len), "<=", lens.get(0)), "start+len must <= size", false));
                     index = new RangeLen(start, len);
                 } else {
                     addStmts.add(new StmtAssert(new ExprBinary(start, "<", lens.get(0)),

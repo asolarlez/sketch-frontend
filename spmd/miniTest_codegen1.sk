@@ -1,7 +1,7 @@
 /*
  * triggers a bug in frontend
  */
-pragma options "--fe-output-code --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 1"; //  --be:showDAG
+pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 8 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 1"; //  --be:showDAG
 
 struct LState {
 	int L;

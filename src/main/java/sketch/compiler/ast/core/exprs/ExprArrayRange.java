@@ -213,4 +213,16 @@ public class ExprArrayRange extends Expression
             return false;
         return this.toString().equals(other.toString());
     }
+
+    public Expression getBaseAndIndices(List<RangeLen> indices) {
+        Expression base = this.base;
+        indices.add(this.index);
+        while (base instanceof ExprArrayRange) {
+            ExprArrayRange e = (ExprArrayRange) base;
+            indices.add(e.index);
+            base = e.base;
+        }
+
+        return base;
+    }
 }
