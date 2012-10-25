@@ -98,12 +98,12 @@ void moveout(global int H, global int W, ref global float[W][H] ga, LState s) {
 
 void spec(global int P, global int H, global int W, ref global float[W][H] A) {
     for(int t=1; t<H; ++t) {
-    	// Zero Bound:
-    	A[t][0] = A[t-1][1];
-    	A[t][W-1] = A[t-1][W-2];
-    	// Periodic Bound:
-    	//    		A[t][0] = (A[t-1][W-1] + A[t-1][1]);
-    	//    		A[t][W-1] = (A[t-1][W-2] + A[t-1][0]);
+	    	// Zero Bound:
+//	    	A[t][0] = A[t-1][1];
+//	    	A[t][W-1] = A[t-1][W-2];
+	    	// Periodic Bound:
+		A[t][0] = (A[t-1][W-1] + A[t-1][1]);
+		A[t][W-1] = (A[t-1][W-2] + A[t-1][0]);
         for(int x=1; x<W-1; ++x){
             A[t][x] = (A[t-1][x-1] + A[t-1][x+1]);
         }   
@@ -114,8 +114,6 @@ void exchange(global int t, ref LState s) {
 	global spmdinfo info = new spmdinfo() /*= newspmdinfo(spmdnproc, 1)*/ ;
 	
 	int r = 0;
-//	float [1] sbuf = {0.0};
-//	float [1] rbuf = {0.0};
 	
 	generator int index() {
 		return ??(1)*s.width + ?? * {| 1 | -1 |};
@@ -142,12 +140,13 @@ void exchange(global int t, ref LState s) {
 		bit scond = cond();
 		bit rcond = cond();
 		if (scond) {
-//			sbuf[0] = s.arr[t][index()];
 			r = cond() ? pid() : pid();
 		}
-		spmdtransfer(info, 1, s.arr[t][index()::1], scond, r, s.arr[t][index()::1], rcond);
-		if (cond()) {
-			s.arr[t][index()] = 0.0;
+		int i = index();
+		int j = index();
+		spmdtransfer(info, 1, s.arr[t][i::1], scond, r, s.arr[t][j::1], rcond);
+		if (!rcond) {
+			s.arr[t][j] = 0.0;
 		}
 	}
 	
