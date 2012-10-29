@@ -28,7 +28,7 @@ import sketch.util.exceptions.NotImplementedException;
  */
 public abstract class Type
 {
-    private CudaMemoryType memtyp;
+    protected CudaMemoryType memtyp;
 
 
     public Type(CudaMemoryType memtyp) {

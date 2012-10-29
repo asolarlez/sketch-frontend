@@ -29,7 +29,9 @@ import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
@@ -62,7 +64,7 @@ class CloneHoles extends FEReplacer{
     
 }
 
-public class PartialEvaluator extends FEReplacer {
+public class PartialEvaluator extends SymbolTableVisitor {
     protected MethodState state;
     protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
@@ -85,7 +87,7 @@ public class PartialEvaluator extends FEReplacer {
 
 
     public PartialEvaluator(abstractValueType vtype, TempVarGen varGen,  boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
-        super();
+        super(null);
         this.MAX_UNROLL = maxUnroll;
         this.rcontrol = rcontrol;
         this.varGen = varGen;
@@ -699,6 +701,15 @@ public class PartialEvaluator extends FEReplacer {
             isFieldAcc = true;
             super.visitExprField(exp);
             PartialEvaluator.this.visitExprField(exp);
+            assert t.isStruct();
+
+            // FIXME xzl: ideally we want this to be done all the time!
+            // but when it is replacer, we have to compute tlen in VisitEAR
+            // and that tlen will use field names, causing problems!
+            if (false && PartialEvaluator.this instanceof EliminateDeadCode) {
+                TypeStruct ts = (TypeStruct) actualType(t);
+                t = ts.getType(exp.getName());
+            }
             return PartialEvaluator.this.exprRV;
             //return super.visitExprField(exp);
         }
@@ -716,23 +727,36 @@ public class PartialEvaluator extends FEReplacer {
             abstractValue llhsIdx = lhsIdx;
             Expression idxExpr = exprRV;
 
+            // FIXME xzl:
+            // why do we need to do the checking here? it's an EAR, does t have to be
+            // TypeArray?
             if( t instanceof TypeArray ){
                 TypeArray ta = (TypeArray) t;
+                // abstractValue tlen = isReplacer ? typeLen(ta) : null;
                 abstractValue tlen = typeLen(ta);
                 // _debug.append(" ta:" + ta + " tlen:" + tlen + " ");
                 t = ta.getBase();
                 if(olidx != null){
-                    lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) );
+                    // FIXME: this is rather hacking, what we really want is
+                    // joining the two Idx
+                    // lhsIdx =
+                    // isReplacer ? vtype.plus(lhsIdx, vtype.times(olidx, tlen))
+                    // : vtype.plus(lhsIdx, olidx);
+                    lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen));
                 }
-                if( llhsIdx.hasIntVal()  ){
+                if (llhsIdx.hasIntVal()) {
                     int iidx = llhsIdx.getIntVal();
-                    if( tlen.hasIntVal() ){
+                    if (tlen.hasIntVal()) {
                         int size = tlen.getIntVal();
                         if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
                             throw new ArrayIndexOutOfBoundsException(ear.getCx() +
                                     " ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size +
                                     ")" /* + _debug.toString() */);
                     }
+                }
+            } else {
+                if (olidx != null && PartialEvaluator.this instanceof EliminateDeadCode) {
+                    lhsIdx = vtype.plus(lhsIdx, olidx);
                 }
             }
 

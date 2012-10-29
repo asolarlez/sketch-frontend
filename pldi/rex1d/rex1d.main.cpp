@@ -18,11 +18,14 @@ int W, H;
 LState * ls;
 
 void init() {
-  int base, width;
-  partition(spmdnproc, spmdpid, W, base, width);
-  ls = new LState(H, NULL, 0, width, base);
-  for (int i=0; i<width; ++i) {
-    ls->arr[1+i] = base+i;
+  int w = W/spmdnproc;
+  int b = w*spmdpid;
+  int g = (H+1)/2;
+  
+  ls = new LState(g, H, NULL, 0, w, b);
+  cout << "g=" << g << " glen=" << ls->glen << endl;
+  for (int i=0; i<w; ++i) {
+    ls->arr[g+i] = b+i;
   }
 }
 
@@ -54,14 +57,16 @@ int main(int argc, char ** argv) {
   }
 
   init();
+  cout << "after init" << endl;
   
   time(&start);
   sk(spmdnproc, H, W, ls);
+  cout << "after sk" << endl;
   time(&end);
   
   mpiBarrier();
   time(&totalEnd);
   mpiFinalize();
-  output(ls->height, ls->width+2, ls->arr);
+  output(ls->height, ls->width+ls->glen*2, ls->arr);
   return 0;
 }

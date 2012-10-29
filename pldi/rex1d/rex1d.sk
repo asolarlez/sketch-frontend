@@ -1,21 +1,21 @@
-pragma options "--spmd-max-nproc 1 --bnd-inbits 3 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
+pragma options "--spmd-max-nproc 3 --bnd-inbits 3 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
 
-int SPMD_MAX_NPROC = 1;
+int SPMD_MAX_NPROC = 3;
 int SPMD_MAX_BUF_LEN = 4;
 include "spmd.skh";
 
 include "generators.skh";
 
-assume P>0 && P<=1;
-assume W>=P && W>1 && W<=4 && W%P==0;
-assume H>=3 && H<=3;
+assume P>0 && P<=3;
+assume W>=P && W>1 && W<=10 && W%P==0;
+assume H>=3 && H<=5;
 
 struct LState {
 	int height;
 	int base;
 	int width;
 	int glen;
-	float[width+glen*2 <: 8][height <: 3] arr;
+	float[width+glen*2 <: 16][height <: 5] arr;
 }
 
 //void partition(int P, int p, int W, ref int base, ref int width) {
@@ -76,11 +76,11 @@ struct LState {
 
 
 LState movein(global int H, global int W, global float[W][H] ga) {
-	int b, w, g;
+//	int b, w, g;
 	//partition(spmdnproc, spmdpid, W, b, w);
-	w = W/spmdnproc;
-	b = w*spmdpid;
-	g = (H+1)/2;
+	int w = W/spmdnproc;
+	int b = w*spmdpid;
+	int g = (H+1)/2;
 	float[w+g*2][H] la;
 	for (int t=0; t<H; ++t) {
 		for (int x=0; x<w; ++x) {
@@ -115,59 +115,65 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
 
 void trapezoid(ref LState s) {
     	for (int t=1; t<s.height; ++t) {
-		for (int x=t; x<s.width-t; ++x) {
+		for (int x=t; x<s.glen + s.width-t; ++x) {
 			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
 		}
 	}
 }
 
-void fastLeft(ref LState s) {
-	int h = s.height;
+void fastLeft(global int H, ref LState s) {
 	int w = s.width;
 	int g = s.glen;
 	
+	global int len = H-1;
+	
 	int r = (spmdpid== (spmdnproc-1) ) ? 0 : spmdpid+1;
-	float[h-1] send_buf;
-	float[h-1] recv_buf;
+	float[len] send_buf;
+	float[len] recv_buf;
 
-	for (int i=0; i<h-1; ++i) {
-		send_buf[i] = s.arr[i/2][g + w - 1 - (i/2 + i%2)];
+	for (int i=0; i<len; ++i) {
+		int t = i/2;
+		int x = g + w - 1 - (i/2 + i%2);
+		send_buf[i] = s.arr[t][x];
 	}
-	spmdtransfer(h-1, send_buf, 1, r, recv_buf, 1);
-	for (int i=0; i<h-1; ++i) {
-		s.arr[i/2][g - 1 - (i/2 + i%2)] = recv_buf[i];
+	spmdtransfer(len, send_buf, 1, r, recv_buf, 1);
+	for (int i=0; i<len; ++i) {
+		int t = i/2;
+		int x = g - 1 - (i/2 + i%2);
+		s.arr[t][x] = recv_buf[i];
 	}
 	
-	for (int j=0; j<h-1; ++j) {
+	for (int j=0; j<len; ++j) {
 		int bottom = j/2 +1;
-		for (int t=bottom; t<h; ++t) {
+		int t;
+		for (t=bottom; t<H; ++t) {
 			int x = g - 1 - j + t;
 			s.arr[t][x] = s.arr[t-1][x-1]+s.arr[t-1][x+1];
 		}
 	}
 }
 
-void fastRight(ref LState s) {
-	int h = s.height;
+void fastRight(global int H, ref LState s) {
 	int w = s.width;
 	int g = s.glen;
 	
 	int r = (spmdpid==0) ? (spmdnproc-1) : spmdpid-1;
-	float[h-1] send_buf;
-	float[h-1] recv_buf;
+	float[H-1] send_buf;
+	float[H-1] recv_buf;
 
-	for (int i=0; i<h-1; ++i) {
+	for (int i=0; i<H-1; ++i) {
 		send_buf[i] = s.arr[i/2][g + (i/2 + i%2)];
 	}
-	spmdtransfer(h-1, send_buf, 1, r, recv_buf, 1);
-	for (int i=0; i<h-1; ++i) {
+	spmdtransfer(H-1, send_buf, 1, r, recv_buf, 1);
+	for (int i=0; i<H-1; ++i) {
 		s.arr[i/2][g + w + (i/2 + i%2)] = recv_buf[i];
 	}
 	
-	for (int j=0; j<h-1; ++j) {
+	for (int j=0; j<H-1; ++j) {
 		int bottom = j/2 +1;
-		for (int t=bottom; t<h; ++t) {
-			int x = g - 1 - j + t;
+		int t;
+		for (t=bottom; t<H; ++t) {
+			int x = g + w + j - t;
 			s.arr[t][x] = s.arr[t-1][x-1]+s.arr[t-1][x+1];
 		}
 	}
@@ -179,8 +185,8 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		s = movein(H, W, A);
 		spmdbarrier();
 		trapezoid(s);
-		fastLeft(s);
-		fastRight(s);
+		fastLeft(H, s);
+		fastRight(H, s);
 		spmdbarrier();
 		moveout(H, W, A, s);
 	}
