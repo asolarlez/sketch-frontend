@@ -202,7 +202,7 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		LState s;
 		s = movein(H, W, A);
 		spmdbarrier();
-		trapezoid(s);
+		trapezoidFast(s);
 		fastLeft(H, s);
 		fastRight(H, s);
 		spmdbarrier();
