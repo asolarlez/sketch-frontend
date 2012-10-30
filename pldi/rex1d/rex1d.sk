@@ -1,21 +1,29 @@
-pragma options "--fe-force-codegen --spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 15 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
+pragma options "--spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 12 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
 int SPMD_MAX_BUF_LEN = 5;
 include "spmd.skh";
 
 include "generators.skh";
+generator int signed() {
+	int i = ??;
+	if (??(1)) {
+		return -i;
+	}
+	return i;
+}
+
 
 assume P>0 && P<=3;
-assume W>=P && W>1 && W<=9 && (W/P >= H-1) && (W/P >= H*2-3);
-assume H>=3 && H<=4;
+assume W>=P && W>1 && W<=8 && (W/P >= H-1) && (W/P >= H*2-3);
+assume H>=3 && H<=3;
 
 struct LState {
 	int height;
 	int base;
 	int width;
 	int glen;
-	float[width+glen*2 <: 15][height <: 4] arr;
+	float[width+glen*2 <: 12][height <: 3] arr;
 }
 
 //void partition(int P, int p, int W, ref int base, ref int width) {
@@ -57,7 +65,7 @@ void partition(int P, int p, int N, ref int base, ref int width){
     }
 }
 
-assume P>0 && N>=PP && N>0 && N <= 8;
+assume PP>0 && N>=PP && N>0 && N <= 8;
 harness void testPartition(int PP, int p, int N){
     if(p<PP){
         int b1, w1;
@@ -113,13 +121,36 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
     }
 }
 
-//void trapezoid(ref LState s) {
-//    	for (int t=1; t<s.height; ++t) {
-//		for (int x=t; x<s.glen + s.width-t; ++x) {
-//			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
-//		}
-//	}
-//}
+assume h>=3 && width>=h*2-2;
+void trapezoid(int h, int width, int glen, ref float[width+glen*2][h] arr) {
+    	for (int t=1; t<h; ++t) {
+		for (int j = t; j< width-t; ++j) {
+			int x = glen + j;
+			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+		}
+	}
+}
+
+void fastTrapezoid(int h, int width, int glen, ref float[width+glen*2][h] arr) implements trapezoid {
+	int split = h*2 - ??;
+	assert split>=0 && split<width;
+//	int split = 2*K*T - 3*K;
+	for (int j=??; j<split; ++j) {
+		int top = j/2 + 1;
+		assert top>1 && top<h;
+		for (int t=1; t<top; ++t) {
+			int x = glen + j - t;
+			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+		}
+	}
+	for(int 	j= split; j < width; ++j) {
+		for (int t=1; t<h; ++t) {
+			int x = glen + j - t;
+			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+		}
+	}
+}
+
 
 //harness void trapezoidTest(LState s)  {
 //	LState t = s;
@@ -128,33 +159,6 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
 //	assert t.arr == s.arr;
 //}
 
-generator int signed() {
-	int i = ??;
-	if (??(1)) {
-		return -i;
-	}
-	return i;
-}
-
-void trapezoidFast(ref LState s) {
-	int h = s.height;
-	int split = h*2 + signed();
-//	int split = 2*K*T - 3*K;
-	for (int j=??; j<split; ++j) {
-		int top = j/2 + signed();
-		for (int t=1; t<top; ++t) {
-			int x = s.glen + j - t;
-			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
-		}
-	}
-	for(int 	j= split; j < s.width; ++j) {
-		for (int t=1; t<h; ++t) {
-			int x = s.glen + j - t;
-			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
-		}
-	}
-
-}
 
 void fastLeft(global int H, ref LState s) {
 	int w = s.width;
@@ -213,7 +217,7 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		LState s;
 		s = movein(H, W, A);
 		spmdbarrier();
-		trapezoidFast(s);
+		fastTrapezoid(H, s.width, s.glen, s.arr);
 		fastLeft(H, s);
 		fastRight(H, s);
 		spmdbarrier();

@@ -96,7 +96,10 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
                 }
                 currentT.put(global.getName(), local.getType());
             } else {
-                func.getBody().accept(this);
+                Statement body = func.getBody();
+                if (body != null) {
+                    body.accept(this);
+                }
             }
 
             order.add(func);
@@ -237,9 +240,11 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
 
         FunctionCreator creator = f.creator().params(newp);
         Statement body = f.getBody();
-        Statement newbody = (Statement) body.accept(this);
-        if (newbody != body) {
-            creator = creator.body(newbody);
+        if (body != null) {
+            Statement newbody = (Statement) body.accept(this);
+            if (newbody != body) {
+                creator = creator.body(newbody);
+            }
         }
 
         return creator.create();
