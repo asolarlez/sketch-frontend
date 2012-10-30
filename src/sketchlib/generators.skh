@@ -16,6 +16,7 @@ generator int expr(int N, int[N] pars, int T, int[T] ops){
     bit isb; int choice;
     generator int tmp(ref int choice){
         choice = ??;
+        assert choice >= 0;
         return ?? ? pars[choice] : ??(2);
     }
     return exprb(tmp, T, ops, true, true, isb, choice);

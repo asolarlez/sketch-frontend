@@ -1,4 +1,4 @@
-pragma options "--spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 15 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
+pragma options "--fe-force-codegen --spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 15 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
 int SPMD_MAX_BUF_LEN = 10;
@@ -57,7 +57,7 @@ void partition(int P, int p, int N, ref int base, ref int width){
     }
 }
 
-
+assume P>0 && N>=PP && N>0 && N <= 8;
 harness void testPartition(int PP, int p, int N){
     if(p<PP){
         int b1, w1;
@@ -121,7 +121,11 @@ void trapezoid(ref LState s) {
 	}
 }
 
-void trapezoidFast(ref LState s) implements trapezoid {
+void trapezoidTest(ref LState s) implements trapezoid {
+	trapezoidFast(s);
+}
+
+void trapezoidFast(ref LState s) {
 	int h = s.height;
 	int split = h*2 - 3;
 //	int split = 2*K*T - 3*K;
@@ -198,7 +202,7 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		LState s;
 		s = movein(H, W, A);
 		spmdbarrier();
-		trapezoidFast(s);
+		trapezoid(s);
 		fastLeft(H, s);
 		fastRight(H, s);
 		spmdbarrier();

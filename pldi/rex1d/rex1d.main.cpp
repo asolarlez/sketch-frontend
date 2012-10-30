@@ -18,8 +18,9 @@ int W, H;
 LState * ls;
 
 void init() {
-  int w = W/spmdnproc;
-  int b = w*spmdpid;
+  int w;
+  int b;
+  partition(spmdnproc, spmdpid, W, b, w);
   int g = (H+1)/2;
   
   ls = new LState(g, H, NULL, 0, w, b);

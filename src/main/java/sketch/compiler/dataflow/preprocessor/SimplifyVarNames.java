@@ -9,9 +9,9 @@ import java.util.Map;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -48,6 +48,10 @@ public class SimplifyVarNames extends FEReplacer {
                 cur = name.indexOf('_', last + 1);
             }
 
+            // FIXME xzl: why do we require at least two '_' ?
+            if (prevlast < 0) {
+                prevlast = last;
+            }
             assert prevlast > 0;
             String s1 = name.substring(0, prevlast);
 	        if(s1.length() == 0){
