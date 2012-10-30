@@ -7,15 +7,15 @@ include "spmd.skh";
 include "generators.skh";
 
 assume P>0 && P<=3;
-assume W>=P && W>1 && W<=12 && W%P==0 && (W/P >= H-1);
-assume H>=3 && H<=5;
+assume W>=P && W>1 && W<=12 && (W/P >= H-1);
+assume H>=3 && H<=4;
 
 struct LState {
 	int height;
 	int base;
 	int width;
 	int glen;
-	float[width+glen*2 <: 20][height <: 5] arr;
+	float[width+glen*2 <: 18][height <: 4] arr;
 }
 
 //void partition(int P, int p, int W, ref int base, ref int width) {
@@ -44,42 +44,42 @@ struct LState {
 //	width = iend - base;
 //}
 
-//void partition(int P, int p, int N, ref int base, ref int width){
-//	generator int num() {
-//		return expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});
-//	}
-//    if(p < num()){
-//        base = num();
-//        width = num();
-//    }else{
-//        base =  num();
-//        width =  num();
-//    }
-//}
-//
-//
-//harness void testPartition(int PP, int p, int N){
-//    if(p<PP){
-//        int b1, w1;
-//        partition(PP, p, N, b1, w1);
-//        assert w1 >= N/PP;
-//        assert w1 <= N/PP+1;
-//        if(p==0){ assert b1 == 0; }
-//        if(p==PP-1){ assert b1+w1 == N; }
-//        if(p+1 < PP){
-//            int b2, w2;
-//            partition(PP, p+1, N, b2, w2);
-//            assert b1+w1 == b2;
-//        }
-//    }
-//}
+void partition(int P, int p, int N, ref int base, ref int width){
+	generator int num() {
+		return expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});
+	}
+    if(p < num()){
+        base = num();
+        width = num();
+    }else{
+        base =  num();
+        width =  num();
+    }
+}
+
+
+harness void testPartition(int PP, int p, int N){
+    if(p<PP){
+        int b1, w1;
+        partition(PP, p, N, b1, w1);
+        assert w1 >= N/PP;
+        assert w1 <= N/PP+1;
+        if(p==0){ assert b1 == 0; }
+        if(p==PP-1){ assert b1+w1 == N; }
+        if(p+1 < PP){
+            int b2, w2;
+            partition(PP, p+1, N, b2, w2);
+            assert b1+w1 == b2;
+        }
+    }
+}
 
 
 LState movein(global int H, global int W, global float[W][H] ga) {
-//	int b, w;
-	//partition(spmdnproc, spmdpid, W, b, w);
-	int w = W/spmdnproc;
-	int b = w*spmdpid;
+	int b, w;
+	partition(spmdnproc, spmdpid, W, b, w);
+//	int w = W/spmdnproc;
+//	int b = w*spmdpid;
 	int g = (H+1)/2;
 	float[w+g*2][H] la;
 	for (int t=0; t<H; ++t) {
