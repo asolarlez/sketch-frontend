@@ -31,6 +31,38 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
         DIVTABLE = new ExprArrayInit((FENode) null, le);
     }
 
+    // private Expression getCondition(List<Statement> stmts, Parameter p) {
+    // Type t = p.getType();
+    // if (t.isArray()) {
+    // Type bt = ((TypeArray) t).getBase();
+    // assert !bt.isArray() : "ReplaceFloat must run after EliminateMultiDim!";
+    // }
+    // return null;
+    // }
+    // @Override
+    // public Object visitFunction(Function func) {
+    // Function f = (Function) super.visitFunction(func);
+    // Expression cond = null;
+    // List<Statement> stmts = new Vector<Statement>();
+    // for (Parameter p : f.getParams()) {
+    // Expression e = getCondition(stmts, p);
+    // if (e != null) {
+    // if (cond == null) {
+    // cond = e;
+    // } else {
+    // cond = new ExprBinary(cond, "&&", e);
+    // }
+    // }
+    // }
+    //
+    // if (cond == null) {
+    // return f;
+    // } else {
+    // stmts.add(new StmtIfThen(f, cond, f.getBody(), null));
+    // return f.creator().body(new StmtBlock(stmts)).create();
+    // }
+    // }
+
     public Object visitExprBinary(ExprBinary exp) {
         Type ltype = getType(exp.getLeft());
         Type rtype = getType(exp.getRight());
@@ -59,7 +91,8 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
                 return new ExprBinary(ebase, "%", BASE);
             }
             case ExprBinary.BINOP_DIV: {
-                Expression ebase = new ExprArrayRange(this.DIVTABLE, right);
+                Expression goodright = new ExprBinary(right, "%", BASE);
+                Expression ebase = new ExprArrayRange(this.DIVTABLE, goodright);
                 ebase =
                         new ExprBinary(exp, ExprBinary.BINOP_MUL, left, ebase,
                                 exp.getAlias());
