@@ -121,9 +121,12 @@ void trapezoid(ref LState s) {
 	}
 }
 
-void trapezoidTest(ref LState s) implements trapezoid {
-	trapezoidFast(s);
-}
+//harness void trapezoidTest(LState s)  {
+//	LState t = s;
+//	trapezoidFast(s);
+//	trapezoid(t);
+//	assert t.arr == s.arr;
+//}
 
 generator int signed() {
 	int i = ??;
