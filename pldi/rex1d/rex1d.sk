@@ -1,7 +1,7 @@
 pragma options "--fe-force-codegen --spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 15 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
-int SPMD_MAX_BUF_LEN = 10;
+int SPMD_MAX_BUF_LEN = 5;
 include "spmd.skh";
 
 include "generators.skh";
