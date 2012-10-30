@@ -125,12 +125,20 @@ void trapezoidTest(ref LState s) implements trapezoid {
 	trapezoidFast(s);
 }
 
+generator int signed() {
+	int i = ??;
+	if (??(1)) {
+		return -i;
+	}
+	return i;
+}
+
 void trapezoidFast(ref LState s) {
 	int h = s.height;
-	int split = h*2 - 3;
+	int split = h*2 + signed();
 //	int split = 2*K*T - 3*K;
-	for (int j=2; j<split; ++j) {
-		int top = j/2;
+	for (int j=??; j<split; ++j) {
+		int top = j/2 + signed();
 		for (int t=1; t<=top; ++t) {
 			int x = s.glen + j - t;
 			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
