@@ -139,7 +139,7 @@ void trapezoidFast(ref LState s) {
 //	int split = 2*K*T - 3*K;
 	for (int j=??; j<split; ++j) {
 		int top = j/2 + signed();
-		for (int t=1; t<=top; ++t) {
+		for (int t=1; t<top; ++t) {
 			int x = s.glen + j - t;
 			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
 		}
