@@ -113,13 +113,13 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
     }
 }
 
-void trapezoid(ref LState s) {
-    	for (int t=1; t<s.height; ++t) {
-		for (int x=t; x<s.glen + s.width-t; ++x) {
-			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
-		}
-	}
-}
+//void trapezoid(ref LState s) {
+//    	for (int t=1; t<s.height; ++t) {
+//		for (int x=t; x<s.glen + s.width-t; ++x) {
+//			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
+//		}
+//	}
+//}
 
 //harness void trapezoidTest(LState s)  {
 //	LState t = s;
@@ -213,7 +213,7 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		LState s;
 		s = movein(H, W, A);
 		spmdbarrier();
-		trapezoid(s);
+		trapezoidFast(s);
 		fastLeft(H, s);
 		fastRight(H, s);
 		spmdbarrier();
