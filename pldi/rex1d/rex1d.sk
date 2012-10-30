@@ -1,4 +1,4 @@
-pragma options "--fe-force-codegen --spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 15 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
+pragma options "--fe-force-codegen --spmd-max-nproc 3 --bnd-inbits 5 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 18 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
 int SPMD_MAX_BUF_LEN = 10;
@@ -7,15 +7,15 @@ include "spmd.skh";
 include "generators.skh";
 
 assume P>0 && P<=3;
-assume W>=P && W>1 && W<=9 && (W/P >= H-1) && (W/P >= H*2-3);
-assume H>=3 && H<=4;
+assume W>=P && W>1 && W<=12 && (W/P >= H-1) && (W/P >= H*2-3);
+assume H>=3 && H<=5;
 
 struct LState {
 	int height;
 	int base;
 	int width;
 	int glen;
-	float[width+glen*2 <: 15][height <: 4] arr;
+	float[width+glen*2 <: 18][height <: 5] arr;
 }
 
 //void partition(int P, int p, int W, ref int base, ref int width) {
