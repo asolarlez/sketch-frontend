@@ -3,32 +3,75 @@
 
 // need to define SPMD_MAX_BUF_LEN and SPMD_MAX_NPROC before including!
 
-@Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
-void spmdtransfer(global int size, float [size] src_buff, bit scond, int recipient, ref float [size] dest_buff, bit rcond)
+int SPMD_MAX = 1;
+int SPMD_MIN = 2;
+int SPMD_SUM = 3;
+int SPMD_PROD = 4;
+
+float spmdoperate(global int op, float lhs, float rhs)
 {
-  global float [SPMD_MAX_BUF_LEN * SPMD_MAX_NPROC] buf;
-  global bit [SPMD_MAX_NPROC] pendingData;
+  if (op == SPMD_MAX) {
+    return lhs < rhs ? rhs : lhs;
+  } else if (op == SPMD_MIN) {
+    return lhs > rhs ? rhs : lhs;
+  } else if (op == SPMD_SUM) {
+    return lhs + rhs;
+  } else if (op == SPMD_PROD) {
+    return lhs * rhs;
+  } else {
+    assert false : "spmdoperate called using wrong op!";
+  }
+}
+
+@Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
+void spmdreduce(global int op, global int size, bit reducecond, float [size] sendbuf, ref float [size] recvbuf)
+{
+  global float [size] channel;
+  spmdbarrier();
+  if (reducecond) {
+    if (spmdpid == 0) {
+      channel = sendbuf;
+    } else {
+      for (int i=1; i<size; ++i) {
+        channel[i] = spmdoperate(op, channel[i], sendbuf[i]);
+      }
+    }
+  }
+  spmdbarrier();
+  if (reducecond) {
+    for (int i=0; i<size; ++i) {
+      recvbuf[i] = channel[i];
+    }
+  }
+  spmdbarrier();
+}
+
+@Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
+void spmdtransfer(global int size, bit scond, float [size] sendbuf, int recipient, bit rcond, ref float [size] recvbuf)
+{
+  global float [SPMD_MAX_BUF_LEN * SPMD_MAX_NPROC] channel;
+  global bit [SPMD_MAX_NPROC] channelFilled;
 
   spmdbarrier();
   assert recipient>=0 && recipient<spmdnproc;
   assert size>0 && size<=SPMD_MAX_BUF_LEN;
-  pendingData[spmdpid] = 0;
+  channelFilled[spmdpid] = 0;
   spmdbarrier();
   for (int i=0; i<size; ++i) {
-    buf[recipient*SPMD_MAX_BUF_LEN + i] = src_buff[i];
+    channel[recipient*SPMD_MAX_BUF_LEN + i] = sendbuf[i];
   }
   if (scond) {
-    assert !pendingData[recipient] : "two senders trying to send to the same recipient!";
-    pendingData[recipient] = 1;
+    assert !channelFilled[recipient] : "two senders trying to send to the same recipient!";
+    channelFilled[recipient] = 1;
   }
   spmdbarrier();
   if (rcond) {
-    assert pendingData[spmdpid] : "trying to receive but no one sent!";
+    assert channelFilled[spmdpid] : "trying to receive but no one sent!";
     for (int i=0; i<size; ++i) {
-      dest_buff[i] = buf[spmdpid*SPMD_MAX_BUF_LEN + i];
+      recvbuf[i] = channel[spmdpid*SPMD_MAX_BUF_LEN + i];
     }
   } else {
-    assert !pendingData[spmdpid] : "pending data but not receiving!";
+    assert !channelFilled[spmdpid] : "pending data but not receiving!";
   }
 }
 

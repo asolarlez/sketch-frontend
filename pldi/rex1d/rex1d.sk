@@ -15,15 +15,15 @@ generator int signed() {
 
 
 assume P>0 && P<=3;
-assume W>=P && W>1 && W<=8 && (W/P >= H-1) && (W/P >= H*2-3);
-assume H>=3 && H<=3;
+assume W>=P && W>1 && W<=8 && (W/P >= H-1) && (W/P >= H*2-2);
+assume H>=3 && H<=4;
 
 struct LState {
 	int height;
 	int base;
 	int width;
 	int glen;
-	float[width+glen*2 <: 12][height <: 3] arr;
+	float[width+glen*2 <: 12][height <: 4] arr;
 }
 
 //void partition(int P, int p, int W, ref int base, ref int width) {
@@ -83,11 +83,9 @@ harness void testPartition(int PP, int p, int N){
 }
 
 
-LState movein(global int H, global int W, global float[W][H] ga) {
+LState movein(global int nproc, int pid, global int H, global int W, global float[W][H] ga) {
 	int b, w;
-	partition(spmdnproc, spmdpid, W, b, w);
-//	int w = W/spmdnproc;
-//	int b = w*spmdpid;
+	partition(nproc, pid, W, b, w);
 	int g = (H+1)/2;
 	float[w+g*2][H] la;
 	for (int t=0; t<H; ++t) {
@@ -99,7 +97,7 @@ LState movein(global int H, global int W, global float[W][H] ga) {
 	return s;
 }
 
-void moveout(global int H, global int W, ref global float[W][H] ga, LState s) {
+void moveout(global int nproc, int pid, global int H, global int W, ref global float[W][H] ga, LState s) {
 	for (int t=0; t<H; ++t) {
 		for (int x=0; x<s.width; ++x) {
 			ga[t][s.base+x] = s.arr[t][s.glen + x];
@@ -121,9 +119,18 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
     }
 }
 
-assume h>=3 && width>=h*2-2;
-void trapezoid(int h, int width, int glen, ref float[width+glen*2][h] arr) {
-    	for (int t=1; t<h; ++t) {
+//void trapezoid(ref LState s) {
+//  for (int t=1; t<s.height; ++t) {
+//		for (int j = t; j< s.width-t; ++j) {
+//			int x = s.glen + j;
+//			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
+//		}
+//	}
+//}
+
+assume h>=3 && h<=4 && width>=h*2-2 && width+glen*2<=12;
+void trapezoid(int h, int width, int glen, ref float[width + glen*2 <: 12][h <: 4] arr) {
+	for (int t=1; t<h; ++t) {
 		for (int j = t; j< width-t; ++j) {
 			int x = glen + j;
 			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
@@ -131,25 +138,26 @@ void trapezoid(int h, int width, int glen, ref float[width+glen*2][h] arr) {
 	}
 }
 
-void fastTrapezoid(int h, int width, int glen, ref float[width+glen*2][h] arr) implements trapezoid {
-	int split = h*2 - ??;
-	assert split>=0 && split<width;
-//	int split = 2*K*T - 3*K;
-	for (int j=??; j<split; ++j) {
-		int top = j/2 + 1;
-		assert top>1 && top<h;
-		for (int t=1; t<top; ++t) {
-			int x = glen + j - t;
-			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
-		}
-	}
-	for(int 	j= split; j < width; ++j) {
-		for (int t=1; t<h; ++t) {
-			int x = glen + j - t;
-			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
-		}
-	}
-}
+
+//void fastTrapezoid(int h, int width, int glen, ref float[width + glen*2 <: 12][h <: 4] arr) implements trapezoid {
+//	int split = h*2 - ??;
+//	assert split>0 && split<=width;
+//	for (int j=??; j<split; ++j) {
+//		int top = j/2 + 1;
+//		assert top>1 && top<h;
+//		for (int t=1; t<top; ++t) {
+//			int x = glen + j - t;
+//			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+//		}
+//	}
+//	for(int 	j= split; j < width; ++j) {
+//		for (int t=1; t<h; ++t) {
+//			int x = glen + j - t;
+//			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+//		}
+//	}
+//}
+
 
 
 //harness void trapezoidTest(LState s)  {
@@ -173,7 +181,7 @@ void fastLeft(global int H, ref LState s) {
 	for (int i=0; i<len; ++i) {
 		send_buf[i] = s.arr[i/2][g + w - 1 - (i/2 + i%2)];
 	}
-	spmdtransfer(len, send_buf, 1, r, recv_buf, 1);
+	spmdtransfer(len, 1, send_buf, r, 1, recv_buf);
 	for (int i=0; i<len; ++i) {
 		s.arr[i/2][g - 1 - (i/2 + i%2)] = recv_buf[i];
 	}
@@ -198,7 +206,7 @@ void fastRight(global int H, ref LState s) {
 	for (int i=0; i<H-1; ++i) {
 		send_buf[i] = s.arr[i/2][g + (i/2 + i%2)];
 	}
-	spmdtransfer(H-1, send_buf, 1, r, recv_buf, 1);
+	spmdtransfer(H-1, 1, send_buf, r, 1, recv_buf);
 	for (int i=0; i<H-1; ++i) {
 		s.arr[i/2][g + w + (i/2 + i%2)] = recv_buf[i];
 	}
@@ -215,12 +223,13 @@ void fastRight(global int H, ref LState s) {
 void sk(global int P, global int H, global int W, ref global float[W][H] A) implements spec {
 	spmdfork(P) {
 		LState s;
-		s = movein(H, W, A);
+		s = movein(P, spmdpid, H, W, A);
 		spmdbarrier();
-		fastTrapezoid(H, s.width, s.glen, s.arr);
+		trapezoid(H, s.width, s.glen, s.arr);
+//		trapezoid(s);
 		fastLeft(H, s);
 		fastRight(H, s);
 		spmdbarrier();
-		moveout(H, W, A, s);
+		moveout(P, spmdpid, H, W, A, s);
 	}
 }

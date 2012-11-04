@@ -73,6 +73,13 @@ public class LowerToSketch extends MetaStage {
         // prog.accept(prt);
 
 
+        prog = (Program) prog.accept(new FlattenStmtBlocks());
+        SpmdTransform tf = new SpmdTransform(options, varGen);
+        prog = (Program) prog.accept(tf);
+        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
+        // prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
+        // System.out.println("after rpear:");
+        // prog.accept(prt);
 
         prog = (Program) prog.accept(new EliminateMultiDimArrays(true, varGen));
         // System.out.println("after emda:");
@@ -125,16 +132,9 @@ public class LowerToSketch extends MetaStage {
         // System.out.println("after enaa:");
         // prog.accept(prt);
 
-        prog = (Program) prog.accept(new FlattenStmtBlocks());
-        SpmdTransform tf = new SpmdTransform(options, varGen);
-        prog = (Program) prog.accept(tf);
-        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
-        // prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
-        // System.out.println("after rpear:");
-        // prog.accept(prt);
 
-        prog = (Program) prog.accept(new EliminateArrayDims());
-        prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
+        // prog = (Program) prog.accept(new EliminateArrayDims());
+        // prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
         // System.out.println("after emda2:");
         // prog.accept(prt);
         return prog;

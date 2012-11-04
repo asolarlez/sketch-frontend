@@ -11,6 +11,7 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FunctionCreator;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
@@ -79,7 +80,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
         } else {
             oldProcFcns.add((Function) super.visitFunction(fcn));
         }
-        if (cg.needSomeProcFcn(fcn)) {
+        if (cg.haveSomeProcFcn(fcn)) {
             SomeProcTransform tf = new SomeProcTransform(symtab);
             tf.setNres(nres);
             someProcFcns.add((Function) tf.visitFunction(fcn));
@@ -572,7 +573,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
             params.add(new Parameter(globalInt, SpmdNProc, Parameter.IN));
             params.add(new Parameter(TypePrimitive.inttype, SpmdPid, Parameter.IN));
             params.addAll(func.getParams());
-            Function f2 = func.creator().name("someproc_" + func.getName()).params(params).create();
+            FunctionCreator creator = func.creator().name("someproc_" + func.getName()).params(params);
+            String spec = func.getSpecification();
+            if (spec != null) {
+                creator = creator.spec("someproc_" + spec);
+            }
+            Function f2 = creator.create();
             return super.visitFunction(f2);
         }
 
@@ -588,7 +594,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 nextArgs.addAll(exp.getParams());
                 return new ExprFunCall(exp, "someproc_" + exp.getName(), nextArgs);
             } else {
-                assert target.isUninterp();
+                // assert target.isUninterp();
                 return exp;
             }
         }
@@ -671,7 +677,8 @@ class SpmdCallGraph extends CallGraph {
     protected final TypedHashSet<Function> fcnsCalledByFork = new TypedHashSet<Function>();
     protected final TypedHashSet<Function> fcnsWithFork = new TypedHashSet<Function>();
     protected HashSet<Function> fcnsNeedAllProc;
-    protected HashSet<Function> fcnsNeedSomeProc;
+    protected HashSet<Function> fcnsNeedSomeProc = new HashSet<Function>();
+    protected HashSet<Function> fcnsHaveSomeProc = new HashSet<Function>();
 
     boolean insideFork = false;
 
@@ -693,6 +700,10 @@ class SpmdCallGraph extends CallGraph {
 
     public boolean needSomeProcFcn(Function fcn) {
         return fcnsNeedSomeProc.contains(fcn);
+    }
+
+    public boolean haveSomeProcFcn(Function fcn) {
+        return fcnsHaveSomeProc.contains(fcn);
     }
 
     @Override
@@ -725,6 +736,18 @@ class SpmdCallGraph extends CallGraph {
     }
 
     @Override
+    public Object visitSpmdPid(SpmdPid pid) {
+        fcnsNeedSomeProc.add(enclosing);
+        return pid;
+    }
+
+    @Override
+    public Object visitSpmdNProc(SpmdNProc nproc) {
+        fcnsNeedSomeProc.add(enclosing);
+        return nproc;
+    }
+
+    @Override
     protected void buildEdges() {
         super.buildEdges();
 
@@ -751,9 +774,40 @@ class SpmdCallGraph extends CallGraph {
                 }
             }
         }
-
         fcnsNeedAllProc = fcnsWithFork.union(fcnsCallingBarrier).asHashSet();
-        fcnsNeedSomeProc = fcnsCalledByFork.subtract(fcnsCallingBarrier).asHashSet();
+
+        fcnsNeedSomeProc.removeAll(fcnsNeedAllProc);
+        Queue<Function> qSome = new ArrayDeque<Function>();
+        qSome.addAll(fcnsNeedSomeProc);
+        while (!qSome.isEmpty()) {
+            Function f = qSome.remove();
+            assert fcnsCalledByFork.contains(f) : f.getName() +
+                    " using pid/nproc but not called by fork";
+            for (Function caller : closureEdges.callersTo(f)) {
+                if (!fcnsNeedSomeProc.contains(caller) &&
+                        !fcnsNeedAllProc.contains(caller))
+                {
+                    fcnsNeedSomeProc.add(caller);
+                    qSome.add(caller);
+                }
+            }
+        }
+        // fcnsNeedSomeProc = fcnsCalledByFork.subtract(fcnsCallingBarrier).asHashSet();
+        qSome.addAll(fcnsNeedSomeProc);
+        fcnsHaveSomeProc.addAll(fcnsNeedSomeProc);
+        while (!qSome.isEmpty()) {
+            Function f = qSome.remove();
+            String spec = f.getSpecification();
+            if (spec != null) {
+                Function g = getByName(spec);
+                assert !g.isUninterp() : f.getName() + "is implementing an uninterp " + spec;
+                if (!fcnsHaveSomeProc.contains(g)) {
+                    fcnsHaveSomeProc.add(g);
+                    qSome.add(g);
+                }
+            }
+        }
+
 /*
         System.out.println("withFork: " + fcnsWithFork);
         System.out.println("byFork: " + fcnsCalledByFork);

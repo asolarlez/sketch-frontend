@@ -176,6 +176,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 state.varDeclare(lhs , ptype);
             }
             IntAbsValue inval = (IntAbsValue) state.varValue(lhs);
+            String invalName = inval.toString();
             
             if( ptype instanceof TypeArray ){
                 TypeArray ta = (TypeArray) ptype;
@@ -212,7 +213,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                                             this));
                         }
                     }else{
-                        out.print(inval.toString() + " ");
+                        out.print(invalName + " ");
                     }
                 }
             }else{
@@ -222,7 +223,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     opnames.add(opname);
                     out.print(opname);
                 }else{
-                    out.print(inval.toString() + " ");
+                    out.print(invalName + " ");
                 }
             }
             
@@ -243,10 +244,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                                 }
                             }
                         } else {
-                            out.print(inval.toString() + " ");
+                            out.print(invalName + " ");
                         }
                     } else {
-                        out.print(inval.toString() + " ");
+                        out.print(invalName + " ");
                     }
                 } else {
                     if (ptype instanceof TypeArray) {
@@ -260,10 +261,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                                 addInitStmts.add(nnm + "=0;");
                             }
                         } else {
-                            addInitStmts.add(inval.toString() + "=0;");
+                            addInitStmts.add(invalName + "=0;");
                         }
                     } else {
-                        addInitStmts.add(inval.toString() + "=0;");
+                        addInitStmts.add(invalName + "=0;");
                     }
                 }
             }
