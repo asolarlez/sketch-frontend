@@ -1,0 +1,30 @@
+
+int foo(int i, int j){
+    if(??){
+    if(i>0)
+        return moo(i, j);
+    }
+    return j;
+}
+
+int moo(int i, int j){
+    if(??){
+    if(i>0)
+        return boo(i, j);
+    }
+    return j;
+}
+
+int boo(int i, int j){
+    if(??){
+        return foo(i-1, j+1);
+    }
+    return 0;
+}
+
+
+harness void main(){
+    int i=1;
+    int x = foo(i, 0);
+    assert x == ??;
+}

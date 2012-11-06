@@ -1,0 +1,16 @@
+void foo(int[?? ? 4 : 2] tt){
+    if(??>=0){
+        assert false;
+    }
+}
+
+
+harness void main(int i){
+    if(i>2){
+    if(i*i < i){
+        foo({1,2,3,4});
+    }else{
+        assert i==i;
+    }
+    }
+}

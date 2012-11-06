@@ -1,0 +1,17 @@
+void foo(int i){
+    if(??>=0){
+        assert false;
+    }
+}
+
+
+harness void main(int i){
+    if(i>2){
+    if(i*i < i){
+        foo(i);
+    }else{
+        assert i==i;
+    }
+    }
+    
+}

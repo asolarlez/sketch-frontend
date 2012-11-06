@@ -81,7 +81,7 @@ Just like in Java, references are typesafe and the heap is assumed to be garbage
 Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below; there are analogous rules for fields of a record. 
 
 \begin{itemize}
-\item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function.
+\item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function (see \secref{functions}) .
 \item Arrays cannot be final. 
 \item Global variables can only be final if they are of scalar type (not references to records).
 \end{itemize}
@@ -91,7 +91,8 @@ Since assignments to final variables are disallowed by the rules, final variable
 Expressions can also be final if they are composed from final sub-expressions. In particular:
 
 \begin{itemize}
-\item A binary expression \C{a $op$ b} is final if \C{a} and \C{b} are final.
+\item Final variables are final.
+\item A binary expression \C{a $~op~$ b} is final if \C{a} and \C{b} are final.
 \item A ternary expression \C{a ? b : c} is final if \C{a},\C{b} and \C{c} are final.
 \item A field dereference \C{e.f} is final if \C{e} is a final expression and \C{f} is a final field.
 \end{itemize}
@@ -150,7 +151,8 @@ int[N] filter(int N, int[N] in, ref int outsz){
 	return out;
 }
 \end{lstlisting}
-Notice that the function returns an array of size N, even though in reality, only the first \C{outsz} elements matter. We may use the function as follows:
+Notice that the function returns an array of size N, even though in reality, only the first \C{outsz} elements matter. The function uses a reference parameter (see \secref{functions}) to return \C{outsz}.
+We may use the function as follows:
 \begin{lstlisting}
 int[N] tmp = filter(N, in, tsz);
 int sz = tsz;
@@ -172,7 +174,7 @@ struct Array{
 
 
 Array filter(Array arr){
-      int outsz = 0;
+	int outsz = 0;
 	int[arr.sz] out;
 	for(int i=0; i<N; ++i){
 		if(in[i]%2 == 0){
@@ -340,12 +342,14 @@ It is important to note that implicit casts only occur for r-values; l-values wi
 
 
 \subsection{Explicit Typecasting}
-The \Sk{} language also offers some limited explicit typecasting. In particular, the language offers only two explicit typecasts:
+The \Sk{} language also offers some limited explicit typecasting. In particular, the language offers only three explicit typecasts:
 \begin{itemize}
 
 \item An array \C{a} of type \C{T[N]} can be explicitly typecast into an array of type \C{T[M]} by using the syntax \C{(T[M])a} (standard typecast notation from C). When an array is typecast to a smaller size, the remaining elements are simply truncated. 
 
 \item A bit array \C{bit[N]} can be explicitly typecast into an integer. When this happens, the first bit in the array is interpreted as the least significant bit and the last one as the most significant bit. The reverse cast from an integer to a bit array is not supported.
+
+\item If using --fe-fpencoding AS_FIXPOINT, explicit casts from integers to floating point values and vice versa are also allowed.
 
 \end{itemize}
 
@@ -388,6 +392,7 @@ If \C{N} is an input variable, the first loop will be unrolled as many times as 
 
 
 \subsection{Functions}
+\seclabel{functions}
 The sketch language also supports functions. The syntax for declaring a function is the same as in C. 
 
 \begin{lstlisting}

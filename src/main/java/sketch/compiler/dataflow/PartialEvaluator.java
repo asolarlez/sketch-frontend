@@ -936,10 +936,17 @@ public class PartialEvaluator extends FEReplacer {
             }           
         }
 
+        Statement newBody;
+        try {
 
+            newBody = (Statement) func.getBody().accept(this);
         
-
-        Statement newBody = (Statement)func.getBody().accept(this);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            newBody =
+                    new StmtBlock(new StmtAssert(func.getBody(), ExprConstInt.zero,
+                            "This function should never be called. Will cause " +
+                                    e.getMessage(), false));
+        }
 
         state.endFunction(lvl);
 
