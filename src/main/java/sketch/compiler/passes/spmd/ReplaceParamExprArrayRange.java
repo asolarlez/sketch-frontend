@@ -1,22 +1,19 @@
 package sketch.compiler.passes.spmd;
 
-import sketch.compiler.passes.spmd.GlobalToLocalCasts;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -24,13 +21,9 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
-
-import static sketch.util.DebugOut.assertFalse;
-import sketch.compiler.passes.printers.CodePrinterVisitor;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = { GlobalToLocalCasts.class })
 public class ReplaceParamExprArrayRange extends SymbolTableVisitor {
@@ -90,7 +83,7 @@ public class ReplaceParamExprArrayRange extends SymbolTableVisitor {
                     Type type = (len == null) ? baseType.getBase() : baseType.createWithLength(len);
                     //System.out.println("range: " + range + " base: " + range.getBase() + " type: " + type);
                     //System.out.println("selection: " + range.getSelection() + "len: " + range.getSelection().getLenExpression());
-                    String varName = varGen.nextVar("outparam");
+                    String varName = varGen.nextVar("tmp" + fcnParam.getName());
                     ExprVar var = new ExprVar(exp, varName);
                     StmtVarDecl decl = new StmtVarDecl(exp, type, varName, e);
                     StmtAssign assgn = new StmtAssign(exp, e, var);

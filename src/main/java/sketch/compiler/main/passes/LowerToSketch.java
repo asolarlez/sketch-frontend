@@ -9,6 +9,7 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
+import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.stencilSK.EliminateFinalStructs;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
@@ -43,8 +44,7 @@ public class LowerToSketch extends MetaStage {
                         options.bndOpts.arr1dSize));
         // System.out.println("after efs:");
         // prog.accept(prt);
-
-        // FIXME xzl: add this!
+        
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
         // System.out.println("after mmde:");
         // prog.accept(prt);
@@ -60,8 +60,20 @@ public class LowerToSketch extends MetaStage {
 
         prog = stencilTransform.visitProgram(prog);
 
-
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
+        // System.out.println("after mmde:");
+        // prog.accept(prt);
+
+
+        prog = (Program) prog.accept(new SeparateInitializers());
+        prog = (Program) prog.accept(new FlattenStmtBlocks());
+        SpmdTransform tf = new SpmdTransform(options, varGen);
+        prog = (Program) prog.accept(tf);
+        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
+
+        prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
+        System.out.println("after rpear:");
+        prog.accept(prt);
 
         prog = (Program) prog.accept(new EliminateArrayRange(varGen));
         // System.out.println("after ear:");
@@ -73,17 +85,14 @@ public class LowerToSketch extends MetaStage {
         // prog.accept(prt);
 
 
-        prog = (Program) prog.accept(new FlattenStmtBlocks());
-        SpmdTransform tf = new SpmdTransform(options, varGen);
-        prog = (Program) prog.accept(tf);
-        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
-        // prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
-        // System.out.println("after rpear:");
-        // prog.accept(prt);
-
         prog = (Program) prog.accept(new EliminateMultiDimArrays(true, varGen));
-        // System.out.println("after emda:");
-        // prog.accept(prt);
+        System.out.println("after emda:");
+        prog.accept(prt);
+
+        prog = (Program) prog.accept(new EliminateArrayRange(varGen));
+        System.out.println("after ear2:");
+        prog.accept(prt);
+        prog = (Program) prog.accept(new EliminateMDCopies(varGen));
 
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
@@ -129,8 +138,8 @@ public class LowerToSketch extends MetaStage {
         // prog.debugDump("After SVA");
 
         prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
-        // System.out.println("after enaa:");
-        // prog.accept(prt);
+        System.out.println("after enaa:");
+        prog.accept(prt);
 
 
         // prog = (Program) prog.accept(new EliminateArrayDims());

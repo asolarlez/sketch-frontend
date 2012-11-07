@@ -1,21 +1,13 @@
-pragma options "--spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 12 --bnd-inline-amnt 3 --bnd-arr1d-size 8 --bnd-arr-size 64 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 30 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 14 --bnd-inline-amnt 3 --bnd-arr1d-size 14 --bnd-arr-size 64 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
-int SPMD_MAX_BUF_LEN = 5;
+int SPMD_MAX_BUF_LEN = 4;
 include "spmd.skh";
 
 include "generators.skh";
-generator int signed() {
-	int i = ??;
-	if (??(1)) {
-		return -i;
-	}
-	return i;
-}
-
 
 assume P>0 && P<=3;
-assume W>=P && W>1 && W<=8 && (W/P >= H-1) && (W/P >= H*2-2);
+assume W>=P && W>1 && W<=10 && (W/P>=1) && (W/P > H*2-2);
 assume H>=3 && H<=4;
 
 struct LState {
@@ -23,34 +15,9 @@ struct LState {
 	int base;
 	int width;
 	int glen;
-	float[width+glen*2 <: 12][height <: 4] arr;
+	float[width+glen*2 <: 14][height <: 4] arr;
 }
 
-//void partition(int P, int p, int W, ref int base, ref int width) {
-//	if (pid == 0	) {
-//		width = W/P + W%P;
-//		base = 0;
-//	} else {
-//		width = W/P;
-//		base = W%P + p*width;
-//	}
-//}
-
-//void part(int p, int P, int N, ref int ibeg, ref int iend){
-//    if(p< expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS}) ){
-//        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
-//        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
-//    }else{
-//        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
-//        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
-//    }
-//}
-//
-//void partition(int P, int p, int W, ref int base, ref int width) {
-//	int iend;
-//	part(p, P, W, base, iend);
-//	width = iend - base;
-//}
 
 void partition(int P, int p, int N, ref int base, ref int width){
 	generator int num() {
@@ -82,6 +49,12 @@ harness void testPartition(int PP, int p, int N){
     }
 }
 
+//void partition(int P, int p, int N, ref int base, ref int width){
+//	assert P==1 && p == 0;
+//	
+//	base = 0;
+//	width = N;
+//}
 
 LState movein(global int nproc, int pid, global int H, global int W, global float[W][H] ga) {
 	int b, w;
@@ -128,8 +101,8 @@ void spec(global int P, global int H, global int W, ref global float[W][H] A) {
 //	}
 //}
 
-assume h>=3 && h<=4 && width>=h*2-2 && width+glen*2<=12;
-void trapezoid(int h, int width, int glen, ref float[width + glen*2 <: 12][h <: 4] arr) {
+//assume h>=3 && h<=4 && width>=h*2-2 && width+glen*2<=12;
+void trapezoid(global int h, int width, int glen, ref float[width + glen*2][h] arr) {
 	for (int t=1; t<h; ++t) {
 		for (int j = t; j< width-t; ++j) {
 			int x = glen + j;
@@ -178,8 +151,13 @@ void fastLeft(global int H, ref LState s) {
 	float[len] send_buf;
 	float[len] recv_buf;
 
+	assert g == (H+1)/2;
+	assert g >= (len-1)/2 + (len-1)%2;
 	for (int i=0; i<len; ++i) {
-		send_buf[i] = s.arr[i/2][g + w - 1 - (i/2 + i%2)];
+		int x = g + w - 1 - (i/2 + i%2);
+		assert x>=0;
+		assert x<12;
+		send_buf[i] = s.arr[i/2][x];
 	}
 	spmdtransfer(len, 1, send_buf, r, 1, recv_buf);
 	for (int i=0; i<len; ++i) {
@@ -225,7 +203,19 @@ void sk(global int P, global int H, global int W, ref global float[W][H] A) impl
 		LState s;
 		s = movein(P, spmdpid, H, W, A);
 		spmdbarrier();
-		trapezoid(H, s.width, s.glen, s.arr);
+		int ww = s.width+s.glen*2;
+		float[ww][H] a;
+		for (int t=0; t<H; ++t) {
+			for (int x=0; x<ww; ++x) {
+				a[t][x] = s.arr[t][x];
+			}
+		}
+		trapezoid(H, s.width, s.glen, a);
+		for (int t=0; t<H; ++t) {
+			for (int x=0; x<ww; ++x) {
+				s.arr[t][x] = a[t][x];
+			}
+		}
 //		trapezoid(s);
 		fastLeft(H, s);
 		fastRight(H, s);
