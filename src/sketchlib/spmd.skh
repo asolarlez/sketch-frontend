@@ -23,18 +23,16 @@ float spmdoperate(global int op, float lhs, float rhs)
   }
 }
 
-@Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
-void spmdreduce(global int op, global int size, bit reducecond, float [size] sendbuf, ref float [size] recvbuf)
+@Native("{ mpiReduce(op, size, sendbuf, recvbuf); }" )
+void spmdreduce(global int op, global int size, float [size] sendbuf, ref float [size] recvbuf)
 {
   global float [size] channel;
   spmdbarrier();
-  if (reducecond) {
-    if (spmdpid == 0) {
-      channel = sendbuf;
-    } else {
-      for (int i=1; i<size; ++i) {
-        channel[i] = spmdoperate(op, channel[i], sendbuf[i]);
-      }
+  if (spmdpid == 0) {
+    channel = sendbuf;
+  } else {
+    for (int i=1; i<size; ++i) {
+      channel[i] = spmdoperate(op, channel[i], sendbuf[i]);
     }
   }
   spmdbarrier();
@@ -46,7 +44,7 @@ void spmdreduce(global int op, global int size, bit reducecond, float [size] sen
   spmdbarrier();
 }
 
-@Native("{ mpiTransfer(size, src_buff, scond, recipient, dest_buff, rcond); }" )
+@Native("{ mpiTransfer(size, scond, sendbuf, recipient, rcond, recvbuf); }" )
 void spmdtransfer(global int size, bit scond, float [size] sendbuf, int recipient, bit rcond, ref float [size] recvbuf)
 {
   global float [SPMD_MAX_BUF_LEN * SPMD_MAX_NPROC] channel;
