@@ -29,17 +29,17 @@ void spmdreduce(global int op, global int size, float [size] sendbuf, ref float 
   global float [size] channel;
   spmdbarrier();
   if (spmdpid == 0) {
-    channel = sendbuf;
+    for (int i=0; i<size; ++i) {
+      channel[i] = sendbuf[i];
+    }
   } else {
-    for (int i=1; i<size; ++i) {
+    for (int i=0; i<size; ++i) {
       channel[i] = spmdoperate(op, channel[i], sendbuf[i]);
     }
   }
   spmdbarrier();
-  if (reducecond) {
-    for (int i=0; i<size; ++i) {
-      recvbuf[i] = channel[i];
-    }
+  for (int i=0; i<size; ++i) {
+    recvbuf[i] = channel[i];
   }
   spmdbarrier();
 }
