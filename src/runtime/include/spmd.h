@@ -34,7 +34,7 @@ static MPI_Op const OP[] = {
   MPI_PROD
 };
 
-void mpiReduce(int op, int size, float * sendbuf, float recvbuf) {
+void mpiReduce(int op, int size, float * sendbuf, float * recvbuf) {
 	MPI_Allreduce(sendbuf, recvbuf, size, MPI_FLOAT, OP[op], MPI_COMM_WORLD);
 }
 
