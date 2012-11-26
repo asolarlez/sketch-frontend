@@ -1,0 +1,32 @@
+pragma options "--bnd-unroll-amnt 32";
+
+harness void mm(int m, int[m] x1, int[m] x2, int[m] x3, int[m] x4, int[m] x5, int[m] x6){
+    int q=??;
+    int[m] tt;
+    if(q==0){
+        tt = x1;
+    }else{
+        if(q==1){
+            tt = x2;
+        }else{
+            if(q==2){
+                tt = x3;
+            }else{
+                if(q==3){
+                    tt = x4;
+                }else{
+                    if(q==4){
+                        tt = x5;
+                    }else{
+                        if(q==5){
+                            tt = x6;
+                        }else{
+                            tt = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    assert tt == x3;
+}
