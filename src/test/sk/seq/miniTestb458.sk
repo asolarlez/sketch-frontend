@@ -1,0 +1,20 @@
+package foo;
+
+int Foo(int x){
+    return x;
+}
+
+struct moo{
+    int foo;
+}
+struct foo{
+    int x;
+    int y;
+    int moo;
+}
+
+harness void main(int x){
+    foo t = new foo(x=x, moo=x+1);
+    assert Foo(x+1) == t.moo;
+    
+}

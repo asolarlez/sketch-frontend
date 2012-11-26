@@ -23,4 +23,8 @@ public class StmtMinimize extends Statement {
     public Expression getMinimizeExpr() {
         return minimizeExpr;
     }
+
+    public String toString() {
+        return "minimize(" + minimizeExpr + ")";
+    }
 }

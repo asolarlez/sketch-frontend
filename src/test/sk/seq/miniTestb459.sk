@@ -1,0 +1,30 @@
+
+@Native("{assert( b ); }")
+void secretAssert(bit b){
+    
+}
+
+
+harness void main1(int x){
+    int t = x;
+    minrepeat{
+        x = x + 1;
+    }    
+    assert x > t + 4;    
+    int i=0;
+    minrepeat{
+        x = x + 1;
+        ++i;
+    }
+    assert x > t + 6;
+    secretAssert(x==t+7);
+}
+
+harness void main2(int x){
+    int t = x;
+    minrepeat{
+        x = x + 1;
+    }
+    assert x > t + 2;
+    secretAssert(x==t+3);
+}

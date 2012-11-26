@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 4 --bnd-arr-size 16 --bnd-unroll-amnt 16 --be:showDAG";
+pragma options "--bnd-inbits 4 --bnd-arr-size 16 --bnd-unroll-amnt 16 ";
 
 /**
 

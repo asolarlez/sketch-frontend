@@ -2,8 +2,8 @@
 
 SHELL = /bin/bash
 
-VERSION = 1.6.2
-# If you change the version you also need to change pom.xml and sketch.compiler.main.PlatformLocalization.java
+VERSION = 1.6.3
+# If you change the version you also need to change pom.xml and sketch.compiler.main.PlatformLocalization.java and scripts/windows/final/sketch
 
 MVN_PATH = $(shell which mvn)
 

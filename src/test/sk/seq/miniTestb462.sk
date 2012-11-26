@@ -1,0 +1,33 @@
+
+int min(int i, int j){
+    return i<j?i:j;
+}
+
+int max(int i, int j){
+    return i>j?i:j;
+}
+
+int minp(int i, int j){
+    return i<=j?i:j;
+}
+
+int maxp(int i, int j){
+    return i>=j?i:j;
+}
+
+int spec(int i, int j, int k, int u){
+    int t = max(i, j);
+    int q = max(t, k);
+    int p = min(10-q, 3);
+    return max(p, u-5);
+}
+
+
+int sk(int i, int j, int k, int u) implements spec{
+    int t = maxp(i+??(3), k);
+    int q = maxp(t, j);
+    int p = minp(??-q, ??(3));
+    return max(p, u-??(3));
+}
+
+

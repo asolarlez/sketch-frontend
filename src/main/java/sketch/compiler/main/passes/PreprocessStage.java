@@ -43,6 +43,8 @@ public class PreprocessStage extends MetaStage {
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
+        prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
+
         prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
@@ -51,7 +53,6 @@ public class PreprocessStage extends MetaStage {
 
         prog.accept(new CheckProperFinality());
 
-        prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
         prog = (Program) prog.accept(new MainMethodCreateNospec());
 
         // prog = preproc1.run(prog);

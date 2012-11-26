@@ -433,9 +433,11 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 
     Map<String, Function> funToReplace = new HashMap<String, Function>();
+
     Stack<String> funsToVisit = new Stack<String>();
     Map<String, Function> newFunctions = new HashMap<String, Function>();
     Set<String> visited = new HashSet<String>();
+    Map<String, Package> pkges;
     private void checkFunParameters(Function fun) {
         for(Parameter p : fun.getParams()){
             if(p.getType() instanceof TypeFunction){
@@ -474,7 +476,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
-        Map<String, Package> pkges = new HashMap<String, Package>();
+        pkges = new HashMap<String, Package>();
         for (Package pkg : p.getPackages()) {
             nflistMap.put(pkg.getName(), new ArrayList<Function>());
             pkges.put(pkg.getName(), pkg);
@@ -656,7 +658,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         String name = nres.getFunName(efc.getName());
         if (name == null) {
             throw new ExceptionAtNode("Function " + efc.getName() +
-                    " has either not been defined, or is ambiguous.", efc);
+                    " either does not exist, or is ambiguous.", efc);
         }
         if (funToReplace.containsKey(name)) {
             Function orig = funToReplace.get(name);
@@ -674,6 +676,15 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         } else {
             if (!visited.contains(name)) {
+                String pkgName = getPkgName(name);
+                if (pkges != null && pkges.get(pkgName) == null) {
+                    throw new ExceptionAtNode("Package named " + pkgName +
+                            " does not exist.", efc);
+                }
+                if (nres.getFun(name) == null) {
+                    throw new ExceptionAtNode("Function " + efc.getName() +
+                            " either does not exist, or is ambiguous.", efc);
+                }
                 funsToVisit.push(name);
             }
             return super.visitExprFunCall(efc);

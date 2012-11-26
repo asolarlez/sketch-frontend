@@ -251,29 +251,7 @@ public class SATBackend {
         }
 
         // minimize
-        if (hasMinimize) {
-            String[] commandLine =
-                    getBackendCommandline(backendOptions, "--use-minimize");
-            boolean ret = runSolver(commandLine, 0, timeoutMins);
-            // for (int a = rangeStart; a <= rangeMax; a *= 2) {
-            // String[] commandLine = getBackendCommandline(backendOptions,
-            // "--use-minimize", "--bnd-int-range", a + "");
-            // ret = runSolver(commandLine, 0, timeoutMins);
-            // if (ret) {
-            // break;
-            // } else if (2 * a <= rangeMax) {
-            // printDebug("Trying next int range bound", 2 * a);
-            // }
-            // }
-
-            if (!ret) {
-                log(5, "Backend returned error code");
-                // System.err.println(solverErrorStr);
-                return false;
-            }
-
-        // TODO -- move incremental to Python backend
-        } else if (options.bndOpts.incremental.isSet) {
+        if (options.bndOpts.incremental.isSet) {
 			boolean isSolved = false;
 			int bits=0;
 			int maxBits = options.bndOpts.incremental.value;
@@ -299,18 +277,13 @@ public class SATBackend {
 
 		// default
         } else {
-            String[] commandLine = getBackendCommandline(backendOptions);
+            String[] commandLine;
+            if (hasMinimize) {
+                commandLine = getBackendCommandline(backendOptions, "--minvarHole");
+            } else {
+                commandLine = getBackendCommandline(backendOptions);
+            }
             boolean ret = runSolver(commandLine, 0, timeoutMins);
-            // for (int a = rangeStart; a <= rangeMax; a *= 2) {
-            // String[] commandLine = getBackendCommandline(backendOptions,
-            // "--bnd-int-range", a + "");
-            // ret = runSolver(commandLine, 0, timeoutMins);
-            // if (ret) {
-            // break;
-            // } else if (2 * a <= rangeMax) {
-            // printDebug("Trying next int range bound", 2 * a);
-            // }
-            // }
 
             if (!ret) {
                 log(5, "Backend returned error code");

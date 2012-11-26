@@ -45,6 +45,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeComparisonResult;
+import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -202,45 +203,49 @@ public class SemanticChecker
 		}
 	}
 
-	/**
-	 * Checks that no structures have duplicated field names.  In
-	 * particular, a field in a structure or filter can't have the
-	 * same name as another field in the same structure or filter, and
-	 * can't have the same name as a stream or structure.
-	 *
-	 * @param prog  parsed program object to check
-	 * @param streamNames  map from top-level stream and structure
-	 *              names to FEContexts in which they are defined
-	 */
+    /**
+     * Checks that no structures have duplicated field names. In particular, a field in a
+     * structure or filter can't have the same name as another field in the same structure
+     * or filter.
+     * 
+     * @param prog
+     *            parsed program object to check
+     * @param streamNames
+     *            map from top-level stream and structure names to FEContexts in which
+     *            they are defined
+     */
 	public void checkDupFieldNames(Program prog, Map streamNames)
 	{
 		//System.out.println("checkDupFieldNames");
 
-		for (Iterator iter = prog.getPackages().iterator(); iter.hasNext(); )
-		{
-			Package spec = (Package)iter.next();
-			Map localNames = new HashMap();
-			Iterator i2;
+        for (Package spec : prog.getPackages()) {
 
+            Map<String, FEContext> structNames = new HashMap<String, FEContext>();
             for (TypeStruct ts : spec.getStructs()) {
-                checkADupFieldName(localNames, streamNames, ts.getName(), ts.getContext());
-                Map fieldNames = new HashMap();
+                checkADupFieldName(structNames, ts.getName(), ts.getContext(),
+                        "Two structs in the same package can't share a name.");
+                Map<String, FEContext> fieldNames = new HashMap<String, FEContext>();
                 for (Entry<String, Type> entry : ts) {
-                    checkADupFieldName(fieldNames, streamNames, entry.getKey(),
-                            ts.getContext());
+                    checkADupFieldName(fieldNames, entry.getKey(), ts.getContext(),
+                            "Two fields in the same struct can't share a name.");
+                    if (entry.getKey().equals(ts.getName())) {
+                        report(ts.getContext(),
+                                "Field can not have the same name as class: '" +
+                                        entry.getKey() + "'");
+                    }
                 }
             }
 
-			for (i2 = spec.getVars().iterator(); i2.hasNext(); )
-			{
-				FieldDecl field = (FieldDecl)i2.next();
+
+            for (FieldDecl field : spec.getVars()) {
 				for (int i = 0; i < field.getNumFields(); i++)
-					checkADupFieldName(localNames, streamNames,
-							field.getName(i), field.getCx ());
+                    checkADupFieldName(
+structNames,
+                            field.getName(i),
+                            field.getCx(),
+                            "Global variables, structs and functions can not share the same name.");
 			}
-			for (i2 = spec.getFuncs().iterator(); i2.hasNext(); )
-			{
-				Function func = (Function)i2.next();
+            for (Function func : spec.getFuncs()) {
 				// Some functions get alternate names if their real
 				// name is null:
 				String name = func.getName();
@@ -248,8 +253,11 @@ public class SemanticChecker
                     report(func, "Functions must have names");
                 }
 				if (name != null)
-					checkADupFieldName(localNames, streamNames,
-							name, func.getCx ());
+                    checkADupFieldName(
+structNames,
+                            name,
+                            func.getCx(),
+                            "Global variables, structs and functions can not share the same name.");
 			}
 		}
 	}
@@ -261,24 +269,19 @@ public class SemanticChecker
 	 * @param name
 	 * @param ctx
 	 */
-	private void checkADupFieldName(Map localNames, Map streamNames,
-			String name, FEContext ctx)
+    private void checkADupFieldName(Map<String, FEContext> localNames, String name,
+            FEContext ctx, String moreMsg)
 	{
 		if (localNames.containsKey(name))
 		{
 			FEContext octx = (FEContext)localNames.get(name);
 			report(ctx, "Duplicate declaration of '" + name + "'");
-			report(octx, "(also declared here)");
+            report(octx, "(also declared here). " + moreMsg);
 		}
 		else
 		{
 			localNames.put(name, ctx);
-			if (streamNames.containsKey(name))
-			{
-				FEContext octx = (FEContext)streamNames.get(name);
-				report(ctx, "'" + name + "' has the same name as");
-				report(octx, "a stream or structure");
-			}
+
 		}
 	}
 
@@ -588,6 +591,17 @@ public class SemanticChecker
 							+ lt +"', '"+ rt +"'");
 				return ea;
 			}
+
+            public Object visitTypeStruct(TypeStruct ts) {
+                for (Entry<String, Type> en : ts) {
+                    if (en.getValue() instanceof TypeFunction) {
+                        report(ts.getContext(),
+                                "Function Types not allowed as fields in a struct");
+                    }
+                }
+                Object o = super.visitTypeStruct(ts);
+                return o;
+            }
 
 			public Object visitExprChoiceBinary (ExprChoiceBinary exp) {
 				Expression left = exp.getLeft (), right = exp.getRight ();
@@ -1160,9 +1174,6 @@ public class SemanticChecker
                     if (symtab.hasVar(name)) {
                         report(stmt, "Shadowing of variables is not allowed");
                     }
-					/*if (isStreamParam(name))
-						report(stmt,
-						"local variable shadows stream parameter");*/
 				}
 				return super.visitStmtVarDecl(stmt);
 			}

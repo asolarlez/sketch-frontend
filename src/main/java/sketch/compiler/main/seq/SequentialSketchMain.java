@@ -43,10 +43,8 @@ import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
-import sketch.compiler.passes.cleanup.CleanupRemoveMinFcns;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
-import sketch.compiler.passes.cuda.DeleteInstrumentCalls;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
 import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
 import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
@@ -265,13 +263,7 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
-    public class CleanupStage extends CompilerStage {
-        public CleanupStage() {
-            super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { new CleanupRemoveMinFcns() };
-            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
-        }
-    }
+
 
     // [start] function overloads for stage classes
     public BeforeSemanticCheckStage getBeforeSemanticCheckStage() {
@@ -308,9 +300,7 @@ public class SequentialSketchMain extends CommonSketchMain
         return new FinalLowLevelCLowering();
     }
 
-    public CleanupStage getCleanupStage() {
-        return new CleanupStage();
-    }
+
     // [end]
 
     protected Program preprocessProgram(Program lprog, boolean partialEval) {
@@ -527,8 +517,12 @@ public class SequentialSketchMain extends CommonSketchMain
         prog = synthResult.lowered.result;
         runPrintFunctions(synthResult.lowered, synthResult.solution);
 
-        Program finalCleaned =
-                (Program) (new DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
+
+        Program finalCleaned = synthResult.lowered.highLevelC;
+        // (Program) (new
+        // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
+
+
         // beforeUnvectorizing =
         // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
         Program substituted;
@@ -539,10 +533,11 @@ public class SequentialSketchMain extends CommonSketchMain
             substituted = finalCleaned;
         }
 
+
+
         Program substitutedCleaned =
                 (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);
 
-        substitutedCleaned = (getCleanupStage()).run(substitutedCleaned);
 
         generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");

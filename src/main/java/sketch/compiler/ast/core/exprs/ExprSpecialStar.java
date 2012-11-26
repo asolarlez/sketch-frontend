@@ -14,11 +14,12 @@ import sketch.compiler.ast.core.typs.Type;
  */
 public class ExprSpecialStar extends ExprStar {
     public final String name;
-
+    private static int cnt = 0;
     public ExprSpecialStar(FENode context, String name, int size, Type typ) {
         super(context, size, typ);
         this.name = name;
-        this.starName = "H__BOUND";
+        this.starName = "H__BND" + cnt;
+        ++cnt;
     }
     
     @Override

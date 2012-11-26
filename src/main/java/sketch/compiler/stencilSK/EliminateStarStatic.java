@@ -90,8 +90,9 @@ public class EliminateStarStatic extends FEReplacer {
         } else {
             try {
                 final File file = new File(filename);
-                if (!file.getParentFile().exists()) {
-                    file.getParentFile().mkdirs();
+                File pf = file.getParentFile();
+                if (pf != null && !pf.exists()) {
+                    pf.mkdirs();
                 }
                 out = new PrintStream(file, "UTF-8");
             } catch (Exception e) {
