@@ -1,0 +1,19 @@
+\section{Advanced Usage and Diagnostics}
+
+
+\subsection{Temporary Files and Frontend Backend Communication}
+
+The sketch frontend communicates with the solver through temporary files. 
+By default, these files are named after the sketch you are solving and 
+are placed in your temporary directory and deleted right afterwards. One 
+unfortunate consequence of this is that if you run two instances of sketch at the same 
+time on the same sketch (or on two sketch files with the same name), the temporary file
+can get corrupted, leading to a compiler crash. In order to avoid this problem, you can use the flag 
+\C{--fe-output} to direct the frontend to put the temporary files in a different directory. 
+
+\flagdoc{fe-output}{Temporary output directory used to communicate with backend solver.}
+
+Also, if you are doing advanced development on the system, you will sometimes want to keep 
+the temporary files from being deleted. You can do this by using the \C{--fe-keep-tmp} flag.
+
+\flagdoc{fe-keep-tmp}{Keep intermediate files used by the sketch frontend to communicate with the solver.}

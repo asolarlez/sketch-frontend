@@ -1,0 +1,14 @@
+pragma options "--bnd-unroll-amnt 5  --bnd-arr-size 5 --bnd-inbits 2 --debug-show-dag ";
+
+int[n] foo(int n, int[n] x);
+
+harness void main(int n, int[n] x1, int q, int[q] y1){
+    int[n] x = foo(n, x1);
+    int[q] y = foo(q, y1);
+    
+    if(x1==y1){
+        assert x == y;
+    }
+   
+}
+

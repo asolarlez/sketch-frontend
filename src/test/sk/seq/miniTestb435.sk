@@ -1,4 +1,4 @@
-pragma options "--bnd-unroll-amnt 32  --debug-show-dag ";
+pragma options "--bnd-unroll-amnt 32";
 
 int[n] foo(int n, int[n] x);
 
@@ -10,9 +10,10 @@ harness void main(int n, int[n] x1, int q, int[q] y1){
         return;
     }
     
+    
     if(n==q){
         assert x == y;
-    }
+    }    
    
     
     if(n>3 && q > 3){

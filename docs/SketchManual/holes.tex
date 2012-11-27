@@ -36,7 +36,21 @@ When searching for the value of a constant hole, the synthesizer will only searc
 The flag \C{bnd-ctrlbits} tells the synthesizer what range of values to consider for all integer holes. If one wants a given integer hole to span a different range of values, one can use the extended notation \C{??(N)}, where \C{N} is the number of bits to use for that hole.
 }
 
-\subsection{Generator functions}
+
+\subsection{Minimizing Hole Values}
+In many cases, it is useful to ask the synthesizer for the smallest constant that will satisfy a specification. For such cases, the synthesizer supports a function \C{minimize($e$)}, which asks the synthesizer to make $e$ as small as possible. More specifically, the synthesizer will find a minimal $bnd$ such that $e < bnd$ for all inputs.
+
+The synthesizer has some syntactic sugar on top of minimize to support the synthesis of a minimal number of statements, which is a common idiom in \Sk{}. 
+\begin{lstlisting}
+void swap(ref bit[W] x, ref bit[W] y){
+    minrepeat{
+        if(??){ x = x ^ y;}else{ y = x ^ y; }
+    }
+}
+\end{lstlisting}
+
+
+\section{Generator functions}
 
 A generator describes a space of possible code fragments that can be used to fill a hole. The constant generator we have seen so far corresponds to the simplest such space of code fragments: the space of integers in a particular range. More complex generators can be created by composing simple generators into \emph{generator functions}. 
 

@@ -475,6 +475,33 @@ harness void main(int N, int[N] A){
 In the sketch above, \C{ForLoop} takes the closure involving the function \C{copy} and its local environment; the effect of the call to \C{ForLoop} is the same as if the body of copy had been placed in a traditional \C{for} loop. 
 One important aspect of closures in Sketch is that because functions cannot be returned by other functions or written into the heap, a local function can never escape the context in which it was declared. This allows local functions to modify local variables defined in their host function without any messy semantic issues.
 
+Finally, local functions can only be used after they are declared, unlike top level functions for which the order of declaration does not matter. One important implication of this is that you cannot define mutually recursive local functions.
+
+\begin{lstlisting}
+harness void main(int N, int[N] A){
+      int foo(int i){
+        if(i>0){
+             return moo(i-1); // not allowed because moo has not been declared.
+        }
+        return i;
+      }
+      int moo(int i){
+         return foo(i);
+      }
+}
+int fooTop(int i){
+      if(i>0){
+        return mooTop(i-1); // This is ok, for top level functions the 
+      }                     // order of declaration does not matter.
+      return i;
+}
+int mooTop(int i){
+     return fooTop(i);
+}
+\end{lstlisting}
+
+
+
 \subsection{Uninterpreted Functions}
 \Sk{} also supports uninterpreted functions, which can be defined with the following syntax.
 \begin{lstlisting}

@@ -1,87 +1,17 @@
-package Array;
-
-
-int INTEGER=0;
-
-int LIST=1;
-
-
-struct MultiType{
-
-   MTArray lst;
-
-   int val;
-
-   int flag;
-
+struct Grid
+{
+  int[2][5] data;
 }
 
+harness void main()
+{
+  Grid g = new Grid();
+  
+  //out of bound assignment
+  g.data[10][20] = 4;
+  //and out of bound access
+  int x = g.data[10][20];
 
-struct MTArray{
-
-   int len;
-
-   MultiType[len] A;  
-
-}
-
-
-
-MultiType plus(MultiType x, MultiType y){
-
-
-
-if(x.flag == INTEGER){ 
-
-    assert y.flag == INTEGER; 
-
-    MultiType w = new MultiType(val=x.val+y.val, flag=INTEGER);
-
-    return w;
-
-}
-
-
-if(y.flag == INTEGER){ 
-
-    assert x.flag == INTEGER;
-
-    MultiType w = new MultiType(val=x.val+y.val, flag=INTEGER);
-
-    return w;
-
-}
-
-}
-
-
-
-
-
-harness void plusCheck() {
-
-    
-
-  MultiType x = new MultiType(lst=new MTArray(A={new MultiType(val=10, flag=INTEGER)}, len=2), flag=LIST);
-
-  MultiType y = new MultiType(val=5, flag=INTEGER);
-
-    MultiType w = new MultiType(val=7, flag=INTEGER);
-
-    
-
-  MultiType z = new MultiType(lst=new MTArray(A={}, len=0), flag=LIST);
-
-    MultiType u = new MultiType(val=0, flag=INTEGER);
-
-
-    MultiType t = new MultiType(lst=new MTArray(A={new MultiType(val=10, flag=INTEGER), y}, len=2), flag=LIST);
-
-    MultiType v = new MultiType(val=12, flag=INTEGER);
-
-u = plus(y, w);
-
-    assert u == v;
-
-
+  //cause of some problem
+  assert(x == 4);
 }

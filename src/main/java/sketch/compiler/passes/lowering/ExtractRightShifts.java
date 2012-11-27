@@ -71,7 +71,7 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 
 			return new ExprBinary(context, exp.getOp(), new ExprVar(exp, tmpName), rexp, exp.getAlias());
         }
- else if (exp.getOp() == ExprBinary.BINOP_EQ &&
+ else if ((exp.getOp() == ExprBinary.BINOP_EQ || exp.getOp() == ExprBinary.BINOP_NEQ) &&
                 (getType(exp.getLeft()).isArray() || getType(exp.getRight()).isArray()))
         {
 			//added by rimoll
@@ -113,7 +113,11 @@ public class ExtractRightShifts extends SymbolTableVisitor {
 			this.addStatement(eqdecl);
 
 			//ExprBinary(context, exp.getOp(), new ExprVar(exp, tmpName1), new ExprVar(exp, tmpName2), exp.getAlias());
-            return new ExprVar(exp, tmpName3);
+            if (exp.getOp() == ExprBinary.BINOP_EQ) {
+                return new ExprVar(exp, tmpName3);
+            } else {
+                return new ExprUnary("!", new ExprVar(exp, tmpName3));
+            }
 		}
 		else{
 			return super.visitExprBinary(exp);
