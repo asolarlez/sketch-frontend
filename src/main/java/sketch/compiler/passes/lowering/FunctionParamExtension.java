@@ -12,9 +12,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -28,6 +28,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
@@ -248,13 +249,30 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	    }
 	}
 
+    Expression callLHS = null;
 	public Object visitStmtAssign(StmtAssign sa){
-	    if(sa.getLHS() instanceof ExprVar){
-	        rvname = sa.getLHS().toString();
-	    }
-	    Object o = super.visitStmtAssign(sa);
-	    rvname = null;
-	    return o;
+        if (sa.getLHS() instanceof ExprVar) {
+            rvname = sa.getLHS().toString();
+        }
+        if (sa.getRHS() instanceof ExprFunCall) {
+            Expression lhs = doExpression(sa.getLHS());
+            callLHS = lhs;
+            Expression rhs = doExpression(sa.getRHS());
+            rvname = null;
+            callLHS = null;
+            if (rhs == null) {
+                return null;
+            } else {
+                if (lhs == sa.getLHS() && rhs == sa.getRHS())
+                    return sa;
+                return new StmtAssign(sa, lhs, rhs, sa.getOp());
+            }
+        } else {
+            callLHS = null;
+            Object o = super.visitStmtAssign(sa);
+            rvname = null;
+            return o;
+        }
 	    
 	}
 	
@@ -567,46 +585,40 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			 args.add(oldArg);
              pmap.put(p.getName(), oldArg);
             } else {
-                String tempVar = getNewOutID(p.getName());
                 Type tt = (Type) p.getType().accept(vrep);
-                if (tt instanceof TypeStructRef) {
-                    TypeStructRef tsf = (TypeStructRef) tt;
-                    tt = tsf.addDefaultPkg(fun.getPkg(), nres);
+                if (ptype == Parameter.OUT && callLHS != null) {
+                    Type t = getType(callLHS);
+                    if (t instanceof TypeArray) {
+                        if (t.equals(tt)) {
+                            args.add(callLHS);
+                            tempVars.add(null);
+                            continue;
+                        }
+                    } else {
+                        args.add(callLHS);
+                        tempVars.add(null);
+                        continue;
+                    }
                 }
-                Statement decl = new StmtVarDecl(exp, tt, tempVar, oldArg);
-                ExprVar ev = new ExprVar(exp, tempVar);
-                args.add(ev);
-                pmap.put(p.getName(), ev);
-                addStatement(decl);
-                if (ptype == Parameter.OUT) {
-                    tempVars.add(ev);
+                {
+                    String tempVar = getNewOutID(p.getName());
+                    if (tt instanceof TypeStructRef) {
+                        TypeStructRef tsf = (TypeStructRef) tt;
+                        tt = tsf.addDefaultPkg(fun.getPkg(), nres);
+                    }
+
+                    Statement decl = (new StmtVarDecl(exp, tt, tempVar, oldArg));
+                    symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
+                    ExprVar ev = new ExprVar(exp, tempVar);
+                    args.add(ev);
+                    pmap.put(p.getName(), ev);
+                    addStatement(decl);
+                    if (ptype == Parameter.OUT) {
+                        tempVars.add(ev);
+                    }
+                    assert ptype != Parameter.REF;
                 }
-                assert ptype != Parameter.REF;
             }
-			
-//			if(oldArg != null && oldArg instanceof ExprVar || (oldArg instanceof ExprConstInt && !p.isParameterOutput())){
-//				args.add(oldArg);
-//				pmap.put(p.getName(), oldArg);
-//			}else{
-//				String tempVar = getNewOutID(p.getName());
-//                Type tt = (Type) p.getType().accept(vrep);
-//                if (tt instanceof TypeStructRef) {
-//                    TypeStructRef tsf = (TypeStructRef) tt;
-//                    tt = tsf.addDefaultPkg(fun.getPkg());
-//                }
-//                Statement decl = new StmtVarDecl(exp, tt, tempVar, oldArg);
-//				ExprVar ev =new ExprVar(exp,tempVar);
-//				args.add(ev);
-//				pmap.put(p.getName(), ev);
-//				addStatement(decl);
-//				if(ptype == Parameter.OUT){
-//					tempVars.add(ev);
-//				}
-//				if(ptype == Parameter.REF){
-//				    assert ev != null;
-//					refAssigns.add(new StmtAssign(oldArg, ev  ));
-//				}
-//			}
 		}
 
 		ExprFunCall newcall=new ExprFunCall(exp,exp.getName(),args);

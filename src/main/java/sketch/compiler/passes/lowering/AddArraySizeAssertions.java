@@ -20,6 +20,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
+import sketch.util.exceptions.ExceptionAtNode;
 
 public class AddArraySizeAssertions extends SymbolTableVisitor {
 
@@ -49,6 +50,18 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
                 addStatement(new StmtAssert(e, "Array Length Mismatch " + cx.getCx(),
                         false));
                 addCheck(la.getBase(), ra.getBase(), isUnivariant, cx);
+            } else {
+                if (isUnivariant) {
+                    if (illen.intValue() != irlen.intValue()) {
+                        throw new ExceptionAtNode(
+                                "Array length mismatch. Remember reference parameters are univariant.",
+                                cx);
+                    }
+                } else {
+                    if (illen.intValue() < irlen.intValue()) {
+                        throw new ExceptionAtNode("Array length mismatch. ", cx);
+                    }
+                }
             }
         }
     }
