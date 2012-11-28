@@ -1,0 +1,40 @@
+
+int foo(int x){
+    return x + 1;
+}
+
+void mvecR(int n, ref int[n] out){    
+    for(int i=0; i<n; ++i){ out[i] = 1; }    
+}
+
+int[n] mvec(int n){
+    int[n] out;
+    for(int i=0; i<n; ++i){ out[i] = 1; }
+    return out;
+}
+
+harness void main(int n, int[n] t){
+    int[n] q;
+    if(n < 4){
+        return;
+    }
+    if(n>5){
+        t[foo(??)] = foo(n);
+        assert t[2] == n+??;
+    }
+    int[10] x = {0,0,0,0,0, 1,1,1,1,1};
+    if(n > 3){
+        x = mvec(5);
+    }
+    assert x[4] == 1;
+    assert x[7] == 0;
+    
+    int[10] xx = {0,0,0,0,0, 1,1,1,1,1};
+    if(n > 3){
+        mvecR(5, xx[0::5]);
+    }
+    assert xx[4] == 1;
+    assert xx[7] == 1;
+    
+    
+}
