@@ -156,6 +156,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
         String resName = varGen.nextVar("_pac_sc");
 
         addStatement(new StmtVarDecl(eb, TypePrimitive.bittype, resName, null));
+        symtab.registerVar(resName, TypePrimitive.bittype, eb, SymbolTable.KIND_LOCAL);
 
         ExprVar res = new ExprVar(eb, resName);
         Expression cond = isAnd ? res : new ExprUnary("!", res);
@@ -185,6 +186,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
             t = TypePrimitive.inttype;
         }
         addStatement(new StmtVarDecl(exp, t, resName, null));
+        symtab.registerVar(resName, t, exp, SymbolTable.KIND_LOCAL);
         ExprVar res = new ExprVar(exp, resName);
 
         StmtBlock thenBlock = null;
@@ -544,9 +546,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	}
 
 	public Object visitExprFunCall(ExprFunCall exp) {
+        Expression tempcallLHS = callLHS;
+        callLHS = null;
 		// first let the superclass process the parameters (which may be function calls)
 		exp=(ExprFunCall) super.visitExprFunCall(exp);
-
+        callLHS = tempcallLHS;
 		// resolve the function being called
 		Function fun;
 		try{
@@ -586,8 +590,15 @@ public class FunctionParamExtension extends SymbolTableVisitor
              pmap.put(p.getName(), oldArg);
             } else {
                 Type tt = (Type) p.getType().accept(vrep);
+                /*
+                 * This looked like a nice optimization; the idea is that
+                 * rather than creating a temporary for the output parameter,
+                 * we reuse the same variable that was on the lhs of the assignment.
+                 * The problem is that if there is aliasing between that variable
+                 * and some of the parameters, there will be big problems.
                 if (ptype == Parameter.OUT && callLHS != null) {
-                    Type t = getType(callLHS);
+                    
+                    Type t = getType(callLHS);                   
                     if (t instanceof TypeArray) {
                         if (t.equals(tt)) {
                             args.add(callLHS);
@@ -600,6 +611,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
                         continue;
                     }
                 }
+                */
                 {
                     String tempVar = getNewOutID(p.getName());
                     if (tt instanceof TypeStructRef) {

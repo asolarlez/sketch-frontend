@@ -1,0 +1,33 @@
+pragma options "--bnd-unroll-amnt 33";
+
+int[n] qq(int n){
+    int[n] out;
+    for(int i=0; i<n; ++i){
+        out[i] = 1;
+    }
+    return out;
+}
+
+int[n] cp(int n, int[n] in){
+    int[n] out;
+    for(int i=0; i<n; ++i){
+        out[i] = in[i]+1;
+    }
+    return out;
+}
+
+int[n+1] add(int n, int[n] in){
+    int[n+1] out;
+    for(int i=0; i<n; ++i){
+        out[i] = in[i];
+    }
+    out[n] = 2;
+    return out;
+}
+
+
+harness void main(int n){
+    int[n] t1 = cp(n, qq(n));
+    int[n+1] t2 = add(n, cp(n, t1));
+    assert t2[n] == 2;
+}

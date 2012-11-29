@@ -6,7 +6,7 @@ generator bit gen(bit x, bit y, bit t, int lim){
     if(??){
         return {| x | y | t |};
     }
-    if(??){
+    if(??){              
         return {| gen(x, y, t, lim-1) (& | \| | ^) gen(x, y, t, lim-1) |};
     }    
 }
@@ -19,8 +19,8 @@ bit[N] sumsk(int N, int L, bit [L] x, int M, bit[M] y) implements sum{
     for(int i=0; i<T; ++i){
         bit tx = i<L?x[i]:0;
         bit ty = i<M?y[i]:0;
-        out[i] = gen(tx, ty, t, 3);
-        t = gen(tx, ty, t, 4);        
+        out[i] = gen(tx, ty, t, 3);        
+        t = gen(tx, ty, t, 4);
     }
     return (bit[N])out;
 }

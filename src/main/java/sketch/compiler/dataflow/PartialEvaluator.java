@@ -32,6 +32,8 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
+import sketch.util.exceptions.ExceptionAtNode;
+import sketch.util.exceptions.SketchException;
 
 class CloneHoles extends FEReplacer{
     
@@ -577,7 +579,11 @@ public class PartialEvaluator extends FEReplacer {
         }
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
         // Function nfun = fun.creator().params(nplist).create();
-        vtype.funcall(fun, avlist, outSlist, state.pathCondition());
+        try {
+            vtype.funcall(fun, avlist, outSlist, state.pathCondition());
+        } catch (SketchException se) {
+            throw new ExceptionAtNode(se.getMessage(), exp);
+        }
         
         assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
 

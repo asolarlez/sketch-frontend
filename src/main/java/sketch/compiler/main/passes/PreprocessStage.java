@@ -68,7 +68,6 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
         // prog = ir1.run(prog);

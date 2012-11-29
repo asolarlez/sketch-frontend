@@ -75,10 +75,7 @@ public class ExtractComplexFunParams extends SymbolTableVisitor {
                 args.add(ev);
                 pmap.put(p.getName(), oriOldArg);
                 addStatement(decl);
-                if (ptype == Parameter.OUT) {
-                    tempVars.add(ev);
-                }
-                if (ptype == Parameter.REF) {
+                if (ptype == Parameter.REF || ptype == Parameter.OUT) {
                     assert ev != null;
                     refAssigns.add(new StmtAssign(oriOldArg, ev));
                 }
