@@ -46,8 +46,6 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
-import sketch.compiler.passes.cuda.GenerateAllOrSomeThreadsFunctions;
-import sketch.compiler.passes.cuda.GlobalToLocalImplicitCasts;
 import sketch.compiler.passes.cuda.LowerInstrumentation;
 import sketch.compiler.passes.cuda.ReplaceParforLoops;
 import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
@@ -65,9 +63,6 @@ import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
-import sketch.compiler.passes.spmd.GlobalToLocalCasts;
-import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
-import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
@@ -201,31 +196,6 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
-    public class CudaLowLevelCStage extends LowLevelCStage {
-        public CudaLowLevelCStage() {
-            super();
-            this.passes.add(new SplitAssignFromVarDef());
-            this.passes.add(new FlattenStmtBlocks2());
-            this.passes.add(new GenerateAllOrSomeThreadsFunctions(options, varGen));
-            this.passes.add(new GlobalToLocalImplicitCasts(varGen, options));
-        }
-
-        @Override
-        protected Program postRun(Program prog) {
-            final SemanticCheckPass semanticCheck =
-                    new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
-            ExtractComplexLoopConditions ec =
-                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
-            // final FunctionParamExtension paramExt = new FunctionParamExtension();
-
-            prog = (Program) semanticCheck.visitProgram(prog);
-            prog = (Program) ec.visitProgram(prog);
-            // prog = (Program) paramExt.visitProgram(prog);
-
-            return prog;
-        }
-    }
-
     public class SpmdLowLevelCStage extends LowLevelCStage {
 
         public SpmdLowLevelCStage() {
@@ -234,10 +204,10 @@ public class SequentialSketchMain extends CommonSketchMain
             // this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new FlattenStmtBlocks2());
-            SpmdTransform tf = new SpmdTransform(options, varGen);
-            this.passes.add(tf);
-            this.passes.add(new GlobalToLocalCasts(varGen, tf));
-            this.passes.add(new ReplaceParamExprArrayRange(varGen));
+            // SpmdTransform tf = new SpmdTransform(options, varGen);
+            // this.passes.add(tf);
+            // this.passes.add(new GlobalToLocalCasts(varGen, tf));
+            // this.passes.add(new ReplaceParamExprArrayRange(varGen));
         }
 
         @Override

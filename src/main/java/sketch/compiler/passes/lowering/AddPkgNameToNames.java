@@ -7,14 +7,16 @@ import java.util.List;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
-import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class AddPkgNameToNames extends FEReplacer {
+
+    public static String GLOBALPKG = "GLOBAL";
 
     private String transFun(String name) {
         if (name != null) {
@@ -38,7 +40,7 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitTypeStruct(TypeStruct ts) {
         ts = (TypeStruct) super.visitTypeStruct(ts);
-        return ts.creator().name(transStruct(ts.getName())).create();
+        return ts.creator().name(transStruct(ts.getName())).pkg(GLOBALPKG).create();
         // return new TypeStruct(ts.getCudaMemType(), ts.getContext(),
         // transStruct(ts.getName()), ts.getFieldTypMap());
     }
@@ -72,7 +74,7 @@ public class AddPkgNameToNames extends FEReplacer {
             lf.addAll(pkg.getFuncs());
             ts.addAll(pkg.getStructs());
         }
-        Package global = new Package(prog, "GLOBAL", ts, new ArrayList(), lf);
+            Package global = new Package(prog, GLOBALPKG, ts, new ArrayList(), lf);
 
         return prog.creator().streams(Collections.singletonList(global)).create();
         } else {

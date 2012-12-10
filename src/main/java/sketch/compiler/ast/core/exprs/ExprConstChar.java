@@ -72,7 +72,11 @@ public class ExprConstChar extends ExprConstant
     }
 
     public String toString() {
+        if (val == 0) {
+            return "\'\\0\'";
+        }
         String tmp = "\'" + val + "\'";
+
         return tmp;
     }
 

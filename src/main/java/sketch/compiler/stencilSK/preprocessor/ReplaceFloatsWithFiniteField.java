@@ -59,7 +59,9 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
                 return new ExprBinary(ebase, "%", BASE);
             }
             case ExprBinary.BINOP_DIV: {
-                Expression ebase = new ExprArrayRange(this.DIVTABLE, right);
+                Expression goodright = new ExprBinary(right, "%", BASE);
+                Expression ebase = new ExprArrayRange(this.DIVTABLE, goodright);
+
                 ebase =
                         new ExprBinary(exp, ExprBinary.BINOP_MUL, left, ebase,
                                 exp.getAlias());

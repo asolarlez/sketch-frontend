@@ -7,7 +7,7 @@ all: ${ALLSK:.sk=.output}
 	ls *.sk | sed 's/\.sk/\.output/g'> ref
 	grep 'DONE' *.output | tr ':' ' ' | awk '{ print $$1; }' > cur  
 	echo "LISTED BELOW ARE THE FAILED TESTS (IF ANY)"
-	diff -w cur ref > result; cat result; wc `cat result | awk '/>/{print $$2}' | sed 's/\.output/\.sk/g'`
+	diff -w cur ref > result; cat result; wc `(cat result | awk '/>/{print $$2}' | sed 's/\.output/\.sk/g');echo "cur"`
 	echo "END OF LIST"
 	rm cur
 	

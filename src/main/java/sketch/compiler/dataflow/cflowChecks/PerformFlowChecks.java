@@ -6,8 +6,8 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.Level;
@@ -95,6 +96,10 @@ public class PerformFlowChecks extends PartialEvaluator {
                     ninit = exprRV;
                     if(! init.maybeinit()){ report(stmt,  "There is a variable in the initializer that may not have been itself initialized. All variables must be statically initialized."); }
                     state.setVarValue(nm, init);
+                }else{
+                if (vt instanceof TypeArray) {
+                        state.setVarValue(nm, this.vtype.CONST(0));
+                    }
                 }
                 /* else{
                     state.setVarValue(nm, this.vtype.BOTTOM("UNINITIALIZED"));

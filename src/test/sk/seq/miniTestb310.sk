@@ -1,13 +1,13 @@
 
-generator void moo(ref int N, ref int[N] aa){
+generator void moo(int N, ref int[N] aa){
     foo(N, aa);
     foo(N, aa);    
 }
 
-void id(ref int N){
+void id(int N){
     
 }
-generator void foo(ref int N, ref int[N] bar){
+generator void foo(int N, ref int[N] bar){
     id(N);
     assert bar[??] == 2;
 }

@@ -65,7 +65,7 @@ import sketch.compiler.parallelEncoder.VarSetReplacer;
  * tmp = new B();
  * new A(x=tmp);
  * 
- * @author Chris Jones, Armando
+ * @author Chris Jones, Armando, Zhilei
  */
 public class EliminateStructs extends SymbolTableVisitor {
     private Map<String, StructTracker> structs;
@@ -90,20 +90,22 @@ public class EliminateStructs extends SymbolTableVisitor {
     	}
 	}
 
-	/**
-	 * 
-	 * Null is replaced with the integer -1. Null pointer accesses will therefore lead to out of bounds array access.
-	 */
+    /**
+     * Null is unaffected.
+     */
 	@Override
 	public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
 	
+    Map<String, Set<String>> usedStructNames;
 	
 	/**
 	 * Add variable declarations to the body of 'func', and rewrite its body.
 	 */
 	public Object visitFunction (Function func) {
 		boolean isMain = false;
-        if (mainFunctions.contains(nres.getFunName(func.getName()))) {
+        String funName = nres.getFunName(func.getName());
+        if (mainFunctions.contains(funName)) {
+
 			isMain = true;
 	        SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
@@ -123,7 +125,8 @@ public class EliminateStructs extends SymbolTableVisitor {
             // es.setType(TypePrimitive.inttype);
             // newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,
             // new ExprBinary(new ExprConstInt(HSIZE), "+", es)));
-            for (String name : nres.structNamesList()) {
+            for (String name : usedStructNames.get(funName)) {
+
 				StructTracker tracker =
                         new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
 				tracker.registerVariables (symtab);
@@ -146,7 +149,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 		}
 
 
-        if (calledFunctions.contains(nres.getFunName(func.getName()))) {
+        if (calledFunctions.contains(funName)) {
 			SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
 	        List<Parameter> newParams = new ArrayList<Parameter>();
@@ -160,7 +163,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        }
 
 	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
-            for (String name : nres.structNamesList()) {
+            for (String name : usedStructNames.get(funName)) {
 				StructTracker tracker =
                         new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
 				tracker.registerAsParameters(symtab);
@@ -205,7 +208,9 @@ public class EliminateStructs extends SymbolTableVisitor {
             newplist.add((Expression) e.accept(this));
         }
 
-        for (String name : nres.structNamesList()) {
+        Set<String> names = usedStructNames.get(newName);
+        for (String name : names) {
+
             structs.get(name).addActualParams(newplist);
 		}
 
@@ -294,6 +299,10 @@ public class EliminateStructs extends SymbolTableVisitor {
         calledFunctions.clear();
         nres = new NameResolver(p);
         final NameResolver lnres = nres;
+        GetUsedStructs gus = new GetUsedStructs(nres);
+        gus.visitProgram(p);
+        usedStructNames = gus.get();
+
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             for (Function func : pkg.getFuncs()) {

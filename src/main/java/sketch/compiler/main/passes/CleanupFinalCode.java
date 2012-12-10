@@ -51,17 +51,21 @@ public class CleanupFinalCode extends MetaStage {
         prog = (Program) prog.accept(new MakeCastsExplicit());
 
         prog = (Program) prog.accept(new EliminateTransAssns(varGen));
+        prog.debugDump("After ETA");
         // System.out.println("ElmTransAssn");
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveUselessCasts());
         // System.out.println("RmUselessC");
         // prog.accept(new SimpleCodePrinter());
+
         prog =
                 (Program) prog.accept(new EliminateDeadCode(varGen,
                         !options.feOpts.killAsserts));
         // System.out.println("ElmDead");
         // prog.accept(new SimpleCodePrinter());
+
         prog = (Program) prog.accept(new RemoveDumbArrays());
+
         // System.out.println("RemoveDumbArr");
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new EliminateTransAssns(varGen));
@@ -81,7 +85,7 @@ public class CleanupFinalCode extends MetaStage {
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveShallowTempVars());
         // prog = (Program) prog.accept(new AssembleInitializers());
-
+        prog.debugDump("After rstv");
         return prog;
     }
 }

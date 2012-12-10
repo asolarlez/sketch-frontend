@@ -40,12 +40,18 @@ The flag \C{bnd-ctrlbits} tells the synthesizer what range of values to consider
 \subsection{Minimizing Hole Values}
 In many cases, it is useful to ask the synthesizer for the smallest constant that will satisfy a specification. For such cases, the synthesizer supports a function \C{minimize($e$)}, which asks the synthesizer to make $e$ as small as possible. More specifically, the synthesizer will find a minimal $bnd$ such that $e < bnd$ for all inputs.
 
-The synthesizer has some syntactic sugar on top of minimize to support the synthesis of a minimal number of statements, which is a common idiom in \Sk{}. 
+The synthesizer has some syntactic sugar on top of \C{minimize} to support the synthesis of a minimal number of statements, a common idiom in \Sk{}. For example, the code below will produce the minimal number of assignments required to swap \C{x} and \C{y}.
 \begin{lstlisting}
 void swap(ref bit[W] x, ref bit[W] y){
     minrepeat{
         if(??){ x = x ^ y;}else{ y = x ^ y; }
     }
+}
+
+harness void main(bit[W] x, bit[W] y){
+    bit[W] tx = x; bit[W] ty = y;
+    swap(x, y);
+    assert x==ty && y == tx;
 }
 \end{lstlisting}
 

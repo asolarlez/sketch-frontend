@@ -1,0 +1,29 @@
+pragma options "--bnd-unroll-amnt 33";
+
+void testt(int n, int[n] a){
+    
+}
+
+void test(int n){
+    
+    
+}
+
+harness void main(int n){
+    int t = ??+n;
+    int q = t;
+    int[q] x=0;
+    t=n*10;         
+    if(n > 2){
+        test(x[n]);
+    }    
+    int p = n+10;
+    int[p] y;
+    y=x;
+    for(int i=n; i<n+10; ++i){
+        assert y[i] == 0;
+    }
+    testt(p, y);
+    testt(p, x);
+    test(t);
+}

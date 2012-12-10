@@ -1,0 +1,15 @@
+
+harness void main(int x){
+    int b; 
+    int z;
+    int w; 
+    w = (((x+2)+5)-1); 
+    z = w + 1;
+    b = w/2;
+    w = b + 5;
+    z = z + 1;
+    assert b > 0;
+    assert w > 4;
+    assert z > 2;
+    
+}

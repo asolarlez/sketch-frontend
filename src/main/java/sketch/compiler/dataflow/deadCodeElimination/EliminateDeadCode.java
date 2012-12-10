@@ -6,8 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprTprint;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -50,6 +51,22 @@ public class EliminateDeadCode extends BackwardDataflow {
 		}
 		return obj;
 	}
+
+    public Object visitExprTypeCast(ExprTypeCast exp) {
+        abstractValue childExp = (abstractValue) exp.getExpr().accept(this);
+        Expression narg = exprRV;
+        Type tt = exp.getType();
+        while (tt instanceof TypeArray) {
+            TypeArray ta = (TypeArray) tt;
+            abstractValue tab = (abstractValue) ta.getLength().accept(this);
+            childExp = vtype.plus(childExp, tab);
+            tt = ta.getBase();
+        }
+        Type t = (Type) exp.getType().accept(this);
+        if (isReplacer)
+            exprRV = new ExprTypeCast(exp, t, narg);
+        return vtype.cast(childExp, t);
+    }
 
 	public Object visitStmtAssert (StmtAssert stmt) {
 		if(!keepAsserts){ return null; }

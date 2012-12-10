@@ -84,7 +84,7 @@ public class EliminateStarStatic extends FEReplacer {
     @SuppressWarnings( { "deprecation", "unchecked" })
     public void dump_xml(String filename) {
         PrintStream out = null;
-        if (filename == "--") {
+        if (filename.equals("--")) {
             out = System.out;
             out.println("=== BEGIN XML OUTPUT ===");
         } else {
@@ -105,7 +105,8 @@ public class EliminateStarStatic extends FEReplacer {
         for (Entry<ExprStar, Object> ent : hole_values.entrySet()) {
             FEContext ctx = ent.getKey().getContext();
             out.print("    <hole_value line=\"" + ctx.getLineNumber() + "\" col=\"" +
-                    ctx.getColumnNumber() + "\" ");
+                    ctx.getColumnNumber() + "\"  name=\"" + ent.getKey().getSname() +
+                    "\" ");
             if (ent.getKey().getType() instanceof TypeArray) {
                 List<Expression> lst = (List<Expression>) ent.getValue();
                 out.println("type=\"array\">");

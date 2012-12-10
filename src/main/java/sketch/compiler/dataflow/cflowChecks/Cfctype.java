@@ -205,8 +205,9 @@ public class Cfctype extends abstractValueType {
             if (param.isParameterInput()) {
                 if (!param.isParameterOutput()) {
                     if (!((CfcValue) avlist.get(idx)).maybeinit()) {
-                        throw new TypeErrorException("One of the input parameters to " +
-                                fun.getName() + " was not initialized");
+                        throw new TypeErrorException("Parameter " + param.getName() +
+                                " to " + fun.getName() +
+                                " is used without first being initialized.");
                     }
                 }
                 ++idx;

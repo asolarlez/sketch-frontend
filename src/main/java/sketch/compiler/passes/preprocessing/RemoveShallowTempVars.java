@@ -137,6 +137,15 @@ public class RemoveShallowTempVars extends FEReplacer {
                         isShallow.put(name, false);
                     }
                 } else {
+                  /* This test would make the pass more conservative, but I don't think it's necessary. 
+                   * if (t instanceof TypeArray) {
+                        t.accept(new FEReplacer() {
+                            public Object visitExprVar(ExprVar ev) {
+                                isShallow.put(ev.getName(), false);
+                                return ev;
+                            }
+                        });
+                    }*/
                     if (t instanceof TypeArray &&
                             ((TypeArray) t).getBase() instanceof TypePrimitive)
                     {

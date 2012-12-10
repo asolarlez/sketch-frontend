@@ -1,6 +1,6 @@
 
 
-void foo(ref int N, ref int[N] bar){
+void foo(int N, ref int[N] bar){
     assert bar[??] == 2;
 }
 

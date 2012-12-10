@@ -1,0 +1,60 @@
+struct A{
+    int x;
+}
+
+struct B{
+    int x;
+}
+
+struct C{
+    int x;
+}
+
+struct D{
+    int x;
+    C c;
+}
+
+
+harness void main(int x){
+    f();
+    g();
+    p();
+}
+
+void f(){
+    k();
+}
+
+void g(){
+    h();
+}
+
+void h(){
+    B b = new B(x=m());
+    assert b.x < 5;
+}
+
+void k(){
+    C c = new C(x=m());
+    assert c.x > 3;
+}
+
+int m(){
+    D d = new D(x=??);
+    return d.x;
+}
+
+void p(){
+    D d = q();
+    r(d);
+    assert d.c.x == ??;
+}
+
+void r(D d){
+    d.c.x = 22;
+}
+D q(){
+    return new D(x=??, c=new C());
+}
+
