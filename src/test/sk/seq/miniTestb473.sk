@@ -1,0 +1,15 @@
+include "miniTestb473.skh";
+pragma options "--bnd-unroll-amnt 35 --bnd-inline-amnt 8 --bnd-inbits 2 --bnd-cbits 2";
+
+
+harness void main(int W,int x1,int x2,int x3,int x4,int x5,int x6,int[W] a1_){
+Arr a1 = new Arr(sz = W, arr=a1_,dflt = -333);
+ARR_W(x1,a1,x3);
+
+}
+
+	/*Arr aspec = spec( ..., a1);	
+	Arr ask = sk(..., a1);
+	assert arrCompare(aspec, ask); */
+
+

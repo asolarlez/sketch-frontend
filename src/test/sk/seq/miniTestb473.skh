@@ -1,0 +1,32 @@
+
+
+
+struct Arr{
+	int sz;
+	int[sz] arr;
+	int dflt;
+}
+
+
+Arr copy2(Arr a){
+	int[a.sz] narr = a.arr;
+	assert a.sz < 100;
+	Arr b = 
+	new Arr(sz=a.sz,arr=narr,dflt=a.dflt);
+	return b;
+}
+
+
+
+void ARR_W(int idx, Arr a, int v){
+	if(idx >= a.sz){
+		
+	}else{
+		{
+			Arr b = copy2(a);
+			b.arr[idx] =v;
+			
+		}
+		
+	}
+}

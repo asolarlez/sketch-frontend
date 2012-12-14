@@ -51,7 +51,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
 
-        prog.debugDump("Before Checking Finality");
+        // prog.debugDump("Before Checking Finality");
         prog.accept(new CheckProperFinality());
 
         prog = (Program) prog.accept(new MainMethodCreateNospec());

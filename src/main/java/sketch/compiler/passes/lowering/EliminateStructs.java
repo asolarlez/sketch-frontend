@@ -261,7 +261,8 @@ public class EliminateStructs extends SymbolTableVisitor {
             Expression tt = (Expression) en.getExpr().accept(this);
             fieldExprs.put(en.getName(), tt);
             Expression lhs = new ExprVar(expNew, varGen.nextVar());
-            addStatement(new StmtVarDecl(expNew, getType(tt), lhs.toString(), tt));
+            addStatement(new StmtVarDecl(expNew, (Type) getType(tt).accept(this),
+                    lhs.toString(), tt));
             rhs.add(lhs);
         }
 
