@@ -50,6 +50,12 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             return star;
         }
 
+        public Object visitExprConstFloat(ExprConstFloat ecf) {
+            ecf.setType(type);
+
+            return ecf;
+        }
+
         public Object visitExprTernary(ExprTernary exp) {
             Type oldType = type;
             type = TypePrimitive.bittype;

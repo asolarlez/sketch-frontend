@@ -1,0 +1,74 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 2";
+include "Img/Image.skh";
+
+
+harness void main(int n, char[n] fname){
+    Image im = readImg(n, fname);
+    //edgeDetector(im.r, im.c, im.im);
+    //while(im.c > 10){        
+    //    im = scaleDown(im);
+    //}
+    //edgeDetector(im.r, im.c, im.im);
+    im = scaleUp(im);
+    
+    writeImg(im);    
+}
+
+
+
+
+generator int abs(int i){
+    return i>0?i:-i;
+}
+
+
+void edgeDetector(int r, int c, ref int[3][c][r] im){
+    int[{|c | r|}][{|c | r|}] dbuf;
+    int maxVal = 1;
+    generator void deriv(int i, int j){
+        generator int top(int cc){
+            return (im[i-1][j][cc]+im[i-2][j-1][cc]+im[i-2][j+1][cc])/3;
+        }
+        int rt = top(0); int gt = top(1); int bt = top(2);
+        generator int bot(int cc){
+            return (im[i+1][j][cc]+im[i+2][j-1][cc]+im[i+2][j+1][cc])/3;
+        }
+        int rb = bot(0); int gb = bot(1); int bb = bot(2);
+        generator int left(int cc){
+            return (im[i][j-1][cc]+im[i-1][j-2][cc]+im[i+1][j-2][cc])/3;
+        }
+        int rl = left(0); int gl = left(1); int bl = left(2);
+        generator int right(int cc){
+            return (im[i][j+1][cc]+im[i-1][j+2][cc]+im[i+1][j+2][cc])/3;
+        }
+        int rr = right(0); int gr = right(1); int br = right(2);
+        int tmpval = (abs(rt-rb)+ abs(gt-gb)+ abs(bt-bb)+
+                        abs(rl-rr)+ abs(gl-gr)+ abs(bl-br));
+        if(tmpval > maxVal){ maxVal = tmpval; }
+        dbuf[i][j] = tmpval;
+    }
+    applyFilter(r, c, 2, deriv);
+        
+    generator int gtz(int i){
+        return i>0?i:0;
+    }
+
+    generator void dWB(int i, int j){
+        im[i][j][0] = 0;
+        im[i][j][1] = (dbuf[i][j]*255)/maxVal;
+        im[i][j][2] = 0;        
+    }
+    
+    generator void writeBack(int i, int j){
+        im[i][j][0] = 0;
+        int tmpval= gtz(dbuf[i][j]-dbuf[i][j-1])+gtz(dbuf[i][j]-dbuf[i+1][j]);
+        im[i][j][2] = 0;
+        if(tmpval > 10){
+            im[i][j][1] = 200;
+        }else{
+            im[i][j][1] = 0;    
+        }
+    }
+    applyFilter(r, c, 1, dWB);
+    
+}

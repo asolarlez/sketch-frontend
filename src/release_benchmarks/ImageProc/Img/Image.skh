@@ -1,0 +1,45 @@
+package Img;
+include "Img/scaleDown.skh";
+include "Img/scaleUp.skh";
+
+struct Image{
+    @NeedsInclude("#include \"ImgHelper.h\"")
+    @Native("string filename;")
+    @Native("unsigned char head[60];")
+    int r;
+    int c;
+    int[3][c][r] im;    
+}
+
+int rid=0;
+int cid=0;
+int imid=0;
+int getR(int i);
+int getC(int i);
+int getIm(int i);
+
+
+@Native("{ _out = readImage(name); }")
+Image readImg(int n, char[n] name){
+    int r = getR(rid++);
+    int c = getC(cid++);
+    Image im = new Image(r=r, c=c);
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            im.im[i][j][0] = getIm(imid++)/4;
+            im.im[i][j][1] = getIm(imid++)/4;
+            im.im[i][j][2] = getIm(imid++)/4;
+        }
+    }
+    return im;
+}
+
+@Native("{ copyMD(from, to); }")
+void copyMetaData(Image from, Image to){
+    
+}
+
+@Native("{ writeImage(im); }")
+void writeImg(Image im){
+    
+}

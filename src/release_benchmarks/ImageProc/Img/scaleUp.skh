@@ -1,0 +1,77 @@
+package Img;
+include "Img/Image.skh";
+include "Img/transforms.skh";
+include "intops.skh";
+
+Image scaleUp(Image im){
+    Image mg = new Image(c=im.c*2, r=im.r*2);    
+    copyMetaData(im, mg);
+    scaleU(im.r, im.c, im.im, mg.im);
+    return mg;
+}
+
+
+void scaleU(int r, int c, int[3][c][r] im, ref int[3][c*2][r*2] mg){    
+    
+    int maxVal = 1;
+    generator void expand1(int i, int j){
+        generator void bod(int cc){
+            mg[2*i][2*j][cc] = im[i][j][cc];           
+        }
+        bod(0); bod(1); bod(2); 
+        {
+            generator int fd1(int cc){ return abs@Int(im[i+1][j+1][cc] - im[i][j][cc]); }
+            generator int fd2(int cc){ return abs@Int(im[i][j+1][cc] - im[i+1][j][cc]); }
+            int d1 = fd1(0) + fd1(1) + fd1(2);
+            int d2 = fd1(0) + fd2(1) + fd2(2);
+            if(d2 > d1+50){
+                generator void fdA(int cc){ mg[2*i+1][2*j+1][cc] = (im[i+1][j+1][cc] + im[i][j][cc])/2; }
+                fdA(0); fdA(1); fdA(2);
+            } else if(d1 > d2+50){
+                generator void fdA(int cc){ mg[2*i+1][2*j+1][cc] = (im[i][j+1][cc] + im[i+1][j][cc])/2; }
+                fdA(0); fdA(1); fdA(2);
+            }else{
+                generator void fdA(int cc){ mg[2*i+1][2*j+1][cc] = (im[i][j+1][cc] + im[i+1][j][cc]+im[i+1][j+1][cc] + im[i][j][cc])/4; }
+                fdA(0); fdA(1); fdA(2);
+            }
+        }
+    }
+    applyFilter(r, c, 1, expand1); 
+    generator void expand2(int i, int j){
+        {
+            {
+                generator int fd1(int cc){ return abs@Int(im[i+1][j][cc] - im[i][j][cc]); }
+                generator int fd2(int cc){ return abs@Int(mg[2*i+1][2*j+1][cc] - mg[2*i+1][2*j-1][cc]); }
+                int d1 = fd1(0) + fd1(1) + fd1(2);
+                int d2 = fd1(0) + fd2(1) + fd2(2);
+                if(d2 > d1+50){
+                    generator void fdA(int cc){ mg[2*i+1][2*j][cc] = (im[i+1][j][cc] + im[i][j][cc])/2; }
+                    fdA(0); fdA(1); fdA(2);
+                }else if(d1 > d2+50){
+                    generator void fdA(int cc){ mg[2*i+1][2*j][cc] = (mg[2*i+1][2*j+1][cc] + mg[2*i+1][2*j-1][cc])/2; }
+                    fdA(0); fdA(1); fdA(2);
+                }else{
+                    generator void fdA(int cc){ mg[2*i+1][2*j][cc] = (im[i+1][j][cc] + im[i][j][cc] + mg[2*i+1][2*j+1][cc] + mg[2*i+1][2*j-1][cc])/4; }
+                    fdA(0); fdA(1); fdA(2);
+                }
+            }
+            {
+                generator int fd1(int cc){ return abs@Int(im[i][j+1][cc] - im[i][j][cc]); }
+                generator int fd2(int cc){ return abs@Int(mg[2*i+1][2*j+1][cc] - mg[2*i-1][2*j+1][cc]); }
+                int d1 = fd1(0) + fd1(1) + fd1(2);
+                int d2 = fd1(0) + fd2(1) + fd2(2);
+                if(d2 > d1+50){
+                    generator void fdA(int cc){ mg[2*i][2*j+1][cc] = (im[i][j+1][cc] + im[i][j][cc])/2; }
+                    fdA(0); fdA(1); fdA(2);
+                }else if(d1 > d2+50){
+                    generator void fdA(int cc){ mg[2*i][2*j+1][cc] = (mg[2*i+1][2*j+1][cc] + mg[2*i-1][2*j+1][cc])/2; }
+                    fdA(0); fdA(1); fdA(2);
+                }else{
+                    generator void fdA(int cc){ mg[2*i][2*j+1][cc] = (im[i][j+1][cc] + im[i][j][cc] + mg[2*i+1][2*j+1][cc] + mg[2*i-1][2*j+1][cc])/4; }
+                    fdA(0); fdA(1); fdA(2);
+                }
+            }            
+        }    
+    }
+    applyFilter(r, c, 1, expand2);
+}

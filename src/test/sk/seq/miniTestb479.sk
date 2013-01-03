@@ -1,0 +1,25 @@
+
+void moo(int[4][3] x){
+    assert x[0][3] == 0;
+    assert x[1] == ??;
+    assert x[0] == ??;
+}
+
+void boo(int[4][3] x){
+    assert x[0][3] == 0;
+    assert x[1] == {1,0,0,0};
+    assert x[0] == ??;
+}
+
+void foo(int[4][3] x){
+    assert x[0][3] == 0;
+    assert x[1] == ??;
+    assert x[0] == ??;
+}
+
+harness void main(){
+    foo({{1,2,3},{4,5},{4,3,2,1}});
+    int[2][2] tt = {{1,2},{1}};
+    boo(tt);
+    moo(0);
+}

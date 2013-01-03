@@ -1,0 +1,26 @@
+pragma options "--bnd-unroll-amnt 32";
+
+struct m{
+    int x;
+    int[x] y;
+}
+
+void foo(m mm, int[mm.x] t){
+    for(int i=0; i<mm.x; ++i){
+        mm.y[i] += t[i];
+    }
+}
+
+harness void main(int i){
+    m mm = new m(x=i);
+    
+    int[mm.x+5-??] temp = 0;
+    for(int q=0; q<i; ++q){
+        temp[q] = q;
+    }
+    foo(mm, temp);
+    foo(mm, temp);
+    for(int q=0; q<i; ++q){
+        assert mm.y[q] == 2*q;
+    }
+}

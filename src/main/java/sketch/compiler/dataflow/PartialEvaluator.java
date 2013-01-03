@@ -796,28 +796,30 @@ public class PartialEvaluator extends FEReplacer {
         switch(stmt.getOp())
         {
         case ExprBinary.BINOP_ADD:
-            assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt;
-            state.setVarValue(lhsName, lhsIdx, vtype.plus((abstractValue) lhs.accept(this), rhs));
+                assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
+                rhs = vtype.plus((abstractValue) lhs.accept(this), rhs);
             break;
         case ExprBinary.BINOP_SUB:
-            assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt;
-            state.setVarValue(lhsName, lhsIdx, vtype.minus((abstractValue) lhs.accept(this), rhs));
+                assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
+                rhs = vtype.minus((abstractValue) lhs.accept(this), rhs);
             break;
         case ExprBinary.BINOP_MUL:
-            assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt;
-            state.setVarValue(lhsName, lhsIdx, vtype.times((abstractValue) lhs.accept(this), rhs));
+                assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
+                rhs = vtype.times((abstractValue) lhs.accept(this), rhs);
             break;
         case ExprBinary.BINOP_DIV:
-            assert rlen <= 1 && !isFieldAcc: "Operand not supported for this operator: " + stmt;
-            state.setVarValue(lhsName, lhsIdx, vtype.over((abstractValue) lhs.accept(this), rhs));
+                assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
+                rhs = vtype.over((abstractValue) lhs.accept(this), rhs);
             break;
-        default:
-            if( !isFieldAcc ){
-                assignmentToLocal(rhs, lhsName, lhsIdx, rlen);
-            }else{
-                    return assignmentToField(lhsName, stmt, lhsIdx, rhs, nlhs, nrhs);
-            }
-            break;
+            case 0:
+                break;
+            default:
+                throw new ExceptionAtNode("Operator not supported", stmt);
+        }
+        if (!isFieldAcc) {
+            assignmentToLocal(rhs, lhsName, lhsIdx, rlen);
+        } else {
+            return assignmentToField(lhsName, stmt, lhsIdx, rhs, nlhs, nrhs);
         }
         return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
     }

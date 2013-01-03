@@ -8,15 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.Function.FunctionCreator;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -28,7 +22,6 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
@@ -305,7 +298,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 if (!retType.equals(TypePrimitive.voidtype)) {
                     params.add(new Parameter(retType, getOutParamName(), Parameter.OUT));
                 }
-                funs.add(fun.creator().params(params).create());
+                FunctionCreator fc = fun.creator().params(params);
+                if (fun.isUninterp()) {
+                    fc.returnType(TypePrimitive.voidtype);
+                }
+                funs.add(fc.create());
             }
 
             Package tpkg =

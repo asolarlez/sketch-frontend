@@ -88,12 +88,12 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
         Type tnew = exp.getType();
         if (told.equals(TypePrimitive.inttype) && isFloat(tnew)) {
             throw new ExceptionAtNode(
-                    "You can't cast from ints to doubles/floats if you are using --fe-fencoding TO_BIT." +
+                    "You can't cast from ints to doubles/floats if you are using --fe-fpencoding AS_BIT." +
                             exp, exp);
         }
         if (tnew.equals(TypePrimitive.inttype) && isFloat(told)) {
             throw new ExceptionAtNode(
-                    "You can't cast from doubles/floats to int if you are using --fe-fencoding TO_BIT." +
+                    "You can't cast from doubles/floats to int if you are using --fe-fpencoding AS_BIT." +
                             exp, exp);
         }
         if (expr == exp.getExpr() && tnew == exp.getType())
@@ -158,7 +158,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
                 case ExprBinary.BINOP_EQ: newOp = ExprBinary.BINOP_EQ; break;
         	default:
                 throw new ExceptionAtNode(
-                        "You can't apply this floating point operation if you are using --fe-fencoding TO_BIT. " +
+                        "You can't apply this floating point operation if you are using --fe-fpencoding AS_BIT. " +
                                 exp + " " + exp.getOp(), exp);
         }        
         if (left == exp.getLeft() && right == exp.getRight() && newOp == exp.getOp())

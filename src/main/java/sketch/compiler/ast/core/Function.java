@@ -46,8 +46,9 @@ public class Function extends FENode {
         BuiltinHelper("builtin helper"),
         // Function that is inlined, producing more star values. Also helper functions for
         // PROMELA.
-        Generator("generator");
+        Generator("generator"),
         // Init("init");
+        Model("model");
 
         /** identifier appearing in C code */
         public final String cCodeName;
@@ -330,7 +331,7 @@ public class Function extends FENode {
     }
 
     public boolean isStatic() {
-        return getFcnType() == FcnType.Static;
+        return getFcnType() == FcnType.Static || getFcnType() == FcnType.Model;
     }
 
     public boolean isStencil() {
@@ -343,6 +344,10 @@ public class Function extends FENode {
 
     public boolean isGenerator() {
         return getFcnType() == FcnType.Generator;
+    }
+
+    public boolean isModel() {
+        return getFcnType() == FcnType.Model;
     }
 
     /** Returns the name of this function, or null if it is anonymous. */

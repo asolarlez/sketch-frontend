@@ -1339,13 +1339,19 @@ structNames,
 		switch(op)
 		{
 		case ExprUnary.UNOP_NEG:
+                if (!(ot.promotesTo(TypePrimitive.inttype) || ot.promotesTo(TypePrimitive.doubletype)))
+                {
+                    report(expr, "can only negate ints and floats/doubles, not " + ot);
+                }
+                break;
+
 		case ExprUnary.UNOP_BNOT:
 			// you can negate a bit, since 0 and 1
 			// literals always count as bits.
 			// However, the resulting negation will be
 			// an int.
 			if (!bittype.promotesTo(ot))
-				report(expr, "cannot negate " + ot);
+                    report(expr, "cannot bitwise negate " + ot);
 			break;
 
 		case ExprUnary.UNOP_NOT:

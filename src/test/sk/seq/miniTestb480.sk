@@ -1,0 +1,30 @@
+pragma options "--be:showDAG";
+
+int moo(int i);
+
+model int foo(int i){
+    int rv = moo(i);
+    assert rv > 10;
+    assert rv >= i;
+    return rv;    
+}
+
+
+
+harness void main(int i, int j){
+    
+    int x = foo(i);
+    int y = foo(j);
+    int q = ??;
+    minimize(q);
+    if(i==j){
+        assert x == y;
+    }
+    if(i>j){
+        assert x >= j;
+    }
+    
+    assert x > 20-q;
+    assert y > 20-q;
+    
+}

@@ -1,0 +1,25 @@
+pragma options "--bnd-inbits 4";
+
+int msqrt(int i);
+
+model int sqrt(int i){
+    int rv = msqrt(i);
+    if(i==0){
+        assert rv == 0;
+    }
+    
+    assert rv*rv <= i;
+    assert (rv+1)*(rv+1) > i;
+    return rv;
+}
+
+harness void main(int i1, int j1, int i2, int j2){
+    generator int sqr(int i){ return i*i; }
+    generator int abs(int i){ return i>=0?i:-i; }
+    int dist = sqrt(sqr(i2-i1) + sqr(j2-j1));
+    if(i1==i2 && j1==j2){
+        assert dist == ??;
+    }
+    assert dist >= abs({| (i1 | i2 | j1 | j2) - (i1 | i2) |});
+    assert dist >= abs({| (i1 | i2 | j1 | j2) - (j1 | j2) |});    
+}

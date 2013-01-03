@@ -50,20 +50,43 @@ public class ExprConstChar extends ExprConstant
 
     }
 
-    /** Create a new ExprConstChar containing the first character of a
-     * String. */
-    public ExprConstChar(FENode context, String str)
-    {
-        this(context, str.charAt(1));
+    public static char readChar(String str) {
+        if (str.charAt(1) == '\\') {
+            switch (str.charAt(2)) {
+                case 'n':
+                    return '\n';
+                case 'r':
+                    return '\r';
+                case '0':
+                    return 0;
+                case '\\':
+                    return '\\';
+                case '\'':
+                    return '\'';
+            }
+            return 0;
+        } else {
+            return str.charAt(1);
+        }
     }
 
-    /** Create a new ExprConstChar containing the first character of a
-     * String.
+    /**
+     * Create a new ExprConstChar containing the first character of a String.
+     */
+    public ExprConstChar(FENode context, String str) {
+        super(context);
+        this.val = readChar(str);
+    }
+
+    /**
+     * Create a new ExprConstChar containing the first character of a String.
+     * 
      * @deprecated
-     * */
+     */
     public ExprConstChar(FEContext context, String str)
     {
-        this(context, str.charAt(1));
+        super(context);
+        this.val = readChar(str);
     }
 
     /** Returns the value of this. */
@@ -74,6 +97,18 @@ public class ExprConstChar extends ExprConstant
     public String toString() {
         if (val == 0) {
             return "\'\\0\'";
+        }
+        if (val == '\n') {
+            return "\'\\n\'";
+        }
+        if (val == '\r') {
+            return "\'\\r\'";
+        }
+        if (val == '\'') {
+            return "\'\\\'\'";
+        }
+        if (val == '\\') {
+            return "\'\\\\\'";
         }
         String tmp = "\'" + val + "\'";
 

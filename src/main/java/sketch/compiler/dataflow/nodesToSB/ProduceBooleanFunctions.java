@@ -321,7 +321,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if(tracing)
             System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
         
-        ((NtsbVtype)this.vtype).out.print("def " + func.getName());
+        if (func.isModel()) {
+            ((NtsbVtype) this.vtype).out.print("mdl_def " + func.getName());
+        } else {
+            ((NtsbVtype) this.vtype).out.print("def " + func.getName());
+        }
+
         if( func.getSpecification() != null ){
             assertions.add(new SpecSketch(func.getSpecification(), func.getName() ));
         }

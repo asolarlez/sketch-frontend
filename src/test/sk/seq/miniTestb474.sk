@@ -1,0 +1,10 @@
+void print(int n, char[n] x){
+    
+}
+
+
+harness void main(int x){
+    char[??] t = {'a', 'b', '\\' , '\n', '\'', 'a', '\'', '\0'};
+    
+    print(??, t);
+}

@@ -88,12 +88,12 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
         Type tnew = exp.getType();
         if (told.equals(TypePrimitive.inttype) && isFloat(tnew)) {
             throw new ExceptionAtNode(
-                    "You can't cast from ints to doubles/floats if you are using --fe-fencoding TO_BIT." +
+                    "You can't cast from ints to doubles/floats if you are using --fe-fpencoding AS_FFIELD." +
                             exp, exp);
         }
         if (tnew.equals(TypePrimitive.inttype) && isFloat(told)) {
             throw new ExceptionAtNode(
-                    "You can't cast from doubles/floats to int if you are using --fe-fencoding TO_BIT." +
+                    "You can't cast from doubles/floats to int if you are using --fe-fpencoding AS_FFIELD." +
                             exp, exp);
         }
         if (expr == exp.getExpr() && tnew == exp.getType())

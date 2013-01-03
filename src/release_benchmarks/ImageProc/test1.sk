@@ -1,0 +1,219 @@
+pragma options "--bnd-unroll-amnt 4 --bnd-inbits 2";
+include "Image.skh";
+
+harness void main(){
+    Image im = readImg(??, {'t','e','s','t','b', '.','b','m','p',0});
+    
+    bestedges(im);
+    
+    writeImg(im);    
+}
+
+generator int abs(int i){
+    return i>0?i:-i;
+}
+
+void cleanup2(int c, int r, ref int[c][r] tmp2){
+    int K = 5;
+    int[c][r] tmp;
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            tmp[i][j] = tmp2[i][j];
+        }
+    }
+    for(int i=K; i<r-K; ++i){
+        for(int j=K; j<c-K; ++j){
+            int cnt = 0;
+            for (int ii=i-K; ii<i+K; ++ii){
+                for (int jj=j-K; jj<j+K; ++jj){
+                    if(tmp[ii][jj] > 0){
+                        cnt++;
+                    }
+                } 
+            }
+            if(cnt>(4*K*K)/2){                  
+                for (int ii=i-(K-1); ii<i+(K-1); ++ii){
+                    for (int jj=j-(K-1); jj<j+(K-1); ++jj){
+                        if(tmp[ii][jj-1] != tmp[ii][jj+1]){
+                            tmp2[ii][jj]=0;
+                        }
+                        if(tmp[ii-1][jj] != tmp[ii+1][jj]){
+                            tmp2[ii][jj]=0;
+                        }
+                        if(tmp[ii-1][jj-1] != tmp[ii+1][jj+1]){
+                            tmp2[ii][jj]=0;
+                        }
+                        if(tmp[ii-1][jj+1] != tmp[ii+1][jj-1]){
+                            tmp2[ii][jj]=0;
+                        }
+                    } 
+                }
+            }
+            if(cnt < 3*K/2){
+                for (int ii=i-(K-1); ii<i+(K-1); ++ii){
+                    for (int jj=j-(K-1); jj<j+(K-1); ++jj){
+                        tmp2[ii][jj]=0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+void cleanup(int c, int r, ref int[c][r] tmp){
+    int[5][5] tt;
+    for(int i=2; i<r-2; ++i){
+        for(int j=2; j<c-2; ++j){
+            int cnt = 0;
+            for (int ii=i-2; ii<i+2; ++ii){
+                for (int jj=j-2; jj<j+2; ++jj){
+                    if(tmp[ii][jj] > 0){
+                        cnt++;
+                    }
+                } 
+            }
+            if(cnt>10){  
+                for (int ii=i-2; ii<i+2; ++ii){
+                    for (int jj=j-2; jj<j+2; ++jj){
+                        tt[ii-(i-2)][jj-(j-2)]=tmp[ii][jj];
+                    }
+                }
+                for (int ii=i-1; ii<i+1; ++ii){
+                    for (int jj=j-1; jj<j+1; ++jj){
+                        if(tt[ii-(i-2)][jj-(j-2)-1] != tt[ii-(i-2)][jj-(j-2)+1]){
+                            tmp[ii][jj]=0;
+                        }
+                        if(tt[ii-(i-2)-1][jj-(j-2)] != tt[ii-(i-2)+1][jj-(j-2)]){
+                            tmp[ii][jj]=0;
+                        }
+                        if(tt[ii-(i-2)-1][jj-(j-2)-1] != tt[ii-(i-2)+1][jj-(j-2)+1]){
+                            tmp[ii][jj]=0;
+                        }
+                        if(tt[ii-(i-2)-1][jj-(j-2)+1] != tt[ii-(i-2)+1][jj-(j-2)-1]){
+                            tmp[ii][jj]=0;
+                        }
+                    } 
+                }
+            }
+            if(cnt < 3){
+                for (int ii=i-1; ii<i+1; ++ii){
+                    for (int jj=j-1; jj<j+1; ++jj){
+                        tmp[ii][jj]=0;
+                    } 
+                }
+            }
+        }
+    }
+}
+
+void bestedges(Image im){
+    int[im.c][im.r] tmp;
+    for(int i=2; i<im.r-2; ++i){
+        for(int j=2; j<im.c-2; ++j){
+            generator int top(int cc){
+                return (im.im[i-1][j][cc]+im.im[i-2][j-1][cc]+im.im[i-2][j+1][cc])/3;
+            }
+            int rt = top(0);
+            int gt = top(1);
+            int bt = top(2);
+            generator int bot(int cc){
+                return (im.im[i+1][j][cc]+im.im[i+2][j-1][cc]+im.im[i+2][j+1][cc])/3;
+            }
+            int rb = bot(0);
+            int gb = bot(1);
+            int bb = bot(2);
+            generator int left(int cc){
+                return (im.im[i][j-1][cc]+im.im[i-1][j-2][cc]+im.im[i+1][j-2][cc])/3;
+            }
+            int rl = left(0);
+            int gl = left(1);
+            int bl = left(2);
+            generator int right(int cc){
+                return (im.im[i][j+1][cc]+im.im[i-1][j+2][cc]+im.im[i+1][j+2][cc])/3;
+            }
+            int rr = right(0);
+            int gr = right(1);
+            int br = right(2);            
+            if(abs(rt-rb)+ abs(gt-gb)+ abs(bt-bb)+
+                    abs(rl-rr)+ abs(gl-gr)+ abs(bl-br) < 40 ){
+                tmp[i][j] = 0;                
+            }else{
+                tmp[i][j] = 100;
+            }
+        }
+    }   
+    cleanup2(im.c, im.r, tmp);
+    for(int i=0; i<im.r; ++i){
+        for(int j=0; j<im.c; ++j){
+            //im.im[i][j][0] = 0;
+            if(tmp[i][j]>0 && i>1){
+               im.im[i][j][1] = tmp[i][j];
+               im.im[i][j][0] = 0;
+               im.im[i][j][2] = 0;
+            }else{
+                im.im[i][j][1] = im.im[i][j][1]/10;
+                im.im[i][j][0] = im.im[i][j][0]/10;
+                im.im[i][j][2] = im.im[i][j][2]/10;
+            }
+            //im.im[i][j][2] = 0;
+        }
+    }
+}
+
+void edges(Image im){
+    int[im.c][im.r] tmp;
+    for(int i=1; i<im.r-1; ++i){
+        for(int j=1; j<im.c-1; ++j){
+            int rt = im.im[i-1][j][0];
+            int gt = im.im[i-1][j][1];
+            int bt = im.im[i-1][j][2];
+            
+            int rb = im.im[i+1][j][0];
+            int gb = im.im[i+1][j][1];
+            int bb = im.im[i+1][j][2];
+            
+            int rl = im.im[i][j-1][0];
+            int gl = im.im[i][j-1][1];
+            int bl = im.im[i][j-1][2];
+            
+            int rr = im.im[i][j+1][0];
+            int gr = im.im[i][j+1][1];
+            int br = im.im[i][j+1][2];            
+            if(abs(rt-rb)+ abs(gt-gb)+ abs(bt-bb)+
+                    abs(rl-rr)+ abs(gl-gr)+ abs(bl-br) < 100 ){
+                tmp[i][j] = 0;                
+            }else{
+                tmp[i][j] = 100;
+            }
+        }
+    }   
+    for(int i=0; i<im.r; ++i){
+        for(int j=0; j<im.c; ++j){
+            //im.im[i][j][0] = 0;
+            if(tmp[i][j]>0 && i>1){
+               im.im[i][j][1] = tmp[i][j];
+               im.im[i-1][j][1] = tmp[i][j];
+               im.im[i][j][0] = 0;
+               im.im[i-1][j][0] = 0;
+               im.im[i][j][2] = 0;
+               im.im[i-1][j][2] = 0;
+            }            
+            //im.im[i][j][2] = 0;
+        }
+    }
+}
+
+void pinkBg(Image im){
+    for(int i=0; i<im.r; ++i){
+        for(int j=0; j<im.c; ++j){
+            int r = im.im[i][j][0];
+            int g = im.im[i][j][1];
+            int b = im.im[i][j][2];
+            if(r>200 && g > 200 && b > 200 ){
+                im.im[i][j][1] = 0;
+            }
+        }
+    }    
+}

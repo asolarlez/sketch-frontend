@@ -73,13 +73,14 @@ tokens {
     "h_assert";
     "generator";
     "harness";
+    "model";
 
     // suppress function in output, run tprint() calls
-    "library";
-    "printfcn";
+    // "library";
+    // "printfcn";
 
     // cuda
-    "device";
+    // "device";
     "global";
     "serial";
 

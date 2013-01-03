@@ -1,0 +1,51 @@
+pragma options "--bnd-unroll-amnt 32";
+
+struct M{
+    int x;
+    int[x] y;
+}
+
+struct P{
+    int x;
+    double[x] y;
+}
+
+void foo(M m, int[m.x] test){
+    for(int i=0; i<m.x; ++i){
+        m.y[i] += test[i];
+    }
+}
+
+void fooP(P m, double[m.x] test){
+    for(int i=0; i<m.x; ++i){
+        m.y[i] += test[i];
+    }
+}
+
+void fooP3(P m, double[3][m.x] test){
+    for(int i=0; i<m.x; ++i){
+        m.y[i] += test[i][i%3];
+    }
+}
+
+harness void main(int n){
+    M m = new M(x=n);
+    int[n] tt = 0;
+    foo(m, tt);
+    for(int i=0; i<n; ++i){
+        assert m.y[i] == 0;
+    }
+    foo(m, 0);
+    for(int i=0; i<n; ++i){
+        assert m.y[i] == 0;
+    }
+    P p = new P(x=n);
+    fooP(p, 0.0);
+    for(int i=0; i<n; ++i){
+        assert p.y[i] == 0.0;
+    }
+    fooP3(p, 0.0);
+    for(int i=0; i<n; ++i){
+        assert p.y[i] == 0.0;
+    }
+}

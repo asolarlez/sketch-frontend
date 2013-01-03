@@ -1,0 +1,19 @@
+
+struct foo{
+    int x;
+    int[3] y;
+}
+
+harness void main(int i){
+    foo f = new foo(x=i, y={i});
+    
+    f.x -= 2;
+    
+    assert f.x == i-??;
+    
+    f.y[??] *= ??;
+    
+    assert f.y[0] == i*3;
+    
+    
+}

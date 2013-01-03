@@ -24,12 +24,7 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
@@ -253,6 +248,9 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprConstFloat(ExprConstFloat exp)
     {
+        if (exp.getType() == ExprConstFloat.FloatType.Double) {
+            return TypePrimitive.doubletype;
+        }
         return TypePrimitive.floattype;
     }
 

@@ -153,6 +153,16 @@ public class EliminateStructs extends SymbolTableVisitor {
 			SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
 	        List<Parameter> newParams = new ArrayList<Parameter>();
+
+            List<Statement> newBodyStmts = new LinkedList<Statement>();
+            for (String name : usedStructNames.get(funName)) {
+                StructTracker tracker =
+                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
+                tracker.registerAsParameters(symtab);
+                tracker.addParams(newParams);
+                structs.put(name, tracker);
+            }
+
 	        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); ) {
 	            Parameter param = (Parameter)iter.next();
 	            symtab.registerVar(param.getName(),
@@ -162,14 +172,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	            newParams.add ((Parameter) param.accept (this));
 	        }
 
-	        List<Statement> newBodyStmts = new LinkedList<Statement> ();
-            for (String name : usedStructNames.get(funName)) {
-				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
-				tracker.registerAsParameters(symtab);
-				tracker.addParams(newParams);
-				structs.put (name, tracker);
-			}
+
 
 	        Function func2 = (Function) super.visitFunction(func);
 	        symtab = oldSymTab;
@@ -204,15 +207,16 @@ public class EliminateStructs extends SymbolTableVisitor {
 		}
 
         List<Expression> newplist = new ArrayList<Expression>(fc.getParams().size());
-        for (Expression e : fc.getParams()) {
-            newplist.add((Expression) e.accept(this));
-        }
-
         Set<String> names = usedStructNames.get(newName);
         for (String name : names) {
 
             structs.get(name).addActualParams(newplist);
-		}
+        }
+
+        for (Expression e : fc.getParams()) {
+            newplist.add((Expression) e.accept(this));
+        }
+
 
         if (mainFunctions.contains(newName)) {
             String tmp = fun.getName() + "_2";

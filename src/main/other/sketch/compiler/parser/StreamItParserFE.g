@@ -179,8 +179,8 @@ program	 returns [Program p]
     String pkgName = null;
     FEContext pkgCtxt = null;
 }
-	:	(  (annotation_list (TK_device /*| TK_global*/ | TK_serial | TK_harness |
-                     TK_generator | TK_library | TK_printfcn | TK_stencil)*
+	:	(  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
+                     TK_generator | /* TK_library | TK_printfcn |*/ TK_stencil | TK_model)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
@@ -267,7 +267,7 @@ statement returns [Statement s] { s = null; }
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
 	|(annotation_list (TK_device | TK_serial | TK_harness |
-                     TK_generator | TK_library | TK_printfcn | TK_stencil)*
+                     TK_generator | TK_library | TK_printfcn | TK_stencil | TK_model)*
                     return_type ID LPAREN) =>s=fdecl_statement  
 	|s=return_statement SEMI
 	|t:SEMI {s=new StmtEmpty(getContext(t));}
@@ -406,17 +406,20 @@ function_decl returns [Function f] {
     boolean isGlobal = false;
     boolean isSerial = false;
     boolean isStencil = false;
+    boolean isModel = false;
 }
 	:
 	amap=annotation_list
-	( TK_device { isDevice = true; } |
+	( // TK_device { isDevice = true; } |
           //TK_global { isGlobal = true; } |
           TK_serial { isSerial = true; } |
           TK_harness { isHarness = true; } |
           TK_generator { isGenerator = true; }  |
-          TK_library { isLibrary = true; }  |
-          TK_printfcn { isHarness = true; isPrintfcn = true; } |
-          TK_stencil { isStencil = true; }
+          // TK_library { isLibrary = true; }  |
+          // TK_printfcn { isHarness = true; isPrintfcn = true; } |
+          TK_stencil { isStencil = true; } | 
+          TK_model { isModel = true; }
+          
         )*
 	rt=return_type
 	id:ID
@@ -434,6 +437,9 @@ function_decl returns [Function f] {
             } else if (isHarness) {
                 assert impl == null : "harness functions cannot have implements";
                 fc = fc.type(Function.FcnType.Harness);
+            } else if (isModel) {
+                assert impl == null : "A model can not implement another model or a concrete function";
+                fc = fc.type(Function.FcnType.Model);
             } else if (impl != null) {
                 fc = fc.spec(impl.getText());
             }

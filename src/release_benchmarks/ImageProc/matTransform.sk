@@ -1,0 +1,50 @@
+pragma options "--bnd-unroll-amnt 8 --bnd-inbits 3";
+include "Img/Image.skh";
+include "intops.skh";
+
+harness void main(int n, char[n] fname){
+    Image im = readImg(n, fname);
+    im = matTransform({2, 2}, {{0, 2}, {1, 0}}, im);
+    writeImg(im);    
+}
+
+
+
+
+Image matTransform(int[2] p, int[2][2] m, Image im){
+    
+    generator int getX(int x, int y){
+        return p[0] + m[0][0]*x + m[0][1]*y;
+    }
+    generator int getY(int x, int y){
+        return p[1] + m[1][0]*x + m[1][1]*y;
+    }
+    
+    int r1 = getX(0,0);
+    int r2 = getX(0,im.c);
+    int r3 = getX(im.r,im.c);
+    int r4 = getX(im.r,0);
+    int c1 = getY(0,0);
+    int c2 = getY(0,im.c);
+    int c3 = getY(im.r,im.c);
+    int c4 = getY(im.r,0);
+    
+    int r = max(r1, max(r2, max(r3, r4)));
+    int c = max(c1, max(c2, max(c3, c4)));
+    
+    Image mg = new Image(r=r, c=c);    
+    copyMetaData(im, mg);
+    
+    generator void dw(int i, int j){
+        int ip = getX(i,j);
+        int jp = getY(i,j);
+        if(ip >= 0 && jp >= 0){
+            mg.im[ip][jp][0] = im.im[i][j][0];
+            mg.im[ip][jp][1] = im.im[i][j][1];
+            mg.im[ip][jp][2] = im.im[i][j][2];
+        }
+    }
+    applyFilter(im.r, im.c, 0, dw);
+    
+    return mg;
+}

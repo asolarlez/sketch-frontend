@@ -325,7 +325,11 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitExprConstFloat(ExprConstFloat exp)
     {
-        return Double.toString(exp.getVal()) + "f";
+        String tp = Double.toString(exp.getVal());
+        if (exp.getType() == ExprConstFloat.FloatType.Double) {
+            return tp;
+        }
+        return tp + "f";
     }
 
     public Object visitExprConstInt(ExprConstInt exp)

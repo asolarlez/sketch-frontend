@@ -1,0 +1,18 @@
+package Img;
+
+void applyFilter(int r, int c, int K, fun body){
+    for(int i=K; i<r-K; ++i){
+        for(int j=K; j<c-K; ++j){
+            body(i,j);            
+        }
+    }
+}
+
+
+void applyScaledFilter(int r, int c, int S, int K, fun body){
+    for(int i=K; i<r/S-K; ++i){
+        for(int j=K; j<c/S-K; ++j){
+            body(i,j);            
+        }
+    }
+}

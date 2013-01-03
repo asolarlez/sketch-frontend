@@ -18,6 +18,8 @@ package sketch.compiler.ast.core.exprs;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
  * A real-valued constant.  This can appear in an ExprComplex to form
@@ -30,7 +32,30 @@ public class ExprConstFloat extends ExprConstant
 {
 	public static final ExprConstFloat ZERO = new ExprConstFloat ((FEContext)null, 0.0);
 
+    public static enum FloatType {
+        Float, Double, Unknown
+    }
+
     private double val;
+    private FloatType type = FloatType.Unknown;
+
+    public void setType(FloatType ft) {
+        type = ft;
+    }
+
+    public void setType(Type tp) {
+        if (tp.equals(TypePrimitive.doubletype)) {
+            type = FloatType.Double;
+        } else if (tp.equals(TypePrimitive.floattype)) {
+            type = FloatType.Float;
+        } else {
+            type = FloatType.Unknown;
+        }
+    }
+
+    public FloatType getType() {
+        return type;
+    }
 
     /**
      * Create a new ExprConstFloat with a specified value.

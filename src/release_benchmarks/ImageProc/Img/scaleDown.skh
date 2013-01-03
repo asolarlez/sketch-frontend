@@ -1,0 +1,24 @@
+package Img;
+include "Img/Image.skh";
+include "Img/transforms.skh";
+
+Image scaleDown(Image im){
+    Image mg = new Image(c=im.c/2, r=im.r/2);    
+    copyMetaData(im, mg);
+    scale(im.r, im.c, im.im, mg.im);
+    return mg;
+}
+
+
+
+void scale(int r, int c, int[3][c][r] im, ref int[3][c/2][r/2] mg){    
+    
+    int maxVal = 1;
+    generator void shrink(int i, int j){
+        generator void bod(int cc){
+            mg[i][j][cc] = (im[2*i][2*j][cc] + (im[2*i+1][2*j][cc] + im[2*i-1][2*j][cc] + im[2*i][2*j+1][cc] + im[2*i][2*j-1][cc])/4)/2;      
+        }
+        bod(0); bod(1); bod(2); 
+    }
+    applyScaledFilter(r, c, 2, 1, shrink);    
+}

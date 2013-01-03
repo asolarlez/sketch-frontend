@@ -7,9 +7,3 @@ Arr a1 = new Arr(sz = W, arr=a1_,dflt = -333);
 ARR_W(x1,a1,x3);
 
 }
-
-	/*Arr aspec = spec( ..., a1);	
-	Arr ask = sk(..., a1);
-	assert arrCompare(aspec, ask); */
-
-
