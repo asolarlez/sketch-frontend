@@ -1,8 +1,10 @@
 package sketch.compiler.passes.lowering;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
@@ -23,6 +25,7 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.stencilSK.VarReplacer;
 
 public class MakeMultiDimExplicit extends SymbolTableVisitor {
 
@@ -53,10 +56,15 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
         boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
         Iterator<Parameter> ip = f.getParams().iterator();
+
+        Map<String, Expression> pmap = new HashMap<String, Expression>();
+        VarReplacer vrep = new VarReplacer(pmap);
+
         for (Expression param : exp.getParams()) {
             Parameter p = ip.next();
             Expression newParam = doExpression(param);
-            Type tleft = p.getType();
+            pmap.put(p.getName(), newParam);
+            Type tleft = (Type) p.getType().accept(vrep);
             Type tright = getType(newParam);
             if (needsWork(tleft, tright)) {
                 String rhv = varGen.nextVar();

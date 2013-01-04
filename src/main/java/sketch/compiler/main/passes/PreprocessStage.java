@@ -69,7 +69,7 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-        prog.debugDump("After fpe");
+
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
         // prog = ir1.run(prog);
@@ -88,12 +88,12 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 
 
-
+        // prog.debugDump("Before MDE");
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
 
 
-
+        // prog.debugDump("Before Preproc");
 
         if (partialEval) {
             prog =
