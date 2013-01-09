@@ -1,0 +1,29 @@
+pragma options "--bnd-inbits 2 --be:showDAG";
+//simple multiplication
+
+
+int muluf(int x1, int x2);
+
+
+model int mmul(int x1, int x2){
+    // changing values modulo BASE?
+    int xa,xb;
+    if(x1 <= x2){
+        xa = x1;
+        xb = x2;
+    }
+    else{
+        xa = x2;
+        xb = x1;
+    }
+    int rv = muluf(xa,xb);
+    return rv;
+}
+
+harness void main(){
+    int x =2;
+    int y =3;
+    int r = mmul(x,y);
+    int s = mmul(y,x);
+    assert(r == s);
+}

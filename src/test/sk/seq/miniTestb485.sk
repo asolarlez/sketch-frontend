@@ -1,0 +1,28 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 3 ";
+//include "../mult_model.skh";
+//int k = 5;
+//max degree of polynomials
+//int BASE = 10;
+int l = 3;
+int n = l;
+
+int[2*n] muluf(int[n] x1, int[n] x2);
+
+model int[2*n] mmul(int[n] x1, int[n] x2){
+	return muluf(x1,x2);
+}
+
+
+harness void main(){
+	int[n] x=0;
+	int[n] y=0;
+	assert( mmul(x,y) == mmul(x,y));
+}
+
+/*harness void main_sqrt(){
+	int x = 4;
+	int y = 7;
+	assert( msqrt(x) == msqrt(y));
+}*/
+
+

@@ -1,0 +1,36 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 32";
+//include "../../sqrt_model.skh";
+
+int sqrtuf(int i);
+
+model int msqrt(int i){
+    int rv = sqrtuf(i);
+    if(i==0){
+        assert rv == 0;
+    }
+    
+    assert rv*rv <= i;
+    assert (rv+1)*(rv+1) > i;
+    return rv;
+}
+
+harness void main(int p){
+	if(p<=1) return;
+	int i;	
+
+	int rspec = 1;
+	for(i=2;i<p;i++){
+		if(p%i == 0){ 
+			rspec = 0;
+		}
+	}
+
+	int rsk = 1;	
+	for(i=2;i<= msqrt(p) ;i++){
+	//for(i=2;{| i (< | > | <= | >=) msqrt({| (??%2)*p (+|-) (??%2) |}) |} ;i++){
+		if(p%i == 0){ 
+			rsk = 0;
+		}
+	}
+	assert(rsk == rspec);
+}

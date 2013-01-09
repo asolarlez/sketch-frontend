@@ -1,0 +1,20 @@
+
+int[n/2] fooUF(int n, int[n] in);
+
+model int[n/2] foo(int n, int[n] in){
+    int[n/2] rv = fooUF(n, in);    
+    return rv;
+}
+
+
+
+
+harness void main(int n, int[n] x, int q){
+    
+    int p = n;
+    while(p > q){
+        x[0::p/2] = foo(p, x[0::p]);
+        p = p/2;
+    }
+    
+}
