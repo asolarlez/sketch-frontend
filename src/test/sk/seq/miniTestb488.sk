@@ -1,0 +1,24 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 3 --be:showDAG --bnd-unroll-amnt 32";
+
+
+//max degree of polynomials = k
+int n = 3;
+int BASE = 4;
+
+int[2*n] muluf(int[n] x1, int[n] x2);
+
+
+model int[2*n] mmul(int[n] x1, int[n] x2){
+    int [2*n] rv = muluf(x1,x2);
+    return rv;
+}
+
+
+harness void main(int k, int[n][k] p){
+    if(k<=1) return;
+    int[n] x = 0;
+    int[2*n] y = 0;
+    int[2*n][k] v1 =0;
+    if(k>1) v1[1] = mmul(x,p[1]);
+    assert(v1[0] == y);
+}
