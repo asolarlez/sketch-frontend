@@ -7,6 +7,8 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
+ * Parentheses expression of the form "( expr )"
+ * 
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class ExprParen extends Expression {

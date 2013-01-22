@@ -5,7 +5,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * named parameter for a function call or tuple
+ * named parameter for a function call or tuple. Mainly used in <code>ExprNew</code>.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

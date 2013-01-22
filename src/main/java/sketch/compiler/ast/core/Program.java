@@ -33,12 +33,12 @@ import sketch.compiler.passes.printers.SimpleCodePrinter;
 import static sketch.util.DebugOut.printWarning;
 
 /**
- * An entire StreamIt program.  This includes all of the program's
- * declared streams and structure types.  It consequently has Lists of
- * streams (as {@link sketch.compiler.Package.StreamSpec} objects) and
- * of structures (as {@link sketch.compiler.nodes.TypeStruct} objects).
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * An entire Sketch program. This includes all of the program's declared
+ * <code>Package</code>s and structure types. It consequently has Lists of packages (as
+ * {@link sketch.compiler.ast.core.Package} objects) and of structures (as
+ * {@link sketch.compiler.core.typs.TypeStruct} objects).
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class Program extends FENode

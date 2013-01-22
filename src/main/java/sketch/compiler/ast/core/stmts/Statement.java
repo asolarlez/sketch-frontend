@@ -20,9 +20,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A generic statement, as created in the front-end.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A generic statement, as created in the front-end. Base class for all statements.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 abstract public class Statement extends FENode

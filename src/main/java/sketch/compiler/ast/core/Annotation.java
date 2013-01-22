@@ -1,7 +1,13 @@
 package sketch.compiler.ast.core;
 
 
-
+/**
+ * Customizable annotation attached to a <code>FENode</code>. Interested
+ * <code>FEVisitor</code>s can process interesting <code>Annotation</code> while other
+ * <code>FEVisitor</code>s just ignore it.
+ * 
+ * @version $Id$
+ */
 public class Annotation {
     private final FEContext context;
     public final String tag;

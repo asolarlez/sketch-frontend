@@ -8,6 +8,10 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
+/**
+ * The expression that constructs an object of type T (new T()). Now only support
+ * constructing <code>TypeStruct</code> typed object.
+ */
 public class ExprNew extends Expression {
 
 	Type typeToConstruct;
