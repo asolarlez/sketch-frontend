@@ -7,6 +7,11 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
+/**
+ * Not used now.
+ * 
+ * @deprecated
+ */
 public class StmtFork extends Statement {
 	private StmtVarDecl loopVar;
 	   private Expression iter;

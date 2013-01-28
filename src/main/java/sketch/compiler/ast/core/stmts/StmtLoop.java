@@ -21,7 +21,10 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
- * A loop that executes its body a specified number of times.
+ * A loop that executes its body a specified number of times, the "repeat(n) stmt"
+ * construct, where "n" must be a compile-time constant, but that constant can be some
+ * expression with unknown choices like a hole "??". Note: should be renamed to
+ * "StmtRepeat".
  */
 public class StmtLoop extends Statement
 {

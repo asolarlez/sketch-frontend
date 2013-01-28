@@ -24,10 +24,10 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
- * A primitive type.  This can be int, float, or complex, depending on
- * the specified type parameter.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A primitive type. This can be int, float, character, void, null, etc., depending on the
+ * specified type parameter.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class TypePrimitive extends Type

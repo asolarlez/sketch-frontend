@@ -7,8 +7,9 @@ import sketch.compiler.ast.core.exprs.Expression;
 import static sketch.util.Misc.nonnull;
 
 /**
- * Range of numbers, similar to Scala syntax
+ * Not used now. Range of numbers, similar to Scala syntax
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

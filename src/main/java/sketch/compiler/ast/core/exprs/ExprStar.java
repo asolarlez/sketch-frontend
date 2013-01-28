@@ -26,11 +26,10 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.main.cmdline.SketchOptions;
 
 /**
- * An integer-valued constant.  This can be freely promoted to an
- * ExprConstFloat.  This is always real-valued, though it can appear
- * in an ExprComplex to form a complex integer expression.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * An integer-valued constant with an unknown value ("??" in the program, the hole), whose
+ * value should be resolve by the Sketch Solver to satisfy all the constraints.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprStar extends Expression

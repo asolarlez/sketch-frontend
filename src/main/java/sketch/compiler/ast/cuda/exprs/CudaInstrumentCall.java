@@ -6,9 +6,10 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
- * intermediate node; full ast node (versus some other hack) since we want to capture any
- * array renaming.
+ * Not used now. intermediate node; full ast node (versus some other hack) since we want
+ * to capture any array renaming.
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

@@ -7,6 +7,11 @@ import java.util.Map;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
+/**
+ * NameResolver helps translate the name of a struct, function, or variable from the
+ * simple name (without package name) to the full name (with package name). The full name
+ * will be unique and help distinguish the same simple name in different packages.
+ */
 public class NameResolver {
     final Map<String, String> pkgForStruct = new HashMap<String, String>();
     final Map<String, String> pkgForFun = new HashMap<String, String>();

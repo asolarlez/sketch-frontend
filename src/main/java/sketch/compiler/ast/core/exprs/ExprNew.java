@@ -10,7 +10,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
  * The expression that constructs an object of type T (new T()). Now only support
- * constructing <code>TypeStruct</code> typed object.
+ * constructing <code>TypeStruct</code> object.
  */
 public class ExprNew extends Expression {
 

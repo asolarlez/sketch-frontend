@@ -7,7 +7,9 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
- * Parentheses expression of the form "( expr )"
+ * Paren expression enclosing a sub-expression which has unknown choices. This is used for
+ * generating choices in a regular-expression style. This kind of choices is just a
+ * syntactic sugar and are always boiled down to using holes (ExprStar).
  * 
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */

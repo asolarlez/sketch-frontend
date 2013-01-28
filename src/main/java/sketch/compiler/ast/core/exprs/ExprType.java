@@ -6,6 +6,9 @@ import sketch.compiler.ast.core.typs.Type;
 import static sketch.util.Misc.nonnull;
 
 /**
+ * Deprecated
+ * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

@@ -9,8 +9,9 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.util.datastructures.TprintTuple;
 
 /**
- * List of print tuples
+ * List of print tuples. Do not use this, deprecated.
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

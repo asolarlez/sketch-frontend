@@ -18,29 +18,13 @@ package sketch.compiler.ast.core;
 import sketch.compiler.ast.core.exprs.ExprVar;
 
 /**
- * Generate a sequence of numbered temporaary variable.  These will
- * have names like __sa1, __sa2, ....  These will primarily be used
- * for separating complex arithmetic, and for serializing pop and peek
- * operations.  That is, code like
- *
- * <pre>
- * push(sum - seq + seq * 1.0i);
- * </pre>
- *
- * would get converted into
- *
- * <pre>
- * complex float __sa1;
- * __sa1.real = sum - seq;
- * __sa1.imag = seq;
- * push __sa1;
- * </pre>
- *
- * The object also carries around a <i>prefix</i>, here <tt>a</tt>,
- * which is inserted just before the number.  This may be manually
- * specified, or gleaned from a program representation.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * Generate a sequence of numbered temporaary variable. These will have names like __sa1,
+ * __sa2, .... These will primarily be used for making unique names for temporary
+ * variables. The object also carries around a <i>prefix</i>, with default value
+ * <tt>a</tt>, which is inserted just before the number. This may be manually specified,
+ * or gleaned from a program representation.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class TempVarGen

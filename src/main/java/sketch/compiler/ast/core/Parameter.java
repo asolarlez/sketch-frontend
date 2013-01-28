@@ -20,10 +20,11 @@ import sketch.compiler.ast.core.typs.Type;
 
 
 /**
- * A formal parameter to a function or stream.  This is a pair of a
- * string name and a <code>Type</code>.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A formal parameter to a function. Each parameter consists of a string name, a
+ * <code>Type</code>, and a integer Ptype which indicates wether the parameter is
+ * input-only, output-only, or both.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class Parameter extends FENode implements Comparable<Parameter>

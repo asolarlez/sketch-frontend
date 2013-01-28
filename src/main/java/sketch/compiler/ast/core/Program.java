@@ -34,9 +34,9 @@ import static sketch.util.DebugOut.printWarning;
 
 /**
  * An entire Sketch program. This includes all of the program's declared
- * <code>Package</code>s and structure types. It consequently has Lists of packages (as
- * {@link sketch.compiler.ast.core.Package} objects) and of structures (as
- * {@link sketch.compiler.core.typs.TypeStruct} objects).
+ * <code>Package</code>s and optionally some directives. It consequently has Lists of
+ * packages (as {@link sketch.compiler.ast.core.Package} objects) and some compiler
+ * directives.
  * 
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$

@@ -6,6 +6,11 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
+/**
+ * The "reorder{ statements }" construct executes a list of statements in some unknown
+ * order, and the Sketch Solver will resolve the correct order to satisfy the constraints.
+ * Not very often used.
+ */
 public class StmtReorderBlock extends Statement {
 
 	StmtBlock block;

@@ -1,7 +1,15 @@
 package sketch.compiler.ast.cuda.typs;
 
 /**
- * Cuda memory types. This should allow reusing Parameter and StmtVarDel classes
+ * Indicates whether a
+ * <code>Type<code> sits in local memory (thus each processor has its own copy) or in global memory (thus there is only one copy). 
+ * A special case is LOCAL_TARR which is produced by SPMD transformation, to indicate that a LOCAL type already transformed to an array which contains a copy for each processor.
+ * 
+ * <p>
+ * Originally this is used by Cuda sketch, but the Cuda sketch itself is no longer supported. Now the SPMD sketch re-uses this.
+ * 
+ * <p>
+ * Note: should be renamed to "SpmdMemoryType", or just "MemoryType", to remove the dependency on Cuda things.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

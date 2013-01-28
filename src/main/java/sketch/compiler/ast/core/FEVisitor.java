@@ -41,17 +41,15 @@ import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 
 /**
- * Visitor interface for StreamIt front-end nodes.  This class
- * implements part of the "visitor" design pattern for StreamIt
- * front-end nodes.  The pattern basically exchanges type structures
- * for function calls, so a different function in the visitor is
- * called depending on the run-time type of the object being visited.
- * Calling visitor methods returns some value, the type of which
- * depends on the semantics of the visitor in question.  In general,
- * you will create a visitor object, and then pass it to the
+ * Visitor interface for <code>FENode</code> nodes. This class implements part of the
+ * "visitor" design pattern for <code>FENode</code>s. The pattern basically exchanges type
+ * structures for function calls, so a different function in the visitor is called
+ * depending on the run-time type of the object being visited. Calling visitor methods
+ * returns some value, the type of which depends on the semantics of the visitor in
+ * question. In general, you will create a visitor object, and then pass it to the
  * <code>FENode.accept()</code> method of the object in question.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public interface FEVisitor

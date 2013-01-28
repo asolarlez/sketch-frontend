@@ -10,8 +10,10 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
+ * Not used now.
+ * 
+ * @deprecated
  * @author Chris Jones
- *
  */
 public class StmtAtomicBlock extends  Statement{
 

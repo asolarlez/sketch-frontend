@@ -5,8 +5,9 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
- * Thread indices for CUDA programs
+ * Not used now Thread indices for CUDA programs
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

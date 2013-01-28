@@ -7,8 +7,11 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
 /**
+ * Unknown choice between two expressions "( a | b )". This is used for generating choices
+ * in a regular-expression style. This kind of choices is just a syntactic sugar and are
+ * always boiled down to using holes (ExprStar).
+ * 
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
- *
  */
 public class ExprAlt extends Expression {
 	Expression ths;

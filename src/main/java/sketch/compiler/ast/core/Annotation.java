@@ -2,9 +2,9 @@ package sketch.compiler.ast.core;
 
 
 /**
- * Customizable annotation attached to a <code>FENode</code>. Interested
- * <code>FEVisitor</code>s can process interesting <code>Annotation</code> while other
- * <code>FEVisitor</code>s just ignore it.
+ * Customizable annotation attached to a <code>TypeStruct</code> or <code>Function</code>
+ * node. Interested <code>FEVisitor</code>s can process interesting
+ * <code>Annotation</code> while other <code>FEVisitor</code>s just ignore it.
  * 
  * @version $Id$
  */

@@ -3,6 +3,13 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
+/**
+ * Unknown selecting from a set of expressions, and the whole expression can be optional
+ * "(a | b | ...)?". This is used for generating choices in a regular-expression style.
+ * This kind of choices is just a syntactic sugar and are always boiled down to using
+ * holes (ExprStar).
+ */
+
 public class ExprChoiceSelect extends Expression {
 	private Expression obj;
 	private Selector field;

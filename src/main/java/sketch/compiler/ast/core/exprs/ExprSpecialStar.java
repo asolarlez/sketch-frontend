@@ -5,12 +5,14 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 
 /**
- * designed for MINVAR's
+ * designed for MINVAR's This is like an <code>ExprStar</code>, but the backend will make
+ * sure it is the minimal integer value that fits in the hole. NOTE: should be renamed to
+ * ExprMinStar
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you
- *          make changes, please consider contributing back!
+ *          http://creativecommons.org/licenses/BSD/. While not required, if you make
+ *          changes, please consider contributing back!
  */
 public class ExprSpecialStar extends ExprStar {
     public final String name;

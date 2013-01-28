@@ -20,11 +20,12 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A simple continue statement.  This statement jumps to evaluating
- * the condition if the innermost loop is a (do/)while loop, or to the
- * increment statement if the innermost loop is a for loop.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * Not supported yet. A simple continue statement. This statement jumps to evaluating the
+ * condition if the innermost loop is a (do/)while loop, or to the increment statement if
+ * the innermost loop is a for loop.
+ * 
+ * @deprecated
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class StmtContinue extends Statement

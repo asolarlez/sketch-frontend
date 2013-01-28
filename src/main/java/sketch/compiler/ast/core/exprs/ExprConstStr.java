@@ -20,12 +20,10 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A string literal.  The only place these currently appear in StreamIt
- * is as the filename argument to file reader and writer filters.
- * For convenience, these are stored in their original program-source
- * representation.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A string literal. Deprecated
+ * 
+ * @deprecated
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprConstStr extends ExprConstant
