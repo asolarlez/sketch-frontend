@@ -14,9 +14,9 @@ import sketch.compiler.ast.core.exprs.Expression;
 
 /**
  * Binary operation connecting two expressions, and each of those expressions can have
- * unknow choices. This is used for generating choices in a regular-expression style. This
- * kind of choices is just a syntactic sugar and are always boiled down to using holes
- * (ExprStar).
+ * unknown choices. This is used for generating choices in a regular-expression style.
+ * This kind of choices is just a syntactic sugar and are always boiled down to using
+ * holes (ExprStar).
  * 
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
