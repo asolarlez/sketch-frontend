@@ -4,6 +4,9 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.stmts.Statement;
 
+/**
+ * @deprecated
+ */
 public class CudaSyncthreads extends Statement {
     @SuppressWarnings("deprecation")
     public CudaSyncthreads(FEContext context) {

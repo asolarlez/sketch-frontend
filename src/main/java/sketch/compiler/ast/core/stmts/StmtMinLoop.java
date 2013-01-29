@@ -20,7 +20,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A loop that executes its body a specified number of times.
+ * A loop that executes its body a specified number of times like the
+ * <code>StmtLoop</code>, but the backend will make sure the body is executed for a
+ * minimal number of times. Note: should be renamed to "StmtMinRepeat".
  */
 public class StmtMinLoop extends Statement
 {

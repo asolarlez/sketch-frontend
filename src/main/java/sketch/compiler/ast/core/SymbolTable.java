@@ -26,21 +26,19 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
- * A symbol table for StreamIt programs.  This keeps a mapping from a
- * string name to a front-end type and an origin object, and has a
- * parent symbol table (possibly null).  A name can be registered in
- * the current symbol table.  When resolving a name's type, the name
- * is searched for first in the current symbol table, and if not
- * present than in the parent symbol table.
- *
- * <p>Each symbol may be associated with an <i>origin</i>.  This is
- * the object that initially defines the symbol, typically a
- * <code>StmtVarDecl</code> for local variables or filter fields or a
- * <code>Parameter</code> for stream parameters.  Each symbol also
- * has an integer kind to distinguish which of these it is.
- *
- * @see     sketch.compiler.passes.SymbolTableVisitor
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A symbol table for Sketch programs. This keeps a mapping from a string name to a
+ * front-end type and an origin object, and has a parent symbol table (possibly null). A
+ * name can be registered in the current symbol table. When resolving a name's type, the
+ * name is searched for first in the current symbol table, and if not present than in the
+ * parent symbol table.
+ * <p>
+ * Each symbol may be associated with an <i>origin</i>. This is the object that initially
+ * defines the symbol, typically a <code>StmtVarDecl</code> for local variables or filter
+ * fields or a <code>Parameter</code> for stream parameters. Each symbol also has an
+ * integer kind to distinguish which of these it is.
+ * 
+ * @see sketch.compiler.passes.SymbolTableVisitor
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class SymbolTable

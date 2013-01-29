@@ -20,10 +20,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A single-character literal, as appears inside single quotes in
- * Java.  This generally doesn't actually appear in StreamIt code.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A single-character literal, as appears inside single quotes in Java.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprConstChar extends ExprConstant

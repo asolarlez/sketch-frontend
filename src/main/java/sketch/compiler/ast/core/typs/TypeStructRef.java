@@ -22,11 +22,11 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
- * A named reference to a structure type, as defined in TypeStruct.
- * This will be produced directly by the parser, but later passes
- * should replace these with TypeStructs as appropriate.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A named reference to a structure type, as defined in TypeStruct. This will be produced
+ * directly by the parser, but later passes might replace these with TypeStructs as
+ * appropriate.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class TypeStructRef extends Type

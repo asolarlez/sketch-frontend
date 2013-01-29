@@ -22,10 +22,9 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
- * A real-valued constant.  This can appear in an ExprComplex to form
- * a complex real expression.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A real-valued constant.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprConstFloat extends ExprConstant

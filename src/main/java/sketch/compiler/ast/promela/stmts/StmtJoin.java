@@ -22,9 +22,10 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 
 /**
- * Declare the joiner type for a split-join or feedback loop.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * Not used now. Declare the joiner type for a split-join or feedback loop.
+ * 
+ * @deprecated
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class StmtJoin extends Statement

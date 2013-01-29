@@ -22,13 +22,12 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.scala.exprs.ExprConstUnit;
 
 /**
- * A return statement with an optional value.  Functions returning
- * void (including init and work functions and message handlers)
- * should have return statements with no value; helper functions
- * returning a particular type should have return statements with
- * expressions of that type.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A return statement with an optional value. Functions returning void (including init and
+ * work functions and message handlers) should have return statements with no value;
+ * functions returning a particular type should have return statements with expressions of
+ * that type.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class StmtReturn extends Statement

@@ -1,18 +1,19 @@
 package sketch.compiler.ast.spmd.stmts;
 import sketch.compiler.ast.core.FEContext;
-import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
-import sketch.compiler.ast.core.stmts.StmtBlock;
 
-import java.util.List;
-import java.util.ArrayList;
-
+/**
+ * The "Spmdfork(N) stmt" statement that forks N processes executing the same statement.
+ * Used in SPMD program.
+ * 
+ * @author tim
+ */
 public class StmtSpmdfork extends Statement {
     private Expression nProc;
     private Statement body;

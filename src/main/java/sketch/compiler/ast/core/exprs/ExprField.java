@@ -19,11 +19,11 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A reference to a named field of a StreamIt structure.  This is
- * the expression "foo.bar".  It contains a "left" expression
- * and the name of the field being referenced.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * A reference to a named field of a <code>TypeStruct</code> node. This is the expression
+ * "foo.bar". It contains a "left" expression ("foo") and the name of the field being
+ * referenced ("bar").
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprField extends Expression

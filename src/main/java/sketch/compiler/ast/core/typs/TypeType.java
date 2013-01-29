@@ -5,7 +5,7 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import static sketch.util.DebugOut.not_implemented;
 
 /**
- * type of a type. For example, if we have
+ * Not used. type of a type. For example, if we have
  * 
  * <pre>
  * type v = typearray { \Z mod 4 -> \Z }
@@ -13,6 +13,7 @@ import static sketch.util.DebugOut.not_implemented;
  * 
  * the type of $v is TypeType
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

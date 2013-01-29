@@ -4,6 +4,10 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
+/**
+ * @deprecated
+ * @author tim
+ */
 public class CudaBlockDim extends Expression {
     private final String indexName;
 

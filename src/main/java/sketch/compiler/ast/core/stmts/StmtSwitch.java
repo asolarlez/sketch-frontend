@@ -6,6 +6,12 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
+/**
+ * Not supported yet. The "switch" statement.
+ * 
+ * @deprecated
+ * @author tim
+ */
 public class StmtSwitch extends Statement {
 
 	Expression cond;

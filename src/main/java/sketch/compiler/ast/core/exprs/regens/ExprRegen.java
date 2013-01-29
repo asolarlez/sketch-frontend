@@ -8,8 +8,12 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.parser.RegenParser;
 
+
 /**
- * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
+ * The container expression "{| expr |}" indicating that the enclosed expression contains
+ * unknown choices and should be treated in regular-expression style. This is used for
+ * generating choices in a regular-expression style. This kind of choices is just a
+ * syntactic sugar and are always boiled down to using holes (ExprStar).
  */
 public class ExprRegen extends Expression {
 

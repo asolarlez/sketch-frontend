@@ -9,6 +9,11 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.Expression;
 
+/**
+ * Unary operation on an operand which has unknown choice. This is used for generating
+ * choices in a regular-expression style. This kind of choices is just a syntactic sugar
+ * and are always boiled down to using holes (ExprStar).
+ */
 public class ExprChoiceUnary extends Expression {
 	public static final int NEG 	= 1<<1;
 	public static final int NOT 	= 1<<2;

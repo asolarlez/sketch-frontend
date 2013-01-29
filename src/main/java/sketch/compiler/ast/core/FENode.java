@@ -21,11 +21,11 @@ import sketch.util.exceptions.NotImplementedException;
 
 
 /**
- * Any node in the tree created by the front-end's parser.  This is
- * the root of the front-end class tree.  Derived classes include
- * statement, expression, and stream object nodes.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * Any node in the AST, usually created by the front-end's parser. This is the root of the
+ * front-end class tree. Derived classes include statement, expression, types, and
+ * functions.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public abstract class FENode

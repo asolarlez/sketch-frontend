@@ -20,11 +20,10 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * An integer-valued constant.  This can be freely promoted to an
- * ExprConstFloat.  This is always real-valued, though it can appear
- * in an ExprComplex to form a complex integer expression.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * An integer-valued constant. This can be freely promoted to an ExprConstFloat when fixed
+ * point representation is used for float.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprConstInt extends ExprConstant

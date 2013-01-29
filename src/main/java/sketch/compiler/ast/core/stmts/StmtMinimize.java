@@ -4,6 +4,10 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.Expression;
 
+/**
+ * The minimize statement, to tell the backend that some integer value needs to be
+ * minimized.
+ */
 public class StmtMinimize extends Statement {
     private final Expression minimizeExpr;
     public final boolean userGenerated;

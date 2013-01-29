@@ -34,18 +34,20 @@ import sketch.util.datastructures.ObjPairBase;
 import sketch.util.datastructures.TypedHashMap;
 
 /**
- * A hetereogeneous structure type.  This type has a name for itself,
- * and an ordered list of field names and types.  You can retrieve the
- * list of names, and the type a particular name maps to.  The names
- * must be unique within a given structure.
- *<p>
- * There is an important assumption in testing for equality and
- * type promotions: two structure types are considered equal if
- * they have the same name, regardless of any other characteristics.
- * This allows structures and associated structure-reference types
+ * A hetereogeneous structure type. This type has a name for itself, and an ordered list
+ * of field names and types. You can retrieve the list of names, and the type a particular
+ * name maps to. The names must be unique within a given structure.
+ * <p>
+ * There is an important assumption in testing for equality and type promotions: two
+ * structure types are considered equal if they have the same name, regardless of any
+ * other characteristics. This allows structures and associated structure-reference types
  * to sanely compare equal.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * <p>
+ * This is the "definition" of a structure which contains not only the struct name, but
+ * also the information of its fields. On the contrary, <code>TypeStructRef</code> just
+ * refers to a struct by its name.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class TypeStruct extends Type implements Iterable<Entry<String, Type>>

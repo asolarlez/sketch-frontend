@@ -3,6 +3,9 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
+/**
+ * The "null" expression representing a null pointer.
+ */
 public class ExprNullPtr extends Expression {
 
 	public static ExprNullPtr nullPtr = new ExprNullPtr();

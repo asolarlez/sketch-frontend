@@ -21,11 +21,11 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 
 /**
- * An expression directing one expression to be interpreted as a different
- * (primitive) type.  This has a child instruction and the type that is
- * being cast to.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * An expression directing one expression to be interpreted as a different (primitive)
+ * type. This has a child instruction and the type that is being cast to. Currently
+ * support: casting from int to float, from bit[N] to int, and between T[N] and T[M].
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class ExprTypeCast extends Expression

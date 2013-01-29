@@ -20,10 +20,11 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * A simple break statement.  This statement is used to exit the
+ * Not supported yet. A simple break statement. This statement is used to exit the
  * innermost section of control flow, such as a for or while loop.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * 
+ * @deprecated
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class StmtBreak extends Statement

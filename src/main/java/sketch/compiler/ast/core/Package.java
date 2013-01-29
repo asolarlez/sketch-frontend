@@ -25,17 +25,14 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
- * Container class containing all of the state for a StreamIt stream
- * type.  A StreamSpec may or may not have a name; if there is no
- * name, this is an anonymous stream.  It also has a type (as an
- * integer), a stream type (with I/O data types), a parameter list, a
- * list of variable declarations (as <code>Statement</code>s; they
- * should all actually be <code>StmtVarDecl</code>s), and a list of
- * function declarations (as <code>Function</code> objects).  The
- * stream type may be <code>null</code>, in which case the compiler
- * will need to determine the stream type on its own.
- *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * Container class containing all of the state for a self-contained Sketch program. A
+ * <code>Package</code> may or may not have a name; if there is no name, this is an
+ * anonymous package. It also has a list of global variable declarations (currently they
+ * are called global field declaration and are all <code>FieldDecl</code> nodes), a list
+ * of function declarations (as <code>Function</code> objects), and a list of
+ * <code>TypeStruct</code> definitions.
+ * 
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class Package extends FENode

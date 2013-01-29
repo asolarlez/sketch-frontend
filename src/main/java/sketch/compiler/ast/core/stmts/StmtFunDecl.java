@@ -5,6 +5,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Function;
 
+/**
+ * This is used to define a function inside the scope of a function.
+ */
 public class StmtFunDecl extends Statement {
 
     Function decl;

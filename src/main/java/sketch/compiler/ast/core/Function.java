@@ -14,7 +14,8 @@ import sketch.util.wrapper.ScRichString;
 import static sketch.util.Misc.nonnull;
 
 /**
- * A function declaration.
+ * A function definition. This contains the name, return type, parameter list, and body of
+ * a function.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

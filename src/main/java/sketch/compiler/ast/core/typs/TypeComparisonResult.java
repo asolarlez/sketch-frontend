@@ -1,8 +1,9 @@
 package sketch.compiler.ast.core.typs;
 
 /**
- * a more informative comparison, allowing for unknown values
+ * Not used. a more informative comparison, allowing for unknown values
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

@@ -37,7 +37,7 @@ import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 
 /**
- * typed version of null visitor.
+ * typed version of <code>FENullVisitor</code>
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

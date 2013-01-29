@@ -11,6 +11,9 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.cuda.exprs.ExprRange;
 import static sketch.util.Misc.nonnull;
 
+/**
+ * @deprecated
+ */
 public class StmtParfor extends Statement {
     private final Statement body;
     /** NOTE -- may be null! */

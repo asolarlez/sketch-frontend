@@ -16,8 +16,9 @@ import static sketch.util.Misc.nonnull;
 import static sketch.util.fcns.Zip.zip;
 
 /**
- * named tuple, associating keys with values.
+ * Do not use. named tuple, associating keys with values.
  * 
+ * @deprecated
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make

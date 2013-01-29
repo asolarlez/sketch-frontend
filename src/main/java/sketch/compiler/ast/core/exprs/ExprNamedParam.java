@@ -5,7 +5,8 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 /**
- * named parameter for a function call or tuple
+ * named parameter for a function call to <code>ExprNew</code> constructor, used for
+ * initializing each field of a <code>TypeStruct</code> object.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
