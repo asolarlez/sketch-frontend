@@ -567,8 +567,8 @@ public class PartialEvaluator extends FEReplacer {
                         }else{
                             fav=(vtype.cast(av, ta));
                         }
-                    }else{
-                        fav=av;
+                    } else {                        
+                        fav = av;
                     }
                     avlist.add(fav);
                 }else{

@@ -1,0 +1,28 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --be:showDAG";
+
+struct Bar{    
+    int x;
+}
+
+int gt;
+
+generator void moo(ref int t, Bar b){    
+    foo(b.x, t);
+    assert b.x == gt*2 - 3;
+}
+
+
+void foo(ref int a, int b){
+    a = b-1;
+    a = a + b-2;    
+}
+
+harness void main(int t){
+    gt = t;
+    Bar b = new Bar(x=t);
+    
+    moo(b.x, b);
+    
+    assert b.x == 2*t - 3;
+        
+}

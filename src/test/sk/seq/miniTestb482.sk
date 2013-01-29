@@ -1,15 +1,39 @@
-pragma options "--be:showDAG";
+pragma options "--bnd-inbits 4 --be:showDAG --beopt:-bndwrand 50 --bnd-unroll-amnt 2  --bnd-mbits 3";
 
-int moo(int i);
 
-model int foo(int i, int h){
-    //This foo should not be allowed, because for some values of h, 
-    // no function can satisfy the model.
-    int rv = moo(i);
-    if(i==7){
+int mooReal(int i, int h){
+    int rv;
+    minrepeat{
+        if(??){rv = max({| (i| h| rv| ??)+?? |}, {| (i| h| rv| ??)+?? |}); }
+        else{
+            if(??){ rv = min({| (i| h| rv| ??)+?? |}, {| (i| h| rv| ??)+?? |});}
+            else{ rv = {| ((i| h| rv| ??)+??) (+ | -) ((i| h| rv| ??)+??) |};  }
+        }
+    }
+    return rv;
+}
+
+harness void checkMooReal(int i, int h){
+    int rv = mooReal(i, h);
+    if(i==7 && h > 12){
         assert rv > 10;
         assert rv >= i;
-        assert rv <h;
+        assert rv <=max(h, i);
+    }    
+}
+
+@Native("{ mooReal(i, h, _out); }")
+int moo(int i, int h);
+
+int max(int i, int j){ return i>j?i:j; }
+int min(int i, int j){ return i>j?j:i; }
+
+model int foo(int i, int h){
+    int rv = moo(i, h);
+    if(i==7 && h > 12){
+        assert rv > 10;
+        assert rv >= i;
+        assert rv <=max(h, i);
     }
     return rv;
 }

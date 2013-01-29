@@ -594,7 +594,6 @@ public class FunctionParamExtension extends SymbolTableVisitor
                  * The problem is that if there is aliasing between that variable
                  * and some of the parameters, there will be big problems.
                 if (ptype == Parameter.OUT && callLHS != null) {
-                    
                     Type t = getType(callLHS);                   
                     if (t instanceof TypeArray) {
                         if (t.equals(tt)) {

@@ -1,0 +1,18 @@
+
+int x;
+
+
+void foo(int u, ref int v, ref int w){
+    u = v + w;
+    w = u - v;
+    v = u - 3*w;
+}
+
+harness void main(int i){
+    int qq=i;
+    x = i;
+    foo(x, i, i);
+    
+    assert x == qq;
+    assert i == qq;
+}

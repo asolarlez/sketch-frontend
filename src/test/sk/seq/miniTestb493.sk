@@ -1,0 +1,28 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --be:showDAG";
+
+struct Bar{
+    int n;
+    int[n] x;
+}
+
+generator
+void moo(int n, ref int[n] t, Bar b){    
+    foo(n, b.x, t);
+}
+
+
+void foo(int n, ref int[n] a, int[n] b){
+    for(int i=1; i<n; ++i){
+        a[i] = b[i-1];
+    }
+}
+
+harness void main(int n, int[n] t){
+    Bar b = new Bar(n=n, x=t);
+    
+    moo(n, b.x, b);
+    
+    for(int i=1; i<n; ++i){
+        assert b.x[i] == t[i-1];
+    }
+}

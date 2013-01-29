@@ -320,7 +320,7 @@ public class NodesToJava extends SymbolTableVisitor
 
     public Object visitExprConstChar(ExprConstChar exp)
     {
-        return "'" + exp.getVal() + "'";
+        return exp.toString();
     }
 
     public Object visitExprConstFloat(ExprConstFloat exp)

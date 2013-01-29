@@ -57,7 +57,6 @@ public class LowerToSketch extends MetaStage {
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
                         options.bndOpts.arrSize)));
 
-        // prog.debugDump("After ES");
 
 
         // dump (prog, "After Stencilification.");
@@ -87,7 +86,7 @@ public class LowerToSketch extends MetaStage {
                         FailurePolicy.ASSERTION, varGen));
 
 
-        prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, true));
+        prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, false));
 
         // prog.debugDump("After SVA");
 

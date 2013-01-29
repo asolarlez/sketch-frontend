@@ -1,6 +1,29 @@
-pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8  --be:angelic-model"; //  --beopt:simplifycex NOSIM
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8  --be:angelic-model";
 int N =5;
 
+
+int[N] bsort(int[N] input){
+    int[N] output=input;
+    int[N] done = 0;
+    int k=0;
+    for(int i=0; i<N; ++i){
+       for(int j=i+1; j<N; ++j){
+          if( output[j]< output[i]){
+             int tmp = output[j];
+             output[j] = output[i];
+             output[i] = tmp;
+          }
+       }
+    }
+    return output;
+ }
+
+harness void test2(int x){       
+    bsort(x);
+}
+
+
+@Native("{ bsort(x, _out); }")
 int[N] sortuf(int[N] x);
 
 model int[N] msort(int[N] x){

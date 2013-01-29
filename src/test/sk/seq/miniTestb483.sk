@@ -1,5 +1,6 @@
 pragma options "--bnd-inbits 4";
 
+@Native("{ for(int t=0; t<i; ++t){  if((t+1)*(t+1)>i){_out=t; return; }  } }")
 int msqrt(int i);
 
 model int sqrt(int i){

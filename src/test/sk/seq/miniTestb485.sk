@@ -6,6 +6,7 @@ pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 3 ";
 int l = 3;
 int n = l;
 
+@Native("{ CopyArr<int>(_out, x1, 3, 6); }")
 int[2*n] muluf(int[n] x1, int[n] x2);
 
 model int[2*n] mmul(int[n] x1, int[n] x2){

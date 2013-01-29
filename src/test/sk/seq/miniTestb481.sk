@@ -1,12 +1,15 @@
 pragma options "--be:showDAG";
 
-int moo(int i);
+@Native("{ _out = (i+11)*h; }")
+int moo(int i, int h);
 
 model int foo(int i, int h){
-    int rv = moo(i);
-    assert rv > 10;
-    assert rv >= i;
-    assert rv % h == 0;
+    int rv = moo(i, h);
+    if(h>0){
+        assert rv > 10;
+        assert rv >= i;
+        assert rv % h == 0;
+    }
     return rv;
 }
 

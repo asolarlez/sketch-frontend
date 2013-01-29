@@ -43,6 +43,7 @@ import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.cleanup.EliminateAliasesInRefParams;
 import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
@@ -422,7 +423,7 @@ public class SequentialSketchMain extends CommonSketchMain
         Map<String, String> rm = new HashMap<String, String>();
         rm.put("main", "_main");
         prog = (Program) prog.accept(new MethodRename(rm));
-
+        prog = (Program) prog.accept(new EliminateAliasesInRefParams(varGen));
         outputCCode(prog);
     }
 

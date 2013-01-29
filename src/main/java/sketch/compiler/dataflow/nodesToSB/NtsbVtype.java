@@ -251,7 +251,8 @@ public class NtsbVtype extends IntVtype {
             assert formal.isParameterInput();
             if(param.isVect()){
                 TypeArray ta = (TypeArray) formal.getType();
-                Integer lntt = ta.getLength().getIValue();
+                Expression eln = ta.getLength();
+                Integer lntt = eln == null ? null : eln.getIValue();
                 if (lntt == null) {
                     plist += "( {" + param + "} )";
                 } else {
@@ -262,7 +263,23 @@ public class NtsbVtype extends IntVtype {
                     }
                 }
             }else{
-                plist += param;
+                Type ftype = formal.getType();
+                if (ftype instanceof TypeArray) {
+                    TypeArray ta = (TypeArray) ftype;
+                    Expression eln = ta.getLength();
+                    Integer lntt = eln == null ? null : eln.getIValue();
+                    if (lntt == null) {
+                        plist += param;
+                    } else {
+                        int lsz = lntt;
+                        plist += param + " ";
+                        for (int tt = 1; tt < lsz; ++tt) {
+                            plist += CONST(ta.getBase().defaultValue().getIValue()) + " ";
+                        }
+                    }
+                } else {
+                    plist += param;
+                }
             }
             plist += " ";           
         }

@@ -1,0 +1,33 @@
+
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --be:showDAG";
+
+struct Bar{    
+    int x;
+}
+
+int gt;
+
+
+void foo(ref int a, int b){
+    a = b-1;
+    a = a + b-2;    
+}
+
+harness void main(int t){
+    gt = t;
+    Bar b = new Bar(x=t);
+
+    void moo(ref int t){    
+        foo(b.x, t);
+        assert b.x == gt*2 - 3;
+    }
+
+    
+    moo(b.x);
+    //Remember, for functions, reference parameters are 
+    // copy-in/copy-out, so even though b.x is overwritten inside foo, the copy out
+    //after moo will restore it, because moo did not modify its reference parameter t.
+    
+    assert b.x == t;
+        
+}

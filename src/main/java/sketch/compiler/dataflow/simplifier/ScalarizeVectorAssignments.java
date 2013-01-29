@@ -84,7 +84,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		Type rt = getType(rhs);
 		if( !(rt instanceof TypeArray )  ) return 2;
 		if( (new OpFinder()).hasOp(rhs) ) return 3;
-		if( lt.equals(rt) && !agressive ) return 0;
+        if (lt.equals(rt) && !agressive && (lhs instanceof ExprVar) &&
+                (rhs instanceof ExprVar))
+            return 0;
 		
 		return 1; //lhs and rhs are arrays of different dimensions.
 	}

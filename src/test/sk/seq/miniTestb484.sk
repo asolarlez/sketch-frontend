@@ -1,4 +1,7 @@
+pragma options "--bnd-unroll-amnt 32";
 
+
+@Native("{ CopyArr<int>(_out, in, n/2, n/2); }")
 int[n/2] fooUF(int n, int[n] in);
 
 model int[n/2] foo(int n, int[n] in){

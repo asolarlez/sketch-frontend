@@ -247,6 +247,9 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     class InnerFunReplacer extends SymbolTableVisitor {
+
+        boolean isGenerator = false;
+
         int nfcnt = 0;
         FunReplMap frmap = new FunReplMap(null);
 
@@ -277,6 +280,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         Function curFun;
         public Object visitFunction(Function fun) {
+            boolean tmpIsGen = isGenerator;
+            isGenerator = fun.isGenerator();
             FunReplMap tmp = frmap;
             frmap = new FunReplMap(tmp);
             Function tmpf = curFun;
@@ -289,6 +294,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             Object o = super.visitFunction(fun);
             curFun = tmpf;
             frmap = tmp;
+            isGenerator = tmpIsGen;
             return o;
         }
 
@@ -537,6 +543,17 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
             frmap.declRepl(sfd.getDecl().getName(), newName);
             Function f = sfd.getDecl();
+
+            if (isGenerator && !f.isGenerator()) {
+                throw new ExceptionAtNode(
+                        "You can not define a non-generator function inside a generator",
+                        sfd);
+            }
+            if (f.isSketchHarness()) {
+                throw new ExceptionAtNode(
+                        "You can not define a harness inside another function", sfd);
+            }
+
             Function newFun = f.creator().name(newName).pkg(pkg).create();
             nres.registerFun(newFun);
             newFun = (Function) newFun.accept(this);

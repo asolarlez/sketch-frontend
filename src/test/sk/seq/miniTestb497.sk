@@ -1,0 +1,28 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --be:showDAG";
+
+struct Bar{    
+    int x;
+}
+
+int gt;
+
+harness void main(int t){
+    gt = t;
+    Bar b = new Bar(x=t);
+    
+    int qq = t;
+    
+    generator void moo(ref int u){
+        generator void foo(){ // You should not be allowed to define a non-generator function inside a generator.
+            u = b.x - 1;
+            u = u + b.x - 2;
+        }    
+        foo();
+    }
+    
+    
+    moo(b.x);
+    
+    assert b.x == 2*t - 4;
+        
+}

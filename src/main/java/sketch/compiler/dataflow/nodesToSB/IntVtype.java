@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -334,14 +335,16 @@ public class IntVtype extends abstractValueType {
 
 		if(type instanceof TypeArray ){
 
-			if(!v1.isVect()){
+            TypeArray t = (TypeArray) type;
+            Expression elen = t.getLength();
+
+            if (!v1.isVect() && elen != null) {
 				List<abstractValue> vls = new ArrayList<abstractValue>(1);
 				vls.add(v1);
 				v1 = ARR(vls);
 			}
 
-			TypeArray t =  (TypeArray) type;
-			Integer len = t.getLength().getIValue();
+            Integer len = elen == null ? null : elen.getIValue();
 			if(len != null){
 				int mlen = len;
 				List<abstractValue> lst1 = v1.getVectValue();

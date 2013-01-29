@@ -1,0 +1,18 @@
+pragma options "--bnd-unroll-amnt 32";
+
+void foo(int n, ref int[n] a, int[n] b){
+    for(int i=1; i<n; ++i){
+        a[i] = b[i-1];
+    }
+}
+
+harness void main(int n, int[n] a){
+    int[n] ta = a; 
+    int[n] tb = a;
+    a = 0;
+    foo(n, ta, ta);
+    for(int i=1; i<n; ++i){
+        assert ta[i] == tb[i-1];
+    }
+    assert a == (int[n])0;
+}

@@ -45,6 +45,8 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
 
+        // prog.debugDump("After Replace Min Loops");
+
         prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
