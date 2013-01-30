@@ -6,6 +6,8 @@
 #include "../../mathlib/mathlib.h"
 #include "neohookean.h"
 
+#include "sk_neohookean.h"
+
 // 1 internal variable
 summit::Neohookean::
 Neohookean() : Material("neohookean",1) {}

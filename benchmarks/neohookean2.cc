@@ -6,6 +6,8 @@
 #include "../../mathlib/mathlib.h"
 #include "neohookean.h"
 
+#include "sk_neohookean.h"
+
 // 1 internal variable
 summit::Neohookean::
 Neohookean() : Material("neohookean",1) {}
@@ -105,7 +107,8 @@ Constitutive(const real* u0, const real* un, const real* F0, const real* Fn, rea
     real F[]  = {1., 0., 0.,
           	 0., 1., 0.,
           	 0., 0., 1.};
-    real C[9],Cinv[9],S[9],M[81];
+//    real C[9],Cinv[9],S[9],M[81];
+    real Cinv[9],S[9],M[81];
 
     // potentially move up in dimensionality
     for (j=0,ij=0; j < ndm; j++){
@@ -116,10 +119,13 @@ Constitutive(const real* u0, const real* un, const real* F0, const real* Fn, rea
 
 
     // compute right Cauchy-Green tensor C
-    MathMat3Mults(F, F, C);
+//    MathMat3Mults(F, F, C);
 
     // compute PK2 stresses and derivatives wrt C
-    detC = MathMat3Inv(C, Cinv);
+//    detC = MathMat3Inv(C, Cinv);
+
+    // Using Sketch-generated code
+    sk_neohookean::inv_det_trace3(F, Cinv, detC, trace);
 
     if (detC < 1.e-10) {
         std::cout<< "Error in Neohookean.cc : neohookean constitutive, "
@@ -130,7 +136,7 @@ Constitutive(const real* u0, const real* un, const real* F0, const real* Fn, rea
     defVol = 0.5*log(detC);
     p = _lambda*defVol;
 
-    trace = C[0]+C[4]+C[8];
+//    trace = C[0]+C[4]+C[8];
 
     q[0] = (0.5*p-_mu)*defVol+0.5*_mu*(trace-3.0);
 
