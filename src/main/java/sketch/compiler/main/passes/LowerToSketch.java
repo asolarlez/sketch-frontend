@@ -117,6 +117,7 @@ public class LowerToSketch extends MetaStage {
         // prog = (Program)prog.accept(new NoRefTypes());
         // prog.debugDump("Before SVA");
 
+        // FIXME xzl: all replacing does not consider += -= etc.
         if (options.feOpts.fpencoding == FloatEncoding.AS_BIT) {
             prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         } else if (options.feOpts.fpencoding == FloatEncoding.AS_FFIELD) {

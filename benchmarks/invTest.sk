@@ -1,0 +1,124 @@
+pragma options "--fe-fpencoding AS_FFIELD --bnd-inbits 3 --be:lightverif";
+
+
+double[n] col(int c, int n, double[n][n] m){
+    double[n] b;
+    for(int i=0; i<n; ++i){
+        b[i] = m[i][c]; 
+    }
+    return b;
+}
+
+
+double dot(int n, double[n] a, double[n] b){
+    double sum=0.0;
+    for(int i=0; i<n; ++i){
+        sum += a[i]*b[i];
+    }
+    return sum;
+}
+
+
+double trace(int n, double[n] a){
+    double sum=0.0;
+    for(int i=0; i<n; ++i){
+        sum += a[i]*b[i];
+    }
+    return sum;    
+}
+
+double[n][n] scale(int n, double[n][n] a, double s){
+    double[n][n] b;
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<n; ++j){
+            b[i][j] = a[i][j]*s; 
+        }
+    }
+    return b;
+}
+
+double[n][n] mult(int n, double[n][n] a, double[n][n] b){
+    double[n][n] ab;
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<n; ++j){
+            ab[i][j] = dot(n, a[i], col(j, n, b)); 
+        }
+    }
+    return ab;
+}
+
+
+double det(double[3][3] a){
+    double d = 0.0;
+    
+    d = a[0][0]*(a[1][1]*a[2][2]-a[1][2]*a[2][1])
+    - a[0][1]*(a[1][0]*a[2][2]-a[1][2]*a[2][0])
+    + a[0][2]*(a[1][0]*a[2][1]-a[1][1]*a[2][0]);
+    
+    /*
+    repeat(3){
+        double tt =  a[??][??]*(a[??][??]*a[??][??]-a[??][??]*a[??][??]);
+        d = {| d (+ | -) tt |};
+    }*/
+    return d;
+}
+
+
+double[3][3] inv3(double[3][3] a){
+    double d = det(a);
+    double[3][3] inv;
+    
+    inv[0][0] = (a[1][1]*a[2][2] - a[1][2]*a[2][1]) / d;
+    inv[0][1] = (a[0][2]*a[2][1] - a[0][1]*a[2][2]) / d;
+    inv[0][2] = (a[0][1]*a[1][2] - a[0][2]*a[1][1]) / d;
+    inv[1][0] = (a[1][2]*a[2][0] - a[1][0]*a[2][2]) / d;
+    inv[1][1] = (a[0][0]*a[2][2] - a[0][2]*a[2][0]) / d;
+    inv[1][2] = (a[0][2]*a[1][0] - a[0][0]*a[1][2]) / d;
+    inv[2][0] = (a[1][0]*a[2][1] - a[1][1]*a[2][0]) / d;
+    inv[2][1] = (a[0][1]*a[2][0] - a[0][0]*a[2][1]) / d;
+    inv[2][2] = (a[1][1]*a[0][0] - a[0][1]*a[1][0]) / d;
+
+    
+    /*
+    repeat(9){
+        inv[??][??] = (a[??][??]*a[??][??] - a[??][??]*a[??][??])/d; 
+    } 
+    */   
+    return inv;
+}
+
+void testDet(double[3][3] a, double[3][3] b){
+    double da = det(a);
+    double db = det(b);
+    double dp = det( mult(3, a, b));
+    assert da*db == dp;    
+    double[3][3] I=0.0;
+    I[0][0] = 1.0;
+    I[1][1] = 1.0;
+    I[2][2] = 1.0;
+    assert det(I) == 1.0;
+    
+}
+
+
+harness void testInv(double[3][3] a){
+    
+    if(det(a) != 0.0){
+        double[3][3] ainv = inv3(a);
+        
+        double[3][3] p = mult(3, ainv, a);
+        
+        assert p[0][0] == 1.0;
+        assert p[1][1] == 1.0;
+        assert p[2][2] == 1.0;
+        
+        /*
+        double[3][3] I=0.0;
+        I[0][0] = 1.0;
+        I[1][1] = 1.0;
+        I[2][2] = 1.0;
+        
+        assert I==p;
+        */        
+    }
+}

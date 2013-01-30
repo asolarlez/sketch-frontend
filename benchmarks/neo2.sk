@@ -1,0 +1,36 @@
+pragma options "--bnd-inbits 2 --bnd-cbits 2 --be:ufunSymmetry  --beopt:simplifycex NOSIM --be:showDAG";
+
+int n = 3;
+
+//matrix multiplication: c = a' b
+void mults(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] += a[k][i] * b[k][j];
+			}
+		}
+	}
+}
+
+double det3(double[n][n] a) {
+	return
+			  a[0][0] * (a[1][1]*a[2][2] - a[1][2]*a[2][1])
+			- a[0][1] * (a[1][0]*a[2][2] - a[1][2]*a[2][0])
+			+ a[0][2] * (a[1][0]*a[2][1] - a[1][1]*a[2][0])
+			;
+}
+
+// b = inverse(a)
+void inv3(double[n][n] b, double[n][n] a) {
+	b[0][0] = a[1][1]*a[2][2] - a[1][2]*a[2][1];
+	b[0][1] = a[0][2]*a[2][1] - a[0][1]*a[2][2];
+	b[0][2] = a[0][1]*a[1][2] - a[0][2]*a[1][1];
+	
+	b[1][0] = a[1][2]*a[2][0] - a[1][0]*a[2][2];
+	b[1][1] = a[0][0]*a[2][2] - a[0][2]*a[2][0];
+	b[1][2] = a[0][2]*a[1][0] - a[0][0]*a[1][2];
+	
+	b[2][0] = a[1][0]*a[2][1] - a[1][1]*a[2][0];
+}

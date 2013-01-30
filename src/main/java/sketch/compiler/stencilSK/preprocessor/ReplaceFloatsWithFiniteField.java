@@ -104,6 +104,9 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
             }
             case ExprBinary.BINOP_EQ:
             case ExprBinary.BINOP_NEQ:
+                // TODO xzl: should we do this?
+                // Expression goodleft = new ExprBinary(left, "%", BASE);
+                // Expression goodright = new ExprBinary(right, "%", BASE);
                 return new ExprBinary(exp, newOp, left, right, exp.getAlias());
             default:
                 assert false : "You can't apply this floating point operation if you are doing floating-point to boolean replacement." +
