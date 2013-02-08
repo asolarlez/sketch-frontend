@@ -1,4 +1,4 @@
-pragma options "--bnd-inline-amnt 3 --bnd-cbits 3 --beopt:-bndwrand 50";
+pragma options "--bnd-inline-amnt 3 --bnd-cbits 3 --bnd-int-range 50";
 
 int PLUS=0;
 int CONST=1;

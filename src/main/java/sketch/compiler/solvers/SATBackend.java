@@ -245,11 +245,7 @@ public class SATBackend {
         Vector<String> backendOptions = options.getBackendOptions();
         log("OFILE = " + options.feOpts.output);
 
-        int rangeStart = options.bndOpts.intRange0;
-        int rangeMax = options.bndOpts.intRange;
-        if (rangeMax < rangeStart) {
-            rangeMax = rangeStart;
-        }
+
 
         // minimize
         if (options.bndOpts.incremental.isSet) {

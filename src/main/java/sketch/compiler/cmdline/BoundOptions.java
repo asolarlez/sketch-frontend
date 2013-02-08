@@ -51,8 +51,7 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
             + "expressions/cost functions")
     public int costEstimate = 32;
 
-    @CliParameter(help = "Maximum integer value to emulate; default usually good")
-    public int intRange = 8092;
-    @CliParameter(help = "Initial integer range; default usually good")
-    public int intRange0 = 128;
+    @CliParameter(help = "Maximum absolute value of integers modeled by the system; -1 means there is no bound.")
+    public int intRange = -1;
+
 }

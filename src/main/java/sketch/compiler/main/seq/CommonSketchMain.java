@@ -58,6 +58,16 @@ public class CommonSketchMain {
             backendOptions.add("--bnd-inline-amnt");
             backendOptions.add("" + options.bndOpts.inlineAmnt);
         }
+
+        if (options.bndOpts.intRange > 0) {
+            backendOptions.add("--bndwrand");
+            backendOptions.add("" + options.bndOpts.intRange);
+        }
+
+        if (options.solverOpts.lightverif) {
+            backendOptions.add("-lightverif");
+        }
+
         if (options.debugOpts.showDag) {
             backendOptions.add("-showDAG");
         }
