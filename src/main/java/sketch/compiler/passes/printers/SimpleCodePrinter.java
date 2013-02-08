@@ -13,7 +13,6 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.LibraryFcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
@@ -21,9 +20,6 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.util.datastructures.TprintTuple;
-import sketch.util.fcns.ZipIdxEnt;
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 public class SimpleCodePrinter extends CodePrinter
 {
@@ -232,10 +228,10 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitStmtExpr(StmtExpr stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
-        if (!(stmt.getExpression() instanceof ExprTprint)) {
+        {
             printLine(stmt.toString() + ";");
         }
-		return super.visitStmtExpr(stmt);
+        return stmt;
 	}
 
     public Object visitStmtFunDef(StmtFunDecl stmt) {
@@ -323,26 +319,6 @@ public class SimpleCodePrinter extends CodePrinter
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         printLine("minimize(" + stmtMinimize.getMinimizeExpr().accept(this) + ")");
         return stmtMinimize;
-    }
-
-    @Override
-    public Object visitExprTprint(ExprTprint exprTprint) {
-        if (!exprTprint.expressions.isEmpty()) {
-            for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
-                String line = "\"" + v.entry.getFirst() + ": \" << " + v.entry.getSecond() + " << endl";
-                if (v.isLast) {
-                    line += ";";
-                }
-                if (v.idx == 0) {
-                    printLine("cout << " + line);
-                    this.indent += 1;
-                } else {
-                    printLine("<< " + line);
-                }
-            }
-            this.indent -= 1;
-        }
-        return exprTprint;
     }
     
     @Override

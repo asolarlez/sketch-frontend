@@ -51,6 +51,12 @@ public class RemoveShallowTempVars extends FEReplacer {
             return super.visitExprBinary(eb);
         }
 
+        public Object visitExprField(ExprField ef) {
+            isSimple = false;
+            isBig = true;
+            return ef;
+        }
+
         public Object visitExprTernary(ExprTernary et){
             isSimple = false;
             isBig = true;

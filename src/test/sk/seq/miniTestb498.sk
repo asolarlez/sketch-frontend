@@ -1,0 +1,7 @@
+pragma options "--bnd-unroll-amnt 32 --be:showDAG";
+
+harness void main(){
+    char[12] tt = ??;
+    
+    assert tt == "Hello world";
+}

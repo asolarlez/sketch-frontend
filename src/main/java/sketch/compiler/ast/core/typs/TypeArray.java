@@ -28,10 +28,10 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * A fixed-length homogenous array type. This type has a base type and an expression for
+ * A homogenous array type with a length. This type has a base type and an expression for
  * the length. The expression must be of integer type, but may contain variables.
  * 
- * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt; modified by Armando Solar-Lezama
  * @version $Id$
  */
 public class TypeArray extends Type

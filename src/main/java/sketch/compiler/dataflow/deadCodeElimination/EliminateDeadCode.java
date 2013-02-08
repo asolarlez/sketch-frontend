@@ -14,7 +14,6 @@ import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprTprint;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -25,6 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtMinimize;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -32,7 +32,6 @@ import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.BaseRControl;
-import sketch.util.datastructures.TprintTuple;
 
 public class EliminateDeadCode extends BackwardDataflow {
 	final private boolean keepAsserts;
@@ -146,6 +145,21 @@ public class EliminateDeadCode extends BackwardDataflow {
 		return isReplacer?  new StmtAssign(stmt, nlhs, nrhs, stmt.getOp())  : stmt;
 	}
 
+    @Override
+    public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
+        if (!keepAsserts) {
+            return null;
+        }
+        Expression e = stmtMinimize.getMinimizeExpr();
+        if (e instanceof ExprConstInt) {
+            return null;
+        }
+        abstractValue vcond = (abstractValue) stmtMinimize.getMinimizeExpr().accept(this);
+        vtype.Assert(vcond, null);
+        return isReplacer ? new StmtMinimize(exprRV, stmtMinimize.userGenerated)
+                : stmtMinimize;
+    }
+
 	public Object visitExprField(ExprField exp) {
 		abstractValue leftav = (abstractValue)exp.getLeft().accept(this);
 		Expression left = exprRV;
@@ -185,13 +199,6 @@ public class EliminateDeadCode extends BackwardDataflow {
 		//state.pushVStack(new valueClass((String)null) );
 	}
 	
-	@Override
-	public Object visitExprTprint(ExprTprint exprTprint) {
-	    for (TprintTuple v : exprTprint.expressions) {
-	        enliven((abstractValue) v.getSecond().accept(this));
-	    }
-	    return super.visitExprTprint(exprTprint);
-	}
 
 	public Object visitStmtEmpty (StmtEmpty stmt) {
 		return null;

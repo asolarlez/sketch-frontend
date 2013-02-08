@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -72,14 +71,7 @@ public class EliminateStarStatic extends FEReplacer {
         }
     }
 
-    public char getCharValue(Expression expr) {
-        if (expr instanceof ExprConstChar) {
-            return ((ExprConstChar) expr).getVal();
-        } else {
-            char tmp = 0;
-            return tmp;
-        }
-    }
+
 
     @SuppressWarnings( { "deprecation", "unchecked" })
     public void dump_xml(String filename) {

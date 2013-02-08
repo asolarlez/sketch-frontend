@@ -584,9 +584,6 @@ public class SNodesToFortran extends FENullVisitor {
 	    return ""+exp.getVal();
     }
 
-	public Object visitExprConstStr(ExprConstStr exp) {
-	    throw new IllegalStateException();
-    }
 
 	public Object visitExprTernary(ExprTernary exp) {
 	    assert false;

@@ -337,10 +337,6 @@ public class NodesToJava extends SymbolTableVisitor
         return Integer.toString(exp.getVal());
     }
 
-    public Object visitExprConstStr(ExprConstStr exp)
-    {
-        return exp.getVal();
-    }
 
     public Object visitExprLiteral(ExprLiteral exp)
     {

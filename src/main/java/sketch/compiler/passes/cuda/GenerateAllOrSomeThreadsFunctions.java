@@ -10,17 +10,15 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprTprint;
-import sketch.compiler.ast.core.exprs.ExprTprint.CudaType;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
@@ -41,7 +39,6 @@ import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.CopyableIterator;
 
 import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printWarning;
 
 /**
@@ -528,15 +525,6 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
             return stmt;
         }
 
-        @Override
-        public Object visitExprTprint(ExprTprint exprTprint) {
-            printDebug("ContainsAllthreadsElt visit expr tprint", exprTprint.getCx(),
-                    ", cuda type", exprTprint.cuda_type);
-            if (exprTprint.cuda_type == CudaType.Allthreads) {
-                result = true;
-            }
-            return super.visitExprTprint(exprTprint);
-        }
     }
 
     protected static class GetVariableDeclSet extends ASTObjQuery<TypedHashSet<String>> {

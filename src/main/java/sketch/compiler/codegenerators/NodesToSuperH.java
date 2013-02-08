@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -40,9 +40,10 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         result += indent + "class " + escapeCName(struct.getName()) + "{\n  public:\n";
         addIndent();
-        for (Entry<String, Type> entry : struct) {
+        for (String field : struct.getOrderedFields()) {
+            Type ftype = struct.getType(field);
             result +=
-                    indent + typeForDecl(entry.getValue()) + " " + entry.getKey() + ";\n";
+ indent + typeForDecl(ftype) + " " + field + ";\n";
         }
         
 //        result += indent + escapeCName(struct.getName()) + "(){\n";
@@ -68,17 +69,18 @@ public class NodesToSuperH extends NodesToSuperCpp {
         result += indent + escapeCName(struct.getName()) + "(){}\n";
         result += indent + escapeCName(struct.getName()) + "(";
         boolean first = true;
-        for (Entry<String, Type> entry : struct) {
+        for (String field : struct.getOrderedFields()) {
+            Type ftype = struct.getType(field);
             if (first) {
                 first = false;
             } else {
                 result += ", ";
             }
-            result += indent + typeForDecl(entry.getValue()) + " " + entry.getKey() + "_";
-            symtab.registerVar(entry.getKey() + "_", actualType(entry.getValue()),
+            result += indent + typeForDecl(ftype) + " " + field + "_";
+            symtab.registerVar(field + "_", actualType(ftype),
                     struct, SymbolTable.KIND_LOCAL);
-            if (entry.getValue() instanceof TypeArray) {
-                result += ", int " + entry.getKey() + "_len";
+            if (ftype instanceof TypeArray) {
+                result += ", int " + field + "_len";
             }
         }
         result += "){\n";
@@ -95,23 +97,25 @@ public class NodesToSuperH extends NodesToSuperCpp {
             }
         };
 
-        for (Entry<String, Type> entry : struct) {
+        for (String field : struct.getOrderedFields()) {
+            Type ftype = struct.getType(field);
 
-            if (entry.getValue() instanceof TypeArray) {
-                TypeArray ta = (TypeArray) entry.getValue();
+            if (ftype instanceof TypeArray) {
+                TypeArray ta = (TypeArray) ftype;
                 String typename = typeForDecl(ta.getBase());
                 String lenString =
                         (String) ((Expression) ta.getLength().accept(fer)).accept(this);
                 result +=
-                        indent + entry.getKey() + " = " + "new " + typename + "[" +
+                        indent + field + " = " + "new " + typename + "[" +
                                 lenString + "]" + ";\n";
                 result +=
                         indent +
- "CopyArr(" + entry.getKey() + ", " + entry.getKey() +
+ "CopyArr(" + field + ", " + field +
                                 "_, " +
- lenString + ", " + entry.getKey() + "_len ); \n";
+ lenString +
+                                ", " + field + "_len ); \n";
             } else {
-                result += indent + entry.getKey() + " = " + " " + entry.getKey() + "_;\n";
+                result += indent + field + " = " + " " + field + "_;\n";
             }
         }
 
@@ -190,6 +194,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
     public Object visitFunction(Function func) {
         setNres(nres);
+        for (Annotation a : func.getAnnotation("NeedsInclude")) {
+            preIncludes += a.contents() + "\n";
+        }
         String result = indent + "extern ";
         result += convertType(func.getReturnType()) + " ";
         result += escapeCName(func.getName());

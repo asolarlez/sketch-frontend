@@ -264,11 +264,6 @@ public class GetExprType extends FENullVisitor
 	}
     }
 
-    public Object visitExprConstStr(ExprConstStr exp)
-    {
-        // return new TypePrimitive(TypePrimitive.TYPE_STRING);
-        return null;
-    }
 
     public Object visitExprField(ExprField exp)
     {

@@ -1,8 +1,15 @@
 package sketch.compiler.dataflow;
 
 import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -30,7 +37,6 @@ import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.stencilSK.VarReplacer;
-import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.SketchException;
@@ -199,10 +205,6 @@ public class PartialEvaluator extends FEReplacer {
         return vtype.NULL();
     }
 
-    public Object visitExprConstStr(ExprConstStr exp) {
-        report(false, "NYS");
-        return exp;
-    }
     
     @Override
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
@@ -309,7 +311,7 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitExprConstChar(ExprConstChar exp)
     {
         exprRV = exp;
-        return vtype.CONST(exp.getVal());
+        return vtype.CONST(exp.getId());
     }
 
     public Object visitExprUnary(ExprUnary exp) {
@@ -617,31 +619,7 @@ public class PartialEvaluator extends FEReplacer {
         return  vtype.BOTTOM();
     }
 
-    public Object visitExprTprint(ExprTprint exprTprint) {
-        if (!isReplacer) {
-            exprRV = exprTprint;
-            return null;
-        } else {
-            boolean changed = false;
-            Vector<TprintTuple> nextExpressions = new Vector<TprintTuple>();
-            for (TprintTuple expr : exprTprint.expressions) {
-                expr.getSecond().accept(this);
-                final Expression nextExpr = exprRV;
-                if (nextExpr != expr.getSecond()) {
-                    changed = true;
-                    nextExpressions.add(new TprintTuple(expr.getFirst(), nextExpr));
-                } else {
-                    nextExpressions.add(expr);
-                }
-            }
-            if (changed) {
-                exprRV = new ExprTprint(exprTprint, exprTprint.cuda_type, nextExpressions);
-            } else {
-                exprRV = exprTprint;
-            }
-            return vtype.BOTTOM();
-        }
-    }
+
     
     @Override
     public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {

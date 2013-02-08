@@ -93,12 +93,12 @@ public class SATBackend {
 
         final HasMinimize hasMinimize = new HasMinimize();
         hasMinimize.visitProgram(prog);
-        options.cleanTemp();
 
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else if (hasMinimize.hasMinimize()) {
+            options.cleanTemp();
             {
                 // use the backend
                 final AbstractCostFcnAssert costFcnAssert =
@@ -111,6 +111,7 @@ public class SATBackend {
                 }
             }
         } else {
+            options.cleanTemp();
             writeProgramToBackendFormat(prog);
             try {
                 worked = solve(oracle, false, options.solverOpts.timeout);

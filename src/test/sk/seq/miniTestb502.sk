@@ -1,0 +1,75 @@
+pragma options "--bnd-inline-amnt 3 --bnd-cbits 3 --beopt:-bndwrand 50";
+
+int PLUS=0;
+int CONST=1;
+struct Node{
+    int type;
+    Node m;
+    Node f;
+}
+
+Node parse(int n, char[n] x, int inpos, ref int outpos, int rbnd){
+    Node left = null;
+    Node right = null;
+    Node rv = null;
+    generator void pgen(int bnd){        
+        if(x[inpos]<=?? && x[inpos]>=??){
+            
+            if(rbnd > 0 && ??){
+                {| left | right | rv |} = parse(n, x, inpos+??(2), outpos, rbnd - 1);
+            }
+            if(??){
+                {| left | right | rv |} = new Node(type=CONST);
+            }
+            if(??){
+                {| left | right | rv |} = new Node(type=PLUS, m=left, f=right);
+            }
+                        
+            {| inpos | outpos  |} = {| inpos | outpos  |} + ??(2);
+            {| inpos | outpos  |} = {| inpos | outpos  |} + ??(2);            
+        }else{
+            if(bnd - 1 > 0 && ??){
+                pgen(bnd - 1);
+            }
+            if(??){
+                rv = left;
+            }
+        }
+    }
+    
+    pgen(2);
+    pgen(1);
+    return rv;
+}
+
+harness void main(){    
+    char[8] x = "(1+2)+3";
+    int op=0;
+    Node n = parse(8, x, 0, op, 3);
+    assert n.type == PLUS;
+    assert n.m.type == PLUS;
+    assert n.f.type == CONST;
+    assert n.m.m.type == CONST;
+    assert n.m.f.type == CONST;        
+}
+
+
+harness void main2(){
+    char[8] x = "4+(3+2)";
+    int op=0;
+    Node n = parse(8, x, 0, op, 3);
+    assert n.type == PLUS;
+    assert n.m.type == CONST;
+    assert n.f.type == PLUS;
+    assert n.f.m.type == CONST;
+    assert n.f.f.type == CONST;        
+}
+
+harness void main3(){
+    char[8] x = "(1)+(2)";
+    int op=0;
+    Node n = parse(8, x, 0, op, 3);
+    assert n.type == PLUS;
+    assert n.m.type == CONST;
+    assert n.f.type == CONST;
+}

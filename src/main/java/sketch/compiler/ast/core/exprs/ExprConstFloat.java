@@ -22,9 +22,9 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 /**
- * A real-valued constant.
+ * A real-valued constant; can be either <code>float</code> or <code>double</code>.
  * 
- * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt; modified by Armando.
  * @version $Id$
  */
 public class ExprConstFloat extends ExprConstant

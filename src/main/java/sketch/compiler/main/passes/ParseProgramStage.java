@@ -7,9 +7,10 @@ import java.util.Set;
 
 import sketch.compiler.Directive;
 import sketch.compiler.Directive.OptionsDirective;
-import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.parser.StreamItParser;
@@ -71,6 +72,7 @@ public class ParseProgramStage extends MetaStage {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        ExprConstChar.renumber();
         return prog;
     }
 }

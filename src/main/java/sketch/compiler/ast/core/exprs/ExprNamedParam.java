@@ -3,10 +3,11 @@ package sketch.compiler.ast.core.exprs;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
- * named parameter for a function call to <code>ExprNew</code> constructor, used for
- * initializing each field of a <code>TypeStruct</code> object.
+ * Named parameter for a call to {@link ExprNew} constructor; used for initializing each
+ * field of a {@link TypeStruct} object.
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at

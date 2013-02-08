@@ -4715,7 +4715,7 @@ inputState.guessing--;
 				c = LT(1);
 				match(CHAR_LITERAL);
 				if ( inputState.guessing==0 ) {
-					x = new ExprConstChar(getContext(c), c.getText());
+					x = ExprConstChar.create(c.getText());
 				}
 				break;
 			}
@@ -4724,7 +4724,7 @@ inputState.guessing--;
 				s = LT(1);
 				match(STRING_LITERAL);
 				if ( inputState.guessing==0 ) {
-					x = new ExprConstStr(getContext(s), s.getText());
+					x = new ExprArrayInit(getContext(s), ExprConstChar.createFromString(s.getText()));
 				}
 				break;
 			}

@@ -930,9 +930,9 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
 	| 	n:NUMBER
 			{ x = ExprConstant.createConstant(getContext(n), n.getText()); }
 	|	c:CHAR_LITERAL
-			{ x = new ExprConstChar(getContext(c), c.getText()); }
+			{ x = ExprConstChar.create(c.getText()); }
 	|	s:STRING_LITERAL
-			{ x = new ExprConstStr(getContext(s), s.getText()); }
+			{ x = new ExprArrayInit(getContext(s), ExprConstChar.createFromString(s.getText())); }
 	|	t:TK_true
 			{ x = ExprConstInt.one; }
 	|	f:TK_false

@@ -1,0 +1,49 @@
+
+pragma options "--bnd-unroll-amnt 32";
+
+struct Str{
+    int n;
+    char[n] buf;
+}
+
+bit Comp(Str s1, Str s2){
+    for(int i=0; i<s1.n; ++i){
+        if(i>=s2.n){
+            return false;
+        }
+        if(s1.buf[i] != s2.buf[i]){
+            return false;
+        }        
+    }
+    return true;
+}
+
+Str cat(Str s1, Str s2){
+    Str sr = new Str(n=s1.n + s2.n);
+    int last;
+    generator void copyFrom(int q, Str s){
+        for(int i=q; i<sr.n; ++i){
+            if(s.buf[i-q] == '\0'){
+                last = i;
+                return;
+            }
+            sr.buf[i] = s.buf[i-q];
+        }
+    }
+    copyFrom(0, s1);
+    copyFrom(last, s2);
+    if(last < sr.n){
+        sr.buf[last] = '\0';
+    }
+    return sr;
+}
+
+harness void main(){
+    Str s1 = new Str(n=??, buf="Hello ");
+    char[15] cc = ??;
+    Str s2 = new Str(n=??, buf=cc);
+    minimize(s1.n);
+    minimize(s2.n);
+    Str s3 = new Str(n=??, buf="Hello Warmdiafuyk!");           
+    assert Comp(s3, cat(s1, s2));    
+}

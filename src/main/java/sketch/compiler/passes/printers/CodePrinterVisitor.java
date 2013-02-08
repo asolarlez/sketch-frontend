@@ -10,9 +10,9 @@ import java.util.Stack;
 
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
@@ -191,7 +191,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 
 
 	public Object visitExprConstChar (ExprConstChar ecc) {
-		print ("'"+ ecc.getVal () +"'");
+        print(ecc.toString());
 		return ecc;
 	}
 
@@ -205,10 +205,6 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return eci;
 	}
 
-	public Object visitExprConstStr (ExprConstStr ecs) {
-		print (ecs.getVal ());
-		return ecs;
-	}
 
 	public Object visitExprField (ExprField ef) {
 		ef.getLeft ().accept (this);

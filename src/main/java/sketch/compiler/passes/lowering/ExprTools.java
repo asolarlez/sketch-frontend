@@ -5,12 +5,7 @@ package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
@@ -136,7 +131,6 @@ public class ExprTools {
 			public Object visitExprConstChar (ExprConstChar exp) { return 0; }
 			public Object visitExprConstFloat (ExprConstFloat exp) { return 0; }
 			public Object visitExprConstInt (ExprConstInt exp) { return 0; }
-			public Object visitExprConstStr (ExprConstStr exp) { return 0; }
 
 			public Object visitExprField (ExprField exp) {
 				return 1

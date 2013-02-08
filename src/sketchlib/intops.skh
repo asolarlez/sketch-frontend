@@ -1,0 +1,14 @@
+package Int;
+
+generator int abs(int i){
+    return i>=0?i:-i;
+}
+
+generator int max(int i, int j){
+    return i>=j?i:j;
+}
+
+generator int min(int i, int j){
+    return i>=j?j:i;
+}
+

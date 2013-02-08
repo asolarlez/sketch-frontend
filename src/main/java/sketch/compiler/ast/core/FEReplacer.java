@@ -44,7 +44,6 @@ import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
-import sketch.util.datastructures.TprintTuple;
 import sketch.util.datastructures.TypedHashMap;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -275,7 +274,6 @@ public class FEReplacer implements FEVisitor
     public Object visitExprConstChar(ExprConstChar exp) { return exp; }
     public Object visitExprConstFloat(ExprConstFloat exp) { return exp; }
     public Object visitExprConstInt(ExprConstInt exp) { return exp; }
-    public Object visitExprConstStr(ExprConstStr exp) { return exp; }
     public Object visitExprLiteral(ExprLiteral exp) { return exp; }
     public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
 
@@ -885,24 +883,6 @@ public class FEReplacer implements FEVisitor
         return visitExprStar(star);
     }
 
-    public Object visitExprTprint(ExprTprint exprTprint) {
-        boolean changed = false;
-        Vector<TprintTuple> nextExpressions = new Vector<TprintTuple>();
-        for (TprintTuple expr : exprTprint.expressions) {
-            final Expression nextExpr = (Expression) expr.getSecond().accept(this);
-            if (nextExpr != expr.getSecond()) {
-                changed = true;
-                nextExpressions.add(new TprintTuple(expr.getFirst(), nextExpr));
-            } else {
-                nextExpressions.add(expr);
-            }
-        }
-        if (changed) {
-            return new ExprTprint(exprTprint, exprTprint.cuda_type, nextExpressions);
-        } else {
-            return exprTprint;
-        }
-    }
 
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
         return cudaSyncthreads;

@@ -11,14 +11,17 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.passes.structure.GetAssignLHS;
 
 /**
- * An array-range reference. A[0:2] means the first 3 elements of A, and
- * A[0:1,4:6] means elements 0,1,4,5,6 of A, and A[4::2] means elements 4 and 5
- * of A.
- *
+ * An array-range reference. A[0:2] means the first 3 elements of A, and A[4::2] means
+ * elements 4 and 5 of A. See Sketch language manual for more information.
+ * 
  * @author liviu
  */
 public class ExprArrayRange extends Expression
 {
+    /**
+     * Represents the indices in {@link ExprArrayRange}. Includes the start index and the
+     * length of the desired sub-array.
+     */
 	public static class RangeLen
 	{
 		private final Expression start;		

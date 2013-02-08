@@ -39,12 +39,10 @@ import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
 import sketch.compiler.main.passes.ParseProgramStage;
 import sketch.compiler.main.passes.PreprocessStage;
-import sketch.compiler.main.passes.RunPrintFunctions;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.cleanup.EliminateAliasesInRefParams;
-import sketch.compiler.passes.cleanup.RemoveTprint;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
 import sketch.compiler.passes.cuda.LowerInstrumentation;
@@ -69,7 +67,6 @@ import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
-import sketch.compiler.stencilSK.EliminateStarStatic;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.LastGoodProgram;
@@ -226,13 +223,6 @@ public class SequentialSketchMain extends CommonSketchMain
         }
     }
 
-    public class FinalLowLevelCLowering extends CompilerStage {
-        public FinalLowLevelCLowering() {
-            super(SequentialSketchMain.this);
-            FEVisitor[] passes2 = { new RemoveTprint() };
-            passes = new Vector<FEVisitor>(Arrays.asList(passes2));
-        }
-    }
 
 
 
@@ -265,10 +255,6 @@ public class SequentialSketchMain extends CommonSketchMain
             // return new CudaLowLevelCStage();
         return new SpmdLowLevelCStage();
 //        }
-    }
-
-    public FinalLowLevelCLowering getIRStage3() {
-        return new FinalLowLevelCLowering();
     }
 
 
@@ -375,14 +361,6 @@ public class SequentialSketchMain extends CommonSketchMain
 		return resultFile;
 	}
 
-    protected void runPrintFunctions(SketchLoweringResult llc, ValueOracle oracle) {
-        if (oracle == null) {
-            return;
-        }
-        EliminateStarStatic eliminate_star = new EliminateStarStatic(oracle);
-        Program serializedCode = (Program) llc.afterSPMDSeq.accept(eliminate_star);
-        (new RunPrintFunctions(varGen, options)).visitProgram(serializedCode);
-    }
 
     protected void outputCCode(Program prog) {
         if (prog == null) {
@@ -486,7 +464,6 @@ public class SequentialSketchMain extends CommonSketchMain
 
         SynthesisResult synthResult = this.partialEvalAndSolve(prog);
         prog = synthResult.lowered.result;
-        runPrintFunctions(synthResult.lowered, synthResult.solution);
 
 
         Program finalCleaned = synthResult.lowered.highLevelC;

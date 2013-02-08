@@ -1,0 +1,32 @@
+
+// the matrix structure here is for NxN matrices
+struct Matrix {
+    int N;
+    int[N][N] data;
+}
+
+struct Accesses {
+    int current;
+    int[65] location;
+//    int[100] type; // unused
+}
+
+
+/**
+ * Gets the data at a matrix location, and records the access.
+ */
+int get(Matrix mat, Accesses accesses, int i, int j) {
+    if (i<65) {
+        accesses.location[accesses.current++] = i+j*mat.N;
+        return mat.data[i][j];
+    }
+    else
+        return -1;
+}
+
+harness void main(){
+    Matrix m = new Matrix(N=5);
+    Accesses a = new Accesses();
+    get(m, a, 2, 3);
+    assert a.location[0] == 17;
+}

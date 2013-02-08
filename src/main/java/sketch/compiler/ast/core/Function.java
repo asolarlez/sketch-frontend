@@ -15,7 +15,8 @@ import static sketch.util.Misc.nonnull;
 
 /**
  * A function definition. This contains the name, return type, parameter list, and body of
- * a function.
+ * a function. Generators, harnesses, models and uninterpreted functions are special kinds
+ * of functions with special properties (see Sketch language documentation).
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
@@ -138,6 +139,9 @@ public class Function extends FENode {
         return annotations.entrySet();
     }
 
+    /**
+     * Factory class to generate new Function nodes.
+     */
     public static class FunctionCreator {
         private Object base;
         private String name;

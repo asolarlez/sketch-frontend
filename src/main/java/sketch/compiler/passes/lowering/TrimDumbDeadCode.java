@@ -19,7 +19,6 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprConstStr;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtExpr;
@@ -41,7 +40,6 @@ public class TrimDumbDeadCode extends FEReplacer
         if (expr instanceof ExprConstChar ||
             expr instanceof ExprConstFloat ||
             expr instanceof ExprConstInt ||
-            expr instanceof ExprConstStr ||
             expr instanceof ExprVar)
             return null;
         return stmt;

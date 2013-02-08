@@ -1,5 +1,8 @@
 package sketch.compiler.ast.core;
 
+/**
+ * Unsupported AST node.
+ */
 public class DummyFENode extends FENode {
 
 	public DummyFENode(FENode node) {

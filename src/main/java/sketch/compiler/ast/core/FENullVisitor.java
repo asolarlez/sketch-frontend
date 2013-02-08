@@ -63,7 +63,6 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprConstFloat(ExprConstFloat exp) { return null; }
     public Object visitExprConstInt(ExprConstInt exp) { return null; }
     public Object visitExprLiteral(ExprLiteral exp) { return null; }
-    public Object visitExprConstStr(ExprConstStr exp) { return null; }
     public Object visitExprField(ExprField exp) { return null; }
     public Object visitExprFunCall(ExprFunCall exp) { return null; }
     public Object visitExprParen(ExprParen exp) { return null; }
@@ -146,7 +145,6 @@ public class FENullVisitor implements FEVisitor
 	public Object visitStmtMinimize(StmtMinimize stmtMinimize) { return null; }
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) { return null; }
     public Object visitExprSpecialStar(ExprSpecialStar var) { return null; }
-    public Object visitExprTprint(ExprTprint exprTprint) { return null; }
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) { return null; }
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) { return null; }
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) { return null; }

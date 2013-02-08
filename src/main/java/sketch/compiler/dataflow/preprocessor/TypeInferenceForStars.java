@@ -90,7 +90,10 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 case ExprBinary.BINOP_LE:
                 case ExprBinary.BINOP_LT: {
                     Type oldType = type;
-                    type = TypePrimitive.inttype;
+                    Type tleft = getType(exp.getLeft());
+                    Type tright = getType(exp.getRight());
+                    Type tt = tright.leastCommonPromotion(tleft);
+                    type = tt; // TypePrimitive.inttype;
                     Expression left = doExpression(exp.getLeft());
                     Expression right = doExpression(exp.getRight());
                     type = oldType;

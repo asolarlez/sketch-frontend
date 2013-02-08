@@ -37,6 +37,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs")
     public boolean simpleInputs = false;
 
+    @CliParameter(help = "Performs lightweight verification instead of full bounded verification.")
+    public boolean lightverif = false;
+
     public enum ReorderEncoding {
         exponential, quadratic
     }

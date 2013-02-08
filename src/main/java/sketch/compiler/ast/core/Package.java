@@ -25,14 +25,14 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStruct;
 
 /**
- * Container class containing all of the state for a self-contained Sketch program. A
- * <code>Package</code> may or may not have a name; if there is no name, this is an
- * anonymous package. It also has a list of global variable declarations (currently they
- * are called global field declaration and are all <code>FieldDecl</code> nodes), a list
- * of function declarations (as <code>Function</code> objects), and a list of
- * <code>TypeStruct</code> definitions.
+ * Similar to a namespace in C++, contains private fields (global variables local to the
+ * package), structures and functions. A <code>Package</code> may or may not have a name;
+ * if there is no name, this is an anonymous package. It also has a list of global
+ * variable declarations (currently they are called global field declaration and are all
+ * <code>FieldDecl</code> nodes), a list of function declarations (as
+ * <code>Function</code> objects), and a list of <code>TypeStruct</code> definitions.
  * 
- * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * @author Armando Solar-Lezama from code by David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class Package extends FENode

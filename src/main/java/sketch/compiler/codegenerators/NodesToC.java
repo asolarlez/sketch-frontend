@@ -7,14 +7,13 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprTprint.CudaType;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
@@ -32,13 +31,9 @@ import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
-import sketch.util.datastructures.TprintTuple;
-import sketch.util.fcns.ZipIdxEnt;
 import sketch.util.wrapper.ScRichString;
 
 import static sketch.util.DebugOut.assertFalse;
-
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 public class NodesToC extends NodesToJava {
 
@@ -738,31 +733,6 @@ public class NodesToC extends NodesToJava {
         return "NULL";
     }
 
-    @Override
-    public Object visitExprTprint(ExprTprint exprTprint) {
-        StringBuilder result = new StringBuilder();
-        result.append("cout");
-        for (ZipIdxEnt<TprintTuple> v : zipwithindex(exprTprint.expressions)) {
-            if (v.idx > 0) {
-                result.append("\n" + this.indent);
-            }
-            final String name;
-            final int nexpr = exprTprint.expressions.size();
-            if (pythonPrintStatements) {
-                name = tprintFmtPy(nexpr, v.idx == 0, v.entry.getFirst());
-                result.append(" << \"" + name + "\" << " + v.entry.getSecond());
-            } else {
-                name = tprintFmt(nexpr, v.idx == 0, v.entry.getFirst());
-                result.append(" << \"" + name + "\" << " + v.entry.getSecond());
-            }
-        }
-        if (pythonPrintStatements) {
-            result.append(" << \"),\" << endl");
-        } else {
-            result.append(" << endl");
-        }
-        return result.toString();
-    }
 
     public String tprintFmt(int nexpr, boolean isFirst, final String name) {
         if (nexpr <= 1) {
@@ -809,8 +779,6 @@ public class NodesToC extends NodesToJava {
 
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
-        return (new ExprTprint(stmtMinimize, CudaType.Unknown, new TprintTuple("[line " +
-                stmtMinimize.getCx().getLineNumber() + "] minimize() value",
-                stmtMinimize.getMinimizeExpr()))).accept(this);
+        return "/*" + stmtMinimize.toString() + "*/";
     }
 }

@@ -17,14 +17,13 @@
 package sketch.compiler.ast.core;
 import sketch.compiler.ast.core.typs.Type;
 
-
-
 /**
  * A formal parameter to a function. Each parameter consists of a string name, a
  * <code>Type</code>, and a integer Ptype which indicates wether the parameter is
  * input-only, output-only, or both.
  * 
- * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * @author Armando Solar-Lezama, derived from code by David Maze
+ *         &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class Parameter extends FENode implements Comparable<Parameter>

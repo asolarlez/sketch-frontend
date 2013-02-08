@@ -64,7 +64,6 @@ public interface FEVisitor
     public Object visitExprConstChar(ExprConstChar exp);
     public Object visitExprConstFloat(ExprConstFloat exp);
     public Object visitExprConstInt(ExprConstInt exp);
-    public Object visitExprConstStr(ExprConstStr exp);
     public Object visitExprLiteral(ExprLiteral exp);
     public Object visitExprField(ExprField exp);
     public Object visitExprFunCall(ExprFunCall exp);
@@ -112,8 +111,9 @@ public interface FEVisitor
     public Object visitExprNullPtr(ExprNullPtr nptr);
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
+
     public Object visitExprSpecialStar(ExprSpecialStar exprSpecialStar);
-    public Object visitExprTprint(ExprTprint exprTprint);
+
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx);
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim);
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads);

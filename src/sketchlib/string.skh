@@ -1,0 +1,41 @@
+package string;
+
+struct Str{
+    int n;
+    char[n] s;
+}
+
+// @NeedsInclude("#include <cstream>")
+@Native("{ printf(\"%s \n \", s->s); }")
+void println(Str s){
+    if(s.n>0){
+        assert s.s[s.n-1]=='\0';
+    }
+}
+
+Str cat(Str s1, Str s2){
+    Str sr = new Str(n=s1.n + s2.n);
+    int last;
+    generator void copyFrom(int q, Str s){
+        for(int i=q; i<sr.n; ++i){            
+            if(i-q >= s.n || s.s[i-q] == '\0'){
+                last = i;
+                return;
+            }
+            sr.s[i] = s.s[i-q];
+        }
+    }
+    copyFrom(0, s1);
+    copyFrom(last, s2);
+    if(last < sr.n){
+        sr.s[last] = '\0';
+    }
+    return sr;
+}
+
+@NeedsInclude("#include <sstream>")
+@Native("{ _out = new Str(n*10,NULL, 0); stringstream st; for(int i=0; i<n; ++i){ st<<ar[i]<<\",\";} const char* cc = st.str().c_str(); int i=0; while(cc[i]!='\0'){ _out->s[i]=cc[i++]; }  }")
+Str intArrToStr(int n, int[n] ar){
+    Str s = new Str(n=n*10);
+    return s;
+}

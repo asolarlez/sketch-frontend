@@ -23,14 +23,13 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 
 /**
- * Declaration of a set of fields in a structure. This describes the declaration of a list
- * of variables, each of which has a type, a name, and an optional initialization value.
- * This is explicitly not a <code>Statement</code>; declarations that occur inside
- * functions are local variable declarations, not field declarations. Similarly, this is
- * not a stream parameter (in StreamIt code; it may be in Java code).
+ * Defines a list of fields within a package; it's like a global variable, but it is
+ * private to the package. This describes the declaration of a list of variables, each of
+ * which has a type, a name, and an optional initialization value. This is explicitly not
+ * a <code>Statement</code>; declarations that occur inside functions are local variable
+ * declarations.
  * 
  * @see StmtVarDecl
- * @see Parameter
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */

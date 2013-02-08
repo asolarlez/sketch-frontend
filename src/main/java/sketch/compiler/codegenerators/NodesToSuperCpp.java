@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -517,27 +516,28 @@ public class NodesToSuperCpp extends NodesToJava {
             pe.put(enp.getName(), enp.getExpr());
         }
         boolean first = true;
-        for (Entry<String, Type> entry : struct) {
+        for (String field : struct.getOrderedFields()) {
+            Type ftype = struct.getType(field);
             if (first) {
                 first = false;
             } else {
                 res += ", ";
             }
-            if (entry.getValue() instanceof TypeArray) {
-                if (pe.containsKey(entry.getKey())) {
-                    Type tp = getType(pe.get(entry.getKey()));
+            if (ftype instanceof TypeArray) {
+                if (pe.containsKey(field)) {
+                    Type tp = getType(pe.get(field));
                     if (tp instanceof TypeArray) {
                         TypeArray t = (TypeArray) tp;
                         res +=
-                                pe.get(entry.getKey()).accept(this) + ", " +
+                                pe.get(field).accept(this) + ", " +
                                         t.getLength().accept(this);
                     } else {
-                        TypeArray tarr = (TypeArray) entry.getValue();
+                        TypeArray tarr = (TypeArray) ftype;
                         String nvar = newTmp();
                         String typename = typeForDecl(tarr.getBase());
                         String result =
                                 indent + typename + " " + nvar + "= " +
-                                        pe.get(entry.getKey()).accept(this) + ";\n";
+                                        pe.get(field).accept(this) + ";\n";
 
                         addPreStmt(result);
                         res += "&" + nvar + ", 1";
@@ -546,10 +546,10 @@ public class NodesToSuperCpp extends NodesToJava {
                     res += "NULL, 0";
                 }
             } else {
-                if (pe.containsKey(entry.getKey())) {
-                    res += pe.get(entry.getKey()).accept(this);
+                if (pe.containsKey(field)) {
+                    res += pe.get(field).accept(this);
                 } else {
-                    res += entry.getValue().defaultValue().accept(this);
+                    res += ftype.defaultValue().accept(this);
                 }
             }
         }

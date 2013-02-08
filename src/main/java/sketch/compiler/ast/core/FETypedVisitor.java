@@ -87,9 +87,6 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, exp);
     }
 
-    public T visitExprConstStr(ExprConstStr exp) {
-        throw new FEVisitorException(this, exp);
-    }
 
     public T visitExprField(ExprField exp) {
         throw new FEVisitorException(this, exp);
@@ -297,9 +294,6 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, var);
     }
 
-    public T visitExprTprint(ExprTprint exprTprint) {
-        throw new FEVisitorException(this, exprTprint);
-    }
 
     public Object visitCudaSyncthreads(CudaSyncthreads cudaSyncthreads) {
         throw new FEVisitorException(this, cudaSyncthreads);
