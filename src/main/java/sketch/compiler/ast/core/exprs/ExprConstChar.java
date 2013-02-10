@@ -63,9 +63,19 @@ public class ExprConstChar extends ExprConstant
         BoundOptions bo = SketchOptions.getSingleton().bndOpts;
         int inbits = bo.inbits;
         int cbits = bo.cbits;
-        while (q < sz || bits < inbits || bits < cbits) {
+        while (q < 127 && (q < sz || bits < inbits || bits < cbits)) {
             q = q * 2;
             ++bits;
+        }
+        if (q == 128) {
+            for (int i = 1; i < q; ++i) {
+                char c1 = (char) i;
+                if (!charMap.containsKey(c1)) {
+                    create(c1);
+                    continue;
+                }
+            }
+            return;
         }
         Random r = new Random();
         for (int i = sz; i < q; ++i) {
@@ -94,10 +104,6 @@ public class ExprConstChar extends ExprConstant
         System.out.println("Size = " + sz);
         if (sz < 127) {
             addMore();
-        }
-        if(sz < 32){
-            assert charList.size() <= 32 : "This is strange; it should never happen!! " +
-                    charList.size();
         }
         System.out.println("Size After= " + charList.size());
         Map<Character, ExprConstChar> tMap =
