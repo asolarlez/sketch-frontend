@@ -66,7 +66,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
 //        unIndent();
 //        result += indent + "}\n";
 
-        result += indent + escapeCName(struct.getName()) + "(){}\n";
+        if (struct.getNumFields() != 0) {
+            result += indent + escapeCName(struct.getName()) + "(){}\n";
+        }
         result += indent + escapeCName(struct.getName()) + "(";
         boolean first = true;
         for (String field : struct.getOrderedFields()) {

@@ -74,6 +74,7 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         return annotations.getOrEmpty(tag);
     }
 
+
     public static class TStructCreator {
         private String name;
         private String pkg;
@@ -298,6 +299,17 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
         }
 
         return TypeComparisonResult.NEQ;
+    }
+
+    public boolean promotesTo(Type that) {
+        if (super.promotesTo(that))
+            return true;
+        if (!(that instanceof TypeStruct)) {
+            if (that instanceof TypeArray) {
+                return this.promotesTo(((TypeArray) that).getBase());
+            }
+        }
+        return false;
     }
 
     public int hashCode()

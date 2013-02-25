@@ -17,6 +17,8 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /**
@@ -392,6 +394,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		if(t instanceof TypePrimitive){
 			return new ExprConstInt(1);
 		}
+        if (t instanceof TypeStruct || t instanceof TypeStructRef) {
+            return new ExprConstInt(1);
+        }
 		return null;
 	}
 

@@ -99,4 +99,16 @@ public class TypeStructRef extends Type
 
         return TypeComparisonResult.NEQ;
     }
+
+    public boolean promotesTo(Type that) {
+        if (super.promotesTo(that))
+            return true;
+        if (!(that instanceof TypeStructRef)) {
+            if (that instanceof TypeArray) {
+                return this.promotesTo(((TypeArray) that).getBase());
+            }
+        }
+        return false;
+    }
+
 }
