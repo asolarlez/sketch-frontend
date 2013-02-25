@@ -527,7 +527,7 @@ public class PartialEvaluator extends FEReplacer {
             Parameter param = formalParams.next();            
             Type paramType = (Type) ((Type)param.getType().accept(vrep)).accept(this);            
             pmap.put(param.getName(), interpretActualParam(actual));
-            nplist.add(new Parameter(paramType, param.getName(), param.getPtype()));
+            nplist.add(new Parameter(param, paramType, param.getName(), param.getPtype()));
             boolean addedAlready = false;
             if (param.isParameterOutput()) {
                 // if (actual instanceof ExprVar) {
@@ -901,7 +901,8 @@ public class PartialEvaluator extends FEReplacer {
         Type ntype = (Type)param.getType().accept(this);
         state.varDeclare(param.getName() , ntype);
         if(isReplacer){            
-             return new Parameter(ntype, transName(param.getName()), param.getPtype());
+            return new Parameter(param, ntype, transName(param.getName()),
+                    param.getPtype());
         }else{
             return param;
         }

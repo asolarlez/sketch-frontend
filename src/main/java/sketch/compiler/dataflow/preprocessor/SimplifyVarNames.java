@@ -9,9 +9,9 @@ import java.util.Map;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -112,7 +112,8 @@ public class SimplifyVarNames extends FEReplacer {
     		Parameter param = it.next();    		
     		{
     			Type ntype = (Type)param.getType().accept(this);
-    			nparams.add( new Parameter(ntype, transName(param.getName()), param.getPtype()));
+                nparams.add(new Parameter(param, ntype, transName(param.getName()),
+                        param.getPtype()));
     		}
     	}
     	

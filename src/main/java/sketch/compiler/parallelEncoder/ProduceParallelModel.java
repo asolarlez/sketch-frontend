@@ -13,9 +13,9 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -387,9 +387,10 @@ public class ProduceParallelModel extends FEReplacer {
 
 		buildParsFromDecls(globals.iterator(), parList);
 		buildParsFromDecls(locals.iterator(), parList);
-		parList.add(new Parameter(new TypeArray(sType, SchedLen),SCHEDULE));
-		parList.add(new Parameter(TypePrimitive.inttype,STEP));
-		parList.add(new Parameter(new TypeArray(TypePrimitive.inttype, nthreads), COUNTER));
+        parList.add(new Parameter(fun, new TypeArray(sType, SchedLen), SCHEDULE));
+        parList.add(new Parameter(fun, TypePrimitive.inttype, STEP));
+        parList.add(new Parameter(fun, new TypeArray(TypePrimitive.inttype, nthreads),
+                COUNTER));
 		parList.add(outputParam);
 
 
@@ -489,7 +490,7 @@ public class ProduceParallelModel extends FEReplacer {
 				formals.add(p);
 			}
 		}
-		formals.add(new Parameter(new TypeArray(sType, SchedLen),SCHEDULE));
+        formals.add(new Parameter(outPar, new TypeArray(sType, SchedLen), SCHEDULE));
 		formals.add(outPar);
 		bodyL.add(0, new StmtAssign(new ExprVar((FEContext) null, outPar.getName()), ExprConstInt.zero));
         return Function.creator((FEContext) null, oriName, FcnType.Generator).params(formals).spec(
@@ -606,7 +607,7 @@ public class ProduceParallelModel extends FEReplacer {
 			StmtVarDecl svd = vars.next();
 			FENode cx = svd;
 			for(int i=0; i<svd.getNumVars(); ++i){
-				params.add(new Parameter(svd.getType(i), svd.getName(i)));
+                params.add(new Parameter(svd, svd.getType(i), svd.getName(i)));
 			}
 		}
 	}

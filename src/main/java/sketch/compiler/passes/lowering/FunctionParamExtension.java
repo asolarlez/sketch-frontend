@@ -83,7 +83,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				if(param.isParameterOutput()) continue;
 				if(!unmodifiedParams.containsValue(param)) {
 					String newName=getNewInCpID(param.getName());
-					Parameter newPar=new Parameter(param.getType(),newName,param.getPtype());
+                    Parameter newPar =
+                            new Parameter(param, param.getType(), newName,
+                                    param.getPtype());
 					parameters.set(i,newPar);
 					func=addVarCopy(func,param,newName);
 				}
@@ -230,14 +232,16 @@ public class FunctionParamExtension extends SymbolTableVisitor
         this.varGen = varGen;
 	}
 
+    public String outName = "_out";
+
 	private String getOutParamName() {
-		return "_out";
+        return outName;
 	}
 
 	String rvname = null;
 	private String getNewOutID(String nm) {
         varGen.nextVar(rvname);
-	    if(rvname != null && nm.contains("_out")){
+        if (rvname != null && nm.contains(outName)) {
             return varGen.nextVar(rvname);// rvname + "_r" + (outCounter++);
 	    }else{
             return varGen.nextVar(nm);// nm + "_r" + (outCounter++);
@@ -284,10 +288,35 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return Collections.EMPTY_LIST;
 	}
 
+    public void setOutVarName(Program prog) {
+        final Set<String> nset = new HashSet<String>();
+        prog.accept(new FEReplacer() {
+            public Object visitStmtVarDecl(StmtVarDecl svd) {
+                for (int i = 0; i < svd.getNumVars(); ++i) {
+                    nset.add(svd.getName(i));
+                }
+                return svd;
+            }
+
+            public Object visitParameter(Parameter p) {
+                nset.add(p.getName());
+                return p;
+            }
+        });
+        String onbase = outName;
+        int i = 0;
+        while (nset.contains(outName)) {
+            outName = onbase + i;
+            ++i;
+        }
+    }
+
     public Object visitProgram(Program prog) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
         nres = new NameResolver();
+
+        setOutVarName(prog);
 
         List<Package> oldStreams = new ArrayList<Package>();
         for (Package spec : prog.getPackages()) {
@@ -296,7 +325,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 Type retType = fun.getReturnType();
                 List<Parameter> params = new ArrayList<Parameter>(fun.getParams());
                 if (!retType.equals(TypePrimitive.voidtype)) {
-                    params.add(new Parameter(retType, getOutParamName(), Parameter.OUT));
+                    params.add(new Parameter(fun, retType, getOutParamName(),
+                            Parameter.OUT));
                 }
                 FunctionCreator fc = fun.creator().params(params);
                 if (fun.isUninterp()) {

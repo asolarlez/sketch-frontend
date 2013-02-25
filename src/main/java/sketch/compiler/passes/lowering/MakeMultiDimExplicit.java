@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
@@ -137,7 +138,14 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
                     rhexp);
         }
         Statement sit;
-        if(rhexp.equals(taar.defaultValue())){
+        boolean eqq = tblen.equals(taar.getLength());
+        if (!eqq && tright instanceof TypeArray) {
+            addStatement(new StmtAssert(sa,
+                    new ExprBinary(taar.getLength(), ">=", tblen), sa.getCx() + ": " +
+                            "Array size missmatch", false));
+        }
+
+        if (rhexp.equals(taar.defaultValue()) || eqq) {
             sit = new StmtBlock(nas);
         }else{
             StmtAssign nasdef = new StmtAssign(

@@ -6,8 +6,8 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -218,7 +218,7 @@ public class AbstractArray {
 		while(it.hasNext()) {
 			StmtVarDecl var=it.next();
 			for(int i=0;i<var.getNumVars();i++)
-				ret.add(new Parameter(var.getType(i),var.getName(i),ptype));
+                ret.add(new Parameter(var, var.getType(i), var.getName(i), ptype));
 		}
 		return ret;
 	}
@@ -236,11 +236,11 @@ public class AbstractArray {
 		{
 			//index parameters, outIndexParameters, symbolic parameters, otherParams, globalParameters
 			for(int i=0; i<dim; ++i){
-				params.add(new Parameter(TypePrimitive.inttype, idxParamName(i)));
+                params.add(new Parameter(null, TypePrimitive.inttype, idxParamName(i)));
 			}
 			params.addAll(makeParams(outIndexParameters));
 			for(int i=0;i<idxArr.size();i++){
-				params.add(new Parameter( this.arrType , symParamName(i)));
+                params.add(new Parameter(null, this.arrType, symParamName(i)));
 			}
 			params.addAll(makeParams(otherParams));
 			params.addAll(makeParams(globalParams));

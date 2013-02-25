@@ -88,7 +88,8 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
 
     public Function createThreadDeltaFcn(FENode ctx, String name, boolean value) {
         Parameter param =
-                new Parameter(new TypeArray(CudaMemoryType.GLOBAL, TypePrimitive.bittype,
+                new Parameter(ctx, new TypeArray(CudaMemoryType.GLOBAL,
+                        TypePrimitive.bittype,
                         cudaBlockDim.all()), "arg");
         final ExprVar arrvar = new ExprVar(ctx, param.getName());
         ExprBinary curr = getAllOrNoneExpr(value, arrvar);
@@ -172,7 +173,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         public Object visitParameter(Parameter par) {
             if (par.getType().getCudaMemType() == CudaMemoryType.LOCAL) {
                 final Type type = localArrayType(par.getType());
-                par = new Parameter(type, par.getName(), par.getPtype());
+                par = new Parameter(par, type, par.getName(), par.getPtype());
             }
             return super.visitParameter(par);
         }
@@ -451,7 +452,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
         public Object visitFunction(Function func) {
             Vector<Parameter> params = new Vector<Parameter>();
             for (String threadIndexName : CudaThreadBlockDim.indexNames) {
-                params.add(new Parameter(TypePrimitive.inttype, threadIndexName,
+                params.add(new Parameter(func, TypePrimitive.inttype, threadIndexName,
                         Parameter.IN));
             }
             params.addAll(func.getParams());

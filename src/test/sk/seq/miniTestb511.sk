@@ -1,0 +1,27 @@
+
+include "miniTestb511.skh";
+
+void foo(){
+    assert false;
+}
+
+harness void main(int n, int[n] a){
+    int m = n+1;
+    int[m] b;
+    
+    void foo(){ // definition shadows earlier definition of foo.
+        b[0] = 5;
+        if(n>5){
+            a[1] = ??;
+        }
+    }
+    
+    foo();
+    foo@other();
+    checkX();
+   
+    if(n>5){
+        assert a[1] == 3;
+    }
+    assert b[??] == 5;
+}

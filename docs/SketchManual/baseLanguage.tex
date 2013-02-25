@@ -237,6 +237,13 @@ x[0] = {4,5,6}[b];
 x[{0,1}[a]::2] = {0,1,2,3,4,5,6}[b::2];
 \end{lstlisting}
 
+\paragraph{String literals (Character array constants)}
+Like C, sketch supports strings in double quotes as a shorthand for a null-terminated character arrays. So for example, the string \C{"a string"} is a shorthand for the array constant:
+\begin{lstlisting}
+{'a', ' ', 's', 't', 'r', 'i', 'n', 'g', '\0'}
+\end{lstlisting}
+
+
 \paragraph{Nested array constants}
 The entries \C{a1} through \C{ak} in the array initializer can themselves be arrays, which makes it possible for the system to support nested array initializers. The type for an array initializer will be defined by the following rule:
 \[
@@ -300,7 +307,7 @@ Notice that most operators support operands of different sizes; the smaller arra
 
 \subsection{Automatic Padding and Typecasting}
 \seclabel{padding}
-Many operations on arrays support arrays of different sizes through padding. This padding can be thought of as an implicit typecast from small arrays to bigger arrays. The objects used to pad the array depend on the type of the array. Given an array of type \C{T[N]}, the objects used to pad the array will be defined by the function \lstinline!$pad$(T)! defined by the following rules:
+When arrays are assigned or passed as parameters, they can be implicitly typecast through padding. Padding is also supported by bit vector operations, but not for reference parameters. This padding can be thought of as an implicit typecast from small arrays to bigger arrays. The objects used to pad the array depend on the type of the array. Given an array of type \C{T[N]}, the objects used to pad the array will be defined by the function \lstinline!$pad$(T)! defined by the following rules:
 \begin{lstlisting}
 $pad$(int) = 0 
 $pad$(bit) = 0
@@ -313,7 +320,18 @@ In the statement \lstinline!int[4] x = {1,2};!, the right hand side has size 2, 
 \end{Example}
 
 
-A second form of implicit typecasting happens when a scalar is used in place of an array. In this case, the scalar is automatically typecast into an array of size 1. 
+\begin{Example}
+Padding also works for assignments involving nested arrays.
+\begin{lstlisting}
+int[2][2] x = {{2,2}, {2,2}};
+int [4][4] y = x;
+\end{lstlisting}
+
+The code above involves the following implicit typecasts: first, the array x of type \C{int[2][2]} is typecast into an array of type \C{int[2][4]} by padding with \lstinline!$pad$(int[2])={ $pad$(int), $pad$(int)} = {0, 0}! to produce the array \lstinline!{{2,2}, {2,2}, {0,0}, {0,0}}!. Then, each entry in this array is typecast from \C{int[2]} to \C{int[4]}, so after the assignment, the value of \C{y} will be equal to \lstinline!{{2,2,0,0}, {2,2,0,0}, {0,0,0,0}, {0,0,0,0}}!
+\end{Example}
+
+
+A second form of implicit typecasting happens when a scalar is used in place of an array. In this case, the scalar is automatically typecast into an array of size 1 or zero depending on the context.
 
 \begin{Example}
 Consider the following block of code 
@@ -327,18 +345,42 @@ x = t;
 This code actually involves two typecasts. First, \C{t} will be typecast from the scalar type \C{Car} to the array type \C{Car[1]}. Then, the array type \C{Car[1]} will be typecast to a bigger array of type \C{Car[4]} by padding with \lstinline!$pad$(Car) = null!. The result is that array will be equal to \lstinline!{t, null, null, null}!.
 \end{Example}
 
-\begin{Example}
-Padding also works for assignments involving nested arrays.
-\begin{lstlisting}
-int[2][2] x = {{2,2}, {2,2}};
-int [4][4] y = x;
-\end{lstlisting}
+There are some cases where it is desirable to assign a constant to an array of size \C{n}, where \C{n} may be an input to the function. If \C{n} is zero, however, the constant will automatically be cast to an empty array of size zero in order to avoid an error.
 
-The code above involves the following implicit typecasts: first, the array x of type \C{int[2][2]} is typecast into an array of type \C{int[2][4]} by padding with \lstinline!$pad$(int[2])={ $pad$(int), $pad$(int)} = {0, 0}! to produce the array \lstinline!{{2,2}, {2,2}, {0,0}, {0,0}}!. Then, each entry in this array is typecast from \C{int[2]} to \C{int[4]}, so after the assignment, the value of \C{y} will be equal to \lstinline!{{2,2,0,0}, {2,2,0,0}, {0,0,0,0}, {0,0,0,0}}!
+\begin{Example}
+\begin{lstlisting}
+int[n] x;
+...
+x = 0; // This will zero out the array; will not cause an error when n==0
+\end{lstlisting}
 \end{Example}
 
 
-It is important to note that implicit casts only occur for r-values; l-values will never be implicitly typecast. In particular, this means that reference parameters to a function will never be implicitly cast and must always be of the exact size required by the signature of the callee. 
+The casting of scalars to arrays of size 1 also works in the context of multidimensional arrays.
+\begin{Example}
+The following block of code illustrates padding for multi-dimensional arrays.
+\begin{lstlisting}
+struct Car{ ... }
+...
+Car[2] x = {new Car(), new Car()};
+Car[4][3] y = x;
+assert y[0][0] == x[0];
+assert y[1][0] == x[1];
+assert y[1][1::3] == {null, null, null};
+assert y[2] == {null, null, null, null};
+\end{lstlisting}
+\end{Example}
+
+To understand the example above, it is worth thinking of an array assignment of the form \C{y=x} where \C{y} is of type \C{T[N]} as a loop of the form 
+\begin{lstlisting}
+for(int i=0; i<N; ++i){
+   if(i<M)//where M<=N is the size of x
+     y[i] = x[i];
+   else
+     y[i] = $pad$(T);
+}
+\end{lstlisting}
+So in the example above, \C{y[i]} will be of type \C{Car[4]} and \C{x[i]} will be of type \C{Car}, which means each assignment involves an implicit typecast from \C{Car} to \C{Car[4]}.
 
 
 \subsection{Explicit Typecasting}
@@ -408,12 +450,10 @@ The synthesizer reasons about function calls by inlining them into their calling
 
 
 \paragraph{Reference Vs. Value Parameter Passing}
-By default, parameter passing is done by value; however, it is possible to pass parameters by reference by prefixing them with the keyword \C{ref}. 
-
-Only local variables should ever be passed by reference, and reference parameters should never be aliased. The reason for this restriction is that the synthesizer models reference parameters using copy-in-copy-out semantics. If the parameters are local variables and are not aliased, then copy-in-copy-out is indistinguishable from pass-by-reference.
+By default, parameter passing is done by value, so even if parameters are modified inside the function, the change will not be visible outside. We can make changes to a parameter visible to the caller by prefixing the formal parameter with the keyword \C{ref} as shown in the example below.
 
 \begin{Example}
-Local variables can be modified by passing them as reference to a function.
+Prefixing the formal parameter with \C{ref} makes changes visible outside the function.
 \begin{lstlisting}
 void foo(int in, ref int out){
 	in = in + 1; // changes to in are not visible to the caller
@@ -427,6 +467,105 @@ harness void main(int x){
 }
 \end{lstlisting}
 \end{Example}
+
+A very important point about \C{ref} parameters is that their semantics is not actually pass-by-reference; it is copy-in-copy-out. If you pass only local variables by reference and you never alias \C{ref} parameters, copy-in-copy-out semantics and pass-by-reference semantics are indistinguishable, and the compiler will actually generate pass-by-reference code. However, if you alias parameters or if you pass a field of a record by reference, the copy-in-copy-out semantics will become apparent.
+
+\begin{Example}
+This example illustrates copy-in-copy-out semantics.
+\begin{lstlisting}
+void foo(ref int p1, ref int p2){
+      int t=p1;
+      p1 = p1 + 1;
+      p2 = p2 + 2;
+      assert p1 == t + 1;
+}
+harness void main(int x){
+	int z = x;
+      foo(z, z); 
+      assert z == x+2;
+}
+\end{lstlisting}
+Note that copy-in-copy-out semantics make it possible to reason about \C{foo} in isolation; the assertion will hold regardless of whether or not the user passes the same parameter to \C{foo} twice. The copy-out happens in the order of the parameter list, so the final value of \C{z} is the value of \C{p2}.
+\end{Example}
+
+Another very important point is that the \C{ref} modifier can also be used in generator functions ((see \secref{generators}), but in that case, \C{ref} parameters do have pass-by-reference semantics.
+
+
+\paragraph{Implicit size parameters}
+
+When passing arrays as parameters, it is common to have to separately pass the size of the array, so a typical function signature will look like this:
+\begin{lstlisting}
+double[n] foo(int n, double[n] in)
+\end{lstlisting}
+
+\Sk{} allows you to declare the size parameter \C{n} as an \emph{implicit parameter} so that you do not have to pass it when calling the function.
+
+\begin{lstlisting}
+double[n/2] foo([int n], double[n] in){//brackets signify implicit parameter
+     return in[0::n/2];
+}
+harness void main(int n, double[n] in){
+   double[n/2] res = foo(in); //we don't have to pass n.
+   double[n] res = foo(2*n, in);//but we can if we want.
+}
+\end{lstlisting}
+
+The syntax for a function definition that uses implicit parameters is shown below. 
+\begin{lstlisting}
+$ret\_type$ $name$([$implicit_args$],$args$){
+  $body$
+}
+\end{lstlisting}
+Specifically, implicit parameters must be at the beginning of the parameter list, and the complete list of implicit parameters must be enclosed in square brackets.
+
+There are two important semantic requirements for implicit parameters. First, all implicit parameters must be of integer type, since they must correspond to sizes of arrays passed as parameters. The second requirement is that every implicit parameter must be equal to the size of at least one array argument.
+
+\begin{Example}
+The following definitions correspond to legal uses of implicit parameters:
+\begin{lstlisting}
+int[n] foo([int n, int m], int[n] a, int[m] b)...
+int[m] foo([int n], int[n] a, int m, int[m] b)...
+int[n+m] foo([int n, int m], int[n][m] a, int[m] b)...
+int[n+m] foo([int n, int m], int[n][m] a, int[2*m] b)...
+\end{lstlisting}
+By contrast, the following are all illegal:
+\begin{lstlisting}
+int[n] foo([int n, int m], int[n] a)... // m is not used
+int[n] foo([int n], int[n*2] a)... //n is not the size of any array param
+int[n+m] foo([int n, int m], int[n][m*2] a, int[m-1] b)... //m is not the size of any array param
+\end{lstlisting}
+\end{Example}
+
+When calling a function with implicit parameters, there are XXX rules to keep in mind.
+\begin{itemize}
+\item You can decide to pass all implicit parameters, or you can pass none of them, but you cannot selectively pass only a subset of them.
+\item If a given implicit parameter is used by multiple array parameters, all array parameters must be consistent regarding the value of that parameter.
+\end{itemize}
+
+\begin{Example}
+Given the following function definition and declarations
+\begin{lstlisting}
+void foo([int n, int m], int[n] a, int[m][n] b)...
+...
+int[5] w;
+int[5] x;
+int[3][5] y;
+int[10] z;
+\end{lstlisting}
+The following calls are valid:
+\begin{lstlisting}
+foo(x, y); // n==5, m==n
+foo(w, x); // n==5, m==1
+foo(10, 3, z, y); // Involves an implicit cast for y.
+\end{lstlisting}
+
+By contrast, the following are all illegal:
+\begin{lstlisting}
+foo(z, y); //different value of n for the two arrays
+foo(3, z, y); //Passes only a subset of implicit parameters
+\end{lstlisting}
+\end{Example}
+
 
 
 \subsection{Function parameters}
@@ -581,8 +720,13 @@ harness main(){
 \end{Example}
 
 \subsection{Global variables}
-The sketch language supports global variables with a few important restrictions. First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable. The second restriction is a consequence of the fact that only scalar global variables can be final; this means that global arrays must have constant dimensions since, in that scope, constants are the only thing that can be final.
+The sketch language supports global variables with a few important restrictions.
+\begin{itemize}
+\item First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable. 
+\item The second restriction is a consequence of the fact that only scalar global variables can be final; this means that global arrays must have constant dimensions since, in that scope, constants are the only thing that can be final.
 
+\item The initializers for global variables can only involve side-effect-free expressions of constants and final global variables. An expression that allocates a struct (\eg{} \C{new C(a=x)}) is considered a side-effect-free expression as long as the arguments to the constructor (\eg{} \C{x}) are side effect free. Division, array access and function calls are not considered side-effect free since they may fail.
+\end{itemize}
 
 \subsection{Annotation System}
 The \Sk{} language includes an annotation system that is meant to simplify the process of adding language extensions. The general syntax for annotations is as follows:

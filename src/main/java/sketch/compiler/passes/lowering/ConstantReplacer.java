@@ -2,7 +2,6 @@ package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -224,7 +223,8 @@ public class ConstantReplacer extends FEReplacer {
                     Expression len = arr.getLength();
                     Expression newlen = (Expression) len.accept(this);
                     if (newlen != len) {
-                        params.set(i, new Parameter(new TypeArray(arr.getBase(), newlen),
+                        params.set(i, new Parameter(par, new TypeArray(arr.getBase(),
+                                newlen),
                                 par.getName(), par.getPtype()));
                         changed = true;
                     }
@@ -267,6 +267,9 @@ public class ConstantReplacer extends FEReplacer {
         return super.visitProgram(prog);
     }
 
+    /**
+     * Find all the global variables that remain constant through the computation.
+     */
     public static class GetValDefs extends ASTObjQuery<HashSet<String>> {
         ShadowStack shadows = new ShadowStack(null);
 
@@ -340,21 +343,38 @@ public class ConstantReplacer extends FEReplacer {
 
         public Object visitExprFunCall(ExprFunCall efc) {
             Function f = this.getFuncNamed(efc.getName());
-            Iterator<Parameter> pit = f != null ? f.getParams().iterator() : null;
-            if (f != null && f.getParams().size() != efc.getParams().size()) {
+            List<Parameter> pit = f != null ? f.getParams() : null;
+            Parameter last = null;
+            int ipcnt = 0;
+            if (pit != null && pit.size() != efc.getParams().size()) {
+
+                while (ipcnt < pit.size()) {
+                    if (!pit.get(ipcnt).isImplicit()) {
+                        break;
+                    }
+                    ++ipcnt;
+                }
+            }
+            if (pit != null && (pit.size() - ipcnt) != efc.getParams().size()) {
                 throw new ExceptionAtNode("Wrong number of parameters", efc);
             }
-            for (Expression e : efc.getParams()) {
-                Parameter p = f != null ? pit.next() : null;
-                if (f == null || p.isParameterOutput()) {
-                    if (e instanceof ExprVar || e instanceof ExprArrayRange) {
-                        String nm = e.accept(new GetAssignLHS()).getName();
-                        if (!shadows.contains(nm)) {
-                            result.remove(nm);
+
+            {
+                int i = ipcnt;
+                for (Expression e : efc.getParams()) {
+                    Parameter p = pit != null ? pit.get(i) : null;
+                    ++i;
+                    if (f == null || p.isParameterOutput()) {
+                        if (e instanceof ExprVar || e instanceof ExprArrayRange) {
+                            String nm = e.accept(new GetAssignLHS()).getName();
+                            if (!shadows.contains(nm)) {
+                                result.remove(nm);
+                            }
                         }
                     }
                 }
             }
+
             return super.visitExprFunCall(efc);
         }
 

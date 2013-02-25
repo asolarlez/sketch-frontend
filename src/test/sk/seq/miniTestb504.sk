@@ -1,0 +1,21 @@
+pragma options "--bnd-unroll-amnt 32";
+
+harness void main(int n, int[n] x){
+    if(n>1){
+        x[n-1] = 33;
+        int[5][{| 5 | n|}] a = x;
+        //The type above should resolve to n, because a type assignment should never lose information.
+        bit found = false;
+        for(int i=0; i<{|5|n|}; ++i){
+            for(int j=0; j<{|5|n|}; ++j){
+                if(a[i][j] == 33){
+                    found = true;
+                }
+            }
+        }                
+        secretAssert(found);
+    }        
+}
+
+@Native("{ assert (t); }")
+void secretAssert(bit t);

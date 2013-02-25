@@ -47,7 +47,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
     Function newFloatFunction(String flName) {
         printDebug("newFloatFunction", flName);
         List<Parameter> pl = new ArrayList<Parameter>(1);
-        pl.add(new Parameter(replType(), "_out", Parameter.OUT));
+        pl.add(new Parameter(null, replType(), "_out", Parameter.OUT));
         return Function.creator((FEContext) null, flName, FcnType.Uninterp).returnType(
                 TypePrimitive.bittype).params(pl).pkg(nres.curPkg().getName()).create();
     }
@@ -131,7 +131,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 		if( t == par.getType()){
     		return par;
     	}else{
-    		return new Parameter(t, par.getName(), par.getPtype() );
+            return new Parameter(par, t, par.getName(), par.getPtype());
     	}
 	}
 	

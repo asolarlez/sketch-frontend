@@ -1,0 +1,22 @@
+pragma options "--bnd-unroll-amnt 32 --bnd-arr-size 42";
+
+struct Arr{
+    int n;
+    int[n] x;
+}
+
+Arr buildArr([int n], int[n] x){
+    return new Arr(n=n, x=x);
+}
+
+harness void main(int n, int[n] x){
+    int[n+1] y = x;
+    Arr a = buildArr(x);
+    Arr b = buildArr(y);    
+    assert a.n == n;
+    assert b.n == n+1;
+    if(n>5){
+        Arr c = buildArr(7, x[0::5]);
+        assert c.n == ??;
+    }
+}

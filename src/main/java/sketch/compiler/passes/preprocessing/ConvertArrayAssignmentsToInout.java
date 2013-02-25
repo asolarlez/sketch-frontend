@@ -50,7 +50,8 @@ public class ConvertArrayAssignmentsToInout extends FEReplacer {
                 Vector<Parameter> newParams = new Vector<Parameter>();
                 for (Parameter param : fcn.getParams()) {
                     if (parametersToInout.contains(param.getName())) {
-                        newParams.add(new Parameter(param.getType(), param.getName(),
+                        newParams.add(new Parameter(param, param.getType(),
+                                param.getName(),
                                 Parameter.REF));
                     } else {
                         newParams.add(param);

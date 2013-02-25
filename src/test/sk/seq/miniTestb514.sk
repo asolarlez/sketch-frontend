@@ -1,0 +1,66 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 32";
+
+int[n+m] join([int n, int m], int[n] a, int[m] b){
+    int[n+m] out=a;
+    out[n::m] = b;
+    return out;
+}
+
+int[n][m] mix([int n, int m], int[n] a, int[m] b){
+    int[n][m] out;
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<m; ++j){
+            out[j][i] = a[i] + b[j];
+        }
+    }
+    return out;
+}
+
+int length([int n], int[n] a){
+    return n;
+}
+
+int[n] foo1([int n, int m], int[n] a, int[m] b){
+    int[n] out;
+    for(int i=0; i<n; ++i){
+        out[i] = a[i];
+        if(i<m){
+            out[i] += b[i];
+        }
+    }    
+    return out;
+}
+
+int[m] foo2([int n], int[n] a, int m, int[m] b){
+    int[m] out;
+    for(int i=0; i<m; ++i){
+        out[i] = b[i];
+        if(i<n){
+            out[i] += a[i];
+        }
+    }
+    return out;
+}
+
+int[n+m] foo3([int n, int m], int[n][m] a, int[m] b){
+    if(m>0){
+    return join(a[0], b);
+    }else{
+        return 0;
+    }
+}
+int[n+m] foo4([int n, int m], int[n][m] a, int[2*m] b){
+    if(m>0){
+        return join(a[0], b[0::m]);
+    }else{
+        return 0;
+    }        
+}
+
+harness void main(int n, int m, int[n] a, int[m] b){
+    assert length(foo1(a, b)) == n;
+    assert length(foo2(a, m, b))==m;
+    assert length(foo3(mix(a, b), b))== m + n;
+    assert length(foo4(mix(a, b), b))== m + n;
+}
+

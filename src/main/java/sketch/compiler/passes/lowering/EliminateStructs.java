@@ -86,7 +86,7 @@ public class EliminateStructs extends SymbolTableVisitor {
     	if( t == par.getType()){
     		return par;
     	}else{
-    		return new Parameter(t, par.getName(), par.getPtype() );
+            return new Parameter(par, t, par.getName(), par.getPtype());
     	}
 	}
 
@@ -159,7 +159,7 @@ public class EliminateStructs extends SymbolTableVisitor {
                 StructTracker tracker =
                         new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
                 tracker.registerAsParameters(symtab);
-                tracker.addParams(newParams);
+                tracker.addParams(func, newParams);
                 structs.put(name, tracker);
             }
 
@@ -454,13 +454,15 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    }
 
 
-	    public void addParams(List<Parameter> newParams){
+        public void addParams(FENode ctx, List<Parameter> newParams) {
 
 
-	    	newParams.add(new Parameter(sref, nextInstancePointer.getName (), Parameter.REF));
+	    	newParams.add(new Parameter(ctx, sref, nextInstancePointer.getName(),
+                    Parameter.REF));
             // newParams.add(new Parameter(TypePrimitive.inttype, heapsize));
 	    	for (String field : fieldArrays.keySet ()) {
-	    		newParams.add(new Parameter(typeofFieldArr (field) , fieldArrays.get (field).getName (), Parameter.REF ));
+                newParams.add(new Parameter(ctx, typeofFieldArr(field), fieldArrays.get(
+                        field).getName(), Parameter.REF));
 	    	}
 	    }
 

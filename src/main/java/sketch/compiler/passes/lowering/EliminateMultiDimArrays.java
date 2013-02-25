@@ -92,9 +92,93 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
             } else {
                 return super.visitExprBinary(eb);
             }
-        } else {
-            return super.visitExprBinary(eb);
         }
+        Expression left = doExpression(eb.getLeft());
+        Expression right = doExpression(eb.getRight());
+        Integer ileft = left.getIValue();
+        Integer iright = right.getIValue();
+        if (ileft != null && iright != null) {
+            switch (eb.getOp()) {
+                case ExprBinary.BINOP_ADD:
+                    return ExprConstInt.createConstant(ileft + iright);
+                case ExprBinary.BINOP_DIV:
+                    return ExprConstInt.createConstant(ileft / iright);
+                case ExprBinary.BINOP_AND:
+                    return ExprConstInt.createConstant((ileft == 1 && iright == 1) ? 1
+                            : 0);
+                case ExprBinary.BINOP_EQ:
+                    return ExprConstInt.createConstant((ileft == iright) ? 1 : 0);
+                case ExprBinary.BINOP_GE:
+                    return ExprConstInt.createConstant((ileft >= iright) ? 1 : 0);
+                case ExprBinary.BINOP_GT:
+                    return ExprConstInt.createConstant((ileft > iright) ? 1 : 0);
+                case ExprBinary.BINOP_LE:
+                    return ExprConstInt.createConstant((ileft <= iright) ? 1 : 0);
+                case ExprBinary.BINOP_LT:
+                    return ExprConstInt.createConstant((ileft < iright) ? 1 : 0);
+                case ExprBinary.BINOP_MOD:
+                    return ExprConstInt.createConstant(ileft % iright);
+                case ExprBinary.BINOP_MUL:
+                    return ExprConstInt.createConstant(ileft * iright);
+                case ExprBinary.BINOP_NEQ:
+                    return ExprConstInt.createConstant((ileft == iright) ? 1 : 0);
+                case ExprBinary.BINOP_OR:
+                    return ExprConstInt.createConstant((ileft == 1 || iright == 1) ? 1
+                            : 0);
+                case ExprBinary.BINOP_SUB:
+                    return ExprConstInt.createConstant(ileft - iright);
+            }
+        }
+        if (ileft != null && ileft == 0) {
+            switch (eb.getOp()) {
+                case ExprBinary.BINOP_ADD:
+                    return right;
+                case ExprBinary.BINOP_MUL:
+                    return ExprConstInt.zero;
+                case ExprBinary.BINOP_AND:
+                    return ExprConstInt.zero;
+                case ExprBinary.BINOP_OR:
+                    return right;
+            }
+        }
+        if (iright != null && iright == 0) {
+            switch (eb.getOp()) {
+                case ExprBinary.BINOP_ADD:
+                    return left;
+                case ExprBinary.BINOP_MUL:
+                    return ExprConstInt.zero;
+                case ExprBinary.BINOP_AND:
+                    return ExprConstInt.zero;
+                case ExprBinary.BINOP_OR:
+                    return left;
+            }
+        }
+
+        if (ileft != null && ileft == 1) {
+            switch (eb.getOp()) {
+                case ExprBinary.BINOP_MUL:
+                    return right;
+                case ExprBinary.BINOP_AND:
+                    return right;
+                case ExprBinary.BINOP_OR:
+                    return ExprConstInt.one;
+            }
+        }
+        if (iright != null && iright == 1) {
+            switch (eb.getOp()) {
+                case ExprBinary.BINOP_MUL:
+                    return left;
+                case ExprBinary.BINOP_AND:
+                    return left;
+                case ExprBinary.BINOP_OR:
+                    return ExprConstInt.one;
+            }
+        }
+
+        if (left == eb.getLeft() && right == eb.getRight())
+            return eb;
+        else
+            return new ExprBinary(eb, eb.getOp(), left, right, eb.getAlias());
     }
 
 	public Object visitExprArrayInit(ExprArrayInit eai){
@@ -256,8 +340,9 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                                     new ExprBinary(new ExprBinary(rl.start(), "+",
                                             rl.getLenExpression()), "<=", cdim));
                 }
-
-                if (addAsserts) {
+                cond = (Expression) cond.accept(this);
+                Integer ci = cond.getIValue();
+                if (addAsserts && !(ci != null && ci == 1)) {
                     addStatement(new StmtAssert(cond, idx.getCx() +
                             ": Array out of bounds",
                         false));
@@ -283,7 +368,9 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 		        size = product (dims, idx);
 		    }
 		}
-		RangeLen flatRl = new RangeLen (idx, size);
+        RangeLen flatRl =
+                new RangeLen((Expression) idx.accept(this),
+                        size != null ? (Expression) size.accept(this) : null);
 
 		return new ExprArrayRange (ear, base, flatRl);
 	}
@@ -313,7 +400,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	        if( t == par.getType()){
 	            return par;
 	        }else{
-	            return new Parameter(t, par.getName(), par.getPtype() );
+            return new Parameter(par, t, par.getName(), par.getPtype());
 	        }
 	    }
 	

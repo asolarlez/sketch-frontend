@@ -1,0 +1,12 @@
+pragma options "--bnd-unroll-amnt 32";
+
+int getLen([int n], int[n] x){
+    return n;
+}
+
+harness void main(int n, int[n] x){
+    int[n+1] y = x;
+    assert getLen(x) == n;
+    assert getLen(y) == n+1;
+    assert getLen(n+10, x) == n+??;
+}

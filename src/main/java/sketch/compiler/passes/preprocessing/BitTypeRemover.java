@@ -290,7 +290,8 @@ public class BitTypeRemover extends SymbolTableVisitor
             Type newType=convertType(oldType);
             if(oldType!=newType) {
             	change=true;
-            	newParams.add(new Parameter(newType,param.getName(),param.getPtype()));
+                newParams.add(new Parameter(param, newType, param.getName(),
+                        param.getPtype()));
             }
             else
             	newParams.add(param);

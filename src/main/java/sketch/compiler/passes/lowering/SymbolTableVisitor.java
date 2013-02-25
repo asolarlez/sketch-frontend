@@ -22,9 +22,9 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -206,7 +206,7 @@ public class SymbolTableVisitor extends FEReplacer
         if (t == par.getType()) {
             return par;
         } else {
-            return new Parameter(t, par.getName(), par.getPtype());
+            return new Parameter(par, t, par.getName(), par.getPtype());
         }
     }
 

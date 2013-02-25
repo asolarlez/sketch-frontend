@@ -215,7 +215,7 @@ public class FunctionalizeStencils extends FEReplacer {
 		while(it.hasNext()) {
 			StmtVarDecl var=it.next();
 			for(int i=0;i<var.getNumVars();i++)
-				ret.add(new Parameter(var.getType(i),var.getName(i)));
+                ret.add(new Parameter(var, var.getType(i), var.getName(i)));
 		}
 		return ret;
 	}
@@ -303,7 +303,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			driverParams.addAll(makeParams(outf.idxParams));
 			driverParams.addAll(makeParams(outf.othParams));
 			driverParams.addAll(makeParams(outf.inputParams));
-			driverParams.add(new Parameter(outpType,outp.getName(),Parameter.OUT));
+            driverParams.add(new Parameter(null, outpType, outp.getName(), Parameter.OUT));
 
 			List<Expression> callArgs=new ArrayList<Expression>();
 			callArgs.addAll(makeRefs(outf.idxParams));
@@ -356,7 +356,7 @@ public class FunctionalizeStencils extends FEReplacer {
 					if(c >= assertInits.size()){
 						String ainm = varGen.nextVar("asIdx");
 						assertInits.add(new ExprVar(body, ainm));
-						driverParams.add(new Parameter(TypePrimitive.inttype, ainm));						
+                        driverParams.add(new Parameter(null, TypePrimitive.inttype, ainm));
 					}
                     assArgs.add(new ExprBinary(assertInits.get(c), "-", ExprConstInt.one));
 				}
@@ -555,7 +555,8 @@ public class FunctionalizeStencils extends FEReplacer {
 						}
 						List<Parameter> fparams = new ArrayList<Parameter>();
 						for(int i=0; i<dim; ++i){
-							fparams.add(new Parameter(TypePrimitive.inttype, "idx_" + i));
+                            fparams.add(new Parameter(null, TypePrimitive.inttype,
+                                    "idx_" + i));
 						}
 
                         Function ufun =

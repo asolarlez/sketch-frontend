@@ -261,7 +261,7 @@ public class GlobalsToParams extends FEReplacer {
 
         String tmpName = varGen.nextVar(glblName);
         Vector<Parameter> params = new Vector<Parameter>();
-        Parameter outvar = new Parameter(type, tmpName, Parameter.OUT);
+        Parameter outvar = new Parameter(expression, type, tmpName, Parameter.OUT);
         params.add(outvar);
         StmtAssign assign = new StmtAssign(new ExprVar(ctx, tmpName), expression);
 
@@ -306,7 +306,8 @@ public class GlobalsToParams extends FEReplacer {
     public Vector<Parameter> getParametersForFcn(Function fcn) {
         Vector<Parameter> newParams = new Vector<Parameter>();
         for (AddedParam param : newParamsForCall.get(fcn).values()) {
-            newParams.add(new Parameter(param.typ, param.paramName, Parameter.REF));
+            newParams.add(new Parameter(fcn, param.typ, param.paramName,
+                    Parameter.REF));
         }
         return newParams;
     }

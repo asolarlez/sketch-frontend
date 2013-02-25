@@ -101,11 +101,11 @@ public class ExprConstChar extends ExprConstant
 
     public static void renumber() {
         int sz = charList.size();
-        System.out.println("Size = " + sz);
+        
         if (sz < 127) {
             addMore();
         }
-        System.out.println("Size After= " + charList.size());
+
         Map<Character, ExprConstChar> tMap =
                 new TreeMap<Character, ExprConstChar>(charMap);
         charList.clear();

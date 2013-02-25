@@ -37,19 +37,37 @@ public class Parameter extends FENode implements Comparable<Parameter>
     private final String name;
     private final int partype;
 
+    private final boolean isImplicit;
+
     /** Creates a new Parameter with the specified type and name. */
-    public Parameter(Type type, String name)
+    public Parameter(FENode fn, Type type, String name)
     {
-    	this(type,name,IN);
+        this(fn, type, name, IN, fn instanceof Parameter ? ((Parameter) fn).isImplicit
+                : false);
     }
 
-    public Parameter(Type type, String name, int ptype)
+    public Parameter(FENode fn, Type type, String name, int ptype) {
+        this(fn, type, name, ptype, fn instanceof Parameter ? ((Parameter) fn).isImplicit
+                : false);
+    }
+
+    public Parameter(FENode fn, Type type, String name, int ptype, boolean isImplicit) {
+        super(fn);
+        assert type != null;
+        this.type = type;
+        this.name = name;
+        this.partype = ptype;
+        this.isImplicit = isImplicit;
+    }
+
+    public Parameter(FEContext cex, Type type, String name, int ptype, boolean isImplicit)
     {    	
-    	super((FENode)null);
+        super(cex);
     	assert type != null;
         this.type = type;
         this.name = name;
         this.partype = ptype;
+        this.isImplicit = isImplicit;
     }
 
     /**
@@ -69,6 +87,10 @@ public class Parameter extends FENode implements Comparable<Parameter>
      */
     public boolean isParameterOutput(){
     	return partype == OUT || partype == REF;
+    }
+
+    public boolean isImplicit() {
+        return isImplicit;
     }
 
     /**
@@ -105,6 +127,7 @@ public class Parameter extends FENode implements Comparable<Parameter>
     public Object accept(FEVisitor v){
     	return v.visitParameter(this);
     }
+
 
     public int compareTo(Parameter p) {
         return name.compareTo(p.name);

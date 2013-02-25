@@ -725,7 +725,7 @@ public class NodesToSuperCpp extends NodesToJava {
             decls.add(result);
             this.isBool = oldIsBool;
         }
-        return (new ScRichString("; ")).join(decls);
+        return (new ScRichString(";\n" + indent)).join(decls);
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {

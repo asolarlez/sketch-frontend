@@ -57,6 +57,7 @@ import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
+import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
@@ -141,11 +142,9 @@ public class SequentialSketchMain extends CommonSketchMain
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
                     { new MinimizeFcnCall(), /* new TprintFcnCall(), */
- new SpmdbarrierCall(),
+            new SpmdbarrierCall(),
             /* new PidReplacer(), */
- new RemoveFunctionParameters(varGen),
-                    /* new AllthreadsTprintFcnCall(), new ThreadIdReplacer(options), */
-                    /* new InstrumentFcnCall(), new SyncthreadsCall() */};
+            };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
     }
@@ -405,9 +404,18 @@ public class SequentialSketchMain extends CommonSketchMain
         outputCCode(prog);
     }
 
-    public Program preprocAndSemanticCheck(Program prog, boolean replaceConstants) {
-        if (replaceConstants) {
-            prog = (Program) prog.accept(new ConstantReplacer(null));
+    public Program preprocAndSemanticCheck(Program prog) {
+
+        // prog = (Program) prog.accept(new DisambiguateMethodCalls());
+
+
+        prog = (Program) prog.accept(new ConstantReplacer(null));
+        prog = (Program) prog.accept(new MinimizeFcnCall());
+        prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+        DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
+        prog = (Program) prog.accept(dtc);
+        if (!dtc.good) {
+            throw new ProgramParseException("Semantic check failed");
         }
 
         prog = (getBeforeSemanticCheckStage()).run(prog);
@@ -415,13 +423,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
 
-        prog = preprocessProgram(prog, replaceConstants); // perform prereq
-        // dump(prog, "AFTER PARSE");
-        // transformations
-		//prog.accept(new SimpleCodePrinter());
-		// RenameBitVars is buggy!! prog = (Program)prog.accept(new RenameBitVars());
-		// if (!SemanticChecker.check(prog))
-		//	throw new IllegalStateException("Semantic check failed");
+        prog = preprocessProgram(prog, true); // perform prereq
 
         return nonnull(prog);
 	}
@@ -456,7 +458,7 @@ public class SequentialSketchMain extends CommonSketchMain
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = parseProgram();
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
-        prog = this.preprocAndSemanticCheck(prog, true);
+        prog = this.preprocAndSemanticCheck(prog);
 
         // withoutConstsReplaced =
         // prog =

@@ -11,9 +11,9 @@ import java.util.Vector;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -144,7 +144,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
 //System.out.println("par: " + par + " " + par.getType().getCudaMemType());
             if (needAllProc && par.getType().getCudaMemType() != CudaMemoryType.GLOBAL) {
                 final Type type = localArrayType(par.getType());
-                par = new Parameter(type, par.getName(), par.getPtype());
+                par = new Parameter(par, type, par.getName(), par.getPtype());
             }
             return super.visitParameter(par);
         }
@@ -198,7 +198,9 @@ public class SpmdTransform  extends SymbolTableVisitor {
             Function.FunctionCreator creator = fcn.creator().name(prefix + fcn.getName());
             if (needAllProc) {
                 Vector<Parameter> params = new Vector<Parameter>();
-                params.add(new Parameter(TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL), SpmdNProcVar, Parameter.IN));
+                params.add(new Parameter(fcn,
+                        TypePrimitive.inttype.withMemType(CudaMemoryType.GLOBAL),
+                        SpmdNProcVar, Parameter.IN));
                 params.addAll(fcn.getParams());
                 creator = creator.params(params);
             }
@@ -499,8 +501,10 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitFunction(Function func) {
             Vector<Parameter> params = new Vector<Parameter>();
-            params.add(new Parameter(TypePrimitive.inttype, SpmdNProcVar, Parameter.IN));
-            params.add(new Parameter(TypePrimitive.inttype, SpmdPidVar, Parameter.IN));
+            params.add(new Parameter(func, TypePrimitive.inttype, SpmdNProcVar,
+                    Parameter.IN));
+            params.add(new Parameter(func, TypePrimitive.inttype, SpmdPidVar,
+                    Parameter.IN));
             params.addAll(func.getParams());
             Function f2 = func.creator().name("someproc_" + func.getName()).params(params).create();
             return super.visitFunction(f2);

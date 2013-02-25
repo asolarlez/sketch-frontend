@@ -126,7 +126,8 @@ public class SATBackend {
 
         {
             java.io.File fd = new File(options.getTmpSketchFilename());
-            if (fd.exists() && !options.feOpts.keepTmp) {
+            if (fd.exists() && !(options.feOpts.keepTmp || options.debugOpts.fakeSolver))
+            {
                 boolean t = fd.delete();
                 if (!t) {
                     log(0, "couldn't delete file" + fd.getAbsolutePath());
@@ -141,7 +142,7 @@ public class SATBackend {
             assertFalse("No solutions found in folder", options.sktmpdir());
         }
         extractOracleFromOutput(solutions[0].getPath());
-        if (!options.feOpts.keepTmp) {
+        if (!(options.feOpts.keepTmp || options.debugOpts.fakeSolver)) {
             options.cleanTemp();
         }
         return worked;
@@ -227,7 +228,8 @@ public class SATBackend {
 			oracle.loadFromStream(lir);
 			fis.close();
 			java.io.File fd = new File(fname);
-			if(fd.exists() && !options.feOpts.keepTmp){
+            if (fd.exists() && !(options.feOpts.keepTmp || options.debugOpts.fakeSolver))
+            {
 				fd.delete();
 			}
 		}

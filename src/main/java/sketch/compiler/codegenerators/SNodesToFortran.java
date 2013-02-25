@@ -249,10 +249,10 @@ public class SNodesToFortran extends FENullVisitor {
 			params.add(p);
 		}
 		if(returnsArray) {
-			params.add(new Parameter(func.getReturnType(),outvar));
+            params.add(new Parameter(func, func.getReturnType(), outvar));
 		}
 		for(String sizeArg: getSizeParams(func)) {
-			params.add(new Parameter(TypePrimitive.inttype,sizeArg));
+            params.add(new Parameter(func, TypePrimitive.inttype, sizeArg));
 		}
 		String paramlist="("+makeParamCSL(params)+")";
 

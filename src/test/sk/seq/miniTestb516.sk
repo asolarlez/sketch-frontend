@@ -1,0 +1,28 @@
+pragma options "--bnd-unroll-amnt 64";
+
+int[n][m] mix([int n, int m], int[n] a, int[m] b){
+    int[n][m] out;
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<m; ++j){
+            out[j][i] = a[i] + b[j];
+        }
+    }
+    return out;
+}
+
+int length([int n], int[n] a){
+    return n;
+}
+
+harness void main(int n, int m, int[n] x, int[m] y){
+    generator int[n+m] join([int n, int m], int[n] a, int[m] b){
+        int[n+m] out=a;
+        out[n::m] = b;
+        return out;
+    }
+    int foo(fun f){
+        return length(f(x,y));
+    }    
+    assert foo(join) == n+m;    
+}
+

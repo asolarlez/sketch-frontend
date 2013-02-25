@@ -1,0 +1,10 @@
+
+pragma options "--bnd-unroll-amnt 32";
+
+int[3] getLen([int n, int m, int q], int[n][m][q] x){
+    return {n, m, q};
+}
+
+harness void main(int n, int[n] x){    
+    assert getLen(x) == {1, 1, n};    
+}

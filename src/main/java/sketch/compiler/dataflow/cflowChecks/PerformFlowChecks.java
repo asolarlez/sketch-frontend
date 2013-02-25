@@ -123,7 +123,8 @@ public class PerformFlowChecks extends PartialEvaluator {
         }
         if(isReplacer){
             Type ntype = (Type)param.getType().accept(this);
-             return new Parameter(ntype, transName(param.getName()), param.getPtype());
+            return new Parameter(param, ntype, transName(param.getName()),
+                    param.getPtype());
         }else{
             return param;
         }

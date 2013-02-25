@@ -1,0 +1,12 @@
+bit pold(int nv,int[nv] vals){
+  assert vals[3] == ??;
+  assert vals[0] == ??;
+  bit _out = ((vals[3]) == (vals[0]));
+  return _out;
+}
+harness void main(){
+	int x =??;
+	assert pold(5, {4,2,3,4,5});
+	assert(x - 2*x != 0);
+	return;
+}

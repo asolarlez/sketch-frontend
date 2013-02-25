@@ -1,0 +1,21 @@
+
+harness void main(int n, int[n] a){
+    int m = n+1;
+    int[m] b;
+    
+    void foo(){
+        b[0] = 5;
+        if(n>5){
+            x[1] = ??; // TypeError
+        }
+    }
+    
+    foo();
+    
+    if(n>5){
+        assert a[1] == 3;
+    }
+    assert b[??] == 5;
+    
+    
+}

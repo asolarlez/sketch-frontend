@@ -157,7 +157,7 @@ public class ArrFunction{
 		while(it.hasNext()) {
 			StmtVarDecl var=it.next();
 			for(int i=0;i<var.getNumVars();i++)
-				ret.add(new Parameter(var.getType(i),var.getName(i)));
+                ret.add(new Parameter(var, var.getType(i), var.getName(i)));
 		}
 		return ret;
 	}

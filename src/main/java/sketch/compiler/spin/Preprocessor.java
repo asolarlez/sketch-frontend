@@ -12,8 +12,8 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -146,7 +146,7 @@ public class Preprocessor extends FEReplacer {
     	List<Expression> actuals = new ArrayList<Expression>(vars.size());
     	FENode cx = loop;
     	for (String pname : vars) {
-    		Parameter par = new Parameter(varTypes.get(pname), pname);
+            Parameter par = new Parameter(loop, varTypes.get(pname), pname);
     		pars.add(par);
     		actuals.add(new ExprVar(cx, pname));
     	}

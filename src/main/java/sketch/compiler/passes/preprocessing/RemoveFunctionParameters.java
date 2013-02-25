@@ -211,7 +211,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                         }
                     }
                     ParamInfo info = params.get(name);
-                    result.add(new Parameter(info.pt, name, info.changed ? Parameter.REF
+                    result.add(new Parameter(null, info.pt, name,
+                            info.changed ? Parameter.REF
                             : Parameter.IN));
 
                 }
@@ -516,18 +517,28 @@ public class RemoveFunctionParameters extends FEReplacer {
                     }
                     List<Expression> existingArgs = efc.getParams();
                     List<Parameter> params = fun.getParams();
+                    int starti = 0;
+                    if (params.size() != existingArgs.size()) {
+                        while (starti < params.size()) {
+                            if (!params.get(starti).isImplicit()) {
+                                break;
+                            }
+                            ++starti;
+                        }
+                    }
 
+                    if ((params.size() - starti) != existingArgs.size()) {
+                        throw new ExceptionAtNode("Wrong number of parameters", efc);
+                    }
                     final boolean oldIsA = isAssignee;
-                    for (int i = 0; i < params.size(); i++) {
+                    for (int i = starti; i < params.size(); i++) {
                         Parameter p = params.get(i);
                         isAssignee = p.isParameterOutput();
-                        existingArgs.get(i).accept(this);
+                        existingArgs.get(i - starti).accept(this);
                         isAssignee = oldIsA;
                     }
                     return efc;
                 }
-
-
             };
             stv.setNres(nres);
             f.accept(stv);
@@ -787,6 +798,10 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     public Object visitExprFunCall(ExprFunCall efc) {
+
+        if (efc.getName().equals("minimize")) {
+            return super.visitExprFunCall(efc);
+        }
 
         String name = nres.getFunName(efc.getName());
         if (name == null) {

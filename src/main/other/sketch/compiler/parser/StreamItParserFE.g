@@ -410,13 +410,10 @@ function_decl returns [Function f] {
 }
 	:
 	amap=annotation_list
-	( // TK_device { isDevice = true; } |
-          //TK_global { isGlobal = true; } |
+	( 
           TK_serial { isSerial = true; } |
           TK_harness { isHarness = true; } |
-          TK_generator { isGenerator = true; }  |
-          // TK_library { isLibrary = true; }  |
-          // TK_printfcn { isHarness = true; isPrintfcn = true; } |
+          TK_generator { isGenerator = true; }  |      
           TK_stencil { isStencil = true; } | 
           TK_model { isModel = true; }
           
@@ -480,15 +477,21 @@ return_type returns [Type t] { t=null; }
 	: 	t=data_type
 	;
 
-param_decl_list returns [List l] { l = new ArrayList(); Parameter p; }
+param_decl_list returns [List l] { l = new ArrayList(); List l2; Parameter p; }
 	:	LPAREN
+		(l2=impl_param {l.addAll(l2); })?
 		(p=param_decl { l.add(p); } (COMMA p=param_decl { l.add(p); })*
 		)?
 		RPAREN
 	;
 
+impl_param returns [List l]{ Parameter p; l = new ArrayList(); }
+	: LSQUARE TK_int id:ID {p= new Parameter(getContext(id), TypePrimitive.inttype, id.getText(), Parameter.IN, true); l.add(p);}
+	  (COMMA TK_int id2:ID {p= new Parameter(getContext(id), TypePrimitive.inttype, id2.getText(), Parameter.IN, true); l.add(p);})* 
+	  RSQUARE COMMA
+	;
 param_decl returns [Parameter p] { Type t; p = null; boolean isRef=false; }
-	: 	(TK_ref { isRef=true;} )?	 t=data_type id:ID { p = new Parameter(t, id.getText(), isRef? Parameter.REF : Parameter.IN); }
+	: 	(TK_ref { isRef=true;} )?	 t=data_type id:ID { p = new Parameter(getContext(id), t, id.getText(), isRef? Parameter.REF : Parameter.IN, false); }
 	;
 
 block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayList(); }

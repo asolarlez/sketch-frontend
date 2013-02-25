@@ -180,7 +180,8 @@ public class EliminateDeadCode extends BackwardDataflow {
 			state.outVarDeclare(param.getName() , param.getType());
 			if( isReplacer){
 				Type ntype = (Type)param.getType().accept(this);
-				nparams.add( new Parameter(ntype, transName(param.getName()), param.getPtype()));
+                nparams.add(new Parameter(param, ntype, transName(param.getName()),
+                        param.getPtype()));
 			}
 			if(param.isParameterOutput()){
 				state.setVarValue(param.getName(), new joinAV(LiveVariableAV.LIVE));
