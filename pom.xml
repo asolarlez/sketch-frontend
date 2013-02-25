@@ -7,7 +7,7 @@
     <name>SKETCH compiler frontend</name>
     <description>SKETCH compiler frontend, responsible for AST lowering
         and optimization</description>
-    <version>1.6.3</version>
+    <version>1.6.4</version>
     <url>http://sketch.cs.berkeley.edu</url>
 
     <properties>
