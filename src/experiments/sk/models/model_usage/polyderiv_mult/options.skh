@@ -1,0 +1,5 @@
+pragma options "--bnd-inline-amnt 16 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 16";
+int n = 20;
+int k = 3;
+//max degree of polynomials
+int BASE = 4;

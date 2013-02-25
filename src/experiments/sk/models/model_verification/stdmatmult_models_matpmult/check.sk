@@ -1,0 +1,36 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 7 --bnd-cbits 3 ";
+include "options.skh";
+
+int[n][n] mult(int[n][n] x,int[n][n] y){
+	int[n][n] o =0;
+	for(int i=??;i<n;i++){
+		for(int j=??;j<n;j++){
+			o[i][j]=0;
+			for (int k=??;k<n;k++){
+				o[i][j] = (o[i][j] + (x[i][k] * y[k][j])%BASE)%BASE;
+			}
+		}
+	}
+	return o;
+}
+
+harness matmul(mat A,mat B){
+	int[n][n] rv = mult(A.R,B.R);
+	assert(A.R != B.R || pow(A.R,A.k+B.k) == rv);
+	//return rv;
+}
+
+int[n][n] pow(int[n][n] X,int m){
+	if(m==1) return X;
+	if(m==2) return mult(X,X);
+	if(m%2 == 0){ 
+		int[n][n] t = pow(X,m/2);
+		return mult(t,t);
+	}
+	else{
+		int[n][n] t = pow(X,m/2);
+		return mult(X,mult(t,t));
+	}
+	assert(false);
+}
+

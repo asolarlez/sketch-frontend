@@ -1,0 +1,34 @@
+include "generators.skh";
+pragma options "--bnd-inbits 3 --bnd-inline-amnt 2 --bnd-unroll-amnt 2 --bnd-cbits 3 ";
+include "../../ilog_model.skh";
+
+// compute the nearest upper k such that 2**k = a
+
+int N = 5;
+
+harness void closestTwoPower(int[N] a){
+
+	int[N] b;
+	for(int i=0; i<N; i++){
+	if(a[i] == 0) a[i] = 1;
+	}
+
+	int result = 0;
+	for(int i=0; i<N; i++){
+	int exp = log(linexp(2, {a[i], ??}));
+	b[i] = linexp(2, {exp, ??});
+	// result += pow(2, b[i]);
+	}	
+	
+	for(int i=0; i<N ; i++){
+		bit more = true;
+		for(int j=0; j<log(a[i]) + 1; ++j){
+			if(pow(2, j)>=a[i] && more){
+				   assert b[i] == j; more = false;
+		        } 
+		}
+			
+	}
+
+}
+

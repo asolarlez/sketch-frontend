@@ -1,0 +1,23 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 64 --bnd-cbits 3 ";
+
+int lcm(int a, int b){
+ for(int i = 1; i <= a * b; i ++)
+  if (i%a ==0 && i%b ==0) return i;
+}
+
+harness int mlcm(int a, int b){
+    int rv = lcm(a,b);
+
+    if(a ==0 || b == 0)
+    	 assert rv == 0;
+    else{
+        assert rv % a == 0;
+    	assert rv % b == 0;
+	assert rv != 0;
+	for(int i=1; i<rv; i++){
+	 assert i % a != 0 || i %b != 0;
+	}
+    }
+
+    return rv;
+}

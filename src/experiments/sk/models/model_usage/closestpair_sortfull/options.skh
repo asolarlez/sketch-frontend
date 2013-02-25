@@ -1,0 +1,2 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8";
+int N =5;

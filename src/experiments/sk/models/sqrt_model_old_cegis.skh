@@ -1,0 +1,26 @@
+//pragma options "--bnd-inbits 4";
+
+int sqrtuf(int i);
+
+int msqrt(int i){
+    int rv = sqrtuf(i);
+    if(i==0){
+        //assert rv == 0;
+		disableAssertion(rv == 0);
+		if(disableAssert) return 0;
+    }
+    
+    //assert rv*rv <= i;
+	disableAssertion(rv*rv <= i);
+	if(disableAssert) return 0;
+    //assert (rv+1)*(rv+1) > i;
+	disableAssertion((rv+1)*(rv+1) > i);
+	if(disableAssert) return 0;
+    return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

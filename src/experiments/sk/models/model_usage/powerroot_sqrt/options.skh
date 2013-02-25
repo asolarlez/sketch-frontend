@@ -1,0 +1,2 @@
+pragma options "--bnd-inbits 5 --bnd-unroll-amnt 5 --bnd-cbits 3 ";
+int K=2;

@@ -1,0 +1,47 @@
+//http://en.wikipedia.org/wiki/Activity_selection_problem
+//find best feasible activity schedule time --greedy algo synth
+pragma options "--bnd-inline-amnt 1 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 2";
+
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../sortindex_model_old_cegis.skh";
+
+harness void main(int[N] start,int[N] finish, bit[N] sel){
+
+	if(N<2) return;
+	if(sel == 0) return;
+	for(int i=0;i<N;i++) if(finish[i] <= start[i]) return;
+
+	int[N] si = msorti(finish);
+        if(disableAssert) return;
+
+	int cf = 0;
+	int timeb = 0;
+	for(int i=0;i<N;i++){
+		if(sel[i]){
+			if(start[si[i]] < cf) return;
+			cf = finish[si[i]];
+			timeb = timeb + finish[i] - start[i];
+		}
+	}
+	
+	int time =finish[si[??]] - start[si[??]];
+	int f = finish[si[??]];
+	for(int i=??;{|i  (< | <= | > | >=) (??*N (+ | -) ??) |};i={| i (+|-) ??|}){
+		if({| start[si[i]] (<|<=|>|>=) f|}){
+			time = time + finish[si[i]] - start[si[i]];
+			f=finish[si[i]];
+		}
+	}
+	//assert(timeb >= time);
+	guardAssertion(timeb <= time);
+}
+
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

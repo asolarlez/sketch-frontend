@@ -1,0 +1,25 @@
+
+int[P-1] partuf();
+
+int[P-1] part(){
+	int[P-1] rv = partuf();
+	//assert(rv[0] >= 0 && rv[P-2] <= N-1);
+	disableAssertion(rv[0] >= 0 && rv[P-2] <= N-1);
+	if(disableAssert) return 0;
+	for(int i=0;i<P-2;++i){
+		//assert(rv[i] <= rv[i+1]);//distinct partitions?
+		disableAssertion(rv[i] <= rv[i+1]);
+		if(disableAssert) return 0;
+		//the good-partition constraint
+		//assert( rv[i+1] - rv[i] < (N/P) +2);
+		disableAssertion(rv[i+1] - rv[i] < (N/P) +2);
+		if(disableAssert) return 0;
+	}
+	return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

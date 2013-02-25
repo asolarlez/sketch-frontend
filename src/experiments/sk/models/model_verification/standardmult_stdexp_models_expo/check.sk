@@ -1,0 +1,28 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 8";
+int n = 5;
+int BASE = 4;
+int k=3;
+
+int[n] toBase(int z){
+	//write z in base BASE
+	int[n] out =0;
+	int sum =z;
+	for (int i=0;i<n;i++){
+		out[i] = sum % BASE;
+		sum = sum/BASE;
+	}
+	return out;
+}
+
+int[n] exp(int x,int i){
+	int res = 1;
+	for(int j=0;j<i;j++){
+		res = res * x;
+	}
+	return toBase(res);	
+}
+
+harness int[n] mexp(int x1, int x2){
+	int[n] rv = exp(x1,x2);
+	return rv;
+}

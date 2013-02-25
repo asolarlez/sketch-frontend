@@ -1,0 +1,60 @@
+pragma options "--bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 3";
+include "options.skh";
+
+
+//derivative computation for a polynomial represented by coefficient list
+int[2*n] mult(int[n] x, int[n] y){
+    int[2*n] out = 0;
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<n; ++j){            
+            int tmp = y[i] * x[j];
+            tmp = out[j + i] + tmp;
+            out[j + i] = tmp % BASE;
+            out[j + i + 1] = out[j + i + 1] + (tmp / BASE); 
+        }           
+    }       
+    return out;
+}
+int[2*n] plus(int[2*n] x, int[2*n] y){ 
+    int[2*n] out = 0;
+    for(int i = 0; i<2*n; ++i){
+        int tmp = x[i] + y[i] + out[i];
+        out[i] = tmp % BASE;
+        if(i < 2*n-1){
+        	out[i+1] =  tmp / BASE;
+        }
+    }   
+    return out;
+}
+int[n] toBase(int z){
+	//write z in base BASE
+	int[n] out =0;
+	int sum =z;
+	for (int i=0;i<n;i++){
+		out[i] = sum % BASE;
+		sum = sum/BASE;
+	}
+	return out;
+}
+
+int[n] exp(int x,int i){
+	int res = 1;
+	for(int j=0;j<i;j++){
+		res = res * x;
+	}
+	return toBase(res);	
+}
+
+
+harness void main(int[n][k] p, int x){
+	int[2*n] out1 = 0;
+	for(int i=0;i<k;i++){
+		out1 = plus(mult(exp(x,i),p[i]),out1);
+	}
+	int[2*n] out2 = 0;
+	for(int i=??;{|i  (< | <= | > | >=) (??*k (+ | -) ??) |};i++){
+		out2 = plus(out2,mult(p[{| ??*i (+ | -) ?? |}],exp(x,{| ??*i (+ | -) ?? |})));
+	}
+	assert(out1 == out2);
+}
+

@@ -1,0 +1,41 @@
+include "options.skh";
+
+// compute the nearest upper k such that 2**k = a
+
+int pow(int a, int b){
+    int result = 1;
+    for(int i=0; i<b; i++)
+       result = result * a;
+    return result;
+}
+
+int N = 5;
+
+harness void closestTwoPower(int[N] a){
+
+	int[N] b;
+
+	int result = 0;
+	for(int i=??; i<{|N| N-1 | N-2 |}; i++){
+	int exp = log(a[i]);
+	b[i] = {| exp | exp + 1 | exp - 1 |};
+	result += pow(2, b[i]);
+	}	
+	
+	for(int i=0; i<N ; i++){
+	int r = 1;
+	for(int j=0; j<b[i]; j++){
+	 r = r * 2;
+	 }	  
+	 if(b[i]>0) assert r < a[i];
+
+	 }	  
+
+}
+
+int log(int a){
+ if(a == 0) return 0;
+ for(int i=0; i<a; i++){
+  if(pow(2,i)>=a) return i;
+ }
+}

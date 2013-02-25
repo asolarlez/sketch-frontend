@@ -1,0 +1,39 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 6 --bnd-cbits 3 ";
+include "options.skh";
+
+// synthesize algorithm for computing gcd of N numbers
+harness void multi_gcd(int[N] nums){
+	
+	for(int i=0; i<N; i++)
+	  if(nums[i] == 0) return;	
+	if(N<2) return;        
+
+	int result = gcd(nums[??], nums[??]);
+	for(int i =??; i<{| N | N-1 | N-2 |}; i++){
+	  result = gcd({| result | nums[i]|}, {| result | nums[i]|});
+	}
+
+
+	for(int i=0; i<N; i++)
+	 assert nums[i] % result== 0;
+	
+	for(int i=result+1; i <= nums[0]; i++)
+	 {
+	  bit divisible = 1;
+	  for(int j=0; j<N; j++)
+             divisible = divisible && (nums[j] %i == 0);
+      assert !divisible;
+	 }
+
+}
+
+int gcd(int a, int b){
+	if(a < b) return gcd(b,a);
+	int _gcd=0;
+	while (b != 0) {
+		_gcd = b;
+		b = a % b;
+		a = _gcd;
+	}
+	return _gcd;
+}

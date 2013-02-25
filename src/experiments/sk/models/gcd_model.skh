@@ -1,0 +1,19 @@
+
+int gcduf(int a, int b);
+
+model int gcd(int a, int b){
+	
+    int rv = gcduf(a,b);
+    if(a ==1 || b == 1)
+    	 assert rv == 1;
+    else{
+        assert a % rv == 0;
+    	assert b % rv == 0;
+		assert rv != 0;
+		for(int i=rv+1; i<=a; i++){
+		 assert a %i != 0 || b %i != 0;
+		}
+    }
+
+    return rv;
+}

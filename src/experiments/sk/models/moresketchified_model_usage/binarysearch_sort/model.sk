@@ -1,0 +1,42 @@
+pragma options "--bnd-inline-amnt 1 --bnd-inbits 4 --bnd-cbits 3 --bnd-unroll-amnt 3";
+include "options.skh";
+include "../../sort_model.skh";
+
+int linear_search(int[N] arr,int x){
+	for(int i=0;i<N;i++){
+		if(arr[i] == x) return i;
+	}
+	return -1;
+}
+harness void main(int[N] arr,int x){//search for x in arr
+	int[N] sarr = msort(arr);
+	//assert(sarr[0] <= sarr[N-1]);
+	int exists = linear_search(sarr,x);
+	int imin =0;
+	int imax= N - 1;
+	int found = -1;
+	while (found == -1 && {| (imin | N | imax) ( < | <= | > |>=) (imin | N | imax) |})
+	//while (imax >= imin && found == -1)
+    {
+	  	int imid = (imin + imax)/2;
+		if(sarr[imid] <  x){
+			if(??)
+				imin = {| (imin | N | imax | imid) ( + | -) ?? |};
+			else
+				imax = {| (imin | N | imax | imid) ( + | -) ?? |};
+		}
+		else if (sarr[imid] > x){
+			if(??)
+				imin = {| (imin | N | imax | imid) ( + | -) ?? |};
+			else
+				imax = {| (imin | N | imax | imid) ( + | -) ?? |};
+		}
+		else
+			found = imid;
+			
+    }
+    if(exists == -1) 
+    	assert(found == -1);
+	else
+		assert(sarr[exists] == sarr[found] && sarr[found] == x);
+}

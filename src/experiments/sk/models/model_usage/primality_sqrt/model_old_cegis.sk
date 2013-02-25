@@ -1,0 +1,60 @@
+pragma options "--bnd-inbits 8 --bnd-cbits 3 --bnd-unroll-amnt 256 --bnd-inline-amnt 3";
+
+bit disableAssert = 0;
+
+include "../../sqrt_model_old_cegis.skh";
+include "../../generators.skh";
+
+@Native("{ _out = (int)sqrt((double)i); }")
+
+harness void main(int p){
+    bit oldres = 1;
+    if(p<=1) oldres = 0;
+    else{
+        for(int i=2;i<p;i++){
+            if(p%i == 0) oldres=0;
+        }
+    }
+
+    bit newres = 1;
+    if(p<=1) newres=0;
+    else{
+        int temp = msqrt(linexp(2,{p,??}));
+	if(disableAssert) return;
+        // if(p%?? == 0){ newres = 0; }
+        // if(p%?? == 0){ newres = 0; }
+        if(p>??){   
+            int q=0;
+            minrepeat{
+                if(p%?? == 0){ newres = 0; }
+                ++q; //assert q < 5;
+		guardAssertion(q < 5);
+            }
+            int i=??;
+            int qq = linexp(2, {temp, ??}) / ??;
+            while(i < qq){
+                q=0;
+                minrepeat{
+                  int t = linexp(2, {i, ??});
+                  if(p%t == 0) newres = 0;
+                  ++q; //assert q < 5;
+		  guardAssertion(q < 5);
+                }
+                // if((p%(6*i+1))==0) newres = 0;
+                // if((p%(6*i-1))==0) newres = 0;
+                i = i+1;
+            }
+            int bnd = ??;
+            minimize(bnd);
+            if(p<256){ assert i < bnd; }
+        }
+    }
+    //assert(oldres==newres);
+    guardAssertion(oldres==newres);
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

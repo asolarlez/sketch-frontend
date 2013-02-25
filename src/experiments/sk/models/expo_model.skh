@@ -1,0 +1,10 @@
+
+
+int[n] expuf(int x1, int x2);
+
+
+model int[n] mexp(int x1, int x2){
+	int[n] rv = expuf(x1,x2);
+	return rv;
+}
+

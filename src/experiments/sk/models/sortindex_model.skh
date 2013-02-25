@@ -1,0 +1,15 @@
+
+int[N] sortiuf(int[N] x);
+//give indices based on sorting of values in x
+model int[N] msorti(int[N] x){
+	int[N] rv = sortiuf(x);
+	bit[N] chk = 0;
+	for(int i=0;i<N;i++){
+		chk[rv[i]] =1;
+	}
+	for(int i=0;i<N;i++){
+		assert(chk[i]);
+		if(i<N-1) assert(x[rv[i]] <= x[rv[i+1]]);
+	}
+	return rv;
+}

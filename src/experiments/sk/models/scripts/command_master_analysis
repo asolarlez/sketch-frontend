@@ -1,0 +1,5 @@
+for i in `ls ./moresketchified_model_usage/`; do echo -n "$i "; grep "$i model" ./outputs/mn/master2.txt | awk 'BEGIN{st=0;sc=0;} {st=st+$3; sc=sc+$4;} END{printf "%0.3f %0.3f ", st/5.0,sc/5.0}'; grep "$i nomodel" ./outputs/mn/master.txt | awk 'BEGIN{st=0;sc=0;} {st=st+$3; sc=sc+$4;} END{printf "%0.3f %0.3f \n", st/5.0,sc/5.0}'; done
+
+
+for i in `ls ./moresketchified_model_usage/`; do echo "$i "; grep "$i model" ./outputs/mn/master2.txt | awk 'BEGIN{st="x <- c("} {st=(st$3",")} END{print st")"}'; grep "$i nomodel" ./outputs/mn/master2.txt | awk 'BEGIN{st="y <- c("} {st=(st$3",")} END{print st")"}'; done | sed 's/,)/)/g'
+

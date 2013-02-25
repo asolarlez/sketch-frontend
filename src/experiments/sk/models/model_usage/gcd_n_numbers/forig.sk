@@ -1,0 +1,30 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --bnd-cbits 3 ";
+int N = 5;
+
+
+harness int gcd(int a, int b){
+  if(a==0|| b==0) return 0;
+    int rv = 0;
+    bit more = 1;
+    for(int i={|a|b|}; {| i (<|>|<=|>=) (a|b|??) |} && more; i--){
+    if(a%i ==0 && b%i==0) {
+       rv = i;
+       more = 0;
+ }
+}
+
+    if(b == 1 || a == 1)
+    	 assert rv == 1;
+    else{
+        assert rv != 0;
+	assert a % rv == 0;
+    	assert b % rv == 0;
+
+	
+		for(int i=rv+1; i<=a; i++){
+		 assert a %i != 0 || b %i != 0;
+		}
+    }
+
+	return rv;
+}

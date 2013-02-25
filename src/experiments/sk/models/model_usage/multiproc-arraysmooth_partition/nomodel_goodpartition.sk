@@ -1,0 +1,57 @@
+include "options.skh";
+int[P-1] part(){
+	//provide good partitions
+	//can be any heuristic that works
+	int[P-1]  out = 0;
+	for(int i=1;i<P;i++){
+		int[2] t = partition(i);
+		out[i-1] = t[0];
+	}
+	return out;
+}
+
+int[2] partition (int p)/*partition.sk:7*/
+{
+  int[2] out = 0;
+  if(p < (N % P))/*partition.sk:8*/
+  {
+    out[1] = (p + 1) * ((N / P) + 1);
+    out[0] = p * ((N / P) + 1);
+  }
+  else
+  {
+    int pars_233 = N / P;
+    out[1] = (p * pars_233) + (pars_233 + (N % P));
+    out[0] = (p * (N / P)) + (N % P);
+  }
+  return out;
+}
+
+int[N] processarr(int[N] in){
+	int[N] out =0;
+	out[0] = in[0];
+	out[N-1] = in[N-1];
+	for(int j=1;j<N-1;j++){
+		out[j] = (in[j-1]+in[j+1])/2;
+	}
+	return out;
+}
+harness void main(int[N] in){
+
+	int[N] out1 = processarr(in);
+	
+	int[P-1] ps = part();
+	int[N] out=0;
+	int beg,end; //[beg_i,end_i) to be served by processor i, it also has access to ghost regions: copies of boundary values
+	for (int i=0;i<P;i++){
+		if({| i(<|>|<=|>=) {|??*P (+|-) ??|} |}) end = ps[{| ??*i (+|-) ??|}];
+		else end = N;
+		if({| i(<|>|<=|>=) {|??*P (+|-) ??|} |}) beg = ps[{| ??*i (+|-) ??|}];
+		else beg = 0;
+		for (int j=beg;j<end;j++){
+			if(j ==0 || j==N-1) out[j] = in[j];
+			else out[j] = ({| in[{| j (+|-) ??|}] (+|-) in[{| j (+|-) ??|}] |})/(??+1);//(in[j-1]+in[j+1])/2;;
+		}
+	}
+	assert(out == out1);
+}

@@ -1,0 +1,39 @@
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../mult_model_old_cegis.skh";
+//derivative computation for a polynomial represented by coefficient list
+
+int[n] toBase(int z){
+	//write z in base BASE
+	int[n] out =0;
+	int sum =z;
+	for (int i=0;i<n;i++){
+		out[i] = sum % BASE;
+		sum = sum/BASE;
+	}
+	return out;
+}
+harness void main(int[n][k] p){
+	int[2*n][k] out1 = 0;
+	for(int i=0;i<k-1;i++){
+		out1[i] = mmul(toBase(i+1),p[i+1]);
+		if(disableAssert) return;
+	}
+	int[2*n][k] out2 = 0;
+	for(int i=??;{|i  (< | <= | > | >=) (??*k (+ | -) ??) |};i++){
+		out2[i] = mmul(p[{| ??*i (+ | -) ?? |}],toBase({| ??*i (+ | -) ?? |}));
+		if(disableAssert) return;
+	}
+
+	//assert(out1 == out2);
+	guardAssertion(out1 == out2);
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}
+

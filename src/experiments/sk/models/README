@@ -1,0 +1,17 @@
+The ".skh" files in the main folder provide the abstracted models with required properties.
+
+The actual sketches with and without model are inside model_usage and moresketchified_model_usage folders. The sketches for one time 
+verification of models (Second formula in the paper) are in the folder ./model_verification
+
+E.g. The square root based primality test sketch can be found in:  
+
+./moresketchified_model_usage/primality_sqrt/model.sk --Uses Model for sqrt function from Sketch header file: ./sqrt_model.skh
+
+./moresketchified_model_usage/primality_sqrt/nomodel_binarysearch.sk --Uses actual implementation of the sqrt function based on binary search
+
+To synthesize these just run 
+>sketch <sketch-filename> 
+e.g. 
+>sketch ./moresketchified_model_usage/primality_sqrt/model.sk
+
+The verification of the square root model is done by running corresponding sketch file: /model_verification/binarysearch_models_sqrt/check.sh

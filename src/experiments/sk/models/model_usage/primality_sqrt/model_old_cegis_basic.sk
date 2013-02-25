@@ -1,0 +1,33 @@
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../sqrt_model_old_cegis.skh";
+
+harness void main(int p){
+	bit oldres = 1;
+	if(p<=1) oldres = 0;
+	else{
+		for(int i=2;i<p;i++){
+			if(p%i == 0) oldres=0;
+		}
+	}
+
+	bit newres = 1;
+	if(p<=1) newres=0;
+	else{
+		int temp = msqrt({| (??%2)*p (+|-) (??%2) |});
+		if(disableAssert) return;
+		for(int i=2;{| i (< | > | <= | >=) temp |};i++){
+			if(p%i == 0) newres=0;
+		}
+	}
+	//assert(oldres==newres);
+	guardAssertion(oldres==newres);
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

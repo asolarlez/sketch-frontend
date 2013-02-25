@@ -1,0 +1,37 @@
+
+
+int[n][n] matpufbase(int[n][n] AR,int Ak,int[n][n] BR,int Bk);
+int matpufexp(int[n][n] AR,int Ak,int[n][n] BR,int Bk);
+
+int[n][n] mmatmulbase(int[n][n] AR,int Ak,int[n][n] BR,int Bk){
+	int[n][n] rv = matpufbase(AR,Ak,BR,Bk);
+	//if(AR==BR){
+	//assert(AR!=BR || rv==AR);
+	disableAssertion(AR!=BR || rv==AR);
+	if(disableAssert) return 0;
+	//}
+	return rv;
+}
+int mmatmulexp(int[n][n] AR,int Ak,int[n][n] BR,int Bk){
+	int rv = matpufexp(AR,Ak,BR,Bk);
+	/*if(AR==BR){
+		assert(rv==(Ak+Bk));
+	}*/
+	//assert(AR != BR || rv==Ak+Bk);
+	disableAssertion(AR != BR || rv==Ak+Bk);
+	if(disableAssert) return 0;
+	return rv;
+}
+
+mat mmatmul(mat A,mat B){
+	int[n][n] base = mmatmulbase(A.R,A.k,B.R,B.k);
+	int exp = A.k + B.k;//mmatmulexp(A.R,A.k,B.R,B.k);
+	mat rv = new mat(R=base,k=exp);
+	return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

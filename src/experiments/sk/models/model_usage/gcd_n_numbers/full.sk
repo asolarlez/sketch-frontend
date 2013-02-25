@@ -1,0 +1,52 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --bnd-cbits 3 ";
+int N = 5;
+
+// synthesize algorithm for computing gcd of N numbers
+harness void multi_gcd(int[N] nums){
+	
+	for(int i=0; i<N; i++)
+	  if(nums[i] == 0) return;	
+	if(N<2) return;        
+
+	int result = gcd(nums[0], nums[1]);
+	for(int i =??; i<{| N | N-1 | N-2 |}; i++){
+	  result = gcd({| result | nums[i]|}, {| result | nums[i]|});
+	}
+
+
+	for(int i=0; i<N; i++)
+	 assert nums[i] % result== 0;
+	
+	for(int i=result+1; i <= nums[0]; i++)
+	 {
+	  bit divisible = 1;
+	  for(int j=0; j<N; j++)
+             divisible = divisible && (nums[j] %i == 0);
+      assert !divisible;
+	 }
+
+}
+
+int gcd(int a, int b){
+    int rv = 0;
+    bit more = 1;
+    for(int i={|a|b|}; {| i (<|>|<=|>=) (a|b|??) |} && more; i--){
+    if(a%i ==0 && b%i==0) {
+       rv = i;
+       more = 0;
+ }
+}
+
+    if(b == 1 || a == 1)
+    	 assert rv == 1;
+    else{
+        assert a % rv == 0;
+    	assert b % rv == 0;
+		assert rv != 0;
+		for(int i=rv+1; i<=a; i++){
+		 assert a %i != 0 || b %i != 0;
+		}
+    }
+
+	return rv;
+}

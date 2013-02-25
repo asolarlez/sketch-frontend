@@ -1,0 +1,28 @@
+int loguf(int a);
+
+model int log(int a){
+    int rv = loguf(a);
+
+    if(a == 0 || a == 1)
+    {
+       assert rv == 0;
+    }
+    else{
+    int l = 1, r = 1;
+    for(int i=0; i<rv; i++)
+      l = l * 2;
+   
+    r = l * 2;
+
+    assert l <= a;
+    assert r > a;
+   }
+    return rv;
+}
+
+int pow(int a, int b){
+    int result = 1;
+    for(int i=0; i<b; i++)
+       result = result * a;
+    return result;
+}

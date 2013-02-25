@@ -1,0 +1,29 @@
+pragma options "--bnd-inline-amnt 1 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 3";
+int N=5;
+include "../../sortfull_model.skh";
+include "../../generators.skh";
+generator int abs(int x){
+	if(x<0) return -x;
+	else return x;
+}
+generator int min(int x,int y){
+	if(x < y) return x;
+	else return y;
+}
+harness void main(int[N] arr){//find closest pair distance in arr
+	if(N<2) return;
+	int currmin = abs(arr[1] - arr[0]);
+	for(int i=0;i<N;++i){
+		for(int j=i+1;j<N;++j){
+			currmin = min(abs(arr[j]-arr[i]),currmin);
+		}
+	}
+	
+	int[N] sarr = msort(arr);
+
+	int currmin2 = abs(linexp(2,{sarr[??],sarr[??]}));
+	for(int i=??;{|i  (< | <= | > | >=) (??*N (+ | -) ??) |};i=linexp(2,{i,??})){
+		currmin2 = min(abs(linexp(2,{sarr[i+??],sarr[i]})),currmin2);
+	}
+	assert(currmin == currmin2);
+}

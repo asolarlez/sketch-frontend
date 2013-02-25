@@ -1,0 +1,62 @@
+pragma options "--bnd-inbits 8 --bnd-cbits 3 --bnd-unroll-amnt 256 --bnd-inline-amnt 3";
+include "../../generators.skh";
+include "../../sqrt_model.skh";
+int NUM=5;
+@Native("{ _out = (int)sqrt((double)i); }")
+int sqrtuf(int i);
+
+model int msqrt(int i){
+    int rv = sqrtuf(i);
+    if(i==0){
+        assert rv == 0;
+    }
+    
+    assert rv*rv <= i;
+    assert (rv+1)*(rv+1) > i;
+    return rv;
+}
+
+
+harness void main(int p){
+    bit oldres = 1;
+    if(p<=1) oldres = 0;
+    else{
+        for(int i=2;i<p;i++){
+            if(p%i == 0) oldres=0;
+        }
+    }
+
+    bit newres = 1;
+    if(p<=1) newres=0;
+    else{
+        int temp = msqrt(p);
+        // if(p%?? == 0){ newres = 0; }
+        // if(p%?? == 0){ newres = 0; }
+        if(p>??){   
+            int q=0;
+            minrepeat{
+                if(p%?? == 0){ newres = 0; }
+                ++q; assert q < NUM;
+            }
+            int i=??;
+            int qq = linexp(2, {temp, ??}) / ??;
+            while(i < qq){
+                q=0;
+                minrepeat{
+                  int t = linexp(2, {i, ??});
+                  if(p%t == 0) newres = 0;
+                  ++q; assert q < NUM;
+                }
+                // if((p%(6*i+1))==0) newres = 0;
+                // if((p%(6*i-1))==0) newres = 0;
+                i = i+1;
+            }
+            int bnd = ??;
+            minimize(bnd);
+            if(p<256){ assert i < bnd; }
+        }
+    }
+    //assert(oldres==newres);
+    assert(oldres==newres);
+}
+

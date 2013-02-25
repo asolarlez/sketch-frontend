@@ -1,0 +1,66 @@
+pragma options "--bnd-inbits 10 --bnd-unroll-amnt 64 --bnd-cbits 3 ";
+
+/*int pow(int a, int b){
+    int result = 1;
+    for(int i=0; i<b; i++)
+       result = result * a;
+    return result;
+}
+
+int log(int a){
+ if(a == 0) return 0;
+ for(int i=0; i<a; i++){
+  if(pow(2,i)>=a) return i;
+ }
+}*/
+
+generator int linexp(int N, int[N] vals){
+    int[N+1] t;
+    t[0]= (??-2)*vals[0];
+    int i=1;
+    repeat(N-1){
+        t[i] = t[i-1] + (??-2)*vals[i];
+        i = i+1;
+    }
+    return t[i-1];
+}
+
+int pow(int a, int b){
+    int result = 1;
+    for(int i=0; i<b; i++)
+       result = result * a;
+    return result;
+}
+
+int log(int a){
+ if(a == 0) return 0;
+ int top = 0;
+ int bottom = a;
+ while({| top (< | <= | > | >= | != | == ) bottom |}){
+ int mid = top + bottom / 2;
+ if(pow(2,mid) > a) bottom = linexp(2, {mid,??});
+ if(pow(2,mid) < a) top = linexp(2, {mid,??});
+ if(pow(2,mid) == a) return mid;
+
+}	     
+}
+
+harness int mlog(int a){
+    int rv = log(a);
+
+    if(a == 0 || a == 1)
+    {
+       assert rv == 0;
+    }
+    else{
+    int l = 1, r = 1;
+    for(int i=0; i<rv; i++)
+      l = l * 2;
+   
+    r = l * 2;
+
+    assert l <= a;
+    assert r > a;
+   }
+    return rv;
+}

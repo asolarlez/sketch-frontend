@@ -1,0 +1,40 @@
+int loguf(int a);
+
+int log(int a){
+    int rv = loguf(a);
+
+    if(a == 0 || a == 1)
+    {
+       //assert rv == 0;
+	   disableAssertion(rv == 0);
+	   if(disableAssert) return 0;
+    }
+    else{
+    int l = 1, r = 1;
+    for(int i=0; i<rv; i++)
+      l = l * 2;
+   
+    r = l * 2;
+
+    //assert l <= a;
+	disableAssertion(l <= a);
+	if(disableAssert) return 0;
+    //assert r > a;
+	disableAssertion(r > a);
+	if(disableAssert) return 0;
+   }
+    return rv;
+}
+
+int pow(int a, int b){
+    int result = 1;
+    for(int i=0; i<b; i++)
+       result = result * a;
+    return result;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

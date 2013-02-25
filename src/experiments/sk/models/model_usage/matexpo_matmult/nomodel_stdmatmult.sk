@@ -1,0 +1,40 @@
+include "options.skh";
+
+mat matmul(mat A,mat B){
+	mat rv = new mat(R=A.R,k=1);
+	for(int i=0;i<n;i++){
+		for(int j=0;j<n;j++){
+			rv.R[i][j]=0;
+			for (int k=0;k<n;k++){
+				rv.R[i][j] = (rv.R[i][j] + (A.R[i][k] * B.R[k][j])%BASE)%BASE;
+			}
+		}
+	}
+	rv.k =1;
+	return rv;
+}
+
+harness void main(int[n][n] T,bit[gk] p){//A^p where p is given in binary representation
+	int pval = 0;
+	int p2i =1;
+	for(int i=0;i<gk;i++){
+		if(p[i]) pval = pval + p2i ;
+		p2i = p2i *2;
+	}
+
+	mat A = new mat(R=T,k=1);
+	mat res = new mat(R=T,k=0);
+	for(int i=0;i<pval;i++){
+		res = matmul(res,A);
+	}
+	
+	mat res1 = new mat(R=T,k=0);
+	mat tmp = new mat(R=T,k=1);//A
+	for(int i=??;{| i (< | > | <= | >=) {| (??)*gk (+|-) (??) |} |};i={| i (+|-) ??|} ){
+		if(p[i]) res1 = matmul({| res1 | tmp | A |},{| res1 | tmp | A |});
+		tmp = matmul({| tmp | A |},{| tmp | A |});
+	}
+
+	assert(res1.R == res.R);
+	assert(res1.k == res.k);
+}

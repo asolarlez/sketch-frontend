@@ -1,0 +1,35 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8";
+int N =5;
+
+int[N] sort(int[N] input){
+   int[N] output=input;
+   int[N] done = 0;
+   int k=0;
+   for(int i=0; i<N; ++i){
+      for(int j=i+1; j<N; ++j){
+         if( output[j]< output[i]){
+            int tmp = output[j];
+            output[j] = output[i];
+            output[i] = tmp;
+         }
+      }
+   }
+   return output;
+}
+
+
+harness int[N] msort(int[N] x){
+	int[N] rv = sort(x);
+	for(int i=0;i<N-1;i++)
+		assert(rv[i] <= rv[i+1]);
+	return rv;
+}
+
+/*int[N] g(int[N] x){
+	return x;
+}
+
+harness void checkg(int[N] x1,int[N] x2){
+	if(g(x1) == g(x2))
+		assert(sort(x1) == sort(x2));
+}*/

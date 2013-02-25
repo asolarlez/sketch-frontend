@@ -1,0 +1,125 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 2 --bnd-cbits 3 ";
+
+
+int BASE = 4;
+
+
+int[2*N] mult(int N, int[N] x, int[N] y){
+
+    int[2*N] out = 0;
+    for(int i=0; i<N; ++i){
+        for(int j=0; j<N; ++j){            
+            int tmp = y[i] * x[j];
+            tmp = out[j + i] + tmp;
+            out[j + i] = tmp % BASE;
+            out[j + i + 1] = out[j + i + 1] + (tmp / BASE); 
+        }           
+    }       
+    return out;
+}
+
+
+
+int[2*N] karatsuba(int N, int[N] x, int[N] y)  implements mult  {
+    if(N % 2 != 0){ return mult(N, x, y); }
+    int No2 = N/2;
+    int[No2] x1, x2, y1, y2;
+    int[N]  a=0, b=0, c=0;
+    int[2*N] out = 0;
+    
+    x1=x[0::No2];  x2=x[No2::No2];
+    y1=y[0::No2];  y2=y[No2::No2];
+    
+    a = karatsuba(No2, x1, y1);
+    b = karatsuba(No2, x2, y2);
+    c = karatsuba(No2, poly1(No2, x1,x2,y1,y2), poly1(No2, x1,x2,y1,y2));
+    
+    repeat(??){
+        int[N] t = {| a | b | c |};
+        out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , {|N | No2 | 0|} )  );    
+    }
+    out = normalize(2*N, out);
+    return out;
+}
+
+
+int[N] plus(int N, int[N] x, int[N] y){ 
+    int[N] out = 0;
+    for(int i = 0; i<N; ++i){
+        int tmp = x[i] + y[i] + out[i];
+        out[i] = tmp % BASE;
+        if(i < N-1){
+            out[i+1] =  tmp / BASE;
+        }
+    }   
+    return out;
+}
+
+int[N] shiftVect(int N, int[N] in, int s){ 
+        int[N] out = 0;
+        for(int i=0; i<N; ++i){
+            if(i >= s){
+                out[i] = in[i-s];
+            }
+        }
+        return out;
+}
+
+int[N] minus(int N, int[N] t){ 
+    int[N] out = 0;
+    for(int i=0; i<N; ++i){
+        out[i] = -t[i]; 
+    }   
+    return out;
+}
+
+
+generator int[N] poly1(int N, int[N] a, int[N] b, int[N] c, int [N] d){
+    int[N] out = 0;
+    if(??){
+        out = plus(N, out, {| a | minus(N,a) |}); 
+    }
+    if(??){
+        out = plus(N, out, {| b | minus(N,b) |}); 
+    }
+    if(??){
+        out = plus(N, out, {| c | minus(N,c) |}); 
+    }
+    if(??){
+        out = plus(N, out, {| d | minus(N,d) |}); 
+    }
+    return out;
+}
+
+void print(int x){  
+    if(x==0){ x = 5; }
+}
+
+
+    
+int sgn(int i){ 
+    return i >= 0 ? 1 : -1; 
+}   
+    
+int[N] normalize(int N, int[N] in){ 
+    int end = N-1;
+    
+    int[N] out = in;
+    int s = 0;
+    bit found = 0;
+    for(int i = 0; i<N; ++i){
+        if(!found && out[end-i]!=0){
+            s = sgn(out[end-i]);
+            found = 1;  
+        }       
+    }
+    for(int i = 0; i<N-1; ++i){
+        if(sgn(out[i]) != s){
+            int t = BASE * s + out[i];
+            out[i] = t;
+            out[i+1] = out[i+1] - s; 
+        }
+    }       
+    return out;
+}
+

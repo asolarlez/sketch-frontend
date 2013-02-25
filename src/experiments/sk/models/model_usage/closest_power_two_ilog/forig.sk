@@ -1,0 +1,46 @@
+include "generators.skh";
+pragma options "--bnd-inbits 4 --bnd-inline-amnt 4 --bnd-unroll-amnt 16 --bnd-cbits 3 ";
+//include "../../ilog_model.skh";
+
+// compute the nearest upper k such that 2**k = a
+
+int N = 5;
+
+harness int log(int a){
+    int rv;
+ if(a == 0) return 0;
+ bit more = 0;
+ for(int i=0; i<a && !more; i++){
+  if(pow(2,i+1)>a){
+  rv = i;
+  more = 1;
+  }
+ }
+
+    if(a == 0 || a == 1)
+    {
+       assert rv == 0;
+    }
+    else{
+    int l = 1, r = 1;
+    for(int i=0; i<rv; i++)
+      l = l * 2;
+   
+    r = l * 2;
+
+    assert l <= a;
+    assert r > a;
+
+   }
+
+
+}
+
+
+
+int pow(int a, int b){
+    int result = 1;
+    for(int i=0; i<b; i++)
+       result = result * a;
+    return result;
+}

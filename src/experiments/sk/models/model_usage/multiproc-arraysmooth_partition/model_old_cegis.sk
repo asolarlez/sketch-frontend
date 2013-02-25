@@ -1,0 +1,42 @@
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../partition_model_old_cegis.skh";
+
+int[N] processarr(int[N] in){
+	int[N] out =0;
+	out[0] = in[0];
+	out[N-1] = in[N-1];
+	for(int j=1;j<N-1;j++){
+		out[j] = (in[j-1]+in[j+1])/2;
+	}
+	return out;
+}
+harness void main(int[N] in){
+
+	int[N] out1 = processarr(in);
+	
+	int[P-1] ps = part();
+	if(disableAssert) return;
+	int[N] out=0;
+	int beg,end; //[beg_i,end_i) to be served by processor i, it also has access to ghost regions: copies of boundary values
+	for (int i=0;i<P;i++){
+		if({| i(<|>|<=|>=) {|??*P (+|-) ??|} |}) end = ps[{| ??*i (+|-) ??|}];
+		else end = N;
+		if({| i(<|>|<=|>=) {|??*P (+|-) ??|} |}) beg = ps[{| ??*i (+|-) ??|}];
+		else beg = 0;
+		for (int j=beg;j<end;j++){
+			if(j ==0 || j==N-1) out[j] = in[j];
+			else out[j] = ({| in[{| j (+|-) ??|}] (+|-) in[{| j (+|-) ??|}] |})/(??+1);//(in[j-1]+in[j+1])/2;;
+		}
+	}
+	//assert(out == out1);
+	guardAssertion(out == out1);
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

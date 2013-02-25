@@ -1,0 +1,32 @@
+
+int gcduf(int a, int b);
+
+int gcd(int a, int b){
+	
+    int rv = gcduf(a,b);
+    if(a ==1 || b == 1){
+	disableAssertion(rv == 1);
+	if(disableAssert) return 0;
+    }else{
+		disableAssertion(rv != 0);
+		if(disableAssert) return 0;
+		disableAssertion(a % rv == 0);
+		if(disableAssert) return 0;
+		disableAssertion(b % rv == 0);
+		if(disableAssert) return 0;
+		disableAssertion(rv != 0);
+		if(disableAssert) return 0;
+		for(int i=rv+1; i<=a; i++){
+			disableAssertion(a %i != 0 || b %i != 0);
+			if(disableAssert) return 0;
+		}
+    }
+
+    return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}
