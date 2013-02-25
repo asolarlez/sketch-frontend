@@ -1034,13 +1034,16 @@ public class PartialEvaluator extends FEReplacer {
             if(vcond.isBottom()){
                 int remIters = this.MAX_UNROLL - iters;
                 if(remIters > 0){
-                    
-                    Statement body = stmt.getBody();
-                    if (stmt.getIncr() != null){
-                        body = new StmtBlock(body, stmt.getIncr());
-                    }
-                    
-                    Statement cur =
+                    if (stmt.isCanonical()) {
+                        Statement nbody =
+                                new StmtIfThen(stmt, stmt.getCond(), stmt.getBody(), null);
+                        for (int i = 0; i < remIters; ++i) {
+                            nbody.accept(this);
+                            if (stmt.getIncr() != null) {
+                                stmt.getIncr().accept(this);
+                            }
+                        }
+                        Statement cur =
                             new StmtAssert(
                                     stmt,
                                     new ExprUnary("!", stmt.getCond()),
@@ -1048,12 +1051,31 @@ public class PartialEvaluator extends FEReplacer {
                                             MAX_UNROLL +
                                             " times, but apparently that was not enough. Use the --bnd-unroll-amnt flag for better results.",
                                     false);
-                    
-                    for(int i=0; i<remIters; ++i){                      
-                        cur = new StmtIfThen(stmt, stmt.getCond(), new StmtBlock(body, cur), null);                         
+                        cur.accept(this);
+                    } else {
+                        Statement body = stmt.getBody();
+                        if (stmt.getIncr() != null) {
+                            body = new StmtBlock(body, stmt.getIncr());
+                        }
+
+                        Statement cur =
+                                new StmtAssert(
+                                        stmt,
+                                        new ExprUnary("!", stmt.getCond()),
+                                        stmt.getCx() +
+                                                ": This loop was unrolled " +
+                                                MAX_UNROLL +
+                                                " times, but apparently that was not enough. Use the --bnd-unroll-amnt flag for better results.",
+                                        false);
+
+                        for (int i = 0; i < remIters; ++i) {
+                            cur =
+                                    new StmtIfThen(stmt, stmt.getCond(), new StmtBlock(
+                                            body, cur), null);
+                        }
+
+                        cur.accept(this);
                     }
-                    
-                    cur.accept(this);                   
                     /*
                     
                     String doneNm = this.varGen.nextVar("done");
@@ -1512,7 +1534,7 @@ public class PartialEvaluator extends FEReplacer {
 
     public Object visitStmtWhile(StmtWhile stmt)
     {
-        StmtFor sf = new StmtFor(stmt, null, stmt.getCond(), null, stmt.getBody());
+        StmtFor sf = new StmtFor(stmt, null, stmt.getCond(), null, stmt.getBody(), false);
         Object t =  sf.accept(this);
         if(t instanceof StmtFor){
             sf = (StmtFor) t;

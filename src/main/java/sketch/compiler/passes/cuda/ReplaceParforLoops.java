@@ -76,7 +76,8 @@ public class ReplaceParforLoops extends FEReplacer {
         final StmtVarDecl lowLevelInit =
                 new StmtVarDecl(iterVarDecl, iterVarDecl.getType(0), iterVarName, start);
         Statement loop =
-                new StmtFor(stmtParfor, lowLevelInit, cond, update, stmtParfor.getBody());
+                new StmtFor(stmtParfor, lowLevelInit, cond, update, stmtParfor.getBody(),
+                        true);
 
         addStatement(new CudaSyncthreads(stmtParfor.getCx()));
         addStatement(new StmtVarDecl(stmtParfor, TypePrimitive.inttype, byTmpvar, rangeBy));

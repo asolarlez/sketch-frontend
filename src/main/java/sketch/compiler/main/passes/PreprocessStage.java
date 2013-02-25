@@ -95,8 +95,6 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
 
 
-        prog.debugDump("Before Preproc");
-
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,

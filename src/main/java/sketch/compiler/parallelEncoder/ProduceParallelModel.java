@@ -341,7 +341,9 @@ public class ProduceParallelModel extends FEReplacer {
 			StmtVarDecl idxDecl = new StmtVarDecl(fun, TypePrimitive.inttype, idxNm, ExprConstInt.zero);
 			StmtAssign idxIncr = new StmtAssign(idx, new ExprBinary(idx, "+", ExprConstInt.one));
 			Expression comp = new ExprBinary(null, ExprBinary.BINOP_LT, idx, nthreads);
-/**/		StmtFor assign = new StmtFor(idxDecl, idxDecl, comp, idxIncr, new StmtBlock((FEContext) null, assignments));
+            /**/StmtFor assign =
+                    new StmtFor(idxDecl, idxDecl, comp, idxIncr, new StmtBlock(
+                            (FEContext) null, assignments), true);
 
 			bodyL.add(assign);
 		}
@@ -377,7 +379,7 @@ public class ProduceParallelModel extends FEReplacer {
 			Statement idxbDecl = new StmtVarDecl(fun, TypePrimitive.inttype, idxNmb, ExprConstInt.zero);
 			Expression idxbCond = new ExprBinary(idxb, "<", nthreads);
 			Statement idxbIncr = new StmtAssign(idxb, new ExprBinary(idxb, "+", ExprConstInt.one));
-			bodyL.add(new StmtFor(idxbDecl, idxbDecl, idxbCond, idxbIncr, new StmtBlock((FEContext) null, conditCF)));
+			bodyL.add(new StmtFor(idxbDecl, idxbDecl, idxbCond, idxbIncr, new StmtBlock((FEContext) null, conditCF), true));
 		}
 		///Now, before we do the recursive call, we will build the parameter list, so we know what parameters to pass.
 		///The parameters include both the globals and the locals.
@@ -586,7 +588,8 @@ public class ProduceParallelModel extends FEReplacer {
 		Statement forInit = new StmtVarDecl((FEContext) null, TypePrimitive.inttype, idx.getName(), ExprConstInt.zero );
 		Statement forIncr = new StmtAssign(idx, new ExprBinary(idx, "+", ExprConstInt.one));
 		Expression forCond = new ExprBinary(null,  ExprBinary.BINOP_LT, idx, nthreads);
-		bodyL.add(new StmtFor(forInit, forInit, forCond, forIncr, new StmtBlock((FEContext) null, forBody)));
+        bodyL.add(new StmtFor(forInit, forInit, forCond, forIncr, new StmtBlock(
+                (FEContext) null, forBody), true));
 		bodyL.add(new StmtAssert(new ExprVar((FEContext) null, noDeadlock), "There is a possible deadlock in the code.", false));
 		bodyL.add(new StmtAssert(new ExprBinary(new ExprVar((FEContext) null, STEP), "<", SchedLen) , "The schedule is too short. Not all threads had time to terminate.", false));
 		bodyL.add(new StmtAssign(rExpr, new ExprVar((FEContext) null, tmpOut ) ));

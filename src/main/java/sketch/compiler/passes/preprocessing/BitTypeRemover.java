@@ -467,7 +467,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 			new ExprVar(body,var)));
 		Expression cond=new ExprBinary(body,ExprBinary.BINOP_LT,
 			new ExprVar(body,var),ubound);
-		return new StmtFor(body,init,cond,incr,body);
+        return new StmtFor(body, init, cond, incr, body, false);
 	}
 
 	private long computeMask(ExprArrayInit exp, int word, int ws)

@@ -54,7 +54,8 @@ public class VariableDeclarationMover extends FEReplacer
         if(newBody == stmt.getBody())
             return stmt;
         return new StmtFor(stmt, stmt.getInit(), stmt.getCond(),
-        	stmt.getIncr(), newBody);
+ stmt.getIncr(), newBody,
+                stmt.isCanonical());
 	}
 
 	public Object visitStmtVarDecl(StmtVarDecl stmt)

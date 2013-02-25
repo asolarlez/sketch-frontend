@@ -96,7 +96,8 @@ public class BlockifyRewriteableStmts extends SymbolTableVisitor {
 
 		symtab = oldSymtab;
 		return blockify (new StmtFor (stmt,
-				stmt.getInit (), stmt.getCond (), stmt.getIncr (), newBody));
+ stmt.getInit(), stmt.getCond(), stmt.getIncr(),
+                newBody, stmt.isCanonical()));
 	}
 
 	public Object visitStmtFork (StmtFork stmt) {

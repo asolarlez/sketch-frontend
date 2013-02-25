@@ -161,8 +161,11 @@ abstract public class varState {
                                 vtype.BOTTOM(val.toString() + "[" + i + "]"), vtype);
 	                }
 				}else{
-				    update(vtype.CONST(0), val, vtype);
-					cv =vtype.CONST(0);
+                    cv = null;
+                    if (lv > 0) {
+                        update(vtype.CONST(0), val, vtype);
+                        cv = vtype.CONST(0);
+                    }
 					for(int i=1; i<lv ; ++i){                  
 	                    update(vtype.CONST(i), cv, vtype);
 	                }

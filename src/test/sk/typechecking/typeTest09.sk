@@ -5,7 +5,7 @@ struct Foo{
 int a=5;
 int b = a+10;
 Foo f = new Foo(x=a);
-int c = b / f.x;
+int c = b / f.x; //TypeError
 
 harness void main(int x){
     c = f.x+1;

@@ -575,7 +575,7 @@ for_statement returns [Statement s]
 	:	t:TK_for LPAREN a=for_init_statement SEMI
 		(x=right_expr | { x = ExprConstInt.one; })
 		SEMI b=for_incr_statement RPAREN c=pseudo_block
-		{ s = new StmtFor(getContext(t), a, x, b, c); }
+		{ s = new StmtFor(getContext(t), a, x, b, c, false); }
 	;
 
 for_init_statement returns [Statement s] { s = null; }

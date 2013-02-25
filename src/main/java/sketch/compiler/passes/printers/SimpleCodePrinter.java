@@ -104,7 +104,8 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitStmtFor(StmtFor stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
-		printLine("for("+stmt.getInit()+"; "+stmt.getCond()+"; "+stmt.getIncr()+")");
+        printLine("for(" + stmt.getInit() + "; " + stmt.getCond() + "; " +
+                stmt.getIncr() + ")" + (stmt.isCanonical() ? "/*Canonical*/" : ""));
 		printIndentedStatement(stmt.getBody());
 		return stmt;
 	}

@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.Map.Entry;
+import java.util.Stack;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -68,7 +68,7 @@ public class MinimizeLocals extends FEReplacer {
             newIncr == stmt.getIncr() && newBody == stmt.getBody())
             return stmt;
         return new StmtFor(stmt, newInit, newCond, newIncr,
-                           newBody);
+ newBody, stmt.isCanonical());
     }
 
 

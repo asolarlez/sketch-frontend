@@ -159,7 +159,7 @@ public class EliminateReorderBlocks extends FEReplacer {
 				execIterDecl,
 				new ExprBinary (execIter, "<", len),
 				new StmtExpr (new ExprUnary (stmt, ExprUnary.UNOP_PREINC, execIter)),
-				new StmtBlock (cx, chooseExec.getSecond ()));
+                        new StmtBlock(cx, chooseExec.getSecond()), true);
 
 		return new StmtBlock (cx, pickedDecl, choicesDecl, chooseIterDecl,
 				choiceLoop, checkChoices, execLoop);

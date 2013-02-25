@@ -48,7 +48,7 @@ public class PropagateFinals extends FEReplacer {
          newIncr == stmt.getIncr() && newBody == stmt.getBody())
          return stmt;
      return new StmtFor(stmt, newInit, newCond, newIncr,
-                        newBody);	 
+ newBody, stmt.isCanonical());
     }
 	
 	

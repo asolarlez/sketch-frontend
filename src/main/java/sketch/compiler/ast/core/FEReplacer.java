@@ -597,7 +597,7 @@ public class FEReplacer implements FEVisitor
             newIncr == stmt.getIncr() && newBody == stmt.getBody())
             return stmt;
         return new StmtFor(stmt, newInit, newCond, newIncr,
-                           newBody);
+ newBody, stmt.isCanonical());
     }
 
     public Object visitStmtIfThen(StmtIfThen stmt)

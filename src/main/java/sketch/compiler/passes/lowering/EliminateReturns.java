@@ -220,11 +220,15 @@ public class EliminateReturns extends SymbolTableVisitor{
             cond = new ExprBinary(cond, "&&", new ExprBinary(
                     new ExprVar(cond, getReturnFlag()), "==",
                     getFalseLiteral()) );
-            stmt=new StmtFor(stmt,stmt.getInit(),cond,stmt.getIncr(),body);
+            stmt =
+                    new StmtFor(stmt, stmt.getInit(), cond, stmt.getIncr(), body,
+                            stmt.isCanonical());
             return super.visitStmtFor(stmt);
         }else{
             if(body!=stmt.getBody() || cond != stmt.getCond())
-                stmt=new StmtFor(stmt,stmt.getInit(),cond,stmt.getIncr(),body);
+                stmt =
+                        new StmtFor(stmt, stmt.getInit(), cond, stmt.getIncr(), body,
+                                stmt.isCanonical());
             return conditionWrap((Statement) super.visitStmtFor(stmt));
         }
         

@@ -424,8 +424,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     public Object visitExprUnary(ExprUnary expr) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprUnary");
-
-        Type ot = getType((Expression) expr.getExpr().accept(this));
+        expr = (ExprUnary) super.visitExprUnary(expr);
+        Type ot = getType((Expression) expr.getExpr());
         boolean isArr = false;
         if (ot instanceof TypeArray) {
             ot = ((TypeArray) ot).getBase();
@@ -792,7 +792,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
                 newIncr == stmt.getIncr() && newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt, newInit, newCond, newIncr, newBody);
+        return new StmtFor(stmt, newInit, newCond, newIncr, newBody, stmt.isCanonical());
     }
 
     private boolean isIncrByOne(Statement incr) {

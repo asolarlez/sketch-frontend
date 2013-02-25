@@ -144,7 +144,8 @@ public class DisambiguateUnaries extends SymbolTableVisitor
         if (newInit == stmt.getInit() && newBody == stmt.getBody() && inc == stmt.getIncr())
             return stmt;
         return new StmtFor(stmt, newInit, stmt.getCond(),
-                           inc, newBody);
+ inc, newBody,
+                stmt.isCanonical());
     }
 
     public Object visitStmtIfThen(StmtIfThen stmt)

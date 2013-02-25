@@ -135,7 +135,7 @@ public class BoundUnboundedLoops extends FEReplacer {
 				new StmtVarDecl (cx, TypePrimitive.inttype, iterName, ExprConstInt.zero),
 				new ExprBinary (iter, "<", maxIterations),
 				new StmtExpr (new ExprUnary (cx, ExprUnary.UNOP_POSTINC, iter)),
-				wrappedBody);
+                        wrappedBody, true);
 
 		return new StmtBlock (cx, loop, makeTerminatedAssertion (term));
 	}

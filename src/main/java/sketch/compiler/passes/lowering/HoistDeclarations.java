@@ -72,7 +72,8 @@ public class HoistDeclarations extends FEReplacer {
 		Statement newBody = (Statement) oldBody.accept (this);
 
 		return (newBody == oldBody) ? sf :
-			new StmtFor (sf, sf.getInit (), sf.getCond (), sf.getIncr (), newBody);
+ new StmtFor(sf, sf.getInit(), sf.getCond(),
+                sf.getIncr(), newBody, sf.isCanonical());
 	}
 
 	public Object visitStmtVarDecl (StmtVarDecl svd) {

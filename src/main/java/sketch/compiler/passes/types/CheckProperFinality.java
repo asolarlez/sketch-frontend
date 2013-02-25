@@ -10,14 +10,21 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.SymbolTable.Finality;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtEmpty;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.TypeErrorException;
@@ -157,6 +164,120 @@ public class CheckProperFinality extends SymbolTableVisitor {
     public Object visitStmtAssign(StmtAssign sa) {
         sa.getLHS().accept(markAsNoFinal);
         return sa;
+    }
+
+    public Object visitStmtFor(StmtFor stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
+        boolean isCanonical = false;
+
+        Statement newInit = null;
+        String ivname = null;
+        if (stmt.getInit() != null) {
+            newInit = (Statement) stmt.getInit().accept(this);
+            if (newInit instanceof StmtVarDecl) {
+                StmtVarDecl svd = (StmtVarDecl) newInit;
+                if (svd.getNumVars() == 1 && svd.getType(0).equals(TypePrimitive.inttype))
+                {
+                    ivname = svd.getName(0);
+                    isCanonical = true;
+                }
+            }
+        }
+
+        final String fivname = ivname;
+        class HasOtherVars extends FEReplacer {
+            public boolean hasVar = false;
+            public boolean hasOtherVars = false;
+
+            public Object visitExprVar(ExprVar ev) {
+                if (ev.getName().equals(fivname)) {
+                    hasVar = true;
+                } else {
+                    hasOtherVars = true;
+                }
+                return ev;
+            }
+
+            void reset() {
+                hasVar = false;
+                hasOtherVars = false;
+            }
+        }
+
+        HasOtherVars hov = new HasOtherVars();
+
+        boolean goodCond = false;
+        Expression newCond = doExpression(stmt.getCond());
+
+        if (ivname != null && newCond instanceof ExprBinary) {
+            ExprBinary eb = (ExprBinary) newCond;
+            if (eb.getOp() == ExprBinary.BINOP_LE || eb.getOp() == ExprBinary.BINOP_LT) {
+                if (eb.getLeft().toString().equals(ivname)) {
+                    eb.getRight().accept(hov);
+                    if (!hov.hasVar) {
+                        goodCond = true;
+                    }
+                }
+            }
+        }
+
+        isCanonical = isCanonical && goodCond;
+
+        Statement tmp = stmt.getBody();
+        Statement newBody = StmtEmpty.EMPTY;
+        if (tmp != null) {
+            newBody = (Statement) tmp.accept(this);
+        }
+
+        /**
+         * If the incr is the only thing that mutates the loop variable, it's ok to treat
+         * it as final within the loop. Also, we can treat the loop as canonical assuming
+         * it has the right form.
+         */
+
+        hov.reset();
+        if (stmt.getIncr() != null) {
+            stmt.getIncr().accept(hov);
+            if (hov.hasOtherVars) {
+                stmt.getIncr().accept(this);
+                isCanonical = false;
+            }
+        }
+
+        if (isCanonical && !stmt.isCanonical()) {
+            if (stmt.getIncr() != null) {
+                Finality f = symtab.lookupFinality(fivname, stmt.getCond());
+                if (f != Finality.NOTFINAL) {
+                    if (stmt.getIncr() instanceof StmtExpr) {
+                        StmtExpr se = (StmtExpr) stmt.getIncr();
+                        if (se.getExpression() instanceof ExprUnary) {
+                            ExprUnary eu = (ExprUnary) se.getExpression();
+                            if (eu.getExpr().toString().equals(ivname)) {
+                                if (eu.getOp() == ExprUnary.UNOP_POSTINC) {
+                                    stmt.makeCanonical();
+                                }
+                                if (eu.getOp() == ExprUnary.UNOP_PREINC) {
+                                    stmt.makeCanonical();
+                                }
+                            }
+                        }
+                    }
+                    if (stmt.getIncr().toString().equals(ivname + " = " + ivname + " + 1"))
+                    {
+                        stmt.makeCanonical();
+                    }
+                    if (stmt.getIncr().toString().equals(ivname + " += 1")) {
+                        stmt.makeCanonical();
+                    }
+                }
+            }
+        }
+
+        symtab = oldSymTab;
+
+        return stmt;
     }
 
     @Override

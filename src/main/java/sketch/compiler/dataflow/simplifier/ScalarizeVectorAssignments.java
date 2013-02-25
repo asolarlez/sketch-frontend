@@ -383,7 +383,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         body = (Statement)body.accept(this);
 
         // Now generate the loop, we have all the parts.
-        return new StmtFor(init, init, cond, incr, body);
+        return new StmtFor(init, init, cond, incr, body, true);
 	}
 
 
@@ -493,7 +493,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
         List<Statement> mainLst = new ArrayList<Statement>();
 
-        mainLst.add(new StmtFor(init, init, cond, incr, body));
+        mainLst.add(new StmtFor(init, init, cond, incr, body, true));
 
 
         if (!(minLen.equals(ltlen))) {
@@ -567,7 +567,8 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
             		Expression cond = new ExprBinary(ExprBinary.BINOP_LT, index, len);
             		Statement incr = new StmtAssign(index, new ExprBinary(index, "+", new ExprConstInt(1)));
             		
-            		Statement forStmt = new StmtFor(stmt, init, cond, incr, bodyBlock);
+                    Statement forStmt =
+                            new StmtFor(stmt, init, cond, incr, bodyBlock, true);
             		
             		/****/ //copy-pasted from above
             		//List<Statement> bodyLst = new ArrayList<Statement>();

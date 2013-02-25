@@ -4,8 +4,8 @@ struct Foo{
 
 int a=5;
 int b = a+10;
-Foo f = new Foo(x=b);
-int c = 0;
+Foo f = new Foo(x=b); // TypeError
+int c = 0; 
 
 harness void main(int x){
     c = f.x+1;

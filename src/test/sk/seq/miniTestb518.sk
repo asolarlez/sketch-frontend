@@ -1,0 +1,8 @@
+
+int getLen([int n], int[n] x){
+    return n;
+}
+
+harness void main(int n, int[n] x){
+    assert !(getLen(x) == n+??);
+}

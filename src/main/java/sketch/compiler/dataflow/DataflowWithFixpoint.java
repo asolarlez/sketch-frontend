@@ -161,6 +161,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
     		state.popLevel(lvl);
     	}
     	if(nbody == null) return null;
-    	return isReplacer?  new StmtFor(stmt, ninit, ncond, nincr, nbody) : stmt;
+        return isReplacer ? new StmtFor(stmt, ninit, ncond, nincr, nbody,
+                stmt.isCanonical()) : stmt;
     }
 }

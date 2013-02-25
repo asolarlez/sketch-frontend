@@ -241,7 +241,7 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     		state.popLevel(lvl);
     	}
     	if(nbody == null && ninit == null && nincr == null) return null;
-    	return new StmtFor(stmt, ninit, ncond, nincr, nbody);
+        return new StmtFor(stmt, ninit, ncond, nincr, nbody, stmt.isCanonical());
     }
 
 }

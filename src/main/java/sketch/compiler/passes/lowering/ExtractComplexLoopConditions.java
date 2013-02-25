@@ -91,7 +91,7 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 			    assert cnd.getLeft() instanceof ExprVar : "For stencils, all loop conditions must be of the form i < X where X is loop invariant";
 			    
 			    bl.add(new StmtVarDecl(sf.getCond(), TypePrimitive.inttype, nm, cnd.getRight()));
-			    bl.add(new StmtFor(sf, sf.getInit(), new ExprBinary(cnd, cnd.getOp(), cnd.getLeft(), tmpvar), sf.getIncr(), (Statement)sf.getBody().accept(this)));
+			    bl.add(new StmtFor(sf, sf.getInit(), new ExprBinary(cnd, cnd.getOp(), cnd.getLeft(), tmpvar), sf.getIncr(), (Statement)sf.getBody().accept(this), true));
 			}else{
 			    List<Statement> lbody = new ArrayList<Statement>();
 	            

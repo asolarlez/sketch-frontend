@@ -1358,7 +1358,7 @@ int min(int a, int b){
   if(a>=b) return b;
   else return a;
 }
-pragma options "--bnd-inbits 2 --bnd-unroll-amnt 4 --bnd-arr-size 4";
+pragma options "--bnd-inbits 2 --bnd-unroll-amnt 4 --bnd-arr-size 4  --bnd-int-range 125";
 
 MultiType createMTFromInt(int x){
   return new MultiType(val = x, flag=INTEGER);

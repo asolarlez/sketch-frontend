@@ -40,32 +40,45 @@ public class StmtFor extends Statement
 {
     private Expression cond;
     private Statement init, incr, body;
+    /**
+     * A canonical for loop is one of the form for(int idx = a; idx < b; ++idx){ body; }
+     * where body does not modify idx. Canonical loops can be safely translated into:
+     * for(int t = 0; t<UNROLL_AMNT; ++t){ idx = a + t; if(idx < b){ body; } }
+     */
+    private boolean isCanonical;
 
     /** Creates a new for loop. */
     public StmtFor(FENode context, Statement init, Expression cond,
-                   Statement incr, Statement body)
+ Statement incr,
+            Statement body, boolean isCanonical)
     {
         super(context);
         this.init = init;
         this.cond = cond;
         this.incr = incr;
         this.body = body;
+        this.isCanonical = isCanonical;
     }
 
     /** Creates a new for loop.
      * @deprecated
      */
     public StmtFor(FEContext context, Statement init, Expression cond,
-                   Statement incr, Statement body)
+ Statement incr,
+            Statement body, boolean isCanonical)
     {
         super(context);
         this.init = init;
         this.cond = cond;
         this.incr = incr;
         this.body = body;
+        this.isCanonical = isCanonical;
     }
 
-    /** Creates a for loop of the form for(int iterName=0; iterName &lt; upperBound; ++iterName){body} */
+    /**
+     * Creates a canonical for loop of the form for(int iterName=0; iterName &lt;
+     * upperBound; ++iterName){body}
+     */
     public StmtFor(String iterName, Expression upperBound, Statement body)
     {
         super(upperBound);
@@ -74,6 +87,7 @@ public class StmtFor extends Statement
         this.cond = new ExprBinary(upperBound, ExprBinary.BINOP_LT, iterVar, upperBound);
         this.incr = new StmtAssign(iterVar,  new ExprBinary(upperBound, ExprBinary.BINOP_ADD, iterVar, ExprConstInt.one));
         this.body = body;
+        isCanonical = true;
     }
 
 
@@ -94,6 +108,14 @@ public class StmtFor extends Statement
     public Statement getIncr()
     {
         return incr;
+    }
+
+    public boolean isCanonical() {
+        return isCanonical;
+    }
+
+    public void makeCanonical() {
+        isCanonical = true;
     }
 
     /** Return the loop body of this. */

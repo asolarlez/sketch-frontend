@@ -5,57 +5,49 @@ package sketch.compiler.parser;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
-import java.util.Map;
-import java.util.HashMap;
 
 import sketch.compiler.Directive;
+import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Annotation;
-import sketch.util.datastructures.HashmapList;
-
-import sketch.compiler.ast.core.Package;
-
-
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.*;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
-import sketch.compiler.ast.core.typs.*;
-import sketch.compiler.ast.cuda.exprs.*;
-import sketch.compiler.ast.cuda.stmts.*;
-import sketch.compiler.ast.cuda.typs.*;
-
+import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.exprs.ExprRange;
+import sketch.compiler.ast.cuda.stmts.StmtParfor;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.promela.stmts.StmtFork;
-import sketch.compiler.main.cmdline.SketchOptions;
-
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.datastructures.HashmapList;
+import antlr.NoViableAltException;
+import antlr.ParserSharedInputState;
+import antlr.RecognitionException;
+import antlr.SemanticException;
+import antlr.Token;
+import antlr.TokenBuffer;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
+import antlr.collections.impl.BitSet;
 
 import static sketch.util.DebugOut.assertFalse;
-
-import antlr.TokenBuffer;
-import antlr.TokenStreamException;
-import antlr.TokenStreamIOException;
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.RecognitionException;
-import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
-import antlr.ParserSharedInputState;
-import antlr.collections.impl.BitSet;
 @SuppressWarnings("deprecation")
 public class StreamItParserFE extends antlr.LLkParser       implements StreamItParserFETokenTypes
  {
@@ -2205,7 +2197,7 @@ inputState.guessing--;
 			match(RPAREN);
 			c=pseudo_block();
 			if ( inputState.guessing==0 ) {
-				s = new StmtFor(getContext(t), a, x, b, c);
+                s = new StmtFor(getContext(t), a, x, b, c, false);
 			}
 		}
 		catch (RecognitionException ex) {

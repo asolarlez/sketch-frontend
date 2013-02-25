@@ -1,0 +1,24 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 4 --debug-show-dag";
+
+int N = 16;
+
+void foo(int n, int m, int i, int[n] x, ref int[N][m] y){
+    assert i<m;
+    assert n<=N;
+    for(int t=0; t<n; ++t){
+        y[i][t] += x[t]+??; 
+    }    
+}
+
+
+harness void main(int n, int m, int i, int[n] x, int[n] v){
+    if(i>=m){ return; }
+    if(n>N){ return; }
+    int[N][m] y;
+    foo(n, m, i, x, y);
+    foo(n, m, i, v, y);
+    for(int t=0; t<n; ++t){
+            assert y[i][t] == v[t] + x[t]+6;
+    }    
+}
+

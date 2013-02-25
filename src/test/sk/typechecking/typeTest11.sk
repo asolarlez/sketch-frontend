@@ -7,7 +7,7 @@ struct Moo{
     int y;
 }
 
-void main(int i){
+harness void main(int i){
     Foo[3] f = {new Foo(), new Moo(), new Foo()}; // TypeError mixed types in array init. 
     assert f[0].x == 0; 
     

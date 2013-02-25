@@ -170,7 +170,8 @@ public class Preprocessor extends FEReplacer {
     	Statement incr = new StmtAssign(ivar, new ExprBinary(ivar, "+", new ExprConstInt(1)));
     	List<Statement> forBody = new ArrayList<Statement> ();
     	forBody.add (new StmtExpr (fcall));
-    	StmtFor spawnLoop = new StmtFor(cx, ndecl, cmp, incr, new StmtBlock (fcall, forBody));
+        StmtFor spawnLoop =
+                new StmtFor(cx, ndecl, cmp, incr, new StmtBlock(fcall, forBody), false);
 
     	// Create loop to join spawned threads
     	niter = (Expression) loop.getIter().accept(this);
@@ -182,7 +183,8 @@ public class Preprocessor extends FEReplacer {
     	List<Statement> joinBody =
                 Collections.singletonList((Statement) new StmtJoin(cx, new ExprVar(cx,
                         ivname)));
-    	StmtFor joinLoop = new StmtFor (cx, ndecl, cmp, incr, new StmtBlock (cx, joinBody));
+        StmtFor joinLoop =
+                new StmtFor(cx, ndecl, cmp, incr, new StmtBlock(cx, joinBody), false);
 
     	addStatement (spawnLoop);
 

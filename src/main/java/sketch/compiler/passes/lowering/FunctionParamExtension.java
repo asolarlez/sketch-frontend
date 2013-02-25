@@ -486,7 +486,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
                     if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
                             newIncr == stmt.getIncr() && newBody == stmt.getBody())
                         return stmt;
-                    return new StmtFor(stmt, newInit, newCond, newIncr, newBody);
+                    return new StmtFor(stmt, newInit, newCond, newIncr, newBody, stmt.isCanonical());
                 }
 
                 public Object visitStmtVarDecl(StmtVarDecl svd) {

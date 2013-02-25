@@ -28,7 +28,6 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtMinLoop;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
-
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 
 /**
@@ -77,8 +76,8 @@ public class MakeBodiesBlocks extends FEReplacer
         newBody = buildBlock(newBody);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt, stmt.getInit(), stmt.getCond(),
-                           stmt.getIncr(), newBody);
+        return new StmtFor(stmt, stmt.getInit(), stmt.getCond(), stmt.getIncr(), newBody,
+                stmt.isCanonical());
     }
 
     public Object visitStmtIfThen(StmtIfThen stmt)

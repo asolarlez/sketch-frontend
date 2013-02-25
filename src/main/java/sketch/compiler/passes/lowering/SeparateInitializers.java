@@ -102,7 +102,7 @@ public class SeparateInitializers extends FEReplacer
         Statement newBody = (Statement)stmt.getBody().accept(this);
         if (newBody == stmt.getBody())
             return stmt;
-        return new StmtFor(stmt, stmt.getInit(),
-                           stmt.getCond(), stmt.getIncr(), newBody);
+        return new StmtFor(stmt, stmt.getInit(), stmt.getCond(), stmt.getIncr(), newBody,
+                stmt.isCanonical());
     }
 }

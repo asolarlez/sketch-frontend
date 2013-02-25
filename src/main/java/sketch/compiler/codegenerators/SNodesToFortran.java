@@ -325,7 +325,7 @@ public class SNodesToFortran extends FENullVisitor {
     			new StmtVarDecl((FEContext) null, TypePrimitive.inttype, loopVar.getName(), ExprConstInt.zero),
     			new ExprBinary(loopVar, "<", dims.get(i)),
     			new StmtExpr(new ExprUnary(loopVar, ExprUnary.UNOP_POSTINC, loopVar)),
-    			body
+ body, true
     		);
     	}
     	return (String) body.accept(this);
