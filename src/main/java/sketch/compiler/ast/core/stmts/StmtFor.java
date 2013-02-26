@@ -111,6 +111,7 @@ public class StmtFor extends Statement
     }
 
     public boolean isCanonical() {
+        // return false;
         return isCanonical;
     }
 

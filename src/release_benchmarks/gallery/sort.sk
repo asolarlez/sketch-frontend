@@ -39,9 +39,10 @@ int[N] MergeSort(int N, int[N] input)implements sort{
       firstHalf = MergeSort(No2a, firstHalf);
       secondHalf = MergeSort(No2b, secondHalf);
       int x=0;
-      int y=0;      
+      int y=0; generator void tt(int x, ref int[x] fh, int s, ref int[s] sh){ }
       generator int chose(ref int choice){
          choice = ??;
+         tt(No2a, firstHalf, No2b, secondHalf);
          if(choice==0){ return firstHalf[x]; }
          if(choice==1){ return secondHalf[y]; }
          if(choice==2){ return N; }

@@ -88,7 +88,18 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		if( (new OpFinder()).hasOp(rhs) ) return 3;
         if (lt.equals(rt) && !agressive && (lhs instanceof ExprVar) &&
                 (rhs instanceof ExprVar))
-            return 0;
+        {
+            if (this.symtab.lookupKind(lhs.toString(), lhs) != SymbolTable.KIND_FUNC_PARAM &&
+                    this.symtab.lookupKind(rhs.toString(), rhs) != SymbolTable.KIND_FUNC_PARAM)
+            {
+                return 0;
+            }
+            System.out.println("Avoiding " + lt + " " + rt + lhs + " = " + rhs);
+        }
+		/*
+        if (lt.equals(rt) && !agressive && (lhs instanceof ExprVar) &&
+                (rhs instanceof ExprVar))
+            return 0;*/
 		
 		return 1; //lhs and rhs are arrays of different dimensions.
 	}
