@@ -154,13 +154,28 @@ public class SpmdTransform  extends SymbolTableVisitor {
         }
 
         @Override
+        public Object visitSpmdPid(SpmdPid stmt) {
+            ExprVar var = new ExprVar(stmt, SpmdPid);
+            return var;
+        }
+
+        @Override
+        public Object visitSpmdNProc(SpmdNProc stmt) {
+            ExprVar var = new ExprVar(stmt, SpmdNProc);
+            return var;
+        }
+
+        @Override
         public Object visitStmtVarDecl(StmtVarDecl decl) {
             if (needAllProc) {
-                Type t = decl.getType(0);
+                Type oldtyp = decl.getType(0);
+                Type t = (Type) oldtyp.accept(this);
                 if (t.getCudaMemType() != CudaMemoryType.GLOBAL) {
                     assert decl.getTypes().size() == 1;
                     final Type type = localArrayType(t);
                     decl = new StmtVarDecl(decl, type, decl.getName(0), decl.getInit(0));
+                } else {
+                    decl = new StmtVarDecl(decl, t, decl.getName(0), decl.getInit(0));
                 }
             }
             return super.visitStmtVarDecl(decl);
