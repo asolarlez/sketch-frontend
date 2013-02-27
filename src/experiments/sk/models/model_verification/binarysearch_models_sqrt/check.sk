@@ -1,0 +1,30 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --bnd-cbits 3 ";
+
+int sqrt(int num){
+    if (num==1) return 1;
+    int low=0;
+    int mid;//,square;
+    int high=1+(num/2);
+    while (low+1<high){
+        mid=low+(high-low)/2;
+        //square=mid*mid;
+        if (num %mid == 0 && num/mid == mid)//num == mid*mid
+            return mid;
+        else if (mid<=num/mid)//mid*mid < num
+            low=mid;
+        else
+            high=mid;
+    }
+    return low;
+}
+
+harness int msqrt(int i){
+    int rv = sqrt(i);
+    if(i==0){
+        assert rv == 0;
+    }
+    
+    assert rv*rv <= i;
+    assert (rv+1)*(rv+1) > i;
+    return rv;
+}

@@ -1,0 +1,31 @@
+int[N] sortiuf(int[N] x);
+//give indices based on sorting of values in x
+int[N] msorti(int[N] x){
+	int[N] rv = sortiuf(x);
+	bit[N] chk = 0;
+	bit ignore = 0;
+        
+	for(int i=0;i<N;i++){
+		disableAssertion(rv[i] < N);
+                if(disableAssert) return 0;
+		chk[rv[i]] =1;
+	}
+	for(int i=0;i<N;i++){
+		//assert(chk[i]);
+		disableAssertion(chk[i]);
+                if(disableAssert) return 0;
+		if(i<N-1){
+			//assert(x[rv[i]] <= x[rv[i+1]]);
+			disableAssertion(x[rv[i]] <= x[rv[i+1]]);
+                        if(disableAssert) return 0;
+		}
+	}
+       
+	return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

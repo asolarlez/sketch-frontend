@@ -1,0 +1,3 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 4 --bnd-unroll-amnt 32 --bnd-cbits 3 ";
+int P = 3;
+int N = 24;

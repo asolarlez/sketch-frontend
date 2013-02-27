@@ -1,0 +1,93 @@
+pragma options "--bnd-inline-amnt 16 --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 16";
+int n = 20;
+int k = 3;
+//max degree of polynomials
+int BASE = 4;
+
+struct pair{
+	int[n] num1;
+	int[n] num2;
+}
+
+int[2*n] mult(int[n] x, int[n] y){
+    int[2*n] out = 0;
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<n; ++j){            
+            int tmp = y[i] * x[j];
+            tmp = out[j + i] + tmp;
+            out[j + i] = tmp % BASE;
+            out[j + i + 1] = out[j + i + 1] + (tmp / BASE); 
+        }           
+    }       
+    return out;
+}
+
+harness int[2*n] mmul(int[n] x1, int[n] x2){
+	// changing values modulo BASE?
+	bit b=true;
+	bit done = false;
+	for(int i=n-1;i>=0;i--){
+		if(!done){
+			if(x1[i] > x2[i]){ b=false; done = true;}
+			if(x1[i] < x2[i]){ b=true; done = true;}
+		}
+	}//b is true iff x1 <= x2
+	int[n] xa;
+	int[n] xb;
+	if(b==true){
+		xa = x1;
+		xb = x2;
+	}
+	else{
+		xa = x2;
+		xb = x1;
+	}
+	int [2*n] rv = mult(xa,xb);
+
+	bit b1 =true;//x1 == 0
+	for(int i =0;i<n;i++){
+		if(b1==true && x1[i] != 0) b1=false;
+	}
+
+	bit b2 =true;//x2 == 0
+	for(int i =0;i<n;i++){
+		if(b2==true && x2[i] != 0) b2=false;
+	}
+
+	if(b1==true || b2==true){
+		//rv == 0
+		for(int i =0;i<2*n;i++){
+			assert(rv[i] == 0);
+		}
+	}
+	return rv;
+}
+
+pair g(int[n] x1, int[n] x2){
+	// changing values modulo BASE?
+	bit b=true;
+	bit done = false;
+	for(int i=n-1;i>=0;i--){
+		if(!done){
+			if(x1[i] > x2[i]){ b=false; done = true;}
+			if(x1[i] < x2[i]){ b=true; done = true;}
+		}
+	}//b is true iff x1 <= x2
+	int[n] xa;
+	int[n] xb;
+	if(b==true){
+		xa = x1;
+		xb = x2;
+	}
+	else{
+		xa = x2;
+		xb = x1;
+	}
+	pair p = new pair(num1 = xa, num2 = xb);
+	return p;
+}
+
+harness void checkg(int[n] x1, int[n] x2, int[n] x3, int[n] x4){
+	if(g(x1,x2) == g(x3,x4))
+		assert(mult(x1,x2) == mult(x3,x4));
+}

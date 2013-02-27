@@ -1,0 +1,48 @@
+pragma options "--bnd-inline-amnt 1 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 4";
+include "../../generators.skh";
+include "options.skh";
+
+int[N] sorti(int[N] input){
+   int[N] ind = 0;
+   for(int i=0; i<N; ++i) ind[i] = i;
+   int[N] done = 0;
+   int k=0;
+   for(int i=0; i<N; ++i){
+      for(int j=i+1; j<N; ++j){
+         if( input[ind[j]]< input[ind[i]]){
+            int tmp2 = ind[j];
+            ind[j] = ind[i];
+            ind[i] = tmp2;
+         }
+      }
+   }
+   return ind;
+}
+
+harness void main(int[N] start,int[N] finish, bit[N] sel){
+
+	if(N<2) return;
+	if(sel == 0) return;
+	for(int i=0;i<N;i++) if(finish[i] >= start[i]) return;
+
+	int[N] si = sorti(finish);
+	int cf = 0;
+	int timeb = 0;
+	for(int i=0;i<N;i++){
+		if(sel[i]){
+			if(start[si[i]] < cf) return;
+			cf = finish[si[i]];
+			timeb = timeb + finish[i] - start[i];
+		}
+	}
+	
+	int time =finish[si[0]] - start[si[0]];
+	int f = finish[si[0]];
+	for(int i=??;{|i  (< | <= | > | >=) N |};i = linexp(2,{i,??})){
+		if({| start[si[i]] (<|<=|>|>=) f|}){
+			time = linexp(3, {time,finish[si[i]],start[si[i]]});
+			f=finish[si[i]];
+		}
+	}
+	assert(timeb >= time);
+}

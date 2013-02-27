@@ -1,0 +1,14 @@
+include "options.skh";
+
+harness void rational_add(int a, int b, int c, int d){
+	if(b == 0 || d == 0) return;
+	int denominator = lcm(b,d);
+	int numerator = a * denominator/b + c*denominator/d;
+	assert numerator * b * d == denominator * (a * d + b * c);
+}
+
+int lcm(int a, int b){
+ for(int i = 1; i <= a * b; i ++)
+  if (i%a ==0 && i%b ==0) return i;
+}
+

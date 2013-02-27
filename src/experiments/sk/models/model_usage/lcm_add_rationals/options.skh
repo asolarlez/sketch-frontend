@@ -1,0 +1,1 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 64 --bnd-cbits 3 ";

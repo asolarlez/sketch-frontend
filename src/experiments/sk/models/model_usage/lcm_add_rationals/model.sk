@@ -1,0 +1,10 @@
+include "options.skh";
+include "../../lcm_model.skh";
+
+// return (a*d + b*c)/b*d
+harness void rational_add(int a, int b, int c, int d){
+	if(b == 0 || d == 0) return;
+	int denominator = lcm(b,d);
+	int numerator = a * denominator/b + c*denominator/d;
+	assert numerator * b * d == denominator * (a * d + b * c);
+}

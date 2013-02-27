@@ -1,0 +1,18 @@
+
+int[N] sortuf(int[N] x);
+
+int[N] msort(int[N] x){
+	int[N] rv = sortuf(x);
+
+	for(int i=0;i<N-1;i++)
+		//assert(rv[i] <= rv[i+1]);
+		disableAssertion(rv[i] <= rv[i+1]);
+		if(disableAssert) return 0;
+	return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

@@ -1,0 +1,34 @@
+include "options.skh";
+
+int N = 5;
+
+// synthesize algorithm for computing lcm of N numbers
+harness void multi_lcm(int[N] nums){
+	
+	for(int i=0; i<N; i++)
+	  if(nums[i] == 0) return;	
+	if(N<2) return;        
+
+	int result = lcm(nums[0], nums[1]);
+	for(int i =??; i<{| N | N-1 | N-2 |}; i++){
+	  result = lcm({| result | nums[i]|}, {| result | nums[i]|});
+	}
+
+
+	for(int i=0; i<N; i++)
+	 assert result % nums[i] == 0;
+	
+	for(int i=1; i < result; i++)
+	 {
+	  bit divisible = 1;
+	  for(int j=0; j<N; j++)
+             divisible = divisible && (i % nums[j] == 0);
+          assert !divisible;
+	 }
+
+}
+
+int lcm(int a, int b){
+ for(int i = 1; i <= a * b; i ++)
+  if (i%a ==0 && i%b ==0) return i;
+}

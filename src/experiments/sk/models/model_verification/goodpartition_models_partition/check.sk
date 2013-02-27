@@ -1,0 +1,42 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 4 --bnd-unroll-amnt 32 --bnd-cbits 3 ";
+int P = 3;
+int N = 24;
+
+int[2] partition (int p)/*partition.sk:7*/
+{
+  int[2] out = 0;
+  if(p < (N % P))/*partition.sk:8*/
+  {
+    out[1] = (p + 1) * ((N / P) + 1);
+    out[0] = p * ((N / P) + 1);
+  }
+  else
+  {
+    int pars_233 = N / P;
+    out[1] = (p * pars_233) + (pars_233 + (N % P));
+    out[0] = (p * (N / P)) + (N % P);
+  }
+  return out;
+}
+
+int[P-1] part(){
+	//provide good partitions
+	//can be any heuristic that works
+	int[P-1]  out = 0;
+	for(int i=1;i<P;i++){
+		int[2] t = partition(i);
+		out[i-1] = t[0];
+	}
+	return out;
+}
+
+harness int[P-1] mpart(){
+	int[P-1] rv = part();
+	assert(rv[0] >= 0 && rv[P-2] <= N-1);
+	for(int i=0;i<P-2;++i){
+		assert(rv[i] <= rv[i+1]);//distinct partitions?
+		//the good-partition constraint
+		assert( rv[i+1] - rv[i] < (N/P) +2);
+	}
+	return rv;
+}

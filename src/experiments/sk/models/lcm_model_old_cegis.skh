@@ -1,0 +1,34 @@
+//pragma options "--bnd-inbits 4";
+
+int lcmuf(int a, int b);
+
+int lcm(int a, int b){
+    int rv = lcmuf(a,b);
+
+    if(a ==0 || b == 0)
+    	 assert rv == 0;
+    else{
+        //assert rv % a == 0;
+	disableAssertion(rv % a == 0);
+	if(disableAssert) return 0;
+    	//assert rv % b == 0;
+	disableAssertion(rv % b == 0);
+	if(disableAssert) return 0;
+	//assert rv != 0;
+	disableAssertion(rv != 0);
+	if(disableAssert) return 0;
+	for(int i=1; i<rv; i++){
+	 //assert i % a != 0 || i %b != 0;
+	 disableAssertion(i % a != 0 || i %b != 0);
+	 if(disableAssert) return 0;
+	}
+    }
+
+    return rv;
+}
+
+void disableAssertion(bit b){
+	if(!b){
+		disableAssert = 1;
+	}
+}

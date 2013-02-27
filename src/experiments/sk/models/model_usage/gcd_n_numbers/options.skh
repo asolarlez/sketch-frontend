@@ -1,0 +1,3 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 14 --bnd-cbits 3 ";
+int N = 7;
+

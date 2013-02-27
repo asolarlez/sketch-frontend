@@ -1,0 +1,55 @@
+pragma options "--bnd-inbits 5 --bnd-unroll-amnt 4 --bnd-cbits 3 ";
+include "options.skh";
+
+//binary-search based sqrt
+int sqrt(int num){
+    if (num<=1) return 1;
+    int low=0;
+    int mid,square;
+    int high=1+(num/2);
+    while (low+1<high){
+        mid=low+(high-low)/2;
+        assert(mid!=0);
+        square=mid*mid;
+        //int d = num/mid;
+        //int r = num %mid;//num = mid*d + r
+        //if ( d==mid && r==0)//
+        if (num == square)
+            return mid;
+        //else if (mid<d || (mid==d && r>0))//mid*mid < num
+        if(square < num)
+            low=mid;
+        else
+            high=mid;
+    }
+    return low;
+}
+
+
+int twokroot(int num,int k){
+	if(k==2){
+		if(num <1) return 0;
+		else if(num < 16) return 1;
+		else return 2;
+	}
+	else{
+		if(num <1) return 0;
+		else return 1;
+	}
+}
+
+
+harness void main(int x,int k){//find 2^k th root of x
+	//k=0; x=1;
+	k=K;
+	if(k==0 || x==0) return;
+	
+	int val = x;
+	for(int i=??;{| i (< | > | <= | >=) {| (??)*k (+|-) (??) |} |};i++){
+		if(val != ?? && val != ??){
+			val = sqrt(val + ??%4);
+		}
+	}
+	assert(val !=0);
+	assert(val == twokroot(x,k));
+}

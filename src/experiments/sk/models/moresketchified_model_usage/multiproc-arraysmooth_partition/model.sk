@@ -1,0 +1,32 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 7 --bnd-cbits 2 ";
+include "options.skh";
+include "../../partition_model.skh";
+
+int[N] processarr(int[N] in){
+	int[N] out =0;
+	out[0] = in[0];
+	out[N-1] = in[N-1];
+	for(int j=1;j<N-1;j++){
+		out[j] = (in[j-1]+in[j+1])/2;
+	}
+	return out;
+}
+harness void main(int[N] in){
+
+	int[N] out1 = processarr(in);
+	
+	int[P-1] ps = part();
+	int[N] out=0;
+	int beg,end; //[beg_i,end_i) to be served by processor i, it also has access to ghost regions: copies of boundary values
+	for (int i=0;i<P;i++){
+		if({| i(<|>|<=|>=) {| P (+|-) ??%2|} |}) end = ps[{| i (+|-) ??%2|}];
+		else end = N;
+		if({| i(<|>|<=|>=) 0 |}) beg = ps[{| i (+|-) ??|}];
+		else beg = 0;
+		for (int j={| beg | end |};j<{| beg | end |};j= {| j (+|-) ?? |}){
+			if(j ==?? || j==N-??) out[j] = in[j];
+			else out[j] = (in[j-1]+in[j+1])/2;//(in[j-1]+in[j+1])/2;;
+		}
+	}
+	assert(out == out1);
+}

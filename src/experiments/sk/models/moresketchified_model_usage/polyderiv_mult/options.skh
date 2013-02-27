@@ -1,0 +1,5 @@
+
+int n = 20;
+int k = 3;
+//max degree of polynomials
+int BASE = 4;

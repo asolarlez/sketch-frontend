@@ -1,0 +1,13 @@
+
+int[P-1] partuf();
+
+model int[P-1] part(){
+	int[P-1] rv = partuf();
+	assert(rv[0] >= 0 && rv[P-2] <= N-1);
+	for(int i=0;i<P-2;++i){
+		assert(rv[i] <= rv[i+1]);//distinct partitions?
+		//the good-partition constraint
+		assert( rv[i+1] - rv[i] < (N/P) +2);
+	}
+	return rv;
+}

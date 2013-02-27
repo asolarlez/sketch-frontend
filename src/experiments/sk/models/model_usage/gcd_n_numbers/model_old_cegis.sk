@@ -1,0 +1,44 @@
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../gcd_model_old_cegis.skh";
+
+int N = 5;
+
+// synthesize algorithm for computing gcd of N numbers
+harness void multi_gcd(int[N] nums){
+	
+	for(int i=0; i<N; i++)
+	  if(nums[i] == 0) return;	
+	if(N<2) return;        
+
+	int result = gcd(nums[0], nums[1]);
+	if(disableAssert) return;
+	for(int i =??; i<{| N | N-1 | N-2 |}; i++){
+	  result = gcd({| result | nums[i]|}, {| result | nums[i]|});
+	  if(disableAssert) return;
+	}
+
+
+	for(int i=0; i<N; i++){
+	 //assert nums[i] % result== 0;
+	 guardAssertion(nums[i] % result== 0);
+	 }
+	
+	for(int i=result+1; i <= nums[0]; i++)
+	 {
+	  bit divisible = 1;
+	  for(int j=0; j<N; j++)
+             divisible = divisible && (nums[j] %i == 0);
+      //assert !divisible;
+	  guardAssertion(!divisible);
+	 }
+
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

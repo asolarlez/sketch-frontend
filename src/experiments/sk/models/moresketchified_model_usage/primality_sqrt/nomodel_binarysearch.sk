@@ -1,0 +1,46 @@
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 13 --bnd-cbits 3 ";
+include "options.skh";
+//how to tackle big numbers? -- doesn't work for 4 bit inputs
+//why the mod based algo doesn't work? --minitest?
+//Primality check
+
+//binary-search based sqrt
+int sqrt(int num){
+	if(num == 0) return 0;
+	if(num == 1) return 1;
+	int low = 0;
+    int mid,square;
+    int high=1+(num/2);
+    while (low+1<high){
+        mid=low+(high-low)/2;
+        square=mid*mid;
+        if (num == square)
+            return mid;
+        else if (square < num)
+            low=mid;
+        else
+            high=mid;
+    }
+    return low;
+}
+
+harness void main(int p){
+	bit oldres = 1;
+	if(p<=1) oldres = 0;
+	else{
+		for(int i=2;i<p;i++){
+			if(p%i == 0) oldres=0;
+		}
+	}
+
+	bit newres = 1;
+	if(p<=1) newres=0;
+	else{
+		int temp = sqrt({| p (+|-) (??) |});
+		for(int i=2;{| i (< | > | <= | >=) temp |};i++){
+			if(p%i == 0) newres=0;
+		}
+	}
+	//assert(oldres==newres);
+	assert(oldres==newres);
+}

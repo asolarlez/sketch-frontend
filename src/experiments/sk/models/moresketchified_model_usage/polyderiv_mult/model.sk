@@ -1,0 +1,29 @@
+pragma options "--bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 3";
+include "options.skh";
+
+include "../../mult_model.skh";
+//derivative computation for a polynomial represented by coefficient list
+
+int[n] toBase(int z){
+	//write z in base BASE
+	int[n] out =0;
+	int sum =z;
+	for (int i=0;i<n;i++){
+		out[i] = sum % BASE;
+		sum = sum/BASE;
+	}
+	return out;
+}
+harness void main(int[n][k] p){
+	int[2*n][k] out1 = 0;
+	for(int i=0;i<k-1;i++){
+		out1[i] = mmul(toBase(i+1),p[i+1]);
+	}
+	int[2*n][k] out2 = 0;
+	for(int i=??;{|i  (< | <= | > | >=) (??*k (+ | -) ??) |};i++){
+		out2[i] = mmul(p[{| ??*i (+ | -) ?? |}],toBase({| ??*i (+ | -) ?? |}));
+	}
+
+	assert(out1 == out2);
+}
+

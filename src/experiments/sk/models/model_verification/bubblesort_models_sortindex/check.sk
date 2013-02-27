@@ -1,0 +1,32 @@
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 8";
+int N = 3;
+
+int[N] sorti(int[N] input){
+   int[N] ind = 0;
+   for(int i=0; i<N; ++i) ind[i] = i;
+   int[N] done = 0;
+   int k=0;
+   for(int i=0; i<N; ++i){
+      for(int j=i+1; j<N; ++j){
+         if( input[ind[j]]< input[ind[i]]){
+            int tmp2 = ind[j];
+            ind[j] = ind[i];
+            ind[i] = tmp2;
+         }
+      }
+   }
+   return ind;
+}
+
+harness int[N] msorti(int[N] x){
+	int[N] rv = sorti(x);
+	bit[N] chk = 0;
+	for(int i=0;i<N;i++){
+		chk[rv[i]] =1;
+	}
+	for(int i=0;i<N;i++){
+		assert(chk[i]);
+		if(i<N-1) assert(x[rv[i]] <= x[rv[i+1]]);
+	}
+	return rv;
+}

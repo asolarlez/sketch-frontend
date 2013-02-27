@@ -1,0 +1,14 @@
+//pragma options "--bnd-inbits 4";
+
+int sqrtuf(int i);
+
+model int msqrt(int i){
+    int rv = sqrtuf(i);
+    if(i==0){
+        assert rv == 0;
+    }
+    
+    assert rv*rv <= i;
+    assert (rv+1)*(rv+1) > i;
+    return rv;
+}

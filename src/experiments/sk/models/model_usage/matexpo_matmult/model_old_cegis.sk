@@ -1,0 +1,44 @@
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../matpmult_model_old_cegis.skh";
+
+
+harness void main(int[n][n] T,bit[gk] p){//A^p where p is given in binary representation
+	int pval = 0;
+	int p2i =1;
+	for(int i=0;i<gk;i++){
+		if(p[i]) pval = pval + p2i ;
+		p2i = p2i *2;
+	}
+
+	mat A = new mat(R=T,k=1);
+	mat res = new mat(R=T,k=0);
+	for(int i=0;i<pval;i++){
+		res = mmatmul(res,A);
+		if(disableAssert) return;
+	}
+	
+	mat res1 = new mat(R=T,k=0);
+	mat tmp = new mat(R=T,k=1);//A
+	for(int i=??;{| i (< | > | <= | >=) {| (??)*gk (+|-) (??) |} |};i={| i (+|-) ??|} ){
+		if(p[i]){
+			res1 = mmatmul({| res1 | tmp | A |},{| res1 | tmp | A |});
+			if(disableAssert) return;
+		}
+		tmp = mmatmul({| tmp | A |},{| tmp | A |});
+		if(disableAssert) return;
+	}
+
+	//assert(res1.R == res.R);
+	guardAssertion(res1.R == res.R);
+	//assert(res1.k == res.k);
+	guardAssertion(res1.k == res.k);
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

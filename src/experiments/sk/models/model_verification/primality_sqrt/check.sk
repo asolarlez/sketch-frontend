@@ -1,0 +1,20 @@
+pragma options "--bnd-inbits 4";
+
+int sqrtf(int i){
+	if(i<=1) return i;
+	for(int j=2;j<=i;j++){
+		if(j*j > i) return j-1;
+	}
+	assert(false);
+}
+
+harness void msqrt(int i){
+    int rv = sqrtf(i);
+
+    if(i==0){
+        assert rv == 0;
+    }
+    
+    assert rv*rv <= i;
+    assert (rv+1)*(rv+1) > i;
+}

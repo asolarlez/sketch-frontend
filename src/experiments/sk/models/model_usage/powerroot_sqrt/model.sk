@@ -1,0 +1,32 @@
+include "options.skh";
+include "../../sqrt_model.skh";
+
+int twokroot(int num,int k){
+	if(num==0) return 0;
+    if (num==1) return 1;
+    for(int i=2;i<num;i++){
+		int kpow=i;
+		for(int j=0;j<k;j++){
+			kpow = (kpow*kpow);
+			if(kpow > num) return i-1;
+		}
+		
+    }
+    return 1;
+}
+
+
+harness void main(int x,int k){//find 2^k th root of x
+	//k=0; x=1;
+	k=K;
+	if(k==0 || x==0) return;
+	
+	int val = x;
+	for(int i=??;{| i (< | > | <= | >=) {| (??)*k (+|-) (??) |} |};i++){
+		if(val != 1 && val != 0){
+			val = msqrt(val);
+		}
+	}
+	assert(val !=0);
+	assert(val == twokroot(x,k));
+}

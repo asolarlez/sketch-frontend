@@ -1,0 +1,21 @@
+include "options.skh";
+
+bit disableAssert = 0;
+
+include "../../lcm_model_old_cegis.skh";
+
+// return (a*d + b*c)/b*d
+harness void rational_add(int a, int b, int c, int d){
+	if(b == 0 || d == 0) return;
+	int denominator = lcm(b,d);
+	if(disableAssert) return;
+	int numerator = a * denominator/b + c*denominator/d;
+	//assert numerator * b * d == denominator * (a * d + b * c);
+	guardAssertion(numerator * b * d == denominator * (a * d + b * c));
+}
+
+void guardAssertion(bit b){
+	if(!disableAssert){
+		assert b;
+	}
+}

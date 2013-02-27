@@ -1,0 +1,4 @@
+
+int n = 5;
+int BASE = 4;
+int k=3;
