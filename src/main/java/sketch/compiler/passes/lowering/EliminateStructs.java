@@ -193,6 +193,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
             newFuncs.add(func2.creator().name(newName).params(newParams).body(newBody).create());
         }
+
 		return null;
 	}
 

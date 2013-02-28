@@ -1,0 +1,104 @@
+pragma options "--beopt:simiters 100 --be:lightverif --fe-fpencoding AS_FFIELD --bnd-inbits 2 --bnd-cbits 2 --be:ufunSymmetry --beopt:simplifycex NOSIM --be:showDAG";
+
+package sk_neohookean;
+
+int n = 3;
+
+// matrix trace: t = trace(a)
+double tr(double[n][n] a) {
+	double t = 0.0;
+	for (int i=0; i<n; ++i) {
+		t = t + a[i][i];
+	}
+	return t;
+}
+
+//matrix multiplication: c = a b
+void mul(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0.0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] = c[i][j] + a[i][k] * b[k][j];
+			}
+		}
+	}
+}
+
+//matrix multiplication: c = a' b
+void mults(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0.0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] += c[i][j] + a[k][i] * b[k][j];
+			}
+		}
+	}
+}
+
+// matrix determinant: d = det(a)
+double det3(double[n][n] a) {
+	return    a[0][0] * (a[1][1]*a[2][2] - a[1][2]*a[2][1])
+			- a[0][1] * (a[1][0]*a[2][2] - a[1][2]*a[2][0])
+			+ a[0][2] * (a[1][0]*a[2][1] - a[1][1]*a[2][0]);
+}
+
+// logically: C = F' F
+// b = inverse(C), d = det3(C), t = trace(C)
+void inv_det_trace3(double[n][n] F, ref double[n][n] b, ref double d, ref double t) {
+	double[n][n] C;
+	mults(F, F, C);
+	
+	d = det3(C);
+	t = tr(C);
+	
+	if (d == 0.0) {
+		return;
+	}
+	
+	int i=0;
+	repeat(9) {
+		b[i/3][i%3] = (C[??][??]*C[??][??] - C[??][??]*C[??][??])/d;
+		++i;
+	}
+	
+//	b[0][0] = a[1][1]*a[2][2] - a[1][2]*a[2][1];
+//	b[0][1] = a[0][2]*a[2][1] - a[0][1]*a[2][2];
+//	b[0][2] = a[0][1]*a[1][2] - a[0][2]*a[1][1];
+//	b[1][0] = a[1][2]*a[2][0] - a[1][0]*a[2][2];
+//	b[1][1] = a[0][0]*a[2][2] - a[0][2]*a[2][0];
+//	b[1][2] = a[0][2]*a[1][0] - a[0][0]*a[1][2];	
+//	b[2][0] = a[1][0]*a[2][1] - a[1][1]*a[2][0];
+//	b[2][1] = a[0][1]*a[2][0] - a[0][0]*a[2][1];
+//	b[2][2] = a[1][1]*a[0][0] - a[0][1]*a[1][0];
+}
+
+harness void testInvDetTrace(double[n][n] F) {
+	double[n][n] C;
+	// C = F' F
+	mults(F, F, C);
+
+	double[n][n] b;
+	// b = inverse(F'F)*det
+	double det, trace;
+	inv_det_trace3(F, b, det, trace);
+	
+	assert det == det3(C);
+	assert trace == tr(C);
+	
+	if (det == 0.0) return;
+	
+	double[n][n] prod;
+	mul(C, b, prod);
+	
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			if (i == j) {
+				assert prod[i][j] == 1.0;
+			} else {
+				assert prod[i][j] == 0.0;
+			}
+		}
+	}
+}

@@ -1,0 +1,12 @@
+h=1
+if [ $# -ge 2 ]
+then
+  h=$2
+fi
+t=$h
+if [ $# -ge 3 ]
+then
+  t=$3
+fi
+#echo h=$h t=$t
+for x in $(ls "$1"?); do sed -e "1,$h d" $x | sed -e :a -e "\$d;N;2,$t ba" -e 'P;D'; done

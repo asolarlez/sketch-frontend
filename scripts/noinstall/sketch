@@ -1,0 +1,15 @@
+#!/bin/bash
+scriptname="$(which "$0")"
+dirname="$(dirname "$scriptname")/../.."
+projfile="$dirname/pom.xml"
+sketchlib="$dirname/src/sketchlib"
+cegispath="$dirname/../sketch-backend/src/SketchSolver/cegis"
+execargs="--fe-cegis-path $cegispath --fe-inc $sketchlib $@"
+#echo dir : $dirname
+#echo proj: $projfile
+#echo sketchlib: $sketchlib
+#echo execargs: $execargs
+#echo cegis: $cegispath
+
+export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx600m -ea -server"; mvn -f "$projfile" -e exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$execargs"
+

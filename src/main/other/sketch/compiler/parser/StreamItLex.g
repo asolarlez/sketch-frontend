@@ -46,6 +46,8 @@ tokens {
 	"new";
 	"null";
 	"reorder";
+	
+	"assume";
 
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";
@@ -190,6 +192,7 @@ SELECT: "{|}";
 NDANGELIC: "**";
 AT: "@";
 BACKSLASH: "\\";
+LESS_COLON: "<:";
 
 REGEN   { int open = 0; }
     :   "{|"

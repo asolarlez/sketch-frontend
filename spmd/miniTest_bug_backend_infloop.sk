@@ -1,0 +1,27 @@
+pragma options "--spmd-max-nproc 1 --bnd-inbits 1 --bnd-cbits 1 --bnd-unroll-amnt 1 --bnd-inline-amnt 1 --beopt:-bndwrand 50 --bnd-arr1d-size 1 --bnd-arr-size 1 --be:ufunSymmetry  --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 0"; //  --be:showDAG
+
+struct LState {
+	int width;
+	float[1] arr;
+}
+
+LState movein(global float[1] ga) {
+	int w = 1/spmdnproc;
+	float[w] la;
+	la[0] = ga[0];
+	LState s = new LState(width=w, arr=la);
+	return s;
+}
+
+void spec(global int P, ref global float[1] A) {
+}
+
+void sk(global int P, ref global float[1] A) implements spec {
+	if (P==1) {
+		spmdfork(P) {
+			LState s;
+			s = movein(A);		
+			A[0] = s.arr[0];
+		}
+	}
+}

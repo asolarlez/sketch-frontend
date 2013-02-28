@@ -172,6 +172,7 @@ options {
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  
+	List<Expression> assumptions = new ArrayList<Expression>(); Expression assumption = null;
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
@@ -189,6 +190,7 @@ program	 returns [Program p]
            |    TK_package id:ID SEMI
 				{ pkgCtxt = getContext(id); pkgName = (id.getText()); }
            |    pragma_stmt
+           |	TK_assume assumption = right_expr SEMI  { if (assumption != null) { assumptions.add(assumption); } }
         )*
 		EOF
 		{
@@ -203,7 +205,7 @@ program	 returns [Program p]
 			}
 			 Package ss=new Package(pkgCtxt, 
  				pkgName,
- 				structs, vars, funcs);
+ 				structs, vars, funcs, assumptions);
  				namespaces.add(ss);
                 if (!hasError) {
                     if (p == null) {
@@ -226,6 +228,7 @@ pragma_stmt { String args = ""; }
         SEMI
         { handlePragma (p.getText (), args); }
     ;
+
 
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
@@ -582,7 +585,7 @@ for_init_statement returns [Statement s] { s = null; }
 	:	(variable_decl) => s=variable_decl
     // |   (implicit_type_variable_decl) => s=implicit_type_variable_decl
 	|	(expr_statement) => s=expr_statement
-	|   (t:SEMI) /* empty */ => { s = new StmtEmpty(getContext(t)); }
+	|   /* empty */ { s = new StmtEmpty((FEContext)null); }
 	;
 
 for_incr_statement returns [Statement s] { s = null; }

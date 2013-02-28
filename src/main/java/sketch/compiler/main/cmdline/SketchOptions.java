@@ -70,9 +70,17 @@ public class SketchOptions {
         this.bndOpts.parse(parser);
         this.debugOpts.parse(parser);
         this.feOpts.parse(parser);
+        this.spmdOpts.parse(parser);
+        // if (spmdOpts.MaxNProc != 0) {
+        // String[] d = feOpts.def;
+        // feOpts.def = new String[d.length + 1];
+        // for (int i = 0; i < d.length; ++i) {
+        // feOpts.def[i] = d[i];
+        // }
+        // feOpts.def[d.length] = "SPMD_MAX_NPROC=" + spmdOpts.MaxNProc;
+        // }
         this.semOpts.parse(parser);
         this.cudaOpts.parse(parser);
-        this.spmdOpts.parse(parser);
         args = solverOpts.parse(parser).get_args();
         this.backendArgs = parser.backendArgs;
         if (args.length < 1 || args[0].equals("")) {

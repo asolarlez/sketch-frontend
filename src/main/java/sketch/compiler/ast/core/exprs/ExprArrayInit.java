@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.ast.core.exprs;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEContext;
@@ -53,6 +55,12 @@ public class ExprArrayInit extends Expression
      * "elem" is one of the children.
      */
     private int dims;
+
+    public ExprArrayInit(FENode node, Expression singleElem) {
+        super(node);
+        this.elements = new ArrayList<Expression>(1);
+        elements.add(singleElem);
+    }
 
     public ExprArrayInit(FENode node, List<Expression> elements)
     {

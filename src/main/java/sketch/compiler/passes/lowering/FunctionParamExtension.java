@@ -7,23 +7,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FunctionCreator;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.parallelEncoder.VarSetReplacer;
+import sketch.compiler.parallelEncoder.VarSetReplacer.IgnoreNamesInStruct;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -92,6 +88,24 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 			return func.creator().params(parameters).create();
 		}
+		
+		        public Object visitExprUnary(ExprUnary exp) {
+		            int op = exp.getOp();
+		            if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_POSTINC ||
+		                    op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_PREINC)
+		            {
+		                modify(exp.getExpr());
+		            }
+		            return exp;
+		        }
+
+		        public Object visitExprArrayInit(ExprArrayInit init) {
+		            for (Expression e : init.getElements()) {
+		                e.accept(this);
+		            }
+		            return init;
+		        }
+
 		public Object visitStmtAssign(StmtAssign stmt)
 		{
 			Expression lhs=(Expression) stmt.getLHS().accept(this);
@@ -103,6 +117,20 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 			return super.visitStmtAssign(stmt);
 		}
+		
+		        private void modify(Expression lhs) {
+            while (lhs instanceof ExprArrayRange)
+                lhs = ((ExprArrayRange) lhs).getBase();
+            assert lhs instanceof ExprVar || lhs instanceof ExprField;
+            if (lhs instanceof ExprVar) {
+                String lhsName = ((ExprVar) lhs).getName();
+                unmodifiedParams.remove(lhsName);
+            }
+        }
+
+         	
+
+
 		public Object visitStmtVarDecl(StmtVarDecl stmt)
 		{
 			int n=stmt.getNumVars();
@@ -111,6 +139,30 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 			return super.visitStmtVarDecl(stmt);
 		}
+
+        public Object visitExprFunCall(ExprFunCall exp) {
+            // resolve the function being called
+            Function fun;
+            try {
+                fun = nres.getFun(exp.getName(), exp);
+            } catch (UnrecognizedVariableException e) {
+                // FIXME -- restore error noise
+                throw e;
+                // throw new UnrecognizedVariableException(exp + ": Function name " +
+                // e.getMessage() + " not found" );
+            }
+            // now we create a temp (or several?) to store the result
+            List<Expression> existingArgs = exp.getParams();
+            List<Parameter> params = fun.getParams();
+
+            for (int i = 0; i < params.size(); i++) {
+                Parameter p = params.get(i);
+                if (p.isParameterOutput()) {
+                    modify(existingArgs.get(i));
+                }
+            }
+            return super.visitExprFunCall(exp);
+        }
 	}
 
 	private int inCpCounter;
@@ -337,7 +389,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
             Package tpkg =
                     new Package(spec, spec.getName(), spec.getStructs(),
-                            spec.getVars(), funs);
+                            spec.getVars(), funs, spec.getAssumptions());
             nres.populate(tpkg);
             oldStreams.add(tpkg);
 
@@ -351,6 +403,10 @@ public class FunctionParamExtension extends SymbolTableVisitor
         Program o = prog.creator().streams(newStreams).create();
 
         symtab = oldSymTab;
+
+        // System.out.println("after FunctionParameterExtension:");
+        // o.accept(pr);
+
         return o;
     }
 
@@ -359,6 +415,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 	Set<String> currentRefParams = new HashSet<String>();
 
     String retVar = null;
+    CudaMemoryType retVarMemType;
 
     public Object visitExprVar(ExprVar ev) {
         if (ev.getName().equals(retVar)) {
@@ -493,10 +550,21 @@ public class FunctionParamExtension extends SymbolTableVisitor
                     if (retVar == null) {
                         return svd;
                     }
-                    for (String nm : svd.getNames()) {
+                    
+                    for (int i = 0; i<svd.getNumVars(); ++i) {
+                        String nm = svd.getName(i);
                         if (nm.equals(retVar)) {
                             if (hasDecl || isForDecl) {
                                 retVar = null;
+                            } else {
+                                CudaMemoryType t = svd.getType(i).getCudaMemType();
+                                if (retVarMemType == null) {
+                                    retVarMemType = t;
+                                } else {
+                                    if (retVarMemType != t) {
+                                        retVar = null;
+                                    }
+                                }
                             }
                             hasDecl = true;
                         }
@@ -515,6 +583,23 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 }
             };
             func.accept(checkProperDecl);
+
+            if (retVar != null) {
+                for (Parameter p : func.getParams()) {
+                    if (p.getName() == getOutParamName() &&
+                            retVarMemType != CudaMemoryType.UNDEFINED)
+                    {
+                        Type t = p.getType();
+                        if (t.getCudaMemType() == CudaMemoryType.UNDEFINED) {
+                            t.setCudaMemType(retVarMemType);
+                        } else {
+                            assert t.getCudaMemType() == retVarMemType : "return var memtype mismatch! " +
+                                    p + " in " + func;
+                        }
+                        break;
+                    }
+                }
+            }
         }
 		currentFunction=func;
         // outCounter=0;
@@ -588,7 +673,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
             // throw new UnrecognizedVariableException(exp + ": Function name " +
             // e.getMessage() + " not found" );
 		}
-		// now we create a temp (or several?) to store the result
+        // now we create a temp (or several?) to store the result
 
 		List<Expression> args=new ArrayList<Expression>(fun.getParams().size());
 		List<Expression> existingArgs=exp.getParams();
@@ -671,16 +756,6 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		assert tempVars.size()==1; //TODO handle the case when it's >1
 		return tempVars.get(0);
 	}
-
-
-
-
-
-
-
-	
-
-
 
 	@Override
 	public Object visitStmtReturn(StmtReturn stmt) {

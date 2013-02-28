@@ -10,8 +10,8 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -57,7 +57,7 @@ public class MainMethodCreateNospec extends FEReplacer {
             }
             return new Package(spec, spec.getName(), spec.getStructs(),
                     spec.getVars(),
-                    Collections.unmodifiableList(newFcns));
+                    Collections.unmodifiableList(newFcns), spec.getAssumptions());
         } else {
             return spec;
         }

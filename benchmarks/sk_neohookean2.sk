@@ -1,0 +1,112 @@
+pragma options "--beopt:simiters 10000 --be:lightverif --fe-fpencoding AS_FFIELD --bnd-inbits 3 --bnd-cbits 4 --be:ufunSymmetry --beopt:simplifycex NOSIM";
+
+package sk_neohookean;
+
+int n = 3;
+
+// trace of matrix a
+double tr(double[n][n] a) {
+	double t = 0.0;
+	for (int i=0; i<n; ++i) {
+		t = t + a[i][i];
+	}
+	return t;
+}
+
+// matrix multiplication: c = a b
+void mul(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0.0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] = c[i][j] + a[i][k] * b[k][j];
+			}
+		}
+	}
+}
+
+// matrix multiplication: c = a' b
+void mults(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0.0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] = c[i][j] + a[k][i] * b[k][j];
+			}
+		}
+	}
+}
+
+// determinant of 3x3 matrix a
+double det3(double[n][n] a) {
+	return    a[0][0] * (a[1][1]*a[2][2] - a[1][2]*a[2][1])
+			- a[0][1] * (a[1][0]*a[2][2] - a[1][2]*a[2][0])
+			+ a[0][2] * (a[1][0]*a[2][1] - a[1][1]*a[2][0]);
+}
+
+// NOTE: this version computes not inverse and trace, but with coeficient det
+// compute inverse (with coeficient), determinant, and trace of F' F, and F must be 3x3.
+// logically: C = F' F
+// b = det3(C)*inverse(C), d = det3(C), t = det3(C)*trace(C)
+void inv_det_trace3(double[n][n] F, ref double[n][n] b, ref double d, ref double t) {
+	// C = F' F, but only compute upper half, 6 distinct elements in total
+	int Nelems = 6;
+	double[Nelems] C;
+	int p = 0;
+	repeat(Nelems) {
+		int i = ??;
+		int j = ??;
+		C[p] = F[0][i] * F[0][j] + F[1][i] * F[1][j] + F[2][i] * F[2][j];
+		++p;
+	}
+	t = C[0] + C[3] + C[5];
+	
+	int Nprod = 12;
+	double[Nprod] prod;
+	int q = 0;
+	repeat(Nprod) {
+		prod[q] = C[??]*C[??];
+		++q;
+	}
+	d = C[0]*(prod[??]-prod[??]) + C[1]*(prod[??]-prod[??]) + C[2]*(prod[??]-prod[??]);
+
+	int i=0;
+	repeat(9) {
+		if (i/3 <= i%3) {
+			b[i/3][i%3] = prod[??] - prod[??];
+		} else {
+			b[i/3][i%3] = b[i%3][i/3];
+		}
+		++i;
+	}
+}
+
+// The test harness for inv_det_trace3
+// to ensure the compiler get what we want
+harness void testInvDetTrace(double[n][n] F) {
+	// C = F' F
+	double[n][n] C;
+	mults(F, F, C);
+
+	// b = inv(F'F) = inv(C)
+	double[n][n] b;
+	double det, trace;
+	inv_det_trace3(F, b, det, trace);
+	
+	assert trace == tr(C);
+	assert det == det3(C);
+	
+	// E = C*b = C*det(C)*inv(C) = det*(Unit Matrix)
+	double[n][n] E;
+	mul(C, b, E);
+	
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			if (i == j) {
+				assert E[i][j] == det;
+			} else {
+				assert E[i][j] == 0.0;
+			}
+		}
+	}
+}

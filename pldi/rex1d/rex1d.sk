@@ -1,0 +1,225 @@
+pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 4 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 14 --bnd-inline-amnt 3 --bnd-arr1d-size 14 --bnd-arr-size 64 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+
+int SPMD_MAX_NPROC = 3;
+int SPMD_MAX_BUF_LEN = 4;
+include "spmd.skh";
+
+include "generators.skh";
+
+assume P>0 && P<=3;
+assume W>=P && W>1 && W<=10 && (W/P>=1) && (W/P > H*2-2);
+assume H>=3 && H<=4;
+
+struct LState {
+	int height;
+	int base;
+	int width;
+	int glen;
+	float[width+glen*2 <: 14][height <: 4] arr;
+}
+
+
+void partition(int P, int p, int N, ref int base, ref int width){
+	generator int num() {
+		return expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});
+	}
+    if(p < num()){
+        base = num();
+        width = num();
+    }else{
+        base =  num();
+        width =  num();
+    }
+}
+
+assume PP>0 && N>=PP && N>0 && N <= 8;
+harness void testPartition(int PP, int p, int N){
+    if(p<PP){
+        int b1, w1;
+        partition(PP, p, N, b1, w1);
+        assert w1 >= N/PP;
+        assert w1 <= N/PP+1;
+        if(p==0){ assert b1 == 0; }
+        if(p==PP-1){ assert b1+w1 == N; }
+        if(p+1 < PP){
+            int b2, w2;
+            partition(PP, p+1, N, b2, w2);
+            assert b1+w1 == b2;
+        }
+    }
+}
+
+//void partition(int P, int p, int N, ref int base, ref int width){
+//	assert P==1 && p == 0;
+//	
+//	base = 0;
+//	width = N;
+//}
+
+LState movein(global int nproc, int pid, global int H, global int W, global float[W][H] ga) {
+	int b, w;
+	partition(nproc, pid, W, b, w);
+	int g = (H+1)/2;
+	float[w+g*2][H] la;
+	for (int t=0; t<H; ++t) {
+		for (int x=0; x<w; ++x) {
+			la[t][g+x] = ga[t][b + x];
+		}
+	}
+	LState s = new LState(height=H, base=b, width=w, glen=g, arr=la);
+	return s;
+}
+
+void moveout(global int nproc, int pid, global int H, global int W, ref global float[W][H] ga, LState s) {
+	for (int t=0; t<H; ++t) {
+		for (int x=0; x<s.width; ++x) {
+			ga[t][s.base+x] = s.arr[t][s.glen + x];
+		}
+	}
+}
+
+void spec(global int P, global int H, global int W, ref global float[W][H] A) {
+    for(int t=1; t<H; ++t) {
+	    	// Zero Bound:
+//	    	A[t][0] = A[t-1][1];
+//	    	A[t][W-1] = A[t-1][W-2];
+	    	// Periodic Bound:
+		A[t][0] = (A[t-1][W-1] + A[t-1][1]);
+		A[t][W-1] = (A[t-1][W-2] + A[t-1][0]);
+        for(int x=1; x<W-1; ++x){
+            A[t][x] = (A[t-1][x-1] + A[t-1][x+1]);
+        }   
+    }
+}
+
+//void trapezoid(ref LState s) {
+//  for (int t=1; t<s.height; ++t) {
+//		for (int j = t; j< s.width-t; ++j) {
+//			int x = s.glen + j;
+//			s.arr[t][x] = s.arr[t-1][x-1] + s.arr[t-1][x+1];
+//		}
+//	}
+//}
+
+//assume h>=3 && h<=4 && width>=h*2-2 && width+glen*2<=12;
+void trapezoid(global int h, int width, int glen, ref float[width + glen*2][h] arr) {
+	for (int t=1; t<h; ++t) {
+		for (int j = t; j< width-t; ++j) {
+			int x = glen + j;
+			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+		}
+	}
+}
+
+
+//void fastTrapezoid(int h, int width, int glen, ref float[width + glen*2 <: 12][h <: 4] arr) implements trapezoid {
+//	int split = h*2 - ??;
+//	assert split>0 && split<=width;
+//	for (int j=??; j<split; ++j) {
+//		int top = j/2 + 1;
+//		assert top>1 && top<h;
+//		for (int t=1; t<top; ++t) {
+//			int x = glen + j - t;
+//			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+//		}
+//	}
+//	for(int 	j= split; j < width; ++j) {
+//		for (int t=1; t<h; ++t) {
+//			int x = glen + j - t;
+//			arr[t][x] = arr[t-1][x-1] + arr[t-1][x+1];
+//		}
+//	}
+//}
+
+
+
+//harness void trapezoidTest(LState s)  {
+//	LState t = s;
+//	trapezoidFast(s);
+//	trapezoid(t);
+//	assert t.arr == s.arr;
+//}
+
+
+void fastLeft(global int H, ref LState s) {
+	int w = s.width;
+	int g = s.glen;
+	
+	global int len = H-1;
+	
+	int r = (spmdpid== (spmdnproc-1) ) ? 0 : spmdpid+1;
+	float[len] send_buf;
+	float[len] recv_buf;
+
+	assert g == (H+1)/2;
+	assert g >= (len-1)/2 + (len-1)%2;
+	for (int i=0; i<len; ++i) {
+		int x = g + w - 1 - (i/2 + i%2);
+		assert x>=0;
+		assert x<12;
+		send_buf[i] = s.arr[i/2][x];
+	}
+	spmdtransfer(len, 1, send_buf, r, 1, recv_buf);
+	for (int i=0; i<len; ++i) {
+		s.arr[i/2][g - 1 - (i/2 + i%2)] = recv_buf[i];
+	}
+	
+	for (int j=0; j<len; ++j) {
+		int bottom = j/2 +1;
+		for (int t=bottom; t<H; ++t) {
+			int x = g - 1 - j + t;
+			s.arr[t][x] = s.arr[t-1][x-1]+s.arr[t-1][x+1];
+		}
+	}
+}
+
+void fastRight(global int H, ref LState s) {
+	int w = s.width;
+	int g = s.glen;
+	
+	int r = (spmdpid==0) ? (spmdnproc-1) : spmdpid-1;
+	float[H-1] send_buf;
+	float[H-1] recv_buf;
+
+	for (int i=0; i<H-1; ++i) {
+		send_buf[i] = s.arr[i/2][g + (i/2 + i%2)];
+	}
+	spmdtransfer(H-1, 1, send_buf, r, 1, recv_buf);
+	for (int i=0; i<H-1; ++i) {
+		s.arr[i/2][g + w + (i/2 + i%2)] = recv_buf[i];
+	}
+	
+	for (int j=0; j<H-1; ++j) {
+		int bottom = j/2 +1;
+		for (int t=bottom; t<H; ++t) {
+			int x = g + w + j - t;
+			s.arr[t][x] = s.arr[t-1][x-1]+s.arr[t-1][x+1];
+		}
+	}
+}
+
+void sk(global int P, global int H, global int W, ref global float[W][H] A) implements spec {
+	spmdfork(P) {
+		LState s;
+		s = movein(P, spmdpid, H, W, A);
+		spmdbarrier();
+		int ww = s.width+s.glen*2;
+		float[ww][H] a;
+		for (int t=0; t<H; ++t) {
+			for (int x=0; x<ww; ++x) {
+				a[t][x] = s.arr[t][x];
+			}
+		}
+		trapezoid(H, s.width, s.glen, a);
+		for (int t=0; t<H; ++t) {
+			for (int x=0; x<ww; ++x) {
+				s.arr[t][x] = a[t][x];
+			}
+		}
+//		trapezoid(s);
+		fastLeft(H, s);
+		fastRight(H, s);
+		spmdbarrier();
+		moveout(P, spmdpid, H, W, A, s);
+	}
+}

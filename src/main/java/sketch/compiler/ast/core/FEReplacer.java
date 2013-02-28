@@ -41,6 +41,7 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -739,7 +740,8 @@ public class FEReplacer implements FEVisitor
         // newFuncs = oldNewFuncs;
         if (!changed)
             return spec;
-        return new Package(spec, spec.getName(), newStructs, newVars, nf);
+        return new Package(spec, spec.getName(), newStructs, newVars, nf,
+                spec.getAssumptions());
 
     }
 
@@ -786,7 +788,9 @@ public class FEReplacer implements FEVisitor
             nlen = (Expression) t.getLength().accept(this);
         }
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return new TypeArray(nbase, nlen, t.getMaxlength());
+        TypeArray newtype = new TypeArray(nbase, nlen, t.getMaxlength());
+        newtype.setCudaMemType(t.getCudaMemType());
+        return newtype;
     }
 
     public Set<String> fields = null;
@@ -853,6 +857,9 @@ public class FEReplacer implements FEVisitor
         return stmt;
     }  
 
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        return spmdnproc;
+    }
 
 	public Object visitStmtSwitch(StmtSwitch sw) {
 		// TODO add visitSwmtSwitch

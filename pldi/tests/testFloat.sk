@@ -1,0 +1,26 @@
+pragma options "--bnd-inbits 3 --fe-fpencoding AS_FFIELD";
+
+double t1(double r, double y) {
+    return r/y;
+}
+
+double t2(double r, double y) implements t1 {
+    return r/y;
+}
+
+harness void main(int N, float[N] a) {
+	float[N] b = a;
+	
+	for (int i=0; i<N; ++i) {
+		a[i] = 2.0 / a[i];
+	}
+
+	for (int i=0; i<N; ++i) {
+		a[i] = 4.0 / a[i];
+	}
+	
+	for (int i=0; i<N; ++i) {
+		assert a[i] == b[i] + b[i];
+		assert a[i] == b[i] * 2.0;
+	}
+}

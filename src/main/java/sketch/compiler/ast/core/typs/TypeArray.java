@@ -217,6 +217,10 @@ public class TypeArray extends Type
         return base.hashCode() ^ length.hashCode();
     }
 
+    public TypeArray nullifyDims() {
+        return new TypeArray(memtyp, base, length, null, maxlength);
+    }
+
     public List<Expression> getDimensions() {
     	// XXX/cgjones: shortcut for flattened multi-dimension arrays
     	if (null != dims)
@@ -246,6 +250,10 @@ public class TypeArray extends Type
         return new TypeArray(memtyp, base, length, dims, maxlength);
     }
 
+    public TypeArray withBaseAndMemType(Type base, CudaMemoryType memtyp) {
+        return new TypeArray(memtyp, base, length, dims, maxlength);
+    }
+
     public TypeArray createWithLength(Expression length) {
         return new TypeArray(this.base, length, this.getMaxlength());
     }
@@ -253,4 +261,5 @@ public class TypeArray extends Type
     public int getMaxlength() {
         return maxlength;
     }
+
 }

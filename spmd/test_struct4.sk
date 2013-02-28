@@ -1,0 +1,32 @@
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 4 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+struct T {
+	int len;
+	int[len] a;
+}
+
+stencil int spec(int x) {
+	if (x>0) {
+		int y = x+1;
+		int[y] aa;
+		aa[0] = x+1;
+		T t = new T(len = y, a = aa);
+		x = x - x;
+		t.a[x] = t.len;
+		return t.a[0];
+	} else {
+		return 0;
+	}
+}
+
+stencil int sk(int x) implements spec {
+	if (x>0) {
+		int[x+1] aa;
+		aa[0] = x+1;
+		T t = new T(len = x+1, a = aa);
+		t.a[x] = t.len;
+		return t.a[t.len-??];
+	} else {
+		return 0;
+	}
+}

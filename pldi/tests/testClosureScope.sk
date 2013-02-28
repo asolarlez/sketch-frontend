@@ -1,0 +1,26 @@
+// this should fail semantic check because shadowing is not allowed
+
+void h(int x, ref int y) {
+	y = x*??;
+}
+
+harness void main(int input) {
+	int N = 0;
+	int M = 0;
+	
+	// which N does g capture?
+	void g() {
+		h(input, N);
+	}
+	
+	{
+		int N = input-1;
+		void f() {
+			N = N+1;
+			g();
+		}
+		f();
+		M = N+N;
+	}
+	assert N == M;
+}

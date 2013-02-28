@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.SymbolTable.Finality;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprField;
@@ -94,6 +95,11 @@ public class CheckProperFinality extends SymbolTableVisitor {
     };
 
     FEReplacer markAsNoFinal = new FEReplacer() {
+        @Override
+        public Object visitExprArrayInit(ExprArrayInit init) {
+            return init;
+        }
+
         @Override
         public Object visitExprArrayRange(ExprArrayRange ar) {
             ar.getBase().accept(this);

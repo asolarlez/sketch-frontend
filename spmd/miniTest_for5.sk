@@ -1,0 +1,15 @@
+/*
+ * triggers a bug in backend: Error: This variable already existed!!
+ * (duplicated variable: H__3, there is a bug when struct used with holes)
+ */
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 4 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+stencil void spec(ref int N) {
+
+}
+
+stencil void sk(ref int N) implements spec {
+	for (int j=1/(N+1); j<N; ++j) {
+		assert j>=0 && j<N;
+	}
+}

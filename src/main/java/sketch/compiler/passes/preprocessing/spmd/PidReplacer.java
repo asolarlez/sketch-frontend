@@ -1,9 +1,8 @@
 package sketch.compiler.passes.preprocessing.spmd;
 
-import static sketch.util.DebugOut.assertFalse;
 import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 
@@ -21,6 +20,8 @@ public class PidReplacer extends FEReplacer {
     public Object visitExprVar(ExprVar exp) {
         if (exp.getName().equals("spmdpid")) {
             return new SpmdPid(exp.getCx());
+        } else if (exp.getName().equals("spmdnproc")) {
+            return new SpmdNProc(exp.getCx());
         }
         return super.visitExprVar(exp);
     }

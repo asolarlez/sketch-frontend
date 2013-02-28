@@ -116,10 +116,14 @@ public class TypePrimitive extends Type
 
 
     public String toString2() {
-        return this.getCudaMemType().syntaxNameSpace() + toString();
+        return this.getCudaMemType().syntaxNameSpace() + toStringPrimitive();
     }
 
-    public String toString()
+    public String toString() {
+        return this.getCudaMemType().syntaxNameSpace() + toStringPrimitive();
+    }
+
+    public String toStringPrimitive()
  {
         switch (type)
         {

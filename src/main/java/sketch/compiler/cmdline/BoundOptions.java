@@ -46,6 +46,8 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Max Size for arrays of unknown size.")
     public int arrSize = 32;
     
+    @CliParameter(help = "Max Size for one dimensional arrays of unknown size.")
+    public int arr1dSize = 32;
     
     @CliParameter(help = "Initial value to start with when minimizing "
             + "expressions/cost functions")

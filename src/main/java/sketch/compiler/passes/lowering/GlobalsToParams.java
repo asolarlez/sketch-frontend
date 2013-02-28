@@ -153,7 +153,7 @@ public class GlobalsToParams extends FEReplacer {
         }
         this.fcnsToAdd.clear();
         return new Package(spec, spec.getName(), spec.getStructs(),
-                Collections.EMPTY_LIST, fcns);
+                Collections.EMPTY_LIST, fcns, spec.getAssumptions());
     }
 
     @Override

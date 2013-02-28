@@ -31,6 +31,38 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
         DIVTABLE = new ExprArrayInit((FENode) null, le);
     }
 
+    // private Expression getCondition(List<Statement> stmts, Parameter p) {
+    // Type t = p.getType();
+    // if (t.isArray()) {
+    // Type bt = ((TypeArray) t).getBase();
+    // assert !bt.isArray() : "ReplaceFloat must run after EliminateMultiDim!";
+    // }
+    // return null;
+    // }
+    // @Override
+    // public Object visitFunction(Function func) {
+    // Function f = (Function) super.visitFunction(func);
+    // Expression cond = null;
+    // List<Statement> stmts = new Vector<Statement>();
+    // for (Parameter p : f.getParams()) {
+    // Expression e = getCondition(stmts, p);
+    // if (e != null) {
+    // if (cond == null) {
+    // cond = e;
+    // } else {
+    // cond = new ExprBinary(cond, "&&", e);
+    // }
+    // }
+    // }
+    //
+    // if (cond == null) {
+    // return f;
+    // } else {
+    // stmts.add(new StmtIfThen(f, cond, f.getBody(), null));
+    // return f.creator().body(new StmtBlock(stmts)).create();
+    // }
+    // }
+
     public Object visitExprBinary(ExprBinary exp) {
         Type ltype = getType(exp.getLeft());
         Type rtype = getType(exp.getRight());
@@ -73,6 +105,9 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
             }
             case ExprBinary.BINOP_EQ:
             case ExprBinary.BINOP_NEQ:
+                // TODO xzl: should we do this?
+                // Expression goodleft = new ExprBinary(left, "%", BASE);
+                // Expression goodright = new ExprBinary(right, "%", BASE);
                 return new ExprBinary(exp, newOp, left, right, exp.getAlias());
             default:
                 assert false : "You can't apply this floating point operation if you are doing floating-point to boolean replacement." +

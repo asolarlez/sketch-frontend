@@ -1,0 +1,20 @@
+/*
+ * triggers a bug in frontend
+ */
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 1 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 4 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 1"; //  --be:showDAG
+
+void movein(ref int x) {
+	x = x * ??;
+}
+
+stencil void spec(int N, ref int[N] a) {
+	if (N>1) {
+		a[1] = a[1]+a[1]*2;
+	}
+}
+
+stencil void sk(int N, ref int[N] a) implements spec {
+	if (N>1) {
+		movein(a[1]);
+	}
+}

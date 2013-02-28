@@ -35,6 +35,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -276,7 +277,7 @@ public class GetExprType extends FENullVisitor
         {
             String name = ((TypeStructRef)base).getName();
             ts = nres.getStruct(name);
-            assert ts != null : base;
+            assert ts != null : "GetExprType: missing struct information" + base;
         }
         else
         {
@@ -443,4 +444,9 @@ public class GetExprType extends FENullVisitor
 	public Object visitSpmdPid(SpmdPid pid) {
 	    return TypePrimitive.inttype;
 	}
+
+    @Override
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        return TypePrimitive.inttype;
+    }
 }

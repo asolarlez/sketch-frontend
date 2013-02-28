@@ -335,5 +335,21 @@ public class EliminateDeadCode extends BackwardDataflow {
     		return sf;
     	}
 	}
-
+	
+	public Object visitStmtFor(StmtFor stmt) {
+        // TODO xzl:
+        // sometimes the initializer of for loop will be dead code and eliminated, and
+        // that causes
+        // stencil transformation to fail. we work around the bug here.
+        // any better way?
+        Statement init = stmt.getInit();
+        Object r = super.visitStmtFor(stmt);
+        if (r instanceof StmtFor) {
+            if (((StmtFor) r).getInit() == null) {
+                return new StmtFor(stmt, init, ((StmtFor) r).getCond(),
+                        ((StmtFor) r).getIncr(), ((StmtFor) r).getBody());
+            }
+        }
+        return r;
+	}
 }

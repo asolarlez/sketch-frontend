@@ -364,5 +364,21 @@ public class TypeStruct extends Type implements Iterable<Entry<String, Type>>
     public Iterator<Entry<String, Type>> iterator() {
         return fieldTypMap.iterator();
     }
+
+    public Collection<StructFieldEnt> getFieldEntriesInOrder() {
+        Collection<StructFieldEnt> entries = getFieldEntries();
+        Collection<StructFieldEnt> r = new ArrayList<StructFieldEnt>();
+        for (StructFieldEnt e : entries) {
+            if (!e.getType().isArray()) {
+                r.add(e);
+            }
+        }
+        for (StructFieldEnt e : entries) {
+            if (e.getType().isArray()) {
+                r.add(e);
+            }
+        }
+        return r;
+    }
 }
 

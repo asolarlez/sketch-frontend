@@ -2,6 +2,7 @@ package sketch.compiler.passes.optimization;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
