@@ -193,7 +193,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         }
 
         Parameter toParam(int ptype) {
-            return new Parameter(t, name, ptype);
+            return new Parameter(ctx, t, name, ptype);
         }
     }
 

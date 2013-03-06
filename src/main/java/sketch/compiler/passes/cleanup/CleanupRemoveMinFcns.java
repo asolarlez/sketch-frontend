@@ -33,7 +33,7 @@ public class CleanupRemoveMinFcns extends FEReplacer {
                     }
                 });
         return new Package(spec, spec.getName(),
-                spec.getStructs(), spec.getVars(), newFcns, spec.getAssumptions());
+                spec.getStructs(), spec.getVars(), newFcns);
     }
 
     @Override

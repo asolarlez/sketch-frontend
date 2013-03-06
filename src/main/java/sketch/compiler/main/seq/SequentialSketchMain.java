@@ -35,7 +35,6 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.CleanupFinalCode;
-import sketch.compiler.main.passes.InsertAssumptions;
 import sketch.compiler.main.passes.LowerToSketch;
 import sketch.compiler.main.passes.OutputCCode;
 import sketch.compiler.main.passes.ParseProgramStage;
@@ -271,7 +270,6 @@ public class SequentialSketchMain extends CommonSketchMain
     // [end]
 
     protected Program preprocessProgram(Program lprog, boolean partialEval) {
-        lprog = (Program) lprog.accept(new InsertAssumptions());
         return (new PreprocessStage(varGen, options, /* getPreProcStage1(), getIRStage1(), */
 
                 visibleRControl(lprog), partialEval)).visitProgram(lprog);

@@ -232,7 +232,7 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
             String name = p.getName();
             Type t = currentT.get(name);
             if (t != null) {
-                newp.add(new Parameter(t, name, p.getPtype()));
+                newp.add(new Parameter(p, t, name, p.getPtype()));
             } else {
                 newp.add(p);
             }

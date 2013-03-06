@@ -43,9 +43,8 @@ public class OutputCCode extends MetaStage {
         String resultFile = SequentialSketchMain.getOutputFileName(options);
         final boolean tprintPyStyle = options.feOpts.tprintPython != null;
         
-        Program pprog = (Program) prog.accept(new RemoveAssumptions());
-        pprog =
-                (Program) pprog.accept(new EliminateMultiDimArrays(
+        Program pprog =
+                (Program) prog.accept(new EliminateMultiDimArrays(
                         !options.feOpts.killAsserts, new TempVarGen()));
         pprog = (Program) pprog.accept(new ChangeGlobalStateType());
         String hcode = (String) pprog.accept(new NodesToSuperH(resultFile, tprintPyStyle));

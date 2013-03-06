@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeStruct;
@@ -43,7 +42,6 @@ public class Package extends FENode
     private final List<FieldDecl> vars;
     private final List<Function> funcs;
     private final List<TypeStruct> structs;
-    private final List<Expression> assumptions;
 
     public String toString(){
         String res = "package " + name + '\n';
@@ -72,14 +70,13 @@ public class Package extends FENode
      */
     public Package(FENode context, String name,
  List<TypeStruct> structs, List vars,
-            List<Function> funcs, List<Expression> assumptions)
+            List<Function> funcs)
     {
         super(context);
         this.name = name;
         this.structs = structs;
         this.vars = vars;
         this.funcs = funcs;
-        this.assumptions = assumptions;
     }
 
     /**
@@ -102,7 +99,7 @@ public class Package extends FENode
     public Package(FEContext context, String name,
  List<TypeStruct> structs,
  List vars,
-            List<Function> funcs, List<Expression> assumptions)
+            List<Function> funcs)
     {
         super(context);
 
@@ -111,7 +108,6 @@ public class Package extends FENode
         this.structs = structs;
         this.vars = vars;
         this.funcs = funcs;
-        this.assumptions = assumptions;
     }
 
 
@@ -162,10 +158,6 @@ public class Package extends FENode
         return structs;
     }
 
-    public List<Expression> getAssumptions() {
-        return assumptions;
-    }
-
     /**
      * Accept a front-end visitor.
      *
@@ -181,7 +173,7 @@ public class Package extends FENode
     public Package newFromFcns(List<Function> fcns) {
         return new Package(this, this.getName(),
  structs, this.getVars(),
-                Collections.unmodifiableList(fcns), assumptions);
+                Collections.unmodifiableList(fcns));
     }
 
     public Package merge(Package s2) {
@@ -192,14 +184,12 @@ public class Package extends FENode
         fd.addAll(s2.vars);
         List<Function> fs = new ArrayList<Function>(funcs);
         fs.addAll(s2.funcs);
-        List<Expression> as = new ArrayList<Expression>(assumptions);
-        as.addAll(s2.assumptions);
-        return new Package(this, name, ns, fd, fs, as);
+        return new Package(this, name, ns, fd, fs);
     }
 
     public Package newFromFcns(List<Function> fcns, List<TypeStruct> structs) {
         return new Package(this, this.getName(),
                 structs, this.getVars(),
-                Collections.unmodifiableList(fcns), assumptions);
+                Collections.unmodifiableList(fcns));
     }
 }

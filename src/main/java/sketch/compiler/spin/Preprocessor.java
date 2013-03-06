@@ -264,8 +264,7 @@ public class Preprocessor extends FEReplacer {
 
         if (!changed)
             return spec;
-        return new Package(spec, spec.getName(), spec.getStructs(), newVars, newFuncs,
-                spec.getAssumptions());
+        return new Package(spec, spec.getName(), spec.getStructs(), newVars, newFuncs);
 
     }
 

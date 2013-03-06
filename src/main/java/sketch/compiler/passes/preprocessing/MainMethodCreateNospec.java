@@ -57,7 +57,7 @@ public class MainMethodCreateNospec extends FEReplacer {
             }
             return new Package(spec, spec.getName(), spec.getStructs(),
                     spec.getVars(),
-                    Collections.unmodifiableList(newFcns), spec.getAssumptions());
+                    Collections.unmodifiableList(newFcns));
         } else {
             return spec;
         }

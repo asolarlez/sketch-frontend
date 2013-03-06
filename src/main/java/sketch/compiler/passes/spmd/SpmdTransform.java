@@ -190,14 +190,14 @@ public class SpmdTransform  extends SymbolTableVisitor {
             Function.FunctionCreator creator = fcn.creator().name(prefix + fcn.getName());
             if (needAllProc) {
                 Vector<Parameter> params = new Vector<Parameter>();
-                params.add(new Parameter(globalInt, SpmdNProc, Parameter.IN));
+                params.add(new Parameter(fcn, globalInt, SpmdNProc, Parameter.IN));
                 for (Parameter p : fcn.getParams()) {
                     Type t = p.getType();
                     if (t.getCudaMemType() == CudaMemoryType.GLOBAL) {
                         params.add(p);
                     } else {
                         Type newt = localArrayType(t);
-                        params.add(new Parameter(newt, p.getName(), p.getPtype()));
+                        params.add(new Parameter(p, newt, p.getName(), p.getPtype()));
                     }
                 }
                 creator = creator.params(params);
@@ -507,7 +507,12 @@ public class SpmdTransform  extends SymbolTableVisitor {
                         Statement body = sf.getBody();
                         Object nb = body.accept(this);
                         if (nb != body) {
-                            sf = new StmtFor(sf, sf.getInit(), sf.getCond(), sf.getIncr(), (Statement) nb);
+                            // TODO xzl: check if this is correct. sf.isCanonical implies
+                            // the new for loop canonical?
+                            sf =
+                                    new StmtFor(sf, sf.getInit(), sf.getCond(),
+                                            sf.getIncr(), (Statement) nb,
+                                            sf.isCanonical());
                         }
                         flushAndAdd(stmts, procLoopStmts, sf);
                     } else {
@@ -585,8 +590,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
         @Override
         public Object visitFunction(Function func) {
             Vector<Parameter> params = new Vector<Parameter>();
-            params.add(new Parameter(globalInt, SpmdNProc, Parameter.IN));
-            params.add(new Parameter(TypePrimitive.inttype, SpmdPid, Parameter.IN));
+            params.add(new Parameter(func, globalInt, SpmdNProc, Parameter.IN));
+            params.add(new Parameter(func, TypePrimitive.inttype, SpmdPid, Parameter.IN));
             params.addAll(func.getParams());
             FunctionCreator creator = func.creator().name("someproc_" + func.getName()).params(params);
             String spec = func.getSpecification();

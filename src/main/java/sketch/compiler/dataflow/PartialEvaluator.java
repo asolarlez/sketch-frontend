@@ -1714,7 +1714,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             String pkgName = pkg.getName();
             newfuns.get(pkgName).addAll(newPkg.getFuncs());
             newPkgs.add(new Package(newPkg, pkgName, newPkg.getStructs(),
-                    newPkg.getVars(), newfuns.get(pkgName), pkg.getAssumptions()));
+                    newPkg.getVars(), newfuns.get(pkgName)));
         }
 
         return p.creator().streams(newPkgs).create();
@@ -1761,7 +1761,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         return isReplacer ? new Package(spec, spec.getName(), newStructs,
  newVars,
-                newFuncs, spec.getAssumptions()) : spec;
+                newFuncs) : spec;
     }
 
     /**

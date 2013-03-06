@@ -75,9 +75,8 @@ public class AddPkgNameToNames extends FEReplacer {
             Package pkg = (Package) ssOrig.accept(this);
             lf.addAll(pkg.getFuncs());
             ts.addAll(pkg.getStructs());
-                as.addAll(pkg.getAssumptions());
         }
-            Package global = new Package(prog, GLOBALPKG, ts, new ArrayList(), lf, as);
+            Package global = new Package(prog, GLOBALPKG, ts, new ArrayList(), lf);
 
         return prog.creator().streams(Collections.singletonList(global)).create();
         } else {

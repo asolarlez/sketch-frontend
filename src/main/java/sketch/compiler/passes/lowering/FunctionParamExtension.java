@@ -389,7 +389,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
             Package tpkg =
                     new Package(spec, spec.getName(), spec.getStructs(),
-                            spec.getVars(), funs, spec.getAssumptions());
+                            spec.getVars(), funs);
             nres.populate(tpkg);
             oldStreams.add(tpkg);
 

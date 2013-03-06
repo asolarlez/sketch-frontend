@@ -172,7 +172,7 @@ options {
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  
-	List<Expression> assumptions = new ArrayList<Expression>(); Expression assumption = null;
+	Expression assumption = null;
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
@@ -190,7 +190,7 @@ program	 returns [Program p]
            |    TK_package id:ID SEMI
 				{ pkgCtxt = getContext(id); pkgName = (id.getText()); }
            |    pragma_stmt
-           |	TK_assume assumption = right_expr SEMI  { if (assumption != null) { assumptions.add(assumption); } }
+           |	TK_assume assumption = right_expr SEMI  { if (assumption != null) { } }
         )*
 		EOF
 		{
@@ -205,7 +205,7 @@ program	 returns [Program p]
 			}
 			 Package ss=new Package(pkgCtxt, 
  				pkgName,
- 				structs, vars, funcs, assumptions);
+ 				structs, vars, funcs);
  				namespaces.add(ss);
                 if (!hasError) {
                     if (p == null) {

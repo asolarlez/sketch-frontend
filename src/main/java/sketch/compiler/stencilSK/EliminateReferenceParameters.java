@@ -42,9 +42,10 @@ public class EliminateReferenceParameters extends SymbolTableVisitor {
                 changed = true;
                 String newName = varGen.nextVar(param.getName());
                 Parameter newParam =
-                        new Parameter(param.getType(), newName, Parameter.IN);
+                        new Parameter(param, param.getType(), newName, Parameter.IN);
                 params.add(newParam);
-                params.add(new Parameter(param.getType(), param.getName(), Parameter.OUT));
+                params.add(new Parameter(param, param.getType(), param.getName(),
+                        Parameter.OUT));
                 StmtBlock body = (StmtBlock) func.getBody();
                 StmtAssign assn =
                         new StmtAssign(new ExprVar(func, param.getName()), new ExprVar(
