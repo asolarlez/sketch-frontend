@@ -172,7 +172,6 @@ options {
 
 program	 returns [Program p]
 { p = null; List vars = new ArrayList();  
-	Expression assumption = null;
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
@@ -190,7 +189,6 @@ program	 returns [Program p]
            |    TK_package id:ID SEMI
 				{ pkgCtxt = getContext(id); pkgName = (id.getText()); }
            |    pragma_stmt
-           |	TK_assume assumption = right_expr SEMI  { if (assumption != null) { } }
         )*
 		EOF
 		{
@@ -267,6 +265,7 @@ statement returns [Statement s] { s = null; }
 	|	s=while_statement
 	|	s=do_while_statement SEMI
 	|	s=for_statement
+	|	s=assume_statement SEMI
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
 	|(annotation_list (TK_device | TK_serial | TK_harness |
@@ -528,6 +527,21 @@ pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayLi
 return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	:	t:TK_return (x=right_expr)? { s = new StmtReturn(getContext(t), x); }
 	;
+
+assume_statement returns [StmtAssume s] { s = null; Expression cond; }
+	:   (t:TK_assume) cond = right_expr (COLON ass:STRING_LITERAL)? {
+			if (cond != null) {
+				String msg = null;
+				FEContext cx =getContext(t);
+				if(ass!=null){
+					String ps = ass.getText();
+			        ps = ps.substring(1, ps.length()-1);
+					msg = cx + "   "+ ps;	
+				}
+				s = new StmtAssume(cx, cond, msg);
+			}
+		}
+	;
 	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
@@ -538,7 +552,7 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 		if(ass!=null){
 			String ps = ass.getText();
 	        ps = ps.substring(1, ps.length()-1);
-			msg =cx + "   "+ ps;	
+			msg = cx + "   "+ ps;	
 		}
 		s = new StmtAssert(cx, x, msg, t2!=null); }	
 	;

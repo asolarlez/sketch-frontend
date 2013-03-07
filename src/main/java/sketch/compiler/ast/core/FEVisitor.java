@@ -130,4 +130,6 @@ public interface FEVisitor
     public Object visitSpmdPid(SpmdPid spmdpid);
 
     public Object visitSpmdNProc(SpmdNProc spmdnproc);
+
+    public Object visitStmtAssume(StmtAssume stmtAssume);
 }

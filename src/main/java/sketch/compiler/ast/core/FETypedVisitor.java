@@ -169,6 +169,10 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, stmt);
     }
 
+    public T visitStmtAssume(StmtAssume stmt) {
+        throw new FEVisitorException(this, stmt);
+    }
+
     public T visitStmtAssign(StmtAssign stmt) {
         throw new FEVisitorException(this, stmt);
     }

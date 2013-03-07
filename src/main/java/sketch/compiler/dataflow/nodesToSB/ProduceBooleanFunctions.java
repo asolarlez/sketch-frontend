@@ -517,6 +517,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssign(s);
         
     }
+    
 
     @Override
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {

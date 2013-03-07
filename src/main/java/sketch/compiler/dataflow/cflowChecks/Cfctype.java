@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.dataflow.MethodState;
@@ -66,6 +67,13 @@ public class Cfctype extends abstractValueType {
         }       
     }
 
+    @Override
+    public void Assume(abstractValue val, StmtAssume stmt) {
+        if (val.equals(noinit)) {
+            throw new RuntimeException("Assuming an uninitialized variable " +
+                    stmt.getMsg());
+        }
+    }
 
     public varState cleanState(String var, Type t, MethodState mstate){
         return new CfcState(t, this);

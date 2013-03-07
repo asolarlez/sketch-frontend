@@ -7,6 +7,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
@@ -49,6 +50,20 @@ public class LiveVariableVType extends abstractValueType {
 		}
 
 	}
+
+    @Override
+    public void Assume(abstractValue val, StmtAssume stmt) {
+        if (val instanceof LVSet) {
+            ((LVSet) val).enliven();
+        }
+        if (val instanceof LiveVariableAV) {
+            LiveVariableAV lv = (LiveVariableAV) val;
+            if (lv.mstate != null) {
+                lv.mstate.setVarValueLight(lv.mstate.untransName(lv.name), new joinAV(
+                        LiveVariableAV.LIVE));
+            }
+        }
+    }
 
 	@Override
 	public abstractValue BOTTOM() {		

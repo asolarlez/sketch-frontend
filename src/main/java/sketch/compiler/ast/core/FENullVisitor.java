@@ -158,4 +158,8 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) { return null; }
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) { return null; }
     public Object visitExprType(ExprType exprtyp) { return null; }
+
+    public Object visitStmtAssume(StmtAssume stmtAssume) {
+        return null;
+    }
 }

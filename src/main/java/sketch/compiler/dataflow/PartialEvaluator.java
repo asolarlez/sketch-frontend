@@ -1319,6 +1319,22 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 stmt.getAssertMax()) : stmt;
     }
 
+    public Object visitStmtAssume(StmtAssume stmt) {
+        /* Evaluate given assertion expression. */
+        Expression cond = stmt.getCond();
+        abstractValue vcond = (abstractValue) cond.accept(this);
+        Expression ncond = exprRV;
+        String msg = null;
+        msg = stmt.getMsg();
+        try {
+            state.Assume(vcond, stmt);
+        } catch (RuntimeException e) {
+            System.err.println(stmt.getCx() + ":" + e.getMessage());
+            throw e;
+        }
+        return isReplacer ? new StmtAssume(stmt, ncond, stmt.getMsg()) : stmt;
+    }
+
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         stmtMinimize.getMinimizeExpr().accept(this);

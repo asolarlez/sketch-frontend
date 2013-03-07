@@ -648,6 +648,14 @@ public class FEReplacer implements FEVisitor
         return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper());
     }
 
+    public Object visitStmtAssume(StmtAssume stmt) {
+        Expression newValue =
+                stmt.getCond() == null ? null : doExpression(stmt.getCond());
+        if (newValue == stmt.getCond())
+            return stmt;
+        return new StmtAssume(stmt, newValue, stmt.getMsg());
+    }
+
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         List<Expression> newInits = new ArrayList<Expression>();
