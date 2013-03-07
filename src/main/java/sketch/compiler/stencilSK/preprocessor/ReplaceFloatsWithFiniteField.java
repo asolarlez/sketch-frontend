@@ -5,7 +5,15 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstFloat;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
@@ -60,15 +68,17 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
             }
             case ExprBinary.BINOP_DIV: {
                 Expression goodright = new ExprBinary(right, "%", BASE);
-                Expression ebase = new ExprArrayRange(this.DIVTABLE, goodright);
+                Expression ebase =
+                        new ExprArrayRange(goodright, this.DIVTABLE, goodright);
 
                 ebase =
                         new ExprBinary(exp, ExprBinary.BINOP_MUL, left, ebase,
                                 exp.getAlias());
                 ebase = new ExprBinary(ebase, "%", BASE);
-                ebase =
-                        new ExprTernary(exp, ExprTernary.TEROP_COND, new ExprBinary(
-                                right, "!=", ExprConstInt.zero), ebase, ExprConstInt.zero);
+                /*
+                 * ebase = new ExprTernary(exp, ExprTernary.TEROP_COND, new ExprBinary(
+                 * right, "!=", ExprConstInt.zero), ebase, ExprConstInt.zero);
+                 */
                 return ebase;
             }
             case ExprBinary.BINOP_EQ:

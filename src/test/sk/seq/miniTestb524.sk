@@ -1,0 +1,15 @@
+
+void modif(ref int[3] x){
+    ++x[0];
+}
+
+void nose(int[3] x){
+    modif(x);    
+}
+
+
+harness void main(int p){
+    int[3] x = {1,2,3};
+    nose(x);
+    assert x[0] == 1;
+}

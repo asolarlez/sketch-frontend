@@ -257,8 +257,16 @@ public class SimpleCodePrinter extends CodePrinter
 	public Object visitStmtVarDecl(StmtVarDecl stmt)
 	{
 		if(outtags && stmt.getTag() != null){ out.println("T="+stmt.getTag()); }
-		printLine(stmt.toString() + ';');
-		return super.visitStmtVarDecl(stmt);
+
+        for (int i = 0; i < stmt.getNumVars(); i++) {
+            String str = stmt.getType(i) + " " + stmt.getName(i);
+            if (stmt.getInit(i) != null) {
+                str += " = " + stmt.getInit(i);
+            }
+            printLine(str + ";");
+        }
+
+        return stmt;
 	}
 
 	@Override
