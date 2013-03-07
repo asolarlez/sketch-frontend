@@ -53,6 +53,7 @@ import sketch.compiler.passes.lowering.ConstantReplacer;
 import sketch.compiler.passes.lowering.EliminateComplexForLoops;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
+import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
@@ -220,13 +221,13 @@ public class SequentialSketchMain extends CommonSketchMain
             final SemanticCheckPass semanticCheck =
                     new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
             // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
-            // ExtractComplexLoopConditions ec =
-            // new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
+            ExtractComplexLoopConditions ec =
+                    new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
             // final FunctionParamExtension paramExt = new FunctionParamExtension();
 
             prog = (Program) semanticCheck.visitProgram(prog);
             // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
-            // prog = (Program) ec.visitProgram(prog);
+            prog = (Program) ec.visitProgram(prog);
             // prog = (Program) paramExt.visitProgram(prog);
             return prog;
         }

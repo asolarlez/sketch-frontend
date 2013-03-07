@@ -48,7 +48,7 @@ public class PreprocessStage extends MetaStage {
         // prog.debugDump("After Replace Min Loops");
 
         // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
-        // prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
+        prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 

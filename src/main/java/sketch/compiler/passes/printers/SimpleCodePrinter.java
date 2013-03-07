@@ -195,6 +195,15 @@ public class SimpleCodePrinter extends CodePrinter
 		return super.visitStmtAssert(stmt);
 	}
 
+    @Override
+    public Object visitStmtAssume(StmtAssume stmt) {
+        if (outtags && stmt.getTag() != null) {
+            out.println("T=" + stmt.getTag());
+        }
+        printLine(stmt.toString() + ";" + " //" + stmt.getMsg());
+        return super.visitStmtAssume(stmt);
+    }
+
 	@Override
 	public Object visitStmtAssign(StmtAssign stmt)
 	{
