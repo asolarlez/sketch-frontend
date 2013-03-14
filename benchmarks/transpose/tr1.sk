@@ -80,29 +80,6 @@ void transpose_finish(global int n1, global int n2, double[n1*n2] a, ref double[
 	}
 }
 
-void spmdalltoall(global int size, double[size] src, ref double[size] dst) {
-	assert size%spmdnproc == 0;
-	global int sz = size/spmdnproc;
-	global double[size][spmdnproc] buffer;
-	spmdbarrier();
-	for (int i=0; i<spmdnproc; ++i) {
-		for (int j=0; j<sz; ++j) {
-			buffer[i][spmdpid*sz + j] = src[i*sz + j];
-		}
-	}
-	spmdbarrier();
-	for (int k=0; k<size; ++k) {
-		dst[k] = buffer[spmdpid][k];
-	}
-	spmdbarrier();
-	assert size==2;
-	assert sz == 1;
-	assert src[0] == buffer[0][spmdpid];
-	assert src[1] == buffer[1][spmdpid];
-	assert dst[0] == buffer[spmdpid][0];
-	assert dst[1] == buffer[spmdpid][1];
-}
-
 // transpose a to b
 void transpose_xy_z(global int nx, global int ny, global int nz, LState a, ref LState b) {
 	transpose_local(nx*ny, nz/spmdnproc, a.a, b.a);

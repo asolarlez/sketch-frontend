@@ -35,7 +35,7 @@ void moveout(global int nproc, int pid, global int nt, ref global double[nt] ga,
 // we use a by-plane partition, so every node owns entire x and y axes, but portion of z axes
 // after transpose, the new array result will have different dimensions: (x,y,z) => (z,x,y)
 void spec(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
-	assume P>0 & P<=3;
+	assume P>0 & P<=2;
 	//assume nx%P==0;
 	assume ny%P==0;
 	assume nz%P==0;
