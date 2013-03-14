@@ -60,14 +60,14 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // [n1][n2] => [n2][n1]
 void transpose_local(global int n1, global int n2, double[n1*n2] a, ref double[n1*n2] b) {
 	generator int num() {
-		return {| n1 | n2 |};
+		return {| n1 | n2 | 1};
 	}
 	//i<n2
 	for (int i=0; i<num(); ++i) {
 		// j<n1
 		for (int j=0; j<num(); ++j) {
 			//b[j*n2 + i] = a[i*n1 + j]; 
-			b[j*num() + i] = a[i*num() + j]; 
+			b[j*num() + i*num()] = a[i*num() + j*num()]; 
 		}
 	}
 }
@@ -87,7 +87,7 @@ void transpose_finish(global int n1, global int n2, double[n1*n2] a, ref double[
 			int end = num();
 			for (int i=0; i< end; ++i) {
 				// b[j*n2 + i+ioff] = a[p*(n1*n2/spmdnproc) + j*n2/spmdnproc + i];
-				b[j* num() + i+ioff] = a[p*num() + j*num() + i];
+				b[j* num() + i*num() +ioff] = a[p*num() + j*num() + i*num()];
 			}
 		}
 	}
