@@ -143,9 +143,7 @@ public class SequentialSketchMain extends CommonSketchMain
         public BeforeSemanticCheckStage() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new MinimizeFcnCall(), /* new TprintFcnCall(), */
-            new SpmdbarrierCall(),
- new PidReplacer()
+ { new MinimizeFcnCall() /* new TprintFcnCall(), */
             };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
@@ -423,6 +421,9 @@ public class SequentialSketchMain extends CommonSketchMain
 
         prog = (Program) prog.accept(new ConstantReplacer(null));
         prog = (Program) prog.accept(new MinimizeFcnCall());
+        prog = (Program) prog.accept(new SpmdbarrierCall());
+        prog = (Program) prog.accept(new PidReplacer());
+
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
