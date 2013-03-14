@@ -59,6 +59,11 @@
             <name>UC Berkeley Maven2 Repository</name>
             <url>http://ntung.com/mvn</url>
         </repository>
+        <repository>
+            <id>mvnrepository</id>
+            <name>Mvn Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -88,13 +93,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>edu.nyu.cs</groupId>
+            <groupId>xtc</groupId>
             <artifactId>rats-runtime</artifactId>
-            <version>1.14.3</version>
+            <version>1.15.0</version>
         </dependency>
         <dependency>
-            <groupId>gnu-getopt</groupId>
-            <artifactId>getopt</artifactId>
+            <groupId>gnu.getopt</groupId>
+            <artifactId>java-getopt</artifactId>
             <version>1.0.13</version>
         </dependency>
         <dependency>
