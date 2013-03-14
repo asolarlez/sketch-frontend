@@ -60,7 +60,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // [n1][n2] => [n2][n1]
 void transpose_local(global int n1, global int n2, double[n1*n2] a, ref double[n1*n2] b) {
 	generator int num() {
-		return {| n1 | 1 |} * {| n2 | 1 |};
+		return {| n1 | n2 |};
 	}
 	//i<n2
 	for (int i=0; i<num(); ++i) {
