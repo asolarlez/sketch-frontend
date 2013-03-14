@@ -15,12 +15,7 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
@@ -33,6 +28,8 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.util.Misc;
 
 
@@ -332,6 +329,18 @@ public class EliminateRegens extends SymbolTableVisitor {
         public Object visitExprNullPtr (ExprNullPtr exp) {
             List<Expression> exps = new ArrayList<Expression> ();
             exps.add (exp);
+            return exps;
+        }
+        
+        public Object visitSpmdPid(SpmdPid exp) {
+            List<Expression> exps = new ArrayList<Expression>();
+            exps.add(exp);
+            return exps;
+        }
+
+        public Object visitSpmdNProc(SpmdNProc exp) {
+            List<Expression> exps = new ArrayList<Expression>();
+            exps.add(exp);
             return exps;
         }
 
