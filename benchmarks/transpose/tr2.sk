@@ -43,7 +43,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume nx<=4;
 	assume ny<=4;
 	assume nz<=4;
-	assume nx*ny*nz<=18;
+	assume nx*ny*nz<=16;
 	
 	// we don't use block now
     for(int y=0; y<ny; ++y) {
