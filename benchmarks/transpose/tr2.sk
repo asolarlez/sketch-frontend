@@ -59,9 +59,15 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // n1 = nx*ny, n2 = nz/spmdproc
 // [n1][n2] => [n2][n1]
 void transpose_local(global int n1, global int n2, double[n1*n2] a, ref double[n1*n2] b) {
-	for (int i=0; i<n2; ++i) {
-		for (int j=0; j<n1; ++j) {
-			b[j*n2 + i] = a[i*n1 + j]; 
+	generator int num() {
+		return {| n1 | 1 |} * {| n2 | 1 |};
+	}
+	//i<n2
+	for (int i=0; i<num(); ++i) {
+		// j<n1
+		for (int j=0; j<num(); ++j) {
+			//b[j*n2 + i] = a[i*n1 + j]; 
+			b[j*num() + i] = a[i*num() + j]; 
 		}
 	}
 }
