@@ -77,4 +77,21 @@ void spmdtransfer(global int size, bit scond, float [size] sendbuf, int recipien
   }
 }
 
+void spmdalltoall(global int size, double[size] src, ref double[size] dst) {
+	assert size%spmdnproc == 0;
+	global int sz = size/spmdnproc;
+	global double[size][spmdnproc] buffer;
+	spmdbarrier();
+	for (int i=0; i<spmdnproc; ++i) {
+		for (int j=0; j<sz; ++j) {
+			buffer[i][spmdpid*sz + j] = src[i*sz + j];
+		}
+	}
+	spmdbarrier();
+	for (int k=0; k<size; ++k) {
+		dst[k] = buffer[spmdpid][k];
+	}
+	spmdbarrier();
+}
+
 #endif  //_SPMD_H
