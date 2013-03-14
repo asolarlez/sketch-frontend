@@ -63,9 +63,11 @@ void transpose_local(global int n1, global int n2, double[n1*n2] a, ref double[n
 		return {| n1 | n2 | 1};
 	}
 	//i<n2
-	for (int i=0; i<num(); ++i) {
+	int iend = num();
+	for (int i=0; i<iend; ++i) {
 		// j<n1
-		for (int j=0; j<num(); ++j) {
+		int jend = num();
+		for (int j=0; j<jend; ++j) {
 			//b[j*n2 + i] = a[i*n1 + j]; 
 			b[j*num() + i*num()] = a[i*num() + j*num()]; 
 		}
