@@ -51,13 +51,13 @@ assemble-file: #HIDDEN
 assemble-noarch:
 	make assemble-file FILE=jar_assembly.xml
 	make assemble-file FILE=noarch_launchers_assembly.xml
-	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.6.0-noarch-launchers*)"
+	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-$(VERSION)-noarch-launchers*)"
 
 assemble-arch:
 	make assemble-file FILE=platform_jar_assembly.xml
 	make assemble-file FILE=launchers_assembly.xml
 	make assemble-file FILE=tar_src_assembly.xml
-	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-1.6.0-launchers*)"
+	@echo -e "\n\n\nYour output is in: $$(ls -d target/sketch-$(VERSION)-launchers*)"
 
 win-installer: assemble-arch
 	basedir=$$(pwd); cd target/*-launchers-windows.dir; mv COPYING *jar installer; cd installer; /cygdrive/c/Program\ Files\ \(x86\)/NSIS/makensis sketch-installer.nsi; cp *exe "$$basedir"
