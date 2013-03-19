@@ -510,7 +510,9 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                     Type rct = extractCoreType(rtype, null, maxlens);
                     assert rct.equals(coretyp) : "array base type mismatch in assignment!";
                     for (int i = 0; i < lens.size(); ++i) {
-                        this.addStatement(new StmtAssert(new ExprBinary(lens.get(i), "<=", maxlens.get(i)), false));
+                        this.addStatement(new StmtAssert(new ExprBinary(lens.get(i),
+                                "<=", maxlens.get(i)),
+                                "embedded array size must < max size", false));
                     }
                 }
                 if (coretyp.isStruct()) {
