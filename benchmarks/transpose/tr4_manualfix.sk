@@ -1,0 +1,119 @@
+pragma options "-V20 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 10000 --be:lightverif"; //  --be:showDAG
+
+int SPMD_MAX_NPROC = 2;
+int SPMD_MAX_BUF_LEN = 32;
+include "spmd.skh";
+
+include "generators.skh";
+
+struct LState {
+	int ntdivnp;		// total cells per node
+	double[ntdivnp] a;
+}
+
+
+LState movein(global int nproc, int pid, global int nt, global double[nt] ga) {
+	global int ntdivnp = nt/nproc;
+	double[ntdivnp] a;
+	int base = ntdivnp*pid;
+	for (int i=0; i<ntdivnp; ++i) {
+		a[i] = ga[base+i];
+	}
+	LState ls = new LState(ntdivnp=ntdivnp, a=a);
+	return ls;
+}
+
+void moveout(global int nproc, int pid, global int nt, ref global double[nt] ga, LState ls) {
+	int base = ls.ntdivnp*pid;
+	for (int i=0; i<ls.ntdivnp; ++i) {
+		ga[base+i] = ls.a[i];
+	}
+}
+
+// logically the array is double[nx][ny][nz], i.e. nx is the most minor dimension.
+// cells with same (y, z) but increasing x will occupy a contiguous region (of length nx) in memory
+// we use a by-plane partition, so every node owns entire x and y axes, but portion of z axes
+// after transpose, the new array result will have different dimensions: (x,y,z) => (z,x,y)
+void spec(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
+	assume P>0 & P<=2;
+	//assume nx%P==0;
+	assume ny%P==0;
+	assume nz%P==0;
+
+	assume nx<=4;
+	assume ny<=4;
+	assume nz<=4;
+	assume nx*ny*nz<=16;
+	
+	// we don't use block now
+    for(int y=0; y<ny; ++y) {
+    		for (int x=0; x<nx; ++x) {
+    			for (int z=0; z<nz; ++z) {
+    				result[y*(nx*nz) + x*(nz) + z] = a[z*(nx*ny) + y*(nx) + x];
+    			}
+    		}
+    }
+}
+
+
+// n1 = nx*ny, n2 = nz/spmdproc
+// [n1][n2] => [n2][n1]
+void transpose_local(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
+	generator int num() {
+		return {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} / {| spmdnproc | 1 |};
+	}
+	//i<n2
+	int iend = num();
+	for (int i=0; i<iend; ++i) {
+		// j<n1
+		int jend = num();
+		for (int j=0; j<jend; ++j) {
+			//b[j*n2 + i] = a[i*n1 + j]; 
+			b[i*num() + j*num()] = a[i*num() + j*num()]; 
+		}
+	}
+}
+
+// n1=nx*ny/np, n2=nz
+// [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
+void transpose_finish(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
+	generator int num() {
+		return {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} / {| spmdnproc | 1 |};
+	}
+	for (int p=0; p<spmdnproc; ++p) {
+		// i<n1
+		int iend = num();
+		for (int i=0; i<iend; ++i) {
+			// j<n2/spmdnproc
+			int jend = num();
+			for (int j=0; j<jend; ++j) {
+				// b[j*n2 + i+ioff] = a[p*(n1*n2/spmdnproc) + j*n2/spmdnproc + i];
+				b[p* num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
+			}
+		}
+	}
+}
+
+
+// transpose a to b
+void transpose_xy_z(global int nx, global int ny, global int nz, LState a, ref LState b) {
+	global int n = nx*ny*nz/spmdnproc;
+	transpose_local(n, nx, ny, nz, a.a[0::a.ntdivnp], b.a[0::b.ntdivnp]);
+	spmdalltoall(n, b.a[0::b.ntdivnp], a.a[0::a.ntdivnp]);
+	transpose_finish(n, nx, ny, nz, a.a[0::a.ntdivnp], b.a[0::b.ntdivnp]);
+}
+
+
+void sk(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec {
+	global int nt = nx*ny*nz;
+	spmdfork(P) {
+		LState la;
+		la = movein(P, spmdpid, nt, a);
+		LState lr;
+		lr = movein(P, spmdpid, nt, result);
+		spmdbarrier();
+		transpose_xy_z(nx, ny, nz, la, lr);
+		spmdbarrier();
+		moveout(P, spmdpid, nt, result, lr);
+	}
+}
