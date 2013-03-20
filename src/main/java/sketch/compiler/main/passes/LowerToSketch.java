@@ -2,6 +2,7 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.cmdline.FrontendOptions.FloatEncoding;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
@@ -11,7 +12,6 @@ import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
-import sketch.compiler.stencilSK.EliminateFinalStructs;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFiniteField;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFixpoint;
@@ -41,11 +41,11 @@ public class LowerToSketch extends MetaStage {
         // prog.accept(prt);
 
         // FIXME xzl: temporarily remove efs for minitests
-        prog =
-                (Program) prog.accept(new EliminateFinalStructs(varGen,
-                        options.bndOpts.arr1dSize));
-        System.out.println("after efs:");
-        prog.accept(prt);
+        // prog =
+        // (Program) prog.accept(new EliminateFinalStructs(varGen,
+        // options.bndOpts.arr1dSize));
+        // System.out.println("after efs:");
+        // prog.accept(prt);
         
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
         // System.out.println("after mmde:");
@@ -100,9 +100,9 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         // TODO xzl: temporarily remove EliminateStructs
-        // prog =
-        // (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
-        // options.bndOpts.arrSize)));
+        prog =
+                (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
+                        options.bndOpts.arrSize)));
 
         // dump (prog, "After Stencilification.");
 
@@ -143,10 +143,10 @@ public class LowerToSketch extends MetaStage {
         prog.accept(prt);
 
 
-        prog = (Program) prog.accept(new EliminateArrayDims());
-        prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
-        System.out.println("after emda2:");
-        prog.accept(prt);
+        // prog = (Program) prog.accept(new EliminateArrayDims());
+        // prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
+        // System.out.println("after emda2:");
+        // prog.accept(prt);
         return prog;
     }
 }
