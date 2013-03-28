@@ -87,7 +87,7 @@ void transpose_finish(global int n1, global int n2, double[n1*n2] a, ref double[
 			// j<n2/spmdnproc
 			int jend = num();
 			for (int j=0; j<jend; ++j) {
-				// b[j*n2 + i+ioff] = a[p*(n1*n2/spmdnproc) + j*n2/spmdnproc + i];
+				// b[j*n2 + i+ p*n2/spmdnproc] = a[p*(n1*n2/spmdnproc) + j*n2/spmdnproc + i];
 				b[p* num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
 			}
 		}

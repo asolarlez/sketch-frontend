@@ -81,13 +81,13 @@ void transpose_finish(global int n, global int nx, global int ny, global int nz,
 		return {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} / {| spmdnproc | 1 |};
 	}
 	for (int p=0; p<spmdnproc; ++p) {
-		// i<n1
+		// i<nx*ny/np
 		int iend = num();
 		for (int i=0; i<iend; ++i) {
-			// j<n2/spmdnproc
+			// j<nz/spmdnproc
 			int jend = num();
 			for (int j=0; j<jend; ++j) {
-				// b[j*n2 + i+ioff] = a[p*(n1*n2/spmdnproc) + j*n2/spmdnproc + i];
+				// b[j*nz + i+  p*nz/spmdnproc] = a[p*(nx*ny*nz/np/spmdnproc) + j*n2/spmdnproc + i];
 				b[p* num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
 			}
 		}

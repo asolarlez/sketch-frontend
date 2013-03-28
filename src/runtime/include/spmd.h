@@ -3,6 +3,9 @@
 
 #include <mpi.h>
 
+#define FLT double
+#define DT_FLT MPI_DOUBLE
+
 int spmdnproc;
 int spmdpid;
 
@@ -34,24 +37,28 @@ static MPI_Op const OP[] = {
   MPI_PROD
 };
 
-void mpiReduce(int op, int size, float * sendbuf, float * recvbuf) {
-	MPI_Allreduce(sendbuf, recvbuf, size, MPI_FLOAT, OP[op], MPI_COMM_WORLD);
+void mpiReduce(int op, int size, FLT * sendbuf, FLT * recvbuf) {
+	MPI_Allreduce(sendbuf, recvbuf, size, DT_FLT, OP[op], MPI_COMM_WORLD);
 }
 
-void mpiTransfer(int size, bool scond, float * sendbuf, int recipient, bool rcond, float * recvbuf) {
+void mpiTransfer(int size, bool scond, FLT * sendbuf, int recipient, bool rcond, FLT * recvbuf) {
   static int epoch = 0;
 
   int tag = ++epoch;
   MPI_Status status;
   if (scond) {
     if (rcond) {
-      MPI_Sendrecv(sendbuf, size, MPI_FLOAT, recipient, tag, recvbuf, size, MPI_FLOAT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
+      MPI_Sendrecv(sendbuf, size, DT_FLT, recipient, tag, recvbuf, size, MPI_FLOAT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
     } else {
-      MPI_Send(sendbuf, size, MPI_FLOAT, recipient, tag, MPI_COMM_WORLD);
+      MPI_Send(sendbuf, size, DT_FLT, recipient, tag, MPI_COMM_WORLD);
     }
   } else {
-    MPI_Recv(recvbuf, size, MPI_FLOAT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
+    MPI_Recv(recvbuf, size, DT_FLT, MPI_ANY_SOURCE, tag, MPI_COMM_WORLD, &status);
   }
+}
+
+void mpiAlltoall(int size, FLT * sendbuf, FLT * recvbuf) {
+	MPI_Alltoall(sendbuf, size/spmdnproc, DT_FLT, recvbuf, size/spmdnproc, DT_FLT, MPI_COMM_WORLD);
 }
 
 #endif //_SPMD_H

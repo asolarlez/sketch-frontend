@@ -2,6 +2,7 @@ package sketch.compiler.main.passes;
 
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.cmdline.FrontendOptions.FloatEncoding;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
@@ -100,9 +101,9 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
         // TODO xzl: temporarily remove EliminateStructs
-        // prog =
-        // (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
-        // options.bndOpts.arrSize)));
+        prog =
+                (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
+                        options.bndOpts.arrSize)));
 
         // dump (prog, "After Stencilification.");
 

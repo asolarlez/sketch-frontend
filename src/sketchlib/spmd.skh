@@ -77,6 +77,7 @@ void spmdtransfer(global int size, bit scond, float [size] sendbuf, int recipien
   }
 }
 
+@Native("{ mpiAlltoall(size, src, dst); }" )
 void spmdalltoall(global int size, double[size] src, ref double[size] dst) {
 	assert size%spmdnproc == 0;
 	global int sz = size/spmdnproc;
