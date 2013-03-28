@@ -1,7 +1,7 @@
-pragma options "-V20 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 10000 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 3 --bnd-cbits 3 --beopt:bndwrand 1000 --bnd-unroll-amnt 18 --bnd-inline-amnt 3 --bnd-arr1d-size 18 --bnd-arr-size 36 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
 
-int SPMD_MAX_NPROC = 2;
-int SPMD_MAX_BUF_LEN = 32;
+int SPMD_MAX_NPROC = 3;
+int SPMD_MAX_BUF_LEN = 36;
 include "spmd.skh";
 
 include "generators.skh";
@@ -35,15 +35,15 @@ void moveout(global int nproc, int pid, global int nt, ref global double[nt] ga,
 // we use a by-plane partition, so every node owns entire x and y axes, but portion of z axes
 // after transpose, the new array result will have different dimensions: (x,y,z) => (z,x,y)
 void spec(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
-	assume P>0 & P<=2;
+	assume P>0 & P<=SPMD_MAX_NPROC;
 	//assume nx%P==0;
 	assume ny%P==0;
 	assume nz%P==0;
 
-	assume nx<=4;
-	assume ny<=4;
-	assume nz<=4;
-	assume nx*ny*nz<=16;
+	assume nx<=6;
+	assume ny<=6;
+	assume nz<=6;
+	assume nx*ny*nz/P<=18;
 	
 	// we don't use block now
     for(int y=0; y<ny; ++y) {
@@ -60,7 +60,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // [n1][n2] => [n2][n1]
 void transpose_local(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
 	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} / {| spmdnproc | 1 |};
+		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
 	}
 	//i<n2
 	int iend = num();
@@ -69,7 +69,7 @@ void transpose_local(global int n, global int nx, global int ny, global int nz, 
 		int jend = num();
 		for (int j=0; j<jend; ++j) {
 			//b[j*n2 + i] = a[i*n1 + j]; 
-			b[i*num() + j*num()] = a[i*num() + j*num()]; 
+			b[i*num() + j*num()] = a[i*num() + j]; 
 		}
 	}
 }
@@ -78,7 +78,7 @@ void transpose_local(global int n, global int nx, global int ny, global int nz, 
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
 	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} * {| nx | ny | nz | 1 |} / {| spmdnproc | 1 |};
+		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
 	}
 	for (int p=0; p<spmdnproc; ++p) {
 		// i<n1
@@ -88,7 +88,7 @@ void transpose_finish(global int n, global int nx, global int ny, global int nz,
 			int jend = num();
 			for (int j=0; j<jend; ++j) {
 				// b[j*n2 + i+ioff] = a[p*(n1*n2/spmdnproc) + j*n2/spmdnproc + i];
-				b[p* num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
+				b[p* num() + i*num() + j] = a[p*num() + i*num() + j];
 			}
 		}
 	}
