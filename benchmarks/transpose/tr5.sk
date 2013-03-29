@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 2 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 18 --bnd-inline-amnt 3 --bnd-arr1d-size 3 --bnd-arr-size 36 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 2 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 18 --bnd-inline-amnt 3 --bnd-arr1d-size 18 --bnd-arr-size 36 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
 int SPMD_MAX_BUF_LEN = 32;
@@ -14,7 +14,6 @@ LState movein(global int nproc, int pid, global int nt, global double[nt] ga) {
 	global int ntdivnp = nt/nproc;
 	double[ntdivnp] a;
 	int base = ntdivnp*pid;
-	assert ntdivnp<=8;
 	for (int i=0; i<ntdivnp; ++i) {
 		a[i] = ga[base+i];
 	}
