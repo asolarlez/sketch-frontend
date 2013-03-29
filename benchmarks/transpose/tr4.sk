@@ -35,15 +35,16 @@ void moveout(global int nproc, int pid, global int nt, ref global double[nt] ga,
 // we use a by-plane partition, so every node owns entire x and y axes, but portion of z axes
 // after transpose, the new array result will have different dimensions: (x,y,z) => (z,x,y)
 void spec(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
-	assume P>0 & P<=SPMD_MAX_NPROC;
+	assume P>0 : "P>0";
+	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
-	assume ny%P==0;
-	assume nz%P==0;
+	assume ny%P==0 : "ny%P";
+	assume nz%P==0 : "nz%P";
 
-	assume nx<=6;
-	assume ny<=6;
-	assume nz<=6;
-	assume nx*ny*nz/P<=18;
+	assume nx>=1 && nx<=6 : "nx";
+	assume ny>=1 && ny<=6 : "ny";
+	assume nz>=1 && nz<=6 : "nz";
+	assume nx*ny*nz/P<=18 : "nx*ny*nz";
 	
 	// we don't use block now
     for(int y=0; y<ny; ++y) {
