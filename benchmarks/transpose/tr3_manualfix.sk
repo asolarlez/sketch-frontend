@@ -4,8 +4,6 @@ int SPMD_MAX_NPROC = 2;
 int SPMD_MAX_BUF_LEN = 32;
 include "spmd.skh";
 
-include "generators.skh";
-
 struct LState {
 	int ntdivnp;		// total cells per node
 	double[ntdivnp] a;
