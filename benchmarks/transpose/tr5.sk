@@ -80,7 +80,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
     		}
     }
 
-	assert result[0] != 0.0;
+	assert result[0] == 0.0;
 	assert result[1] == 0.0;
 	assert result[2] == 0.0;
 	assert result[3] == 0.0;
@@ -181,6 +181,6 @@ void sk(global int P, global int nx, global int ny, global int nz, global double
 	assert result[23] == 0.0;
 	assert result[24] == 0.0;
 	assert result[25] == 0.0;
-	assert result[26] != 0.0;
+	assert result[36] == 0.0;
 
 }
