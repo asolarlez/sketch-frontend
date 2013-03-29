@@ -80,7 +80,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
     		}
     }
 
-	assert result[0] == 0.0;
+	assert result[0] == 1.0;
 	assert result[1] == 0.0;
 	assert result[2] == 0.0;
 	assert result[3] == 0.0;
