@@ -43,6 +43,34 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume ny==3;
 	assume nz==3;
 	
+	assume a[0] == 0.0;
+	assume a[1] == 0.0;
+	assume a[2] == 0.0;
+	assume a[3] == 0.0;
+	assume a[4] == 0.0;
+	assume a[5] == 0.0;
+	assume a[6] == 0.0;
+	assume a[7] == 0.0;
+	assume a[8] == 0.0;
+	assume a[9] == 0.0;
+	assume a[10] == 0.0;
+	assume a[11] == 0.0;
+	assume a[12] == 0.0;
+	assume a[13] == 0.0;
+	assume a[14] == 0.0;
+	assume a[15] == 0.0;
+	assume a[16] == 0.0;
+	assume a[17] == 0.0;
+	assume a[18] == 0.0;
+	assume a[19] == 0.0;
+	assume a[20] == 0.0;
+	assume a[21] == 0.0;
+	assume a[22] == 0.0;
+	assume a[23] == 0.0;
+	assume a[24] == 0.0;
+	assume a[25] == 0.0;
+	assume a[26] == 0.0;
+	
 	// we don't use block now
     for(int y=0; y<ny; ++y) {
     		for (int x=0; x<nx; ++x) {
