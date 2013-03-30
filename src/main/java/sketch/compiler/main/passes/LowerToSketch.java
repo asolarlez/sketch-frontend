@@ -150,6 +150,10 @@ public class LowerToSketch extends MetaStage {
         // prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
         // System.out.println("after emda2:");
         // prog.accept(prt);
+
+        if (options.feOpts.truncVarArray) {
+            prog = (Program) prog.accept(new TruncateVarArray(options));
+        }
         return prog;
     }
 }

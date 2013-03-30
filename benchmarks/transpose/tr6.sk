@@ -58,15 +58,17 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
-//	generator int num() {
-//		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
-//	}
-//	int iend = num();
-	for (int i=0; i<nz/spmdnproc; ++i) {
-//		int jend = num();
-		for (int j=0; j<nx*ny; ++j) {
+	generator int num() {
+		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
+	}
+	int iend = num();
+//	for (int i=0; i<nz/spmdnproc; ++i) {
+	for (int i=0; i<iend; ++i) {
+		int jend = num();
+//		for (int j=0; j<nx*ny; ++j) {
+		for (int j=0; j<jend; ++j) {
 			//b[j*n2 + i] = a[i*n1 + j]; 
-			b[i + j*nz/spmdnproc] = a[i*nx*ny + j]; 
+			b[i*num() + j*num()] = a[i*num() + j*num()]; 
 		}
 	}
 }
@@ -74,15 +76,17 @@ void transpose_local(global int n, global int nx, global int ny, global int nz, 
 // n = nx*ny*nz/np
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
-//	generator int num() {
-//		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
-//	}
+	generator int num() {
+		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
+	}
 	for (int p=0; p<spmdnproc; ++p) {
-//		int iend = num();
-		for (int i=0; i<nx*ny/spmdnproc; ++i) {
-//			int jend = num();
-			for (int j=0; j<nz/spmdnproc; ++j) {
-				b[p*nz/spmdnproc + i*nz + j] = a[p*nx*ny*nz/(spmdnproc*spmdnproc) + i*nz/spmdnproc + j];
+		int iend = num();
+//		for (int i=0; i<nx*ny/spmdnproc; ++i) {
+		for (int i=0; i<iend; ++i) {
+			int jend = num();
+//			for (int j=0; j<nz/spmdnproc; ++j) {
+			for (int j=0; j<jend; ++j) {
+				b[p*num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
 			}
 		}
 	}

@@ -65,8 +65,8 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
         AS_BIT, AS_FFIELD, AS_FIXPOINT
     }
 
-    // @CliParameter(help = "Add assume a[i]==0 for i>length(a) var array")
-    // public boolean truncateVarArray;
+    @CliParameter(help = "Add assume a[i]==0 for i>length(a) for any varlength array a")
+    public boolean truncVarArray;
 
     @CliParameter(help = "Eliminate final structs and structs with no alias")
     public boolean elimFinalStructs;
