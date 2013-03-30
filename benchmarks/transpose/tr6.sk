@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 3 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 18 --bnd-inline-amnt 3 --bnd-arr1d-size 18 --bnd-arr-size 36 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 3 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 18 --bnd-inline-amnt 3 --bnd-arr1d-size 18 --bnd-arr-size 36 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 3;
 int SPMD_MAX_BUF_LEN = 36;
@@ -86,7 +86,7 @@ void transpose_finish(global int n, global int nx, global int ny, global int nz,
 //			int jend = num();
 			for (int j=0; j<nz/spmdnproc; ++j) {
 //			for (int j=0; j<jend; ++j) {
-				b[p*nz/spmdnproc + i*nz + j] = a[p*(nx*ny*nz/(spmdnproc*spmdnproc) + i*nz/spmdnproc + j];
+				b[p*nz/spmdnproc + i*nz + j] = a[p*nx*ny*nz/(spmdnproc*spmdnproc) + i*nz/spmdnproc + j];
 //				b[p*num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
 			}
 		}
