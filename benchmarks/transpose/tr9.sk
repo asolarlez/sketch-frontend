@@ -38,9 +38,9 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume ny%P==0 : "ny%P";
 	assume nz%P==0 : "nz%P";
 
-	assume nx>=1 : "nx";
-	assume ny>=1 : "ny";
-	assume nz>=1 : "nz";
+	assume nx>=1 && nx <=30 : "nx";
+	assume ny>=1 && ny <= 30 : "ny";
+	assume nz>=1 && nz <= 30: "nz";
 	assume nx*ny*nz <= 60 : "nx*ny*nz";
 	assume nx*ny*nz/P <= 30 : "nx*ny*nz/P";
 	
