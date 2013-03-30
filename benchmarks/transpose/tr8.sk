@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --bnd-arr1d-size 32 --bnd-arr-size 64 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 10 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --bnd-arr1d-size 32 --bnd-arr-size 64 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 4;
 include "spmd.skh";
