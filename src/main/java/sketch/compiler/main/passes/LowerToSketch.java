@@ -152,7 +152,7 @@ public class LowerToSketch extends MetaStage {
         // prog.accept(prt);
 
         if (options.feOpts.truncVarArray) {
-            prog = (Program) prog.accept(new TruncateVarArray(options));
+            prog = (Program) prog.accept(new TruncateVarArray(options, varGen));
         }
         return prog;
     }
