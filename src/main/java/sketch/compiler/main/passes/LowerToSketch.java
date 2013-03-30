@@ -12,7 +12,6 @@ import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
-import sketch.compiler.stencilSK.EliminateFinalStructs;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFiniteField;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFixpoint;
@@ -41,7 +40,6 @@ public class LowerToSketch extends MetaStage {
         // System.out.println("before efs:");
         // prog.accept(prt);
 
-        // FIXME xzl: temporarily remove efs for minitests
         if (options.feOpts.elimFinalStructs) {
             prog =
                     (Program) prog.accept(new EliminateFinalStructs(varGen,
@@ -49,7 +47,7 @@ public class LowerToSketch extends MetaStage {
             System.out.println("after efs:");
             prog.accept(prt);
         }
-        
+
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
         // System.out.println("after mmde:");
         // prog.accept(prt);
