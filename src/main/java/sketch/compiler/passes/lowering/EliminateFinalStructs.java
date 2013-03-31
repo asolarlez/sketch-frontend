@@ -48,17 +48,15 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         // for non-array, lens=null or empty
         List<Expression> lens;
         List<Integer> maxlens;
-        // maxlen = \prod{maxlens}
-        int maxlen;
 
         // for leaf nodes (not a struct itself), fields=null
         Map<String, ExprVar> fields;
 
         public String toString() {
             return var +
-                    (lens == null ? ""
-                            : ("[" + lens + (maxlen <= 0 ? "" : "/" + maxlen)) + "]") +
-                    (fields == null ? "" : fields);
+                    (lens == null ? "" : ("[" + lens + (maxlens == null ? "" : "/" +
+                            maxlens)) +
+                            "]") + (fields == null ? "" : fields);
         }
     }
     
@@ -99,13 +97,12 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         return coretyp;
     }
 
-    /** do not use */
-    @Deprecated
-    private Type constructType(CudaMemoryType memtyp, Type coretyp, List<Expression> lens)
+    private Type constructType(CudaMemoryType memtyp, Type coretyp, int multiplicity)
     {
+        assert multiplicity >= 1;
         Type t = coretyp;
-        for (int i = lens.size() - 1; i >= 0; --i) {
-            t = new TypeArray(t, lens.get(i));
+        if (multiplicity > 1) {
+            t = new TypeArray(t, new ExprConstInt(multiplicity));
         }
         t.setCudaMemType(memtyp);
         return t;
@@ -138,7 +135,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
             if (t.isStruct()) {
                 Collection<DeclPair> result = new ArrayList<DeclPair>();
                 expandStructDecl(result, p, type, type.getCudaMemType(), p.getName(), t,
-                        lens, maxlens);
+                        lens, maxlens, 1);
                 declToParam(newp, result, p.getPtype());
                 changed = true;
             } else {
@@ -174,7 +171,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
             if (t.isStruct()) {
                 Collection<DeclPair> result = new ArrayList<DeclPair>();
                 expandStructDecl(result, decl, type, type.getCudaMemType(), name, t,
-                        lens, maxlens);
+                        lens, maxlens, 1);
                 declToVarDecl(result);
                 return null;
             }
@@ -249,9 +246,11 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
     // is the var "name" an array?
     // if name is an array, lens will be its length, otherwise lens = null or
     // empty
+    // multiplicity: how many copies we need to create = \prod {maxlens of this and all
+    // parents}
     private void expandStructDecl(Collection<DeclPair> result, FENode decl,
             Type origType, CudaMemoryType memtyp, String name, Type typ,
-            List<Expression> lens, List<Integer> maxlens)
+            List<Expression> lens, List<Integer> maxlens, int multiplicity)
     {
         symtab.registerVar(name, origType, decl, SymbolTable.KIND_LOCAL);
         StructTracker tracker = new StructTracker();
@@ -268,20 +267,23 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                 fields.put(field, var);
                 Type fieldType = en.getType();
 
-                List<Expression> flens = new ArrayList<Expression>(lens);
-                List<Integer> fmaxlens = new ArrayList<Integer>(maxlens);
+                List<Expression> flens = new ArrayList<Expression>();
+                List<Integer> fmaxlens = new ArrayList<Integer>();
                 Type ft = extractCoreType(fieldType, flens, fmaxlens);
                 expandStructDecl(result, decl, fieldType, memtyp, varName, ft, flens,
-                        fmaxlens);
+                        fmaxlens, multiplicity * mult(maxlens));
             }
         } else {
-            Type _t = null; // (Type) constructType(memtyp, ft, lens).accept(this);
+            // use multiplicity!
+            Type _t = (Type) constructType(memtyp, typ, multiplicity).accept(this);
             result.add(new DeclPair(_t, name, decl));
         }
-        // FIXME xzl: need to rename vars!
-        tracker.lens = lens;
-        tracker.maxlens = maxlens;
-        tracker.maxlen = mult(maxlens);
+        // NOTE: here lens are all unprocessed: if it uses some field name, the field name
+        // is stored as is
+        if (lens != null && !lens.isEmpty()) {
+            tracker.lens = lens;
+            tracker.maxlens = maxlens;
+        }
         structs.put(name, tracker);
     }
 

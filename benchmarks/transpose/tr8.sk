@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 32 --bnd-inline-amnt 3 --bnd-arr1d-size 32 --bnd-arr-size 64 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 28 --bnd-inline-amnt 3 --bnd-arr1d-size 28 --bnd-arr-size 56 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 4;
 include "spmd.skh";
@@ -38,11 +38,11 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume ny%P==0 : "ny%P";
 	assume nz%P==0 : "nz%P";
 
-	assume nx>=1 && nx<=8 : "nx";
-	assume ny>=1 && ny<=8 : "ny";
-	assume nz>=1 && nz<=8 : "nz";
-	assume nx*ny*nz <= 64 : "nx*ny*nz";
-	assume nx*ny*nz/P <= 32 : "nx*ny*nz/P";
+	assume nx>=1 && nx <= 28 : "nx";
+	assume ny>=1 && ny <= 28 : "ny";
+	assume nz>=1 && nz <= 28 : "nz";
+	assume nx*ny*nz <= 56 : "nx*ny*nz";
+	assume nx*ny*nz/P <= 28 : "nx*ny*nz/P";
 	
 	// we don't use block now
     for(int y=0; y<ny; ++y) {
@@ -58,16 +58,15 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
-	generator int num() {
-		return {| 1 | nx | ny | nz |} * {| 1 | ny | nz |} * {| 1 | nz |} / {| 1 | spmdnproc |};
-	}
-	int iend = num();  // nz/spmdnproc
-	int jend = num();  // nx*ny
-	assert iend*jend == n;
-//	for (int i=0; i<nz/spmdnproc; ++i) {
-	for (int i=0; i<iend; ++i) {
-//		for (int j=0; j<nx*ny; ++j) {
-		for (int j=0; j<jend; ++j) {
+//	generator int num() {
+//		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
+//	}
+//	int iend = num();
+	for (int i=0; i<nz/spmdnproc; ++i) {
+//	for (int i=0; i<iend; ++i) {
+//		int jend = num();
+		for (int j=0; j<nx*ny; ++j) {
+//		for (int j=0; j<jend; ++j) {
 			b[j*nz/spmdnproc + i] = a[i*nx*ny + j]; 
 			//b[i*num() + j*num()] = a[i*num() + j*num()]; 
 		}
@@ -78,12 +77,11 @@ void transpose_local(global int n, global int nx, global int ny, global int nz, 
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
 	generator int num() {
-		return {| 1 | nx | ny | nz |} * {| 1 | ny | nz |} * {| 1 | nz |} / {| 1 | spmdnproc | spmdnproc*spmdnproc |};
+		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
 	}
-	
-	int iend = num();  // nx*ny/spmdnproc
-	int jend = num();  // nz/spmdnproc
-	assert iend*jend*spmdnproc == n;	
+	int iend = num();
+	int jend = nz/spmdnproc;
+	assert iend*jend*spmdnproc == n;
 	for (int p=0; p<spmdnproc; ++p) {
 //		for (int i=0; i<nx*ny/spmdnproc; ++i) {
 		for (int i=0; i<iend; ++i) {
