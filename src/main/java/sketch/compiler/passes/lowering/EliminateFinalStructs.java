@@ -1,4 +1,4 @@
-package sketch.compiler.stencilSK;
+package sketch.compiler.passes.lowering;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,38 +29,53 @@ import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
-import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /*
- * Currently treat all structs as final After PreprocessSketch all function calls inlined.
- * top level stencil function cannot input / output structs Not supported: pointer
- * assignment (struct X {} X p = ...; X q; q = p) array of structs struct in struct
- * (struct X { struct y; }) bugs: now fields are emitted in the order they are stored in
- * the map. but the correct order is to emit non-arrays first, then arrays, so that the
- * array size variable will occur before the array declaration
+ * Currently treat all structs as final. Not supported: pointer assignment (struct X {} X
+ * p = ...; X q; q = p) array of structs struct in struct (struct X { struct y; })
  */
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class EliminateFinalStructs extends SymbolTableVisitor {
     private TempVarGen varGen;
+    // max size for 1d arrays
     int iMaxArrSz;
     Expression maxArrSz;
     // Set<String> leafVars = new HashSet<String>();
 
-    // struct variable name => ( field name => the actual field variable)
-    Map<String, Map<String, ExprVar>> structs;
+    private class StructTracker {
+        ExprVar var;
+        // for non-array, lens=null or empty
+        List<Expression> lens;
+        List<Integer> maxlens;
+        // maxlen = \prod{maxlens}
+        int maxlen;
+
+        // for leaf nodes (not a struct itself), fields=null
+        Map<String, ExprVar> fields;
+
+        public String toString() {
+            return var +
+                    (lens == null ? ""
+                            : ("[" + lens + (maxlen <= 0 ? "" : "/" + maxlen)) + "]") +
+                    (fields == null ? "" : fields);
+        }
+    }
+    
+    // var name (which is a field of some struct/array sequence) => struct tracker
+    Map<String, StructTracker> structs;
 
     public EliminateFinalStructs(TempVarGen varGen_, int maxArrSize) {
         super(null);
         varGen = varGen_;
-        structs = new HashMap<String, Map<String, ExprVar>>();
+        structs = new HashMap<String, StructTracker>();
         iMaxArrSz = maxArrSize;
         maxArrSz = new ExprConstInt(iMaxArrSz);
     }
 
     // return the core type of an array, collect the array lengths in order and add them
     // to "lens". meanwhile, add max lengths to maxlens. either can be empty.
-    Type extractCoreType(Type t, List<Expression> lens, List<Expression> maxlens)
+    Type extractCoreType(Type t, List<Expression> lens, List<Integer> maxlens)
     {
         Type coretyp = t;
         while (coretyp.isArray()) {
@@ -70,10 +85,13 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                 lens.add(len);
             }
             if (maxlens != null) {
-                Expression maxlen =
-                        len.getIValue() != null ? len
-                                : (ta.getMaxlength() <= 0 ? maxArrSz : new ExprConstInt(
-                                        ta.getMaxlength()));
+                Integer maxlen = len.getIValue();
+                if (maxlen == null) {
+                    maxlen = ta.getMaxlength();
+                }
+                if (maxlen <= 0) {
+                    maxlen = iMaxArrSz;
+                }
                 maxlens.add(maxlen);
             }
             coretyp = ((TypeArray) coretyp).getBase();
@@ -81,6 +99,8 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         return coretyp;
     }
 
+    /** do not use */
+    @Deprecated
     private Type constructType(CudaMemoryType memtyp, Type coretyp, List<Expression> lens)
     {
         Type t = coretyp;
@@ -91,6 +111,8 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         return t;
     }
 
+    /** do not use */
+    @Deprecated
     protected Expression constructEar(ExprVar v, List<RangeLen> indices) {
         if (indices.isEmpty()) {
             return v;
@@ -111,11 +133,12 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         for (Parameter p : f.getParams()) {
             Type type = p.getType();
             List<Expression> lens = new ArrayList<Expression>();
-            Type t = extractCoreType(type, lens, null);
+            List<Integer> maxlens = new ArrayList<Integer>();
+            Type t = extractCoreType(type, lens, maxlens);
             if (t.isStruct()) {
                 Collection<DeclPair> result = new ArrayList<DeclPair>();
-                expandStructDecl(result, null, type, type.getCudaMemType(), p.getName(),
-                        t, lens);
+                expandStructDecl(result, p, type, type.getCudaMemType(), p.getName(), t,
+                        lens, maxlens);
                 declToParam(newp, result, p.getPtype());
                 changed = true;
             } else {
@@ -146,10 +169,12 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
             String name = decl.getName(0);
             Type type = decl.getType(0);
             List<Expression> lens = new ArrayList<Expression>();
+            List<Integer> maxlens = new ArrayList<Integer>();
             Type t = extractCoreType(type, lens, null);
             if (t.isStruct()) {
                 Collection<DeclPair> result = new ArrayList<DeclPair>();
-                expandStructDecl(result, decl, type, type.getCudaMemType(), name, t, lens);
+                expandStructDecl(result, decl, type, type.getCudaMemType(), name, t,
+                        lens, maxlens);
                 declToVarDecl(result);
                 return null;
             }
@@ -157,43 +182,47 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         return super.visitStmtVarDecl(decl);
     }
 
+    /** do not use */
+    @Deprecated
     static Expression getConst(Type t) {
         if (t.isArray()) {
             t = ((TypeArray) t).getAbsoluteBase();
         }
         assert t instanceof TypePrimitive;
         return ((TypePrimitive) t).defaultValue();
-   }
+    }
 
     class DeclPair {
         Type t;
         String name;
         FENode ctx;
 
-        DeclPair(Type _t, String _name, FENode context) {
-            t = _t;
-            name = _name;
-            ctx = context;
+        DeclPair(Type t, String name, FENode context) {
+            this.t = t;
+            this.name = name;
+            this.ctx = context;
         }
         
         void addStmtVarDecl() {
             addStatement(new StmtVarDecl(ctx, t, name, null));
 
-            // FIXME xzl: add this!
+            // TODO xzl: do we need this?
             // Expression init =
             // t.isArray() ? new ExprArrayInit(ctx, getConst(t)) : getConst(t);
             // addStatement(new StmtAssign(new ExprVar(ctx, name), init));
         }
+
+        Parameter toParam(int ptype) {
+            return new Parameter(ctx, t, name, ptype);
+        }
         
+        // TODO xzl: do we need this?
+        @Deprecated
         int outputToRefer(int pt) {
             if (pt == Parameter.OUT && t.isArray()) {
                 return Parameter.REF;
             }
             return pt;
-        }
-
-        Parameter toParam(int ptype) {
-            return new Parameter(ctx, t, name, ptype);
         }
     }
 
@@ -209,36 +238,51 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         }
     }
 
-    // is the var "name" an array? if it is, arrLen will be its length, otherwise null
-    private void expandStructDecl(Collection<DeclPair> result, FENode decl,
-            Type origType,
-            CudaMemoryType memtyp,
-            String name,
-            Type typ, List<Expression> arrLen)
-    {
-        Type tt = this.actualType(typ);
-        TypeStruct t = (TypeStruct) tt;
-        symtab.registerVar(name, origType, decl, SymbolTable.KIND_LOCAL);
-
-        Map<String, ExprVar> info = new HashMap<String, ExprVar>();
-        for (StructFieldEnt en : t.getFieldEntriesInOrder()) {
-            String field = en.getName();
-            String varName = varGen.nextVar(name + "_" + field);
-            ExprVar var = new ExprVar(decl, varName);
-            info.put(field, var);
-            Type fieldType = en.getType();
-
-            List<Expression> lens = new ArrayList<Expression>(arrLen);
-            Type ft = extractCoreType(fieldType, null, lens);
-            if (ft.isStruct()) {
-                expandStructDecl(result, decl, fieldType, memtyp, varName, ft, lens);
-            } else {
-                symtab.registerVar(varName, fieldType);
-                Type _t = (Type) constructType(memtyp, ft, lens).accept(this);
-                result.add(new DeclPair(_t, varName, decl));
-            }
+    private static int mult(Collection<Integer> a) {
+        int result = 1;
+        for (Integer i : a) {
+            result *= i;
         }
-        structs.put(name, info);
+        return result;
+    }
+
+    // is the var "name" an array?
+    // if name is an array, lens will be its length, otherwise lens = null or
+    // empty
+    private void expandStructDecl(Collection<DeclPair> result, FENode decl,
+            Type origType, CudaMemoryType memtyp, String name, Type typ,
+            List<Expression> lens, List<Integer> maxlens)
+    {
+        symtab.registerVar(name, origType, decl, SymbolTable.KIND_LOCAL);
+        StructTracker tracker = new StructTracker();
+        if (typ.isStruct()) {
+            Type tt = this.actualType(typ);
+            TypeStruct t = (TypeStruct) tt;
+
+            Map<String, ExprVar> fields = new HashMap<String, ExprVar>();
+            tracker.fields = fields;
+            for (StructFieldEnt en : t.getFieldEntriesInOrder()) {
+                String field = en.getName();
+                String varName = varGen.nextVar(name + "_" + field);
+                ExprVar var = new ExprVar(decl, varName);
+                fields.put(field, var);
+                Type fieldType = en.getType();
+
+                List<Expression> flens = new ArrayList<Expression>(lens);
+                List<Integer> fmaxlens = new ArrayList<Integer>(maxlens);
+                Type ft = extractCoreType(fieldType, flens, fmaxlens);
+                expandStructDecl(result, decl, fieldType, memtyp, varName, ft, flens,
+                        fmaxlens);
+            }
+        } else {
+            Type _t = null; // (Type) constructType(memtyp, ft, lens).accept(this);
+            result.add(new DeclPair(_t, name, decl));
+        }
+        // FIXME xzl: need to rename vars!
+        tracker.lens = lens;
+        tracker.maxlens = maxlens;
+        tracker.maxlen = mult(maxlens);
+        structs.put(name, tracker);
     }
 
 
@@ -274,7 +318,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         @Override
         public Object visitExprField(ExprField ef) {
             ExprVar left = (ExprVar) ef.getLeft().accept(this);
-            ExprVar v = structs.get(left.getName()).get(ef.getName());
+            ExprVar v = structs.get(left.getName()).fields.get(ef.getName());
             shouldFix.add(v.getName());
             return v;
         }
@@ -402,9 +446,9 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                 assert lens.isEmpty() : "you have not used all the indices before coming to a field!";
 
                 final String rootVar = var.getName();
-                final Map<String, ExprVar> root = structs.get(rootVar);
+                final Map<String, ExprVar> root = structs.get(rootVar).fields;
 
-                var = structs.get(var.getName()).get(step.field);
+                var = structs.get(var.getName()).fields.get(step.field);
                 typ = extractCoreType(this.getType(var), lens, null);
                 
                 for (int j=0; j<lens.size(); ++j) {
@@ -506,12 +550,12 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                 if (vtype.isArray()) {
                     Type rtype = ts.getType(field);
                     assert rtype.isArray() : "you can only assign array to array!";
-                    List<Expression> maxlens = new ArrayList<Expression>();
+                    List<Integer> maxlens = new ArrayList<Integer>();
                     Type rct = extractCoreType(rtype, null, maxlens);
                     assert rct.equals(coretyp) : "array base type mismatch in assignment!";
                     for (int i = 0; i < lens.size(); ++i) {
                         this.addStatement(new StmtAssert(new ExprBinary(lens.get(i),
-                                "<=", maxlens.get(i)),
+                                "<=", new ExprConstInt(maxlens.get(i))),
                                 "embedded array size must < max size", false));
                     }
                 }
@@ -547,7 +591,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
     private void addAssign(LocationInfo lhsLoc, String field, Expression value,
             List<Expression> lens)
     {
-        ExprVar v = structs.get(lhsLoc.var.getName()).get(field);
+        ExprVar v = structs.get(lhsLoc.var.getName()).fields.get(field);
         Expression lhs = constructEar(v, lhsLoc.indices);
         if (lens.isEmpty()) {
             this.addStatement(new StmtAssign(lhs, value));
@@ -581,11 +625,11 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                     typ = ((TypeArray) typ).getAbsoluteBase();
                 }
                 LocationInfo newlhs = new LocationInfo();
-                newlhs.var = structs.get(lhs.getName()).get(field);
+                newlhs.var = structs.get(lhs.getName()).fields.get(field);
                 newlhs.typ = typ;
                 newlhs.indices = lhsLoc.indices;
                 LocationInfo newrhs = new LocationInfo();
-                newrhs.var = structs.get(rhs.getName()).get(field);
+                newrhs.var = structs.get(rhs.getName()).fields.get(field);
                 newrhs.typ = typ;
                 newrhs.indices = rhsLoc.indices;
                 expandAssign(newlhs, newrhs);
@@ -608,7 +652,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                     typ = ((TypeArray) typ).getAbsoluteBase();
                 }
                 LocationInfo newloc = new LocationInfo();
-                newloc.var = structs.get(rhs.getName()).get(field);
+                newloc.var = structs.get(rhs.getName()).fields.get(field);
                 newloc.typ = typ;
                 newloc.indices = loc.indices;
                 expandPassParam(c, newloc);
