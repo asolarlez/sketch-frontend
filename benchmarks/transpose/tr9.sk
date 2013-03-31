@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 30 --bnd-inline-amnt 3 --bnd-arr1d-size 30 --bnd-arr-size 60 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 28 --bnd-inline-amnt 3 --bnd-arr1d-size 28 --bnd-arr-size 56 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --be:lightverif"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 4;
 include "spmd.skh";
@@ -38,11 +38,11 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume ny%P==0 : "ny%P";
 	assume nz%P==0 : "nz%P";
 
-	assume nx>=1 && nx <=30 : "nx";
-	assume ny>=1 && ny <= 30 : "ny";
-	assume nz>=1 && nz <= 30: "nz";
-	assume nx*ny*nz <= 60 : "nx*ny*nz";
-	assume nx*ny*nz/P <= 30 : "nx*ny*nz/P";
+	assume nx>=1 && nx <= 28 : "nx";
+	assume ny>=1 && ny <= 28 : "ny";
+	assume nz>=1 && nz <= 28 : "nz";
+	assume nx*ny*nz <= 56 : "nx*ny*nz";
+	assume nx*ny*nz/P <= 28 : "nx*ny*nz/P";
 	
 	// we don't use block now
     for(int y=0; y<ny; ++y) {
