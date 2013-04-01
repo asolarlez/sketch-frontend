@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
@@ -58,17 +58,18 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
-//	generator int num() {
-//		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
-//	}
-//	int iend = num();
-	for (int i=0; i<nz/spmdnproc; ++i) {
-//	for (int i=0; i<iend; ++i) {
-//		int jend = num();
-		for (int j=0; j<nx*ny; ++j) {
-//		for (int j=0; j<jend; ++j) {
-			b[j*nz/spmdnproc + i] = a[i*nx*ny + j]; 
-			//b[i*num() + j*num()] = a[i*num() + j*num()]; 
+	generator int num() {
+		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
+	}
+	int iend = num();
+	int jend = num();
+	assert iend*jend==n;
+//	for (int i=0; i<nz/spmdnproc; ++i) {
+	for (int i=0; i<iend; ++i) {
+//		for (int j=0; j<nx*ny; ++j) {
+		for (int j=0; j<jend; ++j) {
+			//b[j*nz/spmdnproc + i] = a[i*nx*ny + j]; 
+			b[i*num() + j*num()] = a[i*num() + j*num()]; 
 		}
 	}
 }
