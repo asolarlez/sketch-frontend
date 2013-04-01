@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 10000 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 100"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 2;
 int SPMD_MAX_BUF_LEN = 32;
@@ -38,9 +38,9 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume ny%P==0;
 	assume nz%P==0;
 
-	assume nx<=4;
-	assume ny<=4;
-	assume nz<=4;
+	assume nx>0 && nx<=4;
+	assume ny>0 && ny<=4;
+	assume nz>0 && nz<=4;
 	assume nx*ny*nz<=16;
 	
 	// we don't use block now

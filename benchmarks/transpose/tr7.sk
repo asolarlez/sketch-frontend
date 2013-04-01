@@ -1,4 +1,4 @@
-pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 27 --bnd-inline-amnt 3 --bnd-arr1d-size 27 --bnd-arr-size 54 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+pragma options "-V20 --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 3 --bnd-unroll-amnt 27 --bnd-inline-amnt 3 --bnd-arr1d-size 27 --bnd-arr-size 54 --be:ufunSymmetry --beopt:simplifycex NOSIM --beopt:simiters 100"; //  --be:showDAG
 
 int SPMD_MAX_NPROC = 4;
 int SPMD_MAX_BUF_LEN = 36;
