@@ -2,6 +2,7 @@ pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amn
 
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
+include "generators.skh";
 
 struct LState {
 	int ntdivnp;		// total cells per node
@@ -59,7 +60,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
 	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
+		return expr(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV});
 	}
 	int iend = num();
 	int jend = num();
@@ -75,7 +76,7 @@ void transpose_local(global int n, global int nx, global int ny, global int nz, 
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int n, global int nx, global int ny, global int nz, double[n] a, ref double[n] b) {
 	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
+		return expr(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV});
 	}
 	int iend = num();
 	int jend = num(); //nz/spmdnproc;
