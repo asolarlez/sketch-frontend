@@ -57,7 +57,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
-void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz] a, ref double[nx*ny*nz/spmdnproc] b) {
+void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
 	generator int num() {
 		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
 	}
