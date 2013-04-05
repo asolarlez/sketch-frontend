@@ -63,7 +63,7 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 	}
 	global int iend = num();
 	global int jend = num();
-	assert iend*jend==nx*ny*nz/spmdnproc;
+	//assert iend*jend==nx*ny*nz/spmdnproc;
 	for (int i=0; i<iend; ++i) {
 		for (int j=0; j<jend; ++j) {
 			b[i*num() + j*num()] = a[i*num() + j*num()]; 
@@ -79,7 +79,7 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 	}
 	global int iend = num();
 	global int jend = num(); //nz/spmdnproc;
-	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
+	//assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
