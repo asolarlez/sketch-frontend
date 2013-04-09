@@ -92,23 +92,24 @@ public class SpmdTransform  extends SymbolTableVisitor {
             Function newfcn = (Function) tf.visitFunction(fcn);
             allProcFcns.add(newfcn);
             fcnToTransformed.put(fcn.getName(), newfcn);
-            if (hasSpec) {
-                fcn = fcn.creator().spec(null).create();
-            }
         } else {
-            oldProcFcns.add((Function) super.visitFunction(fcn));
+            Function oldfcn = (Function) super.visitFunction(fcn);
+            if (cg.haveSomeProcFcn(fcn)) {
+                SomeProcTransform tf = new SomeProcTransform(symtab);
+                tf.setNres(nres);
+                Function newfcn = (Function) tf.visitFunction(fcn);
+                someProcFcns.add(newfcn);
+                fcnToTransformed.put(fcn.getName(), newfcn);
+                if (hasSpec) {
+                    fcn = fcn.creator().spec(null).create();
+                }
+                if (hasSpec) {
+                    oldfcn = oldfcn.creator().spec(null).create();
+                }
+            }
+            oldProcFcns.add(oldfcn);
         }
 
-        if (cg.haveSomeProcFcn(fcn)) {
-            SomeProcTransform tf = new SomeProcTransform(symtab);
-            tf.setNres(nres);
-            Function newfcn = (Function) tf.visitFunction(fcn);
-            someProcFcns.add(newfcn);
-            fcnToTransformed.put(fcn.getName(), newfcn);
-            if (hasSpec) {
-                fcn = fcn.creator().spec(null).create();
-            }
-        }
         return fcn;
     }
 
