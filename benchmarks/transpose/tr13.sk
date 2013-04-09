@@ -56,15 +56,16 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 }
 
 void spec_transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-//	assume spmdnproc>0 : "spmd>0";
-//	assume ny%spmdnproc==0 : "ny%spmdnproc";
-//	assume nz%spmdnproc==0 : "nz%spmdnproc";
-//
-//	assume nx>=1 && nx <= 16 : "nx";
-//	assume ny>=1 && ny <= 16 : "ny";
-//	assume nz>=1 && nz <= 16 : "nz";
-//	assume nx*ny*nz <= 32 : "nx*ny*nz";
-//	assume nx*ny*nz/spmdnproc <= 16 : "nx*ny*nz/spmdnproc";
+	assume spmdnproc>0 : "spmd>0";
+	assume spmdnproc<=SPMD_MAX_NPROC : "spmdnproc<=MAX";
+	assume ny%spmdnproc==0 : "ny%spmdnproc";
+	assume nz%spmdnproc==0 : "nz%spmdnproc";
+
+	assume nx>=1 && nx <= 16 : "nx";
+	assume ny>=1 && ny <= 16 : "ny";
+	assume nz>=1 && nz <= 16 : "nz";
+	assume nx*ny*nz <= 32 : "nx*ny*nz";
+	assume nx*ny*nz/spmdnproc <= 16 : "nx*ny*nz/spmdnproc";
     for(int y=0; y<ny; ++y) {
 		for (int x=0; x<nx; ++x) {
 			for (int z=0; z<nz/spmdnproc; ++z) {
@@ -78,7 +79,7 @@ void spec_transpose_local(global int nx, global int ny, global int nz, double[nx
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) implements spec_transpose_local {
 	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
+		return expr(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV});
 	}
 	global int iend = num();
 	global int jend = num();
