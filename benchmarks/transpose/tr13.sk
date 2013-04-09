@@ -58,7 +58,7 @@ void spec_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spm
     for(int y=0; y<ny; ++y) {
 		for (int x=0; x<nx; ++x) {
 			for (int z=0; z<nz/spmdnproc; ++z) {
-				result[y*(nx*nz/spmdnproc) + x*(nz/spmdnproc) + z] = a[z*(nx*ny) + y*(nx) + x];
+				b[y*(nx*nz/spmdnproc) + x*(nz/spmdnproc) + z] = a[z*(nx*ny) + y*(nx) + x];
 			}
 		}
 }
