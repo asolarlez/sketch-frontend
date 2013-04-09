@@ -2,9 +2,11 @@ package sketch.compiler.passes.spmd;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Vector;
 
@@ -61,6 +63,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
     Vector<Function> allProcFcns;
     Vector<Function> someProcFcns;
     Vector<Function> oldProcFcns;
+    Map<String, Function> fcnToTransformed;
 
     public SpmdTransform(SketchOptions opts, TempVarGen varGen) {
         super(null);
@@ -73,6 +76,9 @@ public class SpmdTransform  extends SymbolTableVisitor {
     @Override
     public Object visitFunction(Function fcn) {
 //        System.out.println("here fcn=" + fcn + " all=" + cg.needAllProcFcn(fcn));
+        if (fcnToTransformed.containsKey(fcn.getName())) {
+            return fcn;
+        }
         if (cg.needAllProcFcn(fcn)) {
             AllProcTransform tf = new AllProcTransform(symtab);
             tf.setNres(nres);
@@ -81,9 +87,15 @@ public class SpmdTransform  extends SymbolTableVisitor {
             oldProcFcns.add((Function) super.visitFunction(fcn));
         }
         if (cg.haveSomeProcFcn(fcn)) {
+            String spec = fcn.getSpecification();
+            if (spec != null && !fcnToTransformed.containsKey(spec)) {
+                visitFunction(cg.getByName(spec));
+            }
             SomeProcTransform tf = new SomeProcTransform(symtab);
             tf.setNres(nres);
-            someProcFcns.add((Function) tf.visitFunction(fcn));
+            Function newfcn = (Function) tf.visitFunction(fcn);
+            someProcFcns.add(newfcn);
+            fcnToTransformed.put(fcn.getName(), newfcn);
         }
         return fcn;
     }
@@ -99,6 +111,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
         oldProcFcns= new Vector<Function>();
         allProcFcns = new Vector<Function>();
         someProcFcns = new Vector<Function>();
+        fcnToTransformed = new HashMap<String, Function>();
 
         spec = (Package) super.visitStreamSpec(spec);
         Vector<Function> allFcns = new Vector<Function>();
@@ -596,7 +609,7 @@ public class SpmdTransform  extends SymbolTableVisitor {
             FunctionCreator creator = func.creator().name("someproc_" + func.getName()).params(params);
             String spec = func.getSpecification();
             if (spec != null) {
-                creator = creator.spec("someproc_" + spec);
+                creator = creator.spec(fcnToTransformed.get(spec).getName());
             }
             Function f2 = creator.create();
             return super.visitFunction(f2);
@@ -737,7 +750,12 @@ class SpmdCallGraph extends CallGraph {
     public Object visitExprFunCall(ExprFunCall exp) {
         exp = (ExprFunCall) super.visitExprFunCall(exp);
         if (insideFork) {
-            fcnsCalledByFork.add(getTarget(exp));
+            Function fun = getTarget(exp);
+            fcnsCalledByFork.add(fun);
+            // String spec = fun.getSpecification();
+            // if (spec != null) {
+            // fcnsCalledByFork.add(this.nres.getFun(spec));
+            // }
         }
         return exp;
     }
@@ -775,6 +793,20 @@ class SpmdCallGraph extends CallGraph {
         qFork.addAll(fcnsCalledByFork.asCollection());
         while (!qFork.isEmpty()) {
             Function f = qFork.remove();
+            String spec = f.getSpecification();
+            if (spec != null) {
+                Function specfun = this.nres.getFun(spec);
+                if (!fcnsCalledByFork.contains(specfun)) {
+                    fcnsCalledByFork.add(specfun);
+                    qFork.add(specfun);
+                }
+            }
+            Function sketchfun = sketchOfSpec.get(f);
+            if (sketchfun != null && !fcnsCalledByFork.contains(sketchfun)) {
+                fcnsCalledByFork.add(sketchfun);
+                qFork.add(sketchfun);
+            }
+
             for (Function callee : closureEdges.targetsFrom(f)) {
                 if (!callee.isUninterp() && !fcnsCalledByFork.contains(callee)) {
                     fcnsCalledByFork.add(callee);
@@ -801,8 +833,12 @@ class SpmdCallGraph extends CallGraph {
         qSome.addAll(fcnsNeedSomeProc);
         while (!qSome.isEmpty()) {
             Function f = qSome.remove();
-            assert fcnsCalledByFork.contains(f) : f.getName() +
-                    " using pid/nproc but not called by fork";
+            if (!fcnsCalledByFork.contains(f)) {
+                // assert fcnsCalledByFork.contains(f) : f.getName() +
+                // " using pid/nproc but not called by fork";
+                fcnsNeedSomeProc.remove(f);
+                continue;
+            }
             for (Function caller : closureEdges.callersTo(f)) {
                 if (!fcnsNeedSomeProc.contains(caller) &&
                         !fcnsNeedAllProc.contains(caller))

@@ -127,6 +127,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 
         // Local function?
         Function fun = nres.getFun(name);
+        String funPkg = pkgForFun.get(fun);
         if(fun.getSpecification()!= null){
             String specName = fun.getSpecification();
             if (newFuns.containsKey(nres.getFunName(specName))) {
@@ -147,6 +148,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             if( fun.isUninterp()  || ( fun.isStatic() && !inlineStatics   ) ){
                 if(fun.isStatic()){
                     funcsToAnalyze.add(fun);
+                    pkgForFun.put(fun, funPkg);
                 }
                 return super.visitExprFunCall(exp);
             }else{

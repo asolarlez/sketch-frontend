@@ -54,20 +54,19 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
     }
 }
 
-void spec_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+void spec_transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
     for(int y=0; y<ny; ++y) {
 		for (int x=0; x<nx; ++x) {
 			for (int z=0; z<nz/spmdnproc; ++z) {
 				b[y*(nx*nz/spmdnproc) + x*(nz/spmdnproc) + z] = a[z*(nx*ny) + y*(nx) + x];
 			}
 		}
-}
+    }
 }
 
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
-void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b)
- implements spec_local {
+void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) implements spec_transpose_local {
 	generator int num() {
 		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
 	}

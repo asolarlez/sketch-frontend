@@ -400,6 +400,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         String name = exp.getName();
         // Local function?
         Function fun = nres.getFun(name);
+        String funPkg = pkgForFun.get(fun);
         if(fun.getSpecification()!= null){
             assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
         }
@@ -446,7 +447,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 }else{
                     if(rcontrol.leaveCallsBehind()){
 //                        System.out.println("        Stopped recursion:  " + fun.getName());
-                        funcsToAnalyze.add(fun);   
+                        funcsToAnalyze.add(fun);
+                        pkgForFun.put(fun, funPkg);
                         Object o = super.visitExprFunCall(exp);
                         dischargeTodo();
                         return  o;

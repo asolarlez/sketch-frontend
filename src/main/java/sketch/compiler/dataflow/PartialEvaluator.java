@@ -85,6 +85,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public boolean isPrecise = true;
 
     protected List<Function> funcsToAnalyze = null;
+    protected Map<Function, String> pkgForFun = null;
     private Set<Function> funcsAnalyzed = null;
 
 
@@ -1683,19 +1684,21 @@ public class PartialEvaluator extends SymbolTableVisitor {
         nres = new NameResolver(p);
         rcontrol.setNameRes(nres);
         funcsToAnalyze = new ArrayList<Function>();
-        Map<Function, String> pkgForFun = new HashMap<Function, String>();
+        pkgForFun = new HashMap<Function, String>();
         Map<String, Package> pkgs = new HashMap<String, Package>();
         Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
-            funcsToAnalyze.addAll(functionsToAnalyze(pkg));
+            List<Function> toAnalyze = functionsToAnalyze(pkg);
+            funcsToAnalyze.addAll(toAnalyze);
             if (pkgs.containsKey(pkg.getName())) {
                 throw new RuntimeException("Duplicate package name.");
             }
-            pkgs.put(pkg.getName(), pkg);
-            newfuns.put(pkg.getName(), new ArrayList<Function>() );
+            String pkgName = pkg.getName();
+            pkgs.put(pkgName, pkg);
+            newfuns.put(pkgName, new ArrayList<Function>());
             for (Function f : pkg.getFuncs()) {
-                pkgForFun.put(f, pkg.getName());
+                pkgForFun.put(f, pkgName);
             }
         }
         if (funcsToAnalyze.size() == 0) {
