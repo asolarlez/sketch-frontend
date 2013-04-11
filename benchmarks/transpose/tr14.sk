@@ -91,6 +91,10 @@ void transpose_xy_z(global int nx, global int ny, global int nz, double[nx*ny*nz
 	transpose_2_1(nx, ny, nz, a, b);
 }
 
+void transpose_x_yz(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+	transpose_2_1(nx, ny, nz, a, b);
+}
+
 void trans_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
@@ -112,6 +116,40 @@ void trans_xy_z(global int P, global int nx, global int ny, global int nz, globa
 		lr = movein(P, spmdpid, nt, result);
 		spmdbarrier();
 		transpose_xy_z(nx, ny, nz, la.a, lr.a);
+		spmdbarrier();
+		moveout(P, spmdpid, nt, result, lr);
+	}
+}
+
+void identity(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
+	result = a;
+}
+
+void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements identity {
+	assume P>0 : "P>0";
+	assume P<=SPMD_MAX_NPROC : "P<=MAX";
+	//assume nx%P==0;
+	assume ny%P==0 : "ny%P";
+	assume nz%P==0 : "nz%P";
+
+	assume nx>=1 && nx <= 16 : "nx";
+	assume ny>=1 && ny <= 16 : "ny";
+	assume nz>=1 && nz <= 16 : "nz";
+	assume nx*ny*nz <= 32 : "nx*ny*nz";
+	assume nx*ny*nz/P <= 16 : "nx*ny*nz/P";
+	
+	global int nt = nx*ny*nz;
+
+	global double[nt] aa;
+	spec(P, nx, ny, nz, a, aa);
+	
+	spmdfork(P) {
+		LState la;
+		la = movein(P, spmdpid, nt, aa);
+		LState lr;
+		lr = movein(P, spmdpid, nt, result);
+		spmdbarrier();
+		transpose_x_yz(nx, ny, nz, la.a, lr.a);
 		spmdbarrier();
 		moveout(P, spmdpid, nt, result, lr);
 	}
