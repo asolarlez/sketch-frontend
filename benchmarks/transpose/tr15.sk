@@ -91,7 +91,7 @@ void transpose_x_yz(global int nx, global int ny, global int nz, double[nx*ny*nz
 	transpose_2_1(nx, ny, nz, a, b);
 }
 
-void trans_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, int x, int y, int z) implements spec_xyz {
+double trans_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, int x, int y, int z) implements spec_xyz {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
@@ -121,7 +121,7 @@ void trans_xy_z(global int P, global int nx, global int ny, global int nz, globa
 	return result[y*(nx*nz) + x*(nz) + z];
 }
 
-void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, int x, int y, int z) implements spec_zxy {
+double trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, int x, int y, int z) implements spec_zxy {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
