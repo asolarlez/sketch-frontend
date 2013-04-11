@@ -104,6 +104,10 @@ double trans_xy_z(global int P, global int nx, global int ny, global int nz, glo
 	assume nx*ny*nz <= 32 : "nx*ny*nz";
 	assume nx*ny*nz/P <= 16 : "nx*ny*nz/P";
 	
+	assume x>=0 && x<nx : "0<=x<nx";
+	assume y>=0 && y<ny : "0<=y<ny";
+	assume z>=0 && z<nz : "0<=z<nz";
+	
 	global int nt = nx*ny*nz;
 	global double[nt] result;
 
@@ -133,6 +137,10 @@ double trans_x_yz(global int P, global int nx, global int ny, global int nz, glo
 	assume nz>=1 && nz <= 16 : "nz";
 	assume nx*ny*nz <= 32 : "nx*ny*nz";
 	assume nx*ny*nz/P <= 16 : "nx*ny*nz/P";
+	
+	assume x>=0 && x<nx : "0<=x<nx";
+	assume y>=0 && y<ny : "0<=y<ny";
+	assume z>=0 && z<nz : "0<=z<nz";
 	
 	global int nt = nx*ny*nz;
 	global double[nt] result;
