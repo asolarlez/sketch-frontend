@@ -139,7 +139,7 @@ double trans_x_yz(global int P, global int nx, global int ny, global int nz, glo
     
 	spmdfork(P) {
 		LState la;
-		la = movein(P, spmdpid, nt, aa);
+		la = movein(P, spmdpid, nt, a);
 		LState lr;
 		lr = movein(P, spmdpid, nt, result);
 		spmdbarrier();
