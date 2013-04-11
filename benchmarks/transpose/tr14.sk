@@ -122,7 +122,13 @@ void trans_xy_z(global int P, global int nx, global int ny, global int nz, globa
 }
 
 void identity(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
-	result = a;
+	for (int x=0; x<nx; ++x) {
+		for(int y=0; y<ny; ++y) {
+			for (int z=0; z<nz; ++z) {
+				result[z*(nx*ny) + y*(nx) + x] = a[z*(nx*ny) + y*(nx) + x];
+			}
+		}
+    }
 }
 
 void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements identity {
