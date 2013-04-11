@@ -31,12 +31,23 @@ void moveout(global int nproc, int pid, global int nt, ref global double[nt] ga,
 // cells with same (y, z) but increasing x will occupy a contiguous region (of length nx) in memory
 // we use a by-plane partition, so every node owns entire x and y axes, but portion of z axes
 // after transpose, the new array result will have different dimensions: (x,y,z) => (z,x,y)
-void spec(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
+void spec_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
 	// we don't use block now
-    for(int y=0; y<ny; ++y) {
-    		for (int x=0; x<nx; ++x) {
+	for (int x=0; x<nx; ++x) {
+		for(int y=0; y<ny; ++y) {
     			for (int z=0; z<nz; ++z) {
     				result[y*(nx*nz) + x*(nz) + z] = a[z*(nx*ny) + y*(nx) + x];
+    			}
+    		}
+    }
+}
+
+void spec_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
+	// we don't use block now
+	for (int x=0; x<nx; ++x) {
+		for(int y=0; y<ny; ++y) {
+    			for (int z=0; z<nz; ++z) {
+    				result[z*(nx*ny) + y*(nx) + x] = a[y*(nx*nz) + x*(nz) + z];
     			}
     		}
     }
@@ -95,7 +106,7 @@ void transpose_x_yz(global int nx, global int ny, global int nz, double[nx*ny*nz
 	transpose_2_1(nx, ny, nz, a, b);
 }
 
-void trans_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec {
+void trans_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec_xy_z {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
@@ -121,17 +132,7 @@ void trans_xy_z(global int P, global int nx, global int ny, global int nz, globa
 	}
 }
 
-void identity(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) {
-	for (int x=0; x<nx; ++x) {
-		for(int y=0; y<ny; ++y) {
-			for (int z=0; z<nz; ++z) {
-				result[z*(nx*ny) + y*(nx) + x] = a[z*(nx*ny) + y*(nx) + x];
-			}
-		}
-    }
-}
-
-void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements identity {
+void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec_x_yz {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
@@ -146,12 +147,9 @@ void trans_x_yz(global int P, global int nx, global int ny, global int nz, globa
 	
 	global int nt = nx*ny*nz;
 
-	global double[nt] aa;
-	spec(P, nx, ny, nz, a, aa);
-	
 	spmdfork(P) {
 		LState la;
-		la = movein(P, spmdpid, nt, aa);
+		la = movein(P, spmdpid, nt, a);
 		LState lr;
 		lr = movein(P, spmdpid, nt, result);
 		spmdbarrier();
