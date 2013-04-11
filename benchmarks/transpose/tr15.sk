@@ -121,7 +121,7 @@ void trans_xy_z(global int P, global int nx, global int ny, global int nz, globa
 	return result[y*(nx*nz) + x*(nz) + z];
 }
 
-void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a) implements spec_zxy {
+void trans_x_yz(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, int x, int y, int z) implements spec_zxy {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
