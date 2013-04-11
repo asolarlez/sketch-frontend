@@ -79,18 +79,29 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
                 return func;
             }
             visitedFunc.add(name);
-            if (name.startsWith("movein")) {
-                return func;
-            }
             // currentT = taint.get(name);
             assert !taint.containsKey(name) : "should not contain " + name;
             currentT = new HashMap<String, Type>();
             taint.put(name, currentT);
-            if (name.startsWith("moveout")) {
+            // if (name.startsWith("movein")) {
+            // List<Parameter> p = func.getParams();
+            // Parameter global = p.get(p.size() - 1);
+            // for (Parameter param : p) {
+            // assert param.isParameterInput() :
+            // "only input parameters allowed in movein!";
+            // }
+            // currentT.put(global.getName(), func.getReturnType());
+            // }
+
+            if (name.startsWith("moveout") || name.startsWith("movein")) {
                 List<Parameter> p = func.getParams();
                 Parameter local = p.get(p.size() - 1);
                 Parameter global = p.get(p.size() - 2);
-                assert local.isParameterInput() && global.isParameterOutput() : "wrong param type for moveout";
+                if (name.startsWith("moveout")) {
+                    assert local.isParameterInput() && global.isParameterOutput() : "wrong param type for moveout";
+                } else {
+                    assert local.isParameterOutput() && global.isParameterInput() : "wrong param type for movein";
+                }
                 for (int i = 0; i < p.size() - 2; ++i) {
                     assert p.get(i).isParameterInput() : "only one output allowed!";
                 }
@@ -161,9 +172,9 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
         @Override
         public Object visitExprFunCall(ExprFunCall e) {
             String callee = e.getName();
-            if (callee.startsWith("movein")) {
-                return e;
-            }
+            // if (callee.startsWith("movein")) {
+            // return e;
+            // }
             Function f = lookupFunc.get(callee);
             if (f != null) {
                 if (!visitedFunc.contains(callee)) {
