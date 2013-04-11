@@ -119,11 +119,17 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
         public Object visitStmtAssign(StmtAssign s) {
             Object lhs = s.getLHS().accept(this);
             if (lhs instanceof ExprVar) {
-                assert !cTainted(((ExprVar) lhs)) : "cannot manipulate tainted var!";
+                if (cTainted(((ExprVar) lhs))) {
+                    System.out.println("Warning: manipulating global var " + lhs + " " +
+                            s.getCx());
+                }
             }
             Object rhs = s.getRHS().accept(this);
             if (rhs instanceof ExprVar) {
-                assert !cTainted(((ExprVar) rhs)) : "cannot manipulate tainted var!";
+                if (cTainted(((ExprVar) rhs))) {
+                    System.out.println("Warning: manipulating global var " + rhs + " " +
+                            s.getCx());
+                }
             }
             return s;
         }
@@ -132,7 +138,10 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
         public Object visitExprField(ExprField e) {
             Object lhs = e.getLeft().accept(this);
             if (lhs instanceof ExprVar) {
-                assert !cTainted(((ExprVar) lhs)) : "cannot manipulate tainted var!";
+                if (cTainted(((ExprVar) lhs))) {
+                    System.out.println("Warning: manipulating global var " + lhs + " " +
+                            e.getCx());
+                }
             }
             return e;
         }
@@ -141,7 +150,10 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
         public Object visitExprArrayRange(ExprArrayRange e) {
             Object lhs = e.getBase().accept(this);
             if (lhs instanceof ExprVar) {
-                assert !cTainted(((ExprVar) lhs)) : "cannot manipulate tainted var!";
+                if (cTainted(((ExprVar) lhs))) {
+                    System.out.println("Warning: manipulating global var " + lhs + " " +
+                            e.getCx());
+                }
             }
             return e;
         }

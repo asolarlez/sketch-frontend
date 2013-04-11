@@ -45,7 +45,7 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
-void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+generator void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
 	generator int num() {
 		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
 	}
@@ -61,7 +61,7 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 
 // n = nx*ny*nz/np
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
-void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+generator void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
 	generator int num() {
 		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
 	}
@@ -80,15 +80,18 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 
 
 // transpose a to b
-void transpose_xy_z(global int nx, global int ny, global int nz, LState a, ref LState b) {
+generator void transpose_2_1(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
 	global int n = nx*ny*nz/spmdnproc;
-	transpose_local(nx, ny, nz, a.a, b.a);
-	spmdalltoall(n, b.a, a.a);
-	transpose_finish(nx, ny, nz, a.a, b.a);
+	transpose_local(nx, ny, nz, a, b);
+	spmdalltoall(n, b, a);
+	transpose_finish(nx, ny, nz, a, b);
 }
 
+void transpose_xy_z(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+	transpose_2_1(nx, ny, nz, a, b);
+}
 
-void sk(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec {
+void trans_xy_z(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec {
 	assume P>0 : "P>0";
 	assume P<=SPMD_MAX_NPROC : "P<=MAX";
 	//assume nx%P==0;
@@ -108,7 +111,7 @@ void sk(global int P, global int nx, global int ny, global int nz, global double
 		LState lr;
 		lr = movein(P, spmdpid, nt, result);
 		spmdbarrier();
-		transpose_xy_z(nx, ny, nz, la, lr);
+		transpose_xy_z(nx, ny, nz, la.a, lr.a);
 		spmdbarrier();
 		moveout(P, spmdpid, nt, result, lr);
 	}
