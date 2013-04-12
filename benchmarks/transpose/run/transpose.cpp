@@ -1,10 +1,17 @@
 #include "spmd.h"
+using namespace spmd;
 
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
-
-using namespace spmd;
+using std::string;
+using std::cerr;
+using std::cout;
+using std::ofstream;
+using std::stringstream;
+using std::endl;
+using std::setw;
 
 #include "tr17.cpp"
 using namespace npb;
@@ -84,6 +91,8 @@ int main(int argc, char * argv[]) {
 	output(fout, nz, nx, ny/spmdnproc, result);
 
 	fout.close();
+	delete [] matrix;
+	delete [] result;
 	int rc = mpiFinalize();
 	return rc;
 }

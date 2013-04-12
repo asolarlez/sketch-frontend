@@ -97,7 +97,8 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 void transpose_xy_z(global int nx, global int ny, global int nz, ref double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
 	global int n = nx*ny*nz/spmdnproc;
 	transpose_local(nx, ny, nz, a, b);
-	spmdalltoall(n, b, a);
+	global int sz = n/spmdnproc;
+	spmdalltoall(sz, b, a);
 	transpose_finish(nx, ny, nz, a, b);
 }
 

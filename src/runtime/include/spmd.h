@@ -60,7 +60,7 @@ inline void mpiTransfer(int size, bool scond, FLT * sendbuf, int recipient, bool
 }
 
 inline void mpiAlltoall(int size, FLT * sendbuf, FLT * recvbuf) {
-	MPI_Alltoall(sendbuf, size/spmdnproc, DT_FLT, recvbuf, size/spmdnproc, DT_FLT, MPI_COMM_WORLD);
+	MPI_Alltoall(sendbuf, size, DT_FLT, recvbuf, size, DT_FLT, MPI_COMM_WORLD);
 }
 
 }
