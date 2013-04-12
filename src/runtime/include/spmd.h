@@ -63,6 +63,31 @@ inline void mpiAlltoall(int size, FLT * sendbuf, FLT * recvbuf) {
 	MPI_Alltoall(sendbuf, size, DT_FLT, recvbuf, size, DT_FLT, MPI_COMM_WORLD);
 }
 
+class timer {
+	double elapsed;
+	double starttime;
+
+public:
+	timer() : elapsed(0) { }
+
+	void clear() {
+		elapsed = 0;
+	}
+
+	void start() {
+		starttime = MPI_Wtime();
+	}
+
+	void stop() {
+		double now = MPI_Wtime();
+		elapsed += now-starttime;
+	}
+
+	double read() {
+		return elapsed;
+	}
+};
+
 }
 
 #endif //_SPMD_H

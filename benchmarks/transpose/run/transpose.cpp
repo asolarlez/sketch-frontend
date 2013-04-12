@@ -52,7 +52,7 @@ int main(int argc, char * argv[]) {
 	int nx = atoi(argv[1]);
 	int ny = atoi(argv[2]);
 	int nz = atoi(argv[3]);
-	int iters = 1;
+	int iters = 0;
 	bool outputMatrix = false;
 	if (argc > 4) {
 		iters = atoi(argv[4]);
@@ -77,20 +77,38 @@ int main(int argc, char * argv[]) {
 	int ntdivnp = init(nx, ny, nz, &matrix);
 	double * result = new double[ntdivnp];
 
-	fout << "initial matrix:" << endl;
-	output(fout, nx, ny, nz/spmdnproc, matrix);
-	fout.flush();
+	if (outputMatrix) {
+		fout << "initial matrix:" << endl;
+		output(fout, nx, ny, nz/spmdnproc, matrix);
+	}
 
 	//cout << spmdpid << ": " << "after init" << endl;
 
+	timer t_warm, t_trans;	
+
+	// warmup
 	mpiBarrier();
+	t_warm.start();
 	transpose_xy_z(nx, ny, nz, matrix, result);
+	t_warm.stop();
 	mpiBarrier();
+
+	for (; iters>0; iters--) {
+		t_trans.start();
+		transpose_xy_z(nx, ny, nz, matrix, result);
+		t_trans.stop();
+		mpiBarrier();
+	}
 
 	//cout << spmdpid << ": " << "after transpose" << endl;
+	
+	fout << "T_warm: " << t_warm.read();
+	fout << "T_trans: " << t_trans.read();
 
-	fout << "after transpose_xy_z:" << endl;
-	output(fout, nz, nx, ny/spmdnproc, result);
+	if (outputMatrix) {
+		fout << "after transpose_xy_z:" << endl;
+		output(fout, nz, nx, ny/spmdnproc, result);
+	}
 
 	fout.close();
 	int rc = mpiFinalize();
