@@ -3,10 +3,10 @@ using namespace spmd;
 
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <iomanip>
 #include <sstream>
 using std::string;
-using std::cerr;
 using std::cout;
 using std::ofstream;
 using std::stringstream;
@@ -45,7 +45,7 @@ void output(ofstream & fout, int nx, int ny, int nz, double * a) {
 int main(int argc, char * argv[]) {
 	mpiInit(&argc, &argv);
 	if (argc < 4) {
-	    cerr << "Usage: mpirun -np <nproc> " << argv[0] << " nx ny nz [iters [outputMatrix?]]" << endl;
+	    cout << "Usage: mpirun -np <nproc> " << argv[0] << " nx ny nz [iters [outputMatrix?]]" << endl;
 	    exit(1);
 	}
 	
@@ -61,7 +61,7 @@ int main(int argc, char * argv[]) {
 		outputMatrix = (bool)atoi(argv[5]);
 	}
 	if (!(nx>0 && ny>0 && nz>0 && nz%spmdnproc==0 && ny%spmdnproc==0)) {
-		cerr << "Wrong configuration nx, ny, nz!" << endl;
+		cout << "Wrong configuration nx, ny, nz!" << endl;
 		exit(2);
 	}
 
