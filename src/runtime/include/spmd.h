@@ -6,6 +6,8 @@
 #define FLT double
 #define DT_FLT MPI_DOUBLE
 
+namespace spmd {
+
 int spmdnproc;
 int spmdpid;
 
@@ -59,6 +61,8 @@ void mpiTransfer(int size, bool scond, FLT * sendbuf, int recipient, bool rcond,
 
 void mpiAlltoall(int size, FLT * sendbuf, FLT * recvbuf) {
 	MPI_Alltoall(sendbuf, size/spmdnproc, DT_FLT, recvbuf, size/spmdnproc, DT_FLT, MPI_COMM_WORLD);
+}
+
 }
 
 #endif //_SPMD_H

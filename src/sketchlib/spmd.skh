@@ -1,5 +1,4 @@
-#ifndef _SPMD_H
-#define _SPMD_H
+package spmd;
 
 // need to define SPMD_MAX_BUF_LEN and SPMD_MAX_NPROC before including!
 
@@ -95,4 +94,3 @@ void spmdalltoall(global int size, double[size] src, ref double[size] dst) {
 	spmdbarrier();
 }
 
-#endif  //_SPMD_H
