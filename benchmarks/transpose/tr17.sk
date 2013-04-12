@@ -100,7 +100,7 @@ void transpose_xy_z(global int nx, global int ny, global int nz, ref double[nx*n
 }
 
 
-void sk(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec {
+void sk(global int P, global int nx, global int ny, global int nz, global double[nx*ny*nz] a, ref global double[nx*ny*nz] result) implements spec_xy_z {
 	global int nt = nx*ny*nz;
 	spmdfork(P) {
 		LState la;
