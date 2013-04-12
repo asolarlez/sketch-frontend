@@ -16,7 +16,7 @@ using std::setw;
 #include "tr17.cpp"
 using namespace npb;
 
-double * init(int nx, int ny, int nz) {
+int init(int nx, int ny, int nz, double ** matrix) {
 	int nt = nx*ny*nz;
 	int ntdivnp = nt / spmdnproc;
 	int base = ntdivnp*spmdpid;
@@ -24,7 +24,8 @@ double * init(int nx, int ny, int nz) {
 	for (int i=0; i<ntdivnp; i++) {
 		a[i] = base + i;
 	}
-	return a;
+	*matrix = a;
+	return ntdivnp;
 }
 
 void output(ofstream & fout, int nx, int ny, int nz, double * a) {
@@ -72,27 +73,26 @@ int main(int argc, char * argv[]) {
 
 	ofstream fout(fname.str().c_str());
 
-	double * matrix = init(nx, ny, nz);
-	double * result = new double[sizeof(matrix)/sizeof(double)];
+	double * matrix;
+	int ntdivnp = init(nx, ny, nz, &matrix);
+	double * result = new double[ntdivnp];
 
 	fout << "initial matrix:" << endl;
 	output(fout, nx, ny, nz/spmdnproc, matrix);
 	fout.flush();
 
-	cout << spmdpid << ": " << "after init" << endl;
+	//cout << spmdpid << ": " << "after init" << endl;
 
 	mpiBarrier();
 	transpose_xy_z(nx, ny, nz, matrix, result);
 	mpiBarrier();
 
-	cout << spmdpid << ": " << "after transpose" << endl;
+	//cout << spmdpid << ": " << "after transpose" << endl;
 
 	fout << "after transpose_xy_z:" << endl;
 	output(fout, nz, nx, ny/spmdnproc, result);
 
 	fout.close();
-	delete [] matrix;
-	delete [] result;
 	int rc = mpiFinalize();
 	return rc;
 }
