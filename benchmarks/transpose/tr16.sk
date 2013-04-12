@@ -1,5 +1,7 @@
 pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 1 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
+package npb;
+
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
 
