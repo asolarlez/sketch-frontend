@@ -11,17 +11,17 @@ namespace spmd {
 int spmdnproc;
 int spmdpid;
 
-void mpiInit(int * argc, char ***argv) {
+inline void mpiInit(int * argc, char ***argv) {
   MPI_Init(argc, argv);
   MPI_Comm_size(MPI_COMM_WORLD, &spmdnproc);
   MPI_Comm_rank(MPI_COMM_WORLD, &spmdpid);
 }
 
-void mpiFinalize() {
-  MPI_Finalize();
+inline int mpiFinalize() {
+  return MPI_Finalize();
 }
 
-void mpiBarrier() {
+inline void mpiBarrier() {
   MPI_Barrier(MPI_COMM_WORLD);
 }
 
@@ -39,11 +39,11 @@ static MPI_Op const OP[] = {
   MPI_PROD
 };
 
-void mpiReduce(int op, int size, FLT * sendbuf, FLT * recvbuf) {
+inline void mpiReduce(int op, int size, FLT * sendbuf, FLT * recvbuf) {
 	MPI_Allreduce(sendbuf, recvbuf, size, DT_FLT, OP[op], MPI_COMM_WORLD);
 }
 
-void mpiTransfer(int size, bool scond, FLT * sendbuf, int recipient, bool rcond, FLT * recvbuf) {
+inline void mpiTransfer(int size, bool scond, FLT * sendbuf, int recipient, bool rcond, FLT * recvbuf) {
   static int epoch = 0;
 
   int tag = ++epoch;
@@ -59,7 +59,7 @@ void mpiTransfer(int size, bool scond, FLT * sendbuf, int recipient, bool rcond,
   }
 }
 
-void mpiAlltoall(int size, FLT * sendbuf, FLT * recvbuf) {
+inline void mpiAlltoall(int size, FLT * sendbuf, FLT * recvbuf) {
 	MPI_Alltoall(sendbuf, size/spmdnproc, DT_FLT, recvbuf, size/spmdnproc, DT_FLT, MPI_COMM_WORLD);
 }
 
