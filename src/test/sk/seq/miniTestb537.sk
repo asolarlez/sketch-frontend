@@ -1,0 +1,18 @@
+
+struct Point{
+    int x;
+    int y;
+}
+
+void foo(ref |Point| p ){
+    ++p.x;
+}
+
+harness void main(int i, int j){
+    |Point| p1 = |Point|(x=5, y=3);
+    Point p2 = new Point(x=3, y=2);
+    
+    foo(p2);
+    
+    assert p2.x == 4;
+}

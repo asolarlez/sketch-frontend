@@ -14,8 +14,8 @@ import sketch.compiler.ast.core.Function.LibraryFcnType;
 import sketch.compiler.ast.core.Function.PrintFcnType;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.stmts.*;
-import sketch.compiler.ast.core.typs.TypeStruct;
-import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
+import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
@@ -67,8 +67,8 @@ public class SimpleCodePrinter extends CodePrinter
         nres.setPackage(spec);
         printLine("/* BEGIN PACKAGE " + spec.getName() + "*/");
 
-        for (TypeStruct tsOrig : spec.getStructs()) {
-            TypeStruct ts = (TypeStruct) tsOrig.accept(this);
+        for (StructDef tsOrig : spec.getStructs()) {
+            StructDef ts = (StructDef) tsOrig.accept(this);
         }
 
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )
@@ -302,9 +302,9 @@ public class SimpleCodePrinter extends CodePrinter
 	}
 
 	@Override
-	public Object visitTypeStruct(TypeStruct ts) {
+	public Object visitStructDef(StructDef ts) {
 	    printLine("struct " + ts.getName() + " {");
-	    for (StructFieldEnt ent : ts.getFieldEntries()) {
+        for (StructFieldEnt ent : ts.getFieldEntriesInOrder()) {
 	        printLine("    " + ent.getType().toString() + " " + ent.getName() + ";");
 	    }
         for (Entry<String, Vector<Annotation>> at : ts.annotationSet()) {

@@ -130,18 +130,7 @@ public class SymbolTable
         return sb.toString();
     }
 
-    /**
-     * This function will upgrade the type of a variable to a new
-     * 
-     * @param name
-     * @param newType
-     * @param errSource
-     */
-    public void upgradeVar(String name, Type newType, FENode errSource) {
-        Type oldType = lookupVar(name, errSource);
-    	Type lcpType = oldType.leastCommonPromotion(newType);
-    	registerVar(name, lcpType);
-    }
+
 
     /** Registers a new symbol in the symbol table, using default
      * origin and kind. */

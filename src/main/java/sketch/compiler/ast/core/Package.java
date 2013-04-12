@@ -22,7 +22,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 
 /**
  * Similar to a namespace in C++, contains private fields (global variables local to the
@@ -41,11 +41,11 @@ public class Package extends FENode
     private String name;
     private final List<FieldDecl> vars;
     private final List<Function> funcs;
-    private final List<TypeStruct> structs;
+    private final List<StructDef> structs;
 
     public String toString(){
         String res = "package " + name + '\n';
-        for (TypeStruct ts : structs) {
+        for (StructDef ts : structs) {
             res += "   struct " + ts.getName() + '\n';
         }
         for(Function f: funcs){
@@ -69,7 +69,7 @@ public class Package extends FENode
      *            object
      */
     public Package(FENode context, String name,
- List<TypeStruct> structs, List vars,
+ List<StructDef> structs, List vars,
             List<Function> funcs)
     {
         super(context);
@@ -97,7 +97,7 @@ public class Package extends FENode
      * @deprecated
      */
     public Package(FEContext context, String name,
- List<TypeStruct> structs,
+ List<StructDef> structs,
             List vars, List<Function> funcs)
     {
         super(context);
@@ -153,7 +153,7 @@ public class Package extends FENode
 
 
     /** Returns the list of structures declared in this. */
-    public List<TypeStruct> getStructs() {
+    public List<StructDef> getStructs() {
         return structs;
     }
 
@@ -176,7 +176,7 @@ public class Package extends FENode
 
     public Package merge(Package s2) {
         assert this.getName().equals(s2.getName());
-        List<TypeStruct> ns = new ArrayList<TypeStruct>(structs);
+        List<StructDef> ns = new ArrayList<StructDef>(structs);
         ns.addAll(s2.structs);
         List<FieldDecl> fd = new ArrayList<FieldDecl>(vars);
         fd.addAll(s2.vars);
@@ -185,7 +185,7 @@ public class Package extends FENode
         return new Package(this, name, ns, fd, fs);
     }
 
-    public Package newFromFcns(List<Function> fcns, List<TypeStruct> structs) {
+    public Package newFromFcns(List<Function> fcns, List<StructDef> structs) {
         return new Package(this, this.getName(),
                 structs, this.getVars(),
                 Collections.unmodifiableList(fcns));

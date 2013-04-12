@@ -17,7 +17,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -91,7 +91,7 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
 
     public Object visitExprNew(ExprNew expNew) {
         TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct();
-        TypeStruct ts = nres.getStruct(nt.getName());
+        StructDef ts = nres.getStruct(nt.getName());
         Map<String, Expression> rmap = new HashMap<String, Expression>();
         VarSetReplacer vsr = new VarSetReplacer(rmap);
         for (ExprNamedParam en : expNew.getParams()) {

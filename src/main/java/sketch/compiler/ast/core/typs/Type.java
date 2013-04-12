@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.util.exceptions.NotImplementedException;
@@ -35,7 +36,9 @@ public abstract class Type
         this.memtyp = memtyp;
     }
 
-    
+    public Type addDefaultPkg(String pkg, NameResolver nres) {
+        return this;
+    }
 
 
     /** @return true iff this type is a struct type. */
@@ -61,7 +64,7 @@ public abstract class Type
      * @param that  other type to check promotion to
      * @return      true if this can be promoted to that
      */
-    public boolean promotesTo(Type that)
+    public boolean promotesTo(Type that, NameResolver nres)
     {
         if (this.equals(that))
             return true;
@@ -88,11 +91,11 @@ public abstract class Type
      * @return      a type such that both this and that can promote
      *              to type, or null if there is no such type
      */
-    public Type leastCommonPromotion(Type that)
+    public Type leastCommonPromotion(Type that, NameResolver nres)
     {
-        if (this.promotesTo(that))
+        if (this.promotesTo(that, nres))
             return that;
-        if (that.promotesTo(this))
+        if (that.promotesTo(this, nres))
             return this;
         return null;
     }

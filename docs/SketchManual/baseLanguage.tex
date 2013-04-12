@@ -77,8 +77,62 @@ void strange(Car x, Car y){
 
 Just like in Java, references are typesafe and the heap is assumed to be garbage collected (which is another way of saying the synthesizer doesn't model deallocation). A consequence of this is that a reference to a record of type T must either be \C{null} or point to a valid object of type T. Also, just like in Java, all pointer dereferences have an implicit null pointer check.
 
+\subsection{Temporary Structures}
+
+There are instances where it's desirable to have the convenience of structures but without the cost of allocation and dereferencing, and without the burden of reasoning about aliasing. 
+
+The language supports \emph{temporary structures}, which are unboxed, so they don't incur many of the usual costs associated with heap allocated structures. Temporary structures have copy semantics, so the programmer can think of them as primitive values and does not have to worry about aliasing. 
+
+One can use temporary structures as local variables and parameters by enclosing the type of the structure in vertical bars \C{|type|}. Temporary structures can be created with a constructor \C{|type|($args$)}, where $args$ are named parameters just like with a normal constructor, but the keyword \C{new} is not used since nothing is being allocated in the heap. 
+
+Temporary structures have the following properties:
+\begin{itemize}
+\item Assignment: assignment of a temporary structure to another results in a copy. 
+\item Equality comparison: an equality comparison of two temporary structures is equivalent to the conjunction of their field-by-field comparison.
+\end{itemize}
+
+The following example illustrates the use of unboxed functions.
+
+\begin{Example}
+\begin{lstlisting}
+struct Point{
+   int x;
+   int y;
+}
+
+...
+|Point| p1 = |Point|(x=5, y=3); // temporary point initialized to (5,3).
+Point p2 = new Point(x=3, y=2); // heap allocated point initialized to (3,2).
+|Point| p3 = p1; // temporary point p3 is a copy of p1.
+p3.x = 10;
+Point p4 = p2; // p4 and p2 point to the same heap allocated object.
+p4.x= 15;
+assert p1.x == 5;
+assert p2.x == 15;
+assert p3.x = 10;
+assert p4.x == 15;
+if(??) assert p1 == p2; // equivalent to p1.x == p2.x && p1.y==p2.y
+if(??) assert p1 != p2; // equivalent to !(p1==p2)
+\end{lstlisting}
+\end{Example}
+
+\paragraph{Interaction of temporary and heap allocated structures}
+An assignment from a heap allocated structure to a temporary structure is interpreted as a field-by-field copy. In the above example, an assignment \C{p3 = p2;} would be equivalent to 
+\begin{lstlisting}
+p3.x = px.x; p3.y = p2.y;
+\end{lstlisting}
+Such an assignment requires that \C{p2} not be \C{null}. Similarly, an assignment from a temporary structure to a heap allocated structure is also interpreted as a field-by-field copy, with a similar assumption that the reference will not be null. Failure to satisfy the assumption will cause an exception. 
+
+Similarly, an equality comparison of a heap allocated structure and a temporary structure will be equivalent to a field-by-field comparison.
+
+\paragraph{Restrictions}
+In the current version of the language, temporary structures are only allowed for local variables and function parameters. In particular, the language currently does not allow arrays of temporary structures or temporary structure fields in other structures. These restrictions are likely to be lifted in future versions of the language. Finally, structures with lists inside them are not allowed to be temporary structures.
+
+
+
+
 \subsection{Final Types}\seclabel{final}
-Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below; there are analogous rules for fields of a record. 
+Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below---there are analogous rules for fields of a record. 
 
 \begin{itemize}
 \item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function (see \secref{functions}) .
@@ -512,7 +566,7 @@ harness void main(int n, double[n] in){
 
 The syntax for a function definition that uses implicit parameters is shown below. 
 \begin{lstlisting}
-$ret\_type$ $name$([$implicit_args$],$args$){
+$ret\_type$ $name$([$implicit~args$], $args$){
   $body$
 }
 \end{lstlisting}
@@ -536,7 +590,7 @@ int[n+m] foo([int n, int m], int[n][m*2] a, int[m-1] b)... //m is not the size o
 \end{lstlisting}
 \end{Example}
 
-When calling a function with implicit parameters, there are XXX rules to keep in mind.
+When calling a function with implicit parameters, there are two rules to keep in mind.
 \begin{itemize}
 \item You can decide to pass all implicit parameters, or you can pass none of them, but you cannot selectively pass only a subset of them.
 \item If a given implicit parameter is used by multiple array parameters, all array parameters must be consistent regarding the value of that parameter.
@@ -569,7 +623,7 @@ foo(3, z, y); //Passes only a subset of implicit parameters
 
 
 \subsection{Function parameters}
-Functions can also take functions as parameters. We use the keyword \C{fun} to denote a function type. The example below illustrates the use of function parameters.
+Functions can also take other functions as parameters. We use the keyword \C{fun} to denote a function type. The example below illustrates the use of function parameters.
 \begin{Example}
 Functions as parameters.
 \begin{lstlisting}

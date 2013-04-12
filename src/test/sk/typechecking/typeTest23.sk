@@ -1,0 +1,14 @@
+
+pragma options "--bnd-unroll-amnt 32 --debug-show-dag";
+
+int va(){
+    return 5;
+}
+
+harness void foo(int i){    
+    int[va()] x = 0; //TypeError    
+    
+    if(i < 5){
+        x[i] = 7;
+    }
+}

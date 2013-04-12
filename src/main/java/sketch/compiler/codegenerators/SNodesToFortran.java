@@ -26,7 +26,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
@@ -697,7 +697,7 @@ public class SNodesToFortran extends FENullVisitor {
     public Object visitStmtReorderBlock(StmtReorderBlock block){throw new UnsupportedOperationException();}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){throw new UnsupportedOperationException();}
     public Object visitStmtInsertBlock(StmtInsertBlock block){throw new UnsupportedOperationException();}
-    public Object visitTypeStruct(TypeStruct ts){throw new UnsupportedOperationException();}
+    public Object visitStructDef(StructDef ts){throw new UnsupportedOperationException();}
     public Object visitExprNullPtr(ExprNullPtr nptr){ throw new UnsupportedOperationException(); }
 	public Object visitExprAlt (ExprAlt exp) { throw new UnsupportedOperationException (); }
     public Object visitExprChoiceBinary(ExprChoiceBinary e) { throw new UnsupportedOperationException(); }

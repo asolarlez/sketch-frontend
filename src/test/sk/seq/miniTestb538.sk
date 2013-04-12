@@ -1,0 +1,21 @@
+
+struct Buf{
+    int x;
+    int[33] m;
+}
+
+void foo(ref |Buf| p ){
+    for(int i=0; i<p.x; ++i){
+        p.m[i] = i;
+    }
+}
+
+harness void main(){
+    Buf p2 = new Buf(x=3);
+    
+    foo(p2);
+    
+    for(int i=0; i<p2.x; ++i){
+        assert p2.m[i] == i;
+    }
+}

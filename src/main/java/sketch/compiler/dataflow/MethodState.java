@@ -511,7 +511,7 @@ public class MethodState {
             return;
         }
        var = this.transName(var);
-       if(cvmap.contains(var)){
+        if (cvmap != null && cvmap.contains(var)) {
            if(val.isVect()){
                val = getVecTernaryValue(var, val);
            }else{

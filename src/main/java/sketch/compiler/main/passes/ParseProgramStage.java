@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstChar;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.parser.StreamItParser;
 import sketch.util.exceptions.ProgramParseException;
@@ -44,7 +44,7 @@ public class ParseProgramStage extends MetaStage {
                 return null;
 
             List<Package> newStreams = new java.util.ArrayList<Package>();
-            List<TypeStruct> newStructs = new java.util.ArrayList<TypeStruct>();
+            List<StructDef> newStructs = new java.util.ArrayList<StructDef>();
             newStreams.addAll(prog.getPackages());
             newStreams.addAll(pprog.getPackages());
             pragmas.addAll(parser.getDirectives());

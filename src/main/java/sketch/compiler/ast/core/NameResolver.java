@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
@@ -17,7 +17,7 @@ public class NameResolver {
     final Map<String, String> pkgForFun = new HashMap<String, String>();
     final Map<String, String> pkgForVar = new HashMap<String, String>();
 
-    final Map<String, TypeStruct> structMap = new HashMap<String, TypeStruct>();
+    final Map<String, StructDef> structMap = new HashMap<String, StructDef>();
     final Map<String, Function> funMap = new HashMap<String, Function>();
     final Map<String, FieldDecl> varMap = new HashMap<String, FieldDecl>();
     Package pkg;
@@ -54,7 +54,7 @@ public class NameResolver {
         thingMap.put(compound(pkg.getName(), name), stuff);
     }
 
-    public void registerStruct(TypeStruct ts) {
+    public void registerStruct(StructDef ts) {
         registerStuff(pkgForStruct, structMap, ts, ts.getName());
     }
 
@@ -116,6 +116,7 @@ public class NameResolver {
         return f;
     }
 
+
     public String getFunName(Function f) {
         if (pkgForFun.containsKey(f.getName())) {
             return f.getName() + "@" + pkgForFun.get(f.getName());
@@ -147,7 +148,7 @@ public class NameResolver {
         return getFunName(name, this.pkg.getName());
     }
 
-    public TypeStruct getStruct(String name) {
+    public StructDef getStruct(String name) {
         String full = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
         if (full == null) {
             return null;
@@ -157,7 +158,7 @@ public class NameResolver {
 
     public void populate(Package pkg) {
         this.pkg = pkg;
-        for (TypeStruct ts : pkg.getStructs()) {
+        for (StructDef ts : pkg.getStructs()) {
             registerStruct(ts);
         }
         for (Function f : pkg.getFuncs()) {

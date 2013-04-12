@@ -1,0 +1,20 @@
+
+struct Point{
+    int x;
+    int y;
+}
+
+harness void main(int i, int j){
+    |Point| p1 = |Point|(x=5, y=3); // temporary point initialized to (5,3).
+    Point p2 = new Point(x=3, y=2); // heap allocated point initialized to (3,2).
+    |Point| p3 = p1; // temporary point p3 is a copy of p1.
+    p3.x = 10;
+    Point p4 = p2; // p4 and p2 point to the same heap allocated object.
+    p4.x= 15;
+    assert p1.x == 5;
+    assert p2.x == 15;
+    assert p3.x == 10;
+    assert p4.x == 15;
+    if(??) assert p1 == p2; // equivalent to p1.x == p2.x && p1.y==p2.y
+    if(??) assert p1 != p2; // equivalent to !(p1==p2)
+}

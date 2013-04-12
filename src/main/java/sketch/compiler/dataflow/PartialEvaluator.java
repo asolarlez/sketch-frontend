@@ -23,10 +23,10 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
@@ -1429,7 +1429,7 @@ public class PartialEvaluator extends FEReplacer {
         return isReplacer ? new TypeArray(nbase, nlen, t.getMaxlength()) : t;
     }
 
-    public Object visitTypeStruct(TypeStruct ts) {
+    public Object visitStructDef(StructDef ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
         Level lvl = null;
@@ -1483,7 +1483,7 @@ public class PartialEvaluator extends FEReplacer {
                 state.setVarValue(nm, init);
             }else{
                 if(!(stmt.getType(i) instanceof TypeArray)){
-                    if(stmt.getType(i) instanceof TypeStruct || stmt.getType(i) instanceof TypeStructRef ){
+                    if (stmt.getType(i) instanceof TypeStructRef) {
                         state.setVarValue(nm, this.vtype.NULL());
                     }else{
                         state.setVarValue(nm, this.vtype.CONST(0));
@@ -1694,9 +1694,9 @@ public class PartialEvaluator extends FEReplacer {
         List<FieldDecl> newVars = isReplacer ? new ArrayList<FieldDecl>() : null;
         List<Function> newFuncs = isReplacer ? new ArrayList<Function>() : null;
 
-        List<TypeStruct> newStructs = new ArrayList<TypeStruct>();
-        for (TypeStruct tsOrig : spec.getStructs()) {
-            TypeStruct ts = (TypeStruct) tsOrig.accept(this);
+        List<StructDef> newStructs = new ArrayList<StructDef>();
+        for (StructDef tsOrig : spec.getStructs()) {
+            StructDef ts = (StructDef) tsOrig.accept(this);
             newStructs.add(ts);
         }
 

@@ -96,7 +96,7 @@ public class ExtractRightShifts extends SymbolTableVisitor {
                 rlen = ((TypeArray) rt).getLength();
             }
 
-			Type nt = lt.leastCommonPromotion(rt);
+            Type nt = lt.leastCommonPromotion(rt, nres);
 			StmtVarDecl ldecl = new StmtVarDecl(context, nt, tmpName1, lexp);
 			StmtVarDecl rdecl = new StmtVarDecl(context, nt, tmpName2, rexp);
 			

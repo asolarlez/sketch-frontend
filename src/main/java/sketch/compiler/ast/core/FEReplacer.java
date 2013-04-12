@@ -31,7 +31,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
@@ -709,9 +709,9 @@ public class FEReplacer implements FEVisitor
                 newVars.add(newVar);
         }
 
-        List<TypeStruct> newStructs = new ArrayList<TypeStruct>();
-        for (TypeStruct tsOrig : spec.getStructs()) {
-            TypeStruct ts = (TypeStruct) tsOrig.accept(this);
+        List<StructDef> newStructs = new ArrayList<StructDef>();
+        for (StructDef tsOrig : spec.getStructs()) {
+            StructDef ts = (StructDef) tsOrig.accept(this);
             if (ts != tsOrig) {
                 changed = true;
             }
@@ -790,7 +790,7 @@ public class FEReplacer implements FEVisitor
     }
 
     public Set<String> fields = null;
-    public Object visitTypeStruct (TypeStruct ts) {
+    public Object visitStructDef (StructDef ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
         fields = new HashSet<String>();

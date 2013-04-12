@@ -1,15 +1,19 @@
 package sketch.util.exceptions;
 
-public class TypeErrorException extends SketchSolverException {
+import sketch.compiler.ast.core.FENode;
 
-    public TypeErrorException(String msg) {
-        super(msg);
+public class TypeErrorException extends ExceptionAtNode {
+
+    @Override
+    protected String messageClass() {
+        return "Type Error";
+    }
+
+    public TypeErrorException(String msg, FENode fn) {
+        super(msg, fn);
         // TODO Auto-generated constructor stub
     }
 
-    public TypeErrorException(String msg, Throwable base) {
-        super(msg, base);
-        // TODO Auto-generated constructor stub
-    }
+
 
 }

@@ -121,7 +121,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                 case ExprBinary.BINOP_MUL:
                     return ExprConstInt.createConstant(ileft * iright);
                 case ExprBinary.BINOP_NEQ:
-                    return ExprConstInt.createConstant((ileft == iright) ? 1 : 0);
+                    return ExprConstInt.createConstant((ileft != iright) ? 1 : 0);
                 case ExprBinary.BINOP_OR:
                     return ExprConstInt.createConstant((ileft == 1 || iright == 1) ? 1
                             : 0);
@@ -392,8 +392,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	    public Object visitParameter(Parameter par){
 	        Type t = (Type) par.getType().accept(this);
 
-	        symtab.registerVar(par.getName(),
-	                actualType(par.getType()),
+        symtab.registerVar(par.getName(), (par.getType()),
 	                par,
 	                SymbolTable.KIND_FUNC_PARAM);
 	        

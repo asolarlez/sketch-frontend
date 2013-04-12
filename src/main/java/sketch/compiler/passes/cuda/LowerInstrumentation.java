@@ -189,7 +189,7 @@ public class LowerInstrumentation extends FEReplacer {
                 varGen.nextVar("instr_" + directive.name + "_" +
                         instrumentCall.getToImplement().getName());
         final TypeStructRef structref =
-                new TypeStructRef(CudaMemoryType.GLOBAL, directive.struct);
+                new TypeStructRef(CudaMemoryType.GLOBAL, directive.struct, false);
         this.instrumentationStructInst = instrumentCall.getImplVariable();
         addStatement(new StmtAssign(instrumentCall, instrumentationStructInst,
                 new ExprNew(instrumentCall, structref, new ArrayList<ExprNamedParam>())));

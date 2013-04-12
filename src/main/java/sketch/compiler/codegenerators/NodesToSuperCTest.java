@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -29,7 +29,8 @@ public class NodesToSuperCTest extends NodesToJava {
     private static final String OUTSP = "outsp";
     private static final int NTESTS = 100;
     private final int BND;
-    public NodesToSuperCTest(String filename, boolean pythonPrintStatements) {
+
+    public NodesToSuperCTest(String filename) {
         super(false, new TempVarGen());
         int ib = SketchOptions.getSingleton().bndOpts.inbits;
         int bnd = 1;
@@ -38,7 +39,7 @@ public class NodesToSuperCTest extends NodesToJava {
         }
         BND = bnd;
         this.filename = filename;
-        _converter = new NodesToSuperCpp(null, filename, pythonPrintStatements);
+        _converter = new NodesToSuperCpp(null, filename);
         output = new StringBuffer();
         testFuncs = new ArrayList<String>();
     }

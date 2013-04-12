@@ -1,0 +1,59 @@
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 4";
+
+struct Cell{
+    Grid g;
+    int i;
+    int j;
+}
+
+struct Grid{
+    int n;
+    int m;
+    double[n][m] data;
+}
+
+generator |Cell| getCell(Grid g, int i, int j){
+    return |Cell|(i=i, j=j, g=g);    
+}
+
+generator |Cell| getNeighbor(|Cell| c, int offseti, int offsetj){
+    return getCell(c.g, c.i+offseti , c.j+offsetj);
+}
+
+generator double getValue(|Cell| c){
+    return c.g.data[c.i][c.j];
+}
+
+
+generator void setValue(|Cell| c, double v){
+    c.g.data[c.i][c.j] =v; 
+}
+
+void iterator(Grid g, fun f){
+    int n = g.n;
+    int m = g.m;
+    int ofst = ??;
+    minimize(ofst);
+    for(int i=0+ofst; i<m-ofst; ++i){
+        for(int j=0+ofst; j<n-ofst; ++j){
+            f( getCell(g, i, j) );
+        }
+    }
+}
+
+void ste(Grid g){
+    generator void sten(|Cell| c){
+        double v1 = getValue(getNeighbor(c, -1, -1));
+        double v2 = getValue(getNeighbor(c, -1, 1));
+        setValue(c, v1 + v2);
+    }
+    
+    iterator(g, sten);    
+}
+
+
+harness void main(int n, int m, double[n][m] data){
+    Grid g = new Grid(n=n, m=m);
+    g.data = data;
+    ste(g);    
+}

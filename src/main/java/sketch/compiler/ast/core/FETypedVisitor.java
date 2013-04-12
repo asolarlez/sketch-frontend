@@ -22,7 +22,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
@@ -282,7 +282,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, t);
     }
 
-    public T visitTypeStruct(TypeStruct ts) {
+    public T visitStructDef(StructDef ts) {
         throw new FEVisitorException(this, ts);
     }
 

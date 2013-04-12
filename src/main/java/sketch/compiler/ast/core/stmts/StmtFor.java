@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.stencilSK.VarReplacer;
 
 /**
  * A C-style for loop.  The loop contains an initialization statement,
@@ -96,6 +97,59 @@ public class StmtFor extends Statement
     public Statement getInit()
     {
         return init;
+    }
+
+    public String getIndVar() {
+        if (init instanceof StmtVarDecl) {
+            StmtVarDecl svd = (StmtVarDecl) init;
+            return svd.getName(0);
+        }
+        if (init instanceof StmtAssign) {
+            StmtAssign sa = (StmtAssign) init;
+            return sa.getLHS().toString();
+        }
+        return null;
+    }
+
+    public Expression getICond() {
+        String nm = null;
+        Expression start = null;
+        if (init instanceof StmtVarDecl) {
+            StmtVarDecl svd = (StmtVarDecl) init;
+            nm = svd.getName(0);
+            start = svd.getInit(0);
+        }
+        if (init instanceof StmtAssign) {
+            StmtAssign sa = (StmtAssign) init;
+            assert sa.getLHS() instanceof ExprVar;
+            nm = sa.getLHS().toString();
+            start = sa.getRHS();
+        }
+        VarReplacer vr = new VarReplacer(nm, start);
+        return (Expression) cond.accept(vr);
+    }
+
+    public Expression getRangeMin() {
+        if (init instanceof StmtVarDecl) {
+            StmtVarDecl svd = (StmtVarDecl) init;
+            return svd.getInit(0);
+        }
+        if (init instanceof StmtAssign) {
+            StmtAssign sa = (StmtAssign) init;
+            return sa.getRHS();
+        }
+        return null;
+    }
+
+    public Expression getRangeMax() {
+        ExprBinary eb = (ExprBinary) cond;
+        if (eb.getOp() == ExprBinary.BINOP_LE) {
+            return eb.getRight();
+        }
+        if (eb.getOp() == ExprBinary.BINOP_LT) {
+            return new ExprBinary(eb.getRight(), "-", ExprConstInt.one);
+        }
+        return null;
     }
 
     /** Return the loop condition of this. */

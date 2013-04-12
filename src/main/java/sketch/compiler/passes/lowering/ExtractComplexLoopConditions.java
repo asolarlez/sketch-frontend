@@ -75,6 +75,10 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 	
 	@Override
 	public Object visitStmtFor(StmtFor sf){
+
+        if (sf.isCanonical()) {
+            return super.visitStmtFor(sf);
+        }
 		
 		if(isComplexExpr(sf.getCond())  ||  isComplexExpr(sf.getIncr()) || isComplexExpr(sf.getInit()) ){
 		    

@@ -1,0 +1,15 @@
+
+
+struct F{
+    int n;
+    int[n] x;
+}
+
+struct G{
+    int y;
+}
+
+harness void main(int i){
+    F f = new F(n=5, x=i);
+    G g = new G(y=f.x); //TypeError
+}

@@ -9,6 +9,6 @@ public class ProgramParseException extends SketchException {
 
     @Override
     protected String messageClass() {
-        return "Program parse exception";
+        return "Program Parse Error";
     }
 }

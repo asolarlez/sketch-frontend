@@ -29,13 +29,14 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
 import static sketch.util.Misc.nonnull;
@@ -77,7 +78,7 @@ public class GetExprType extends FENullVisitor
     public Object visitExprAlt (ExprAlt ea) {
     	Type t1 = (Type) ea.getThis().accept(this);
     	Type t2 = (Type) ea.getThat().accept(this);
-    	Type ret = t1.leastCommonPromotion(t2);
+        Type ret = t1.leastCommonPromotion(t2, nres);
     	
     	return ret;
     }
@@ -117,14 +118,18 @@ public class GetExprType extends FENullVisitor
     	// not sure what to do for base type if array is empty... try
     	// keeping it null --BFT
     	if (elems.size()==0) {
-            base = TypePrimitive.bittype;
+            base = TypePrimitive.bottomtype;
     	} else {
     		// otherwise, take promotion over all elements declared
     		base = (Type)((Expression)elems.get(0)).accept(this);
 
     		for (int i=1; i<elems.size(); i++) {
     			Type t = (Type)((Expression)elems.get(i)).accept(this);
-    			base = base.leastCommonPromotion(t);
+                if (base == null) {
+                    throw new ExceptionAtNode("Inconsistent types in array initializer",
+                            exp);
+                }
+                base = base.leastCommonPromotion(t, nres);
     		}
     	}
 
@@ -153,15 +158,15 @@ public class GetExprType extends FENullVisitor
     	Type t = null;
     	for (int op : ecb.opsAsExprBinaryOps ()) {
     		Type nextType = binopType (op, ecb.getLeft (), ecb.getRight ());
-    		t = (null == t) ? nextType : t.leastCommonPromotion (nextType);
+            t = (null == t) ? nextType : t.leastCommonPromotion(nextType, nres);
     	}
     	return t;
     }
 
     public Object visitExprChoiceSelect (ExprChoiceSelect ecs) {
     	class GetSelectType extends SelectorVisitor {
-    		TypeStruct base;
-    		GetSelectType (TypeStruct base) { this.base = base; }
+    		StructDef base;
+    		GetSelectType (StructDef base) { this.base = base; }
 
     		public Object visit (SelectField sf) {
     			return base.getType (sf.getField ());
@@ -170,14 +175,15 @@ public class GetExprType extends FENullVisitor
     		public Object visit (SelectOrr so) {
        			Type t1 = (Type) so.getThis ().accept (this);
     			Type t2 = (Type) so.getThat ().accept (this);
-    			Type rt = t1.leastCommonPromotion (t2);
+                Type rt = t1.leastCommonPromotion(t2, nres);
 
     			return (so.getThis ().isOptional () || so.getThat ().isOptional ()) ?
-    					base.leastCommonPromotion (rt) : rt;
+ base.leastCommonPromotion(
+                        rt, nres) : rt;
     		}
 
     		public Object visit (SelectChain sc) {
-    			TypeStruct oldBase = base;
+    			StructDef oldBase = base;
     			// tf : base.first, tfn = base.first.next, tn : base.next
     			Type tf, tfn, tn = null;
 
@@ -187,18 +193,17 @@ public class GetExprType extends FENullVisitor
     			if (sc.getFirst ().isOptional ())
     				tn = (Type) sc.getNext ().accept (this);
 
-    			base = (tf instanceof TypeStruct) ? (TypeStruct) tf
-                                : nres.getStruct(((TypeStructRef) tf).getName());
+                base = nres.getStruct(((TypeStructRef) tf).getName());
     			tfn = (Type) sc.getNext ().accept (this);
     			base = oldBase;
 
     			Type rt = tfn;
     			if (sc.getFirst ().isOptional ())
-    				rt = rt.leastCommonPromotion (tn);
+                    rt = rt.leastCommonPromotion(tn, nres);
     			if (sc.getNext ().isOptional ())
-    				rt = rt.leastCommonPromotion (tf);
+                    rt = rt.leastCommonPromotion(tf, nres);
     			if (sc.getNext ().isOptional () && sc.getFirst ().isOptional ())
-    				rt = rt.leastCommonPromotion (base);
+                    rt = base.leastCommonPromotion(rt, nres);
     			return rt;
     		}
     	}
@@ -207,12 +212,12 @@ public class GetExprType extends FENullVisitor
     	ecs.assertTrue (null != t && t.isStruct (),
 			"field selection of non-struct");
 
-    	TypeStruct base = (t instanceof TypeStruct) ? (TypeStruct) t
-                        : nres.getStruct(((TypeStructRef) t).getName());
+        StructDef base = nres.getStruct(((TypeStructRef) t).getName());
     	Type selType = (Type) ecs.accept (new GetSelectType (base));
 
     	return !ecs.getField ().isOptional () ? selType
-    			: selType.leastCommonPromotion (base);
+ : base.leastCommonPromotion(
+                selType, nres);
     }
 
     public Object visitExprChoiceUnary (ExprChoiceUnary ecu) {
@@ -269,10 +274,8 @@ public class GetExprType extends FENullVisitor
     {
         final ExprField fexp = exp;
         Type base = (Type)exp.getLeft().accept(this);
-        TypeStruct ts = null;
-        if (base instanceof TypeStruct)
-            ts = ((TypeStruct) base);
-        else if (base instanceof TypeStructRef)
+        StructDef ts = null;
+        if (base instanceof TypeStructRef)
         {
             String name = ((TypeStructRef)base).getName();
             ts = nres.getStruct(name);
@@ -280,9 +283,9 @@ public class GetExprType extends FENullVisitor
         }
         else
         {
-            throw new TypeErrorException(exp.getCx() +
+            throw new TypeErrorException(
                     ": You are trying to do a field access on a " + base + " in expr " +
-                    exp + " . " + exp);
+ exp + " . " + exp, exp);
         }
         FEReplacer repVars = new FEReplacer() {
             public Object visitExprVar(ExprVar ev) {
@@ -303,6 +306,10 @@ public class GetExprType extends FENullVisitor
     	try
     	{
             Function fn = nres.getFun(exp.getName(), exp);
+            if (fn.getReturnType() instanceof TypeStructRef) {
+                TypeStructRef tsr = (TypeStructRef) fn.getReturnType();
+                return tsr.addDefaultPkg(fn.getPkg(), nres);
+            }
     		return fn.getReturnType();
     	} catch (UnrecognizedVariableException e) {
     		// ignore
@@ -346,7 +353,7 @@ public class GetExprType extends FENullVisitor
         // (Might not want to blindly assert ?:.)
         Type tb = (Type)exp.getB().accept(this);
         Type tc = (Type)exp.getC().accept(this);
-        Type lub = tb != null ? tb.leastCommonPromotion(tc) : null;
+        Type lub = tb != null ? tb.leastCommonPromotion(tc, nres) : null;
 
         exp.assertTrue (lub != null,
         		"incompatible types for '"+ exp.getB () +"', '"+ exp.getC () +"'");
@@ -385,7 +392,11 @@ public class GetExprType extends FENullVisitor
 
 
     public Object visitExprNew(ExprNew expNew){
-    	return expNew.getTypeToConstruct();
+        Type t = expNew.getTypeToConstruct();
+        if(t instanceof TypeStructRef){
+            return ((TypeStructRef)t).addDefaultPkg(nres.curPkg().getName(), nres);
+        }
+        return t;
 
     }
 
@@ -423,9 +434,13 @@ public class GetExprType extends FENullVisitor
         	right.accept(this);
         }
 
-        Type rv = tl.leastCommonPromotion(tr);
+        Type rv = tl.leastCommonPromotion(tr, nres);
         
-        if(rv == null && (tl instanceof TypeStructRef || tl instanceof TypeStruct || tr instanceof TypeStruct || tr instanceof TypeStructRef) && (tl == TypePrimitive.bittype || tr == TypePrimitive.bittype ||   tl == TypePrimitive.inttype || tr == TypePrimitive.inttype)){
+        if (rv == null &&
+                (tl instanceof TypeStructRef || tr instanceof TypeStructRef) &&
+                (tl == TypePrimitive.bittype || tr == TypePrimitive.bittype ||
+                        tl == TypePrimitive.inttype || tr == TypePrimitive.inttype))
+        {
         	return TypePrimitive.inttype;
         }
 

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprTernary;
@@ -139,11 +140,11 @@ public class TypeArray extends Type
         return this.getCudaMemType().syntaxNameSpace() + this.getBase() + "[" + s + "]";
     }
 
-    public Type leastCommonPromotion(Type other) {
+    public Type leastCommonPromotion(Type other, NameResolver nres) {
         if (!(other instanceof TypeArray))
-            return super.leastCommonPromotion(other);
+            return super.leastCommonPromotion(other, nres);
         TypeArray that = (TypeArray) other;
-        Type nbase = this.getBase().leastCommonPromotion(that.getBase());
+        Type nbase = this.getBase().leastCommonPromotion(that.getBase(), nres);
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
         if (thisLen.equals(thatLen)) {
@@ -164,14 +165,14 @@ public class TypeArray extends Type
         return new TypeArray(nbase, l);
     }
 
-    public boolean promotesTo(Type other)
+    public boolean promotesTo(Type other, NameResolver nres)
     {
-        if (super.promotesTo(other))
+        if (super.promotesTo(other, nres))
             return true;
         if (!(other instanceof TypeArray))
             return false;
         TypeArray that = (TypeArray)other;
-        if (!(this.getBase().promotesTo(that.getBase())))
+        if (!(this.getBase().promotesTo(that.getBase(), nres)))
             return false;
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
@@ -244,6 +245,14 @@ public class TypeArray extends Type
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
         return new TypeArray(memtyp, base, length, dims, maxlength);
+    }
+
+    public Type addDefaultPkg(String pkg, NameResolver nres) {
+        Type nbase = base.addDefaultPkg(pkg, nres);
+        if (nbase != base) {
+            return new TypeArray(this.getCudaMemType(), nbase, length, dims);
+        }
+        return this;
     }
 
     public TypeArray createWithLength(Expression length) {

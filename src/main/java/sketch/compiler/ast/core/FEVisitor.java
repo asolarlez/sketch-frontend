@@ -26,7 +26,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
@@ -101,7 +101,7 @@ public interface FEVisitor
     public Object visitType(Type t);
     public Object visitTypePrimitive(TypePrimitive t);
     public Object visitTypeArray(TypeArray t);
-    public Object visitTypeStruct(TypeStruct ts);
+    public Object visitStructDef(StructDef ts);
     public Object visitTypeStructRef(TypeStructRef ts);
     public Object visitParameter(Parameter par);
     public Object visitExprNew(ExprNew expNew);

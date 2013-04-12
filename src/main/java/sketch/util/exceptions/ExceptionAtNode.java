@@ -2,8 +2,6 @@ package sketch.util.exceptions;
 
 import sketch.compiler.ast.core.FENode;
 
-import static sketch.util.DebugOut.printError;
-
 /**
  * An exception that's related to an AST node
  * 
@@ -27,10 +25,10 @@ public class ExceptionAtNode extends SketchException {
 
     @Override
     public void subclassPrintEnd() {
-        super.subclassPrintEnd();
-        printError("[SKETCH]", "    Class of node related to failure:",
-                this.node.getClass());
-        printError("[SKETCH]", "    Node related to failure:", this.node);
+        // super.subclassPrintEnd();
+        // printError("[SKETCH]", "    Class of node related to failure:",
+        // this.node.getClass());
+        // printError("[SKETCH]", "    Node related to failure:", this.node);
     }
 
     @Override

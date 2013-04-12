@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core.typs;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.ExprConstChar;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -53,7 +54,7 @@ public class TypePrimitive extends Type
     public static final int TYPE_NULLPTR = 15;
 
     /** For internal use only. This type can be cast to anything, and anything can be cast to it.*/
-    public static final int TYPE_ANYTYPE = 16;
+    public static final int TYPE_BOTTOM = 16;
 
     /** Type constant for string types */
     public static final int TYPE_CHAR = 17;
@@ -79,8 +80,7 @@ public class TypePrimitive extends Type
     public static final TypePrimitive nulltype =
         new TypePrimitive(TYPE_NULLPTR);
 
-    public static final TypePrimitive anytype =
-        new TypePrimitive(TYPE_ANYTYPE);
+    public static final TypePrimitive bottomtype = new TypePrimitive(TYPE_BOTTOM);
 
     public static final TypePrimitive chartype = new TypePrimitive(TYPE_CHAR);
 
@@ -142,8 +142,8 @@ public class TypePrimitive extends Type
         case TYPE_NULLPTR:
         	return "null ptr";
 
-        case TYPE_ANYTYPE:
-        	return "any";
+            case TYPE_BOTTOM:
+                return "bottom";
 
         case TYPE_SIGINT:
                 return "int";
@@ -164,15 +164,16 @@ public class TypePrimitive extends Type
      * @param that  other type to check promotion to
      * @return      true if this can be promoted to that
      */
-    public boolean promotesTo(Type that)
+    public boolean promotesTo(Type that, NameResolver nres)
     {
-        if (super.promotesTo(that))
+        if (super.promotesTo(that, nres))
             return true;
         if (!(that instanceof TypePrimitive)){
             if (that instanceof TypeArray) {
-                return this.promotesTo(((TypeArray) that).getBase());
+                return this.promotesTo(((TypeArray) that).getBase(), nres);
         	}else{
-        		if(this.type == TYPE_NULLPTR && that.isStruct ())
+                if ((this.type == TYPE_NULLPTR || this.type == TYPE_BOTTOM) &&
+                        that.isStruct())
         			return true;
 
         		return false;
@@ -183,7 +184,8 @@ public class TypePrimitive extends Type
         int t1 = this.type;
         int t2 = ((TypePrimitive)that).type;
 
-        if(t2 == TYPE_ANYTYPE) return true;
+        if (t1 == TYPE_BOTTOM)
+            return true;
 
         // want: "t1 < t2", more or less
         switch(t1)
@@ -204,7 +206,7 @@ public class TypePrimitive extends Type
         case TYPE_INT8:
         case TYPE_INT64:
                 return t2 == TYPE_SIGINT || t2 == TYPE_INT;
-        case TYPE_ANYTYPE:
+            case TYPE_BOTTOM:
         	return true;
         case TYPE_NULLPTR:
         	return t2 == TYPE_NULLPTR;
@@ -238,7 +240,7 @@ public class TypePrimitive extends Type
     	case TYPE_NULLPTR:
         	return ExprNullPtr.nullPtr;
     	case TYPE_VOID:
-    	case TYPE_ANYTYPE:
+            case TYPE_BOTTOM:
     		assert false : "Type "+ type +" doesn't have a default value.";
             case TYPE_CHAR:
                 return ExprConstChar.zero;

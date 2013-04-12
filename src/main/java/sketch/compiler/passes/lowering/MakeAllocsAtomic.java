@@ -2,8 +2,6 @@
  *
  */
 package sketch.compiler.passes.lowering;
-import static sketch.compiler.ast.core.exprs.ExprNullPtr.nullPtr;
-
 import java.util.Collections;
 
 import sketch.compiler.ast.core.FENode;
@@ -13,7 +11,9 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.Type;
+import static sketch.compiler.ast.core.exprs.ExprNullPtr.nullPtr;
 
 /**
  * This pass is very simple: it wraps allocations in atomic { } blocks.  This
@@ -53,12 +53,12 @@ public class MakeAllocsAtomic extends SymbolTableVisitor {
 		e.assertTrue (getType (e).isStruct (), "fatal internal error");
 
 		FENode cx = e;
-
-		TypeStruct struct = (TypeStruct) getType (e);
+        Type tt = getType(e);
+        StructDef struct = this.getStructDef(tt);
 		ExprVar tmpVar =
 			new ExprVar (cx, varGen.nextVar ("_tmp_new_"+ struct.getName () +"_"));
 		StmtVarDecl tmpDecl =
-			new StmtVarDecl (cx, struct, tmpVar.getName (), nullPtr);
+ new StmtVarDecl(cx, tt, tmpVar.getName(), nullPtr);
 		StmtAtomicBlock atomicAlloc =
 			new StmtAtomicBlock (cx,
 					Collections.singletonList (new StmtAssign (tmpVar, e)));

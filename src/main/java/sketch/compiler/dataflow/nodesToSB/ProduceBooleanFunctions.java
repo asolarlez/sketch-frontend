@@ -17,10 +17,10 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
@@ -85,11 +85,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             abstractValue iv = (abstractValue) array.getLength().accept(this);          
             return base + "[" + iv + "]";
         }
-        else if (type instanceof TypeStruct)
-    {
-        return ((TypeStruct)type).getName();
-    }
-    else if (type instanceof TypeStructRef)
+ else if (type instanceof TypeStructRef)
         {
         return ((TypeStructRef)type).getName();
         }
@@ -477,7 +473,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssert(sa);
     }
     
-    public Object visitTypeStruct(TypeStruct ts) {
+    public Object visitStructDef(StructDef ts) {
         return ts;
     }
 

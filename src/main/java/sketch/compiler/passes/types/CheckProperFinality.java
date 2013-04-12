@@ -59,8 +59,8 @@ public class CheckProperFinality extends SymbolTableVisitor {
                 symtab.setFinality(ev.getName(), Finality.FINAL, ev);
             }
             if (f == Finality.NOTFINAL) {
-                throw new TypeErrorException(ev.getCx() + ": Using non-final variable " +
-                        ev + " for an array size expression");
+                throw new TypeErrorException("Using non-final variable " + ev +
+                        " for an array size expression", ev);
             }
             return ev;
         }
@@ -82,8 +82,8 @@ public class CheckProperFinality extends SymbolTableVisitor {
                 setFieldFinality(struct, ef.getName(), Finality.FINAL);
             }
             if (f == Finality.NOTFINAL) {
-                throw new TypeErrorException(ef.getCx() + ": Using final field " + ef +
-                        " in the LHS of an assignment.");
+                throw new TypeErrorException("Using final field " + ef +
+                        " in the LHS of an assignment.", ef);
             }
             if (f == Finality.FIRSTWRITE) {
                 assert false : "This is a bug";
@@ -113,8 +113,8 @@ public class CheckProperFinality extends SymbolTableVisitor {
                 setFieldFinality(struct, ef.getName(), Finality.NOTFINAL);
             }
             if (f == Finality.FINAL) {
-                throw new TypeErrorException(ef.getCx() + ": Using final field " + ef +
-                        " in the LHS of an assignment.");
+                throw new TypeErrorException(": Using final field " + ef +
+                        " in the LHS of an assignment.", ef);
             }
             if (f == Finality.FIRSTWRITE) {
                 assert false : "This is a bug";
@@ -132,8 +132,8 @@ public class CheckProperFinality extends SymbolTableVisitor {
                 symtab.setFinality(ev.getName(), Finality.NOTFINAL, ev);
             }
             if (f == Finality.FINAL) {
-                throw new TypeErrorException(ev.getCx() + ": Using final variable " + ev +
-                        " for the lhs of an assignment");
+                throw new TypeErrorException("Using final variable " + ev +
+                        " for the lhs of an assignment", ev);
             }
             return ev;
         }

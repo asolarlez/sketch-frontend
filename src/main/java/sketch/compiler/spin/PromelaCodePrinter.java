@@ -11,18 +11,18 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
 import sketch.compiler.passes.lowering.AddLastAssignmentToFork;
 import sketch.compiler.passes.printers.CodePrinterVisitor;
@@ -116,7 +116,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 			print ((i != 0) ? "; " : "");
 			param.accept (this);
 			symtab.registerVar(param.getName(),
-	                           actualType(param.getType()),
+ (param.getType()),
 	                           param,
 	                           SymbolTable.KIND_FUNC_PARAM);
 		}
@@ -422,9 +422,9 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 			return super.visitTypePrimitive (tp);
 	}
 
-	public Object visitTypeStruct (TypeStruct ts) {
+	public Object visitStructDef (StructDef ts) {
 		quiet ();
-		Object result = super.visitTypeStruct (ts);
+		Object result = super.visitStructDef (ts);
 		unquiet ();
 		return result;
 	}

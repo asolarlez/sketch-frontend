@@ -34,13 +34,14 @@ import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtImplicitVarDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.util.datastructures.TypedHashMap;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * Front-end visitor pass that maintains a symbol table.  Other
@@ -110,7 +111,7 @@ public class SymbolTableVisitor extends FEReplacer
      */
     public Type getType(Expression expr, Type nullType)
     {
-        return actualType(getTypeReal(expr, nullType));
+        return getTypeReal(expr, nullType);
     }
     
     public Type getTypeReal(Expression expr, Type nullType)
@@ -174,24 +175,22 @@ public class SymbolTableVisitor extends FEReplacer
      * @param type  type to resolve to actual type
      * @return      actual resolved type
      */
-    protected Type actualType(Type type)
+    protected StructDef getStructDef(Type type)
     {
         if (type instanceof TypeStructRef)
         {
             String name = ((TypeStructRef)type).getName();
-            Type tmp = nres.getStruct(name);
-            if (tmp != null)
-                type = tmp;
+            StructDef tmp = nres.getStruct(name);
+            return tmp;
+        } else {
+            throw new ExceptionAtNode(type + " is not a struct type", null);
         }
-        return type;
     }
 
     public Object visitFieldDecl(FieldDecl field)
     {
         for (int i = 0; i < field.getNumFields(); i++)
-            symtab.registerVar(field.getName(i),
-                               actualType(field.getType(i)),
-                               field,
+            symtab.registerVar(field.getName(i), field.getType(i), field,
                     SymbolTable.KIND_GLOBAL);
         return super.visitFieldDecl(field);
     }
@@ -199,7 +198,7 @@ public class SymbolTableVisitor extends FEReplacer
 
 	@Override
     public Object visitParameter(Parameter par) {
-        symtab.registerVar(par.getName(), actualType(par.getType()), par,
+        symtab.registerVar(par.getName(), par.getType(), par,
                 SymbolTable.KIND_FUNC_PARAM);
 
         Type t = (Type) par.getType().accept(this);
@@ -260,21 +259,20 @@ public class SymbolTableVisitor extends FEReplacer
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
         for (int i = 0; i < stmt.getNumVars(); i++)
-            symtab.registerVar(stmt.getName(i),
-                               actualType(stmt.getType(i)),
+            symtab.registerVar(stmt.getName(i), (stmt.getType(i)),
                                stmt,
                                SymbolTable.KIND_LOCAL);
         return super.visitStmtVarDecl(stmt);
     }
 
-    public Object visitTypeStruct(TypeStruct ts) {
+    public Object visitStructDef(StructDef ts) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
         for (Entry<String, Type> entry : ts) {
-            symtab.registerVar(entry.getKey(), actualType(entry.getValue()), ts,
+            symtab.registerVar(entry.getKey(), (entry.getValue()), ts,
                     SymbolTable.KIND_FIELD);
         }
 

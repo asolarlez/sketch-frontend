@@ -7,15 +7,8 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -23,10 +16,10 @@ import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.util.ControlFlowException;
 import sketch.util.datastructures.TypedHashMap;
@@ -72,22 +65,29 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 			return doLogicalExpr (eb);
 		else {
             if (op.equals("/") || op.equals("%")) {
-                addStatement(new StmtAssert(new ExprBinary(eb.getRight(), "!=",
-                        ExprConstInt.zero), eb.getCx() + ": Division by zero", false));
+                Type t = getType(eb);
+                if (t.equals(TypePrimitive.doubletype) ||
+                        t.equals(TypePrimitive.floattype))
+                {
+
+                } else {
+                    addStatement(new StmtAssert(new ExprBinary(eb.getRight(), "!=",
+                            ExprConstInt.zero), eb.getCx() + ": Division by zero", false));
+                }
             }
             return super.visitExprBinary(eb);
 
         }
 	}
 	
-    public Object visitTypeStruct(TypeStruct ts) {
+    public Object visitStructDef(StructDef ts) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
         for (Entry<String, Type> entry : ts) {
-            symtab.registerVar(entry.getKey(), actualType(entry.getValue()), ts,
+            symtab.registerVar(entry.getKey(), (entry.getValue()), ts,
                     SymbolTable.KIND_FIELD);
         }
 
@@ -97,7 +97,7 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
     }
 
     public Object visitParameter(Parameter par) {
-        symtab.registerVar(par.getName(), actualType(par.getType()), par,
+        symtab.registerVar(par.getName(), (par.getType()), par,
                 SymbolTable.KIND_FUNC_PARAM);
 
         Type t = (Type) par.getType(); // Don't check the type. We don't want assertions
@@ -198,6 +198,7 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
         return res;
 	}
 
+
 	@Override
 	public Object visitExprArrayRange(ExprArrayRange ear){		
                 // FIXME: for array access in parameter (varlength array, for example), we cannot generate protection properly 
@@ -208,8 +209,9 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 		
 		Expression cond = null;
 		Expression near = null;
-		
-		if(ear.hasSingleIndex()){		
+        Expression ivar = null;
+        if (ear.hasSingleIndex()) {
+
 			cond = makeGuard (base, idx);		
 			near = new ExprArrayRange(base, idx);
 		}else{
@@ -386,6 +388,7 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 		}
 	}
 
+
     protected Expression makeLocalIndex(ExprArrayRange ear) {
                 assert (newStatements != null);
         RangeLen rl = ear.getSelection();
@@ -403,13 +406,13 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 	protected Expression makeGuard (Expression base, Expression idx) {
 		Type idxt = getType(idx);
 		Expression sz = ((TypeArray) getType(base)).getLength();
-        if (sz == null && (idxt instanceof TypeStruct || idxt instanceof TypeStructRef)) {
+        if (sz == null && (idxt instanceof TypeStructRef)) {
             return new ExprBinary(idx, "!=", ExprConstInt.minusone);
         }
         if (sz == null) {
             return new ExprBinary(idx, ">=", ExprConstInt.zero);
         }
-		if(idxt instanceof TypeStruct || idxt instanceof TypeStructRef){
+        if (idxt instanceof TypeStructRef) {
 			return new ExprBinary(new ExprBinary(idx, "!=", ExprConstInt.minusone), "&&",
 										 new ExprBinary(idx, "<", sz));
 		}else{
@@ -434,6 +437,10 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
     		public Object visitExprArrayRange (ExprArrayRange ear) {
     			throw new ControlFlowException ("yes");
     		}
+
+            public Object visitExprField(ExprField ef) {
+                throw new ControlFlowException("yes");
+            }
 
             public Object visitExprBinary(ExprBinary eb) {
                 if (eb.getOp() == ExprBinary.BINOP_DIV ||

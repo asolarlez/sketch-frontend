@@ -17,7 +17,7 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 
 public class SimplifyVarNames extends FEReplacer {
 
@@ -27,7 +27,7 @@ public class SimplifyVarNames extends FEReplacer {
     public Object visitProgram(Program prog) {
         nres = new NameResolver(prog);
         for (Package ssOrig : prog.getPackages()) {
-            for (TypeStruct ts : ssOrig.getStructs()) {
+            for (StructDef ts : ssOrig.getStructs()) {
                 String name;
             }
         }

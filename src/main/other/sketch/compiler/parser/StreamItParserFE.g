@@ -174,7 +174,7 @@ program	 returns [Program p]
 { p = null; List vars = new ArrayList();  
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
-    FieldDecl fd; TypeStruct ts; List<TypeStruct> structs = new ArrayList<TypeStruct>();
+    FieldDecl fd; StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
     String file = null;
     String pkgName = null;
     FEContext pkgCtxt = null;
@@ -195,7 +195,7 @@ program	 returns [Program p]
 			if(pkgName == null){
 				pkgName="ANONYMOUS";
 			}
-			for(TypeStruct struct : structs){
+			for(StructDef struct : structs){
 				struct.setPkg(pkgName);	
 			}
 			for(Function fun : funcs){
@@ -312,7 +312,9 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
 
 data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
 	:	 (TK_global {isglobal = true; })? 
-                (t=primitive_type | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText()); })
+                (t=primitive_type 
+                | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); }
+                | BITWISE_OR (prefix2:ID AT)? id2:ID BITWISE_OR { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); })
 		(	l:LSQUARE
 			(	
                 ( { maxlen = 0; }
@@ -883,8 +885,13 @@ tminic_value_expr returns [Expression x] { x = null; }
 	;
 
 
-constructor_expr returns [Expression x] { x = null; Type t; List l;}
-	: n:TK_new t=data_type l=constr_params {  x = new ExprNew( getContext(n), t, l);     }
+constructor_expr returns [Expression x] { x = null; Type t=null; List l;}
+	: n:TK_new
+	(prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); }
+	l=constr_params {  x = new ExprNew( getContext(n), t, l);     }
+	| BITWISE_OR 
+    (prefix2:ID AT)? id2:ID { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); }
+      BITWISE_OR l=constr_params {  x = new ExprNew( getContext(id2), t, l);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }
@@ -959,7 +966,7 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             }
     ;
  
-struct_decl returns [TypeStruct ts]
+struct_decl returns [StructDef ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	Annotation an=null;
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
@@ -972,5 +979,5 @@ struct_decl returns [TypeStruct ts]
 			an=annotation{ annotations.append(an.tag, an); }
 		)*
 		RCURLY
-		{ ts = TypeStruct.creator(getContext(t), id.getText(), names, types, annotations).create(); }
+		{ ts = StructDef.creator(getContext(t), id.getText(), names, types, annotations).create(); }
 	;

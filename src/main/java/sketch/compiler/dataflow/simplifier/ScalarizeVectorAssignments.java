@@ -5,6 +5,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
@@ -17,7 +18,6 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
@@ -94,6 +94,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
             {
                 return 0;
             }
+            if (isModel) {
+                return 0;
+            }
             System.out.println("Avoiding " + lt + " " + rt + lhs + " = " + rhs);
         }
 		/*
@@ -146,15 +149,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
 		public Object visitExprArrayInit (ExprArrayInit exp) {
 			// TODO: assuming ExprArrayInit is initialized with scalar constants only.
-			int len = exp.getElements ().size ();
-            // TypeArray ta = (TypeArray) getType(exp);
+            int alen = exp.getElements().size();
 
-            // Type baseType = ta.getBase();
-			return new ExprTernary ("?:",
-					new ExprBinary (index, "<", ExprConstant.createConstant (exp, ""+ len)),
-					new ExprArrayRange (exp, index),
- defval);
-		}
+            return new ExprArrayRange(exp, index);
+        }
 
 		public Object visitExprConstInt(ExprConstInt exp){
 			assert isRHS : "this can't happen!!!";
@@ -170,8 +168,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 
 
 		public Object visitExprVar(ExprVar exp) {
-			if ( getType(exp) instanceof TypeArray){
-				Expression arrLen = typeLen(getType(exp));
+            Type tt = getType(exp);
+            if (tt instanceof TypeArray) {
+                Expression arrLen = typeLen(tt);
 				if( arrLen.equals(len) || !isRHS){
 					return new ExprArrayRange(exp, exp, index, true);
 				}else{
@@ -405,7 +404,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		if(t instanceof TypePrimitive){
 			return new ExprConstInt(1);
 		}
-        if (t instanceof TypeStruct || t instanceof TypeStructRef) {
+        if (t instanceof TypeStructRef) {
             return new ExprConstInt(1);
         }
 		return null;
@@ -485,9 +484,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
-        Indexify indexifier = new Indexify(index, minLen, rt.defaultValue(), true);
+        Indexify indexifier = new Indexify(index, minLen, lt.defaultValue(), true);
         Expression fel = (Expression) rhs.accept(indexifier);
-        Indexify indexifier2 = new Indexify(index, minLen, rt.defaultValue(), false);
+        Indexify indexifier2 = new Indexify(index, minLen, lt.defaultValue(), false);
         Expression tel = (Expression) lhs.accept(indexifier2);
         List<Statement> bodyLst = new ArrayList<Statement>();
         bodyLst.addAll(indexifier.preStmts);
@@ -518,7 +517,17 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     }
 
 
-	public Object visitStmtAssign(StmtAssign stmt)
+    protected boolean isModel = false;
+
+    public Object visitFunction(Function f) {
+        boolean oldim = isModel;
+        isModel = f.isModel();
+        Object o = super.visitFunction(f);
+        isModel = oldim;
+        return o;
+    }
+
+    public Object visitStmtAssign(StmtAssign stmt)
     {
         Statement result = (Statement)super.visitStmtAssign(stmt);
         if (result instanceof StmtAssign) // it probably is:

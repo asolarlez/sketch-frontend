@@ -121,7 +121,8 @@ public class SATBackend {
         }
 
         if (!worked && !options.feOpts.forceCodegen) {
-            throw new SketchNotResolvedException(options.getTmpSketchFilename());
+            throw new SketchNotResolvedException(options.getTmpSketchFilename(),
+                    this.solverErrorStr);
         }
 
         {

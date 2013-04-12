@@ -32,10 +32,10 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -103,12 +103,7 @@ public class NodesToJava extends SymbolTableVisitor
             TypeArray array = (TypeArray)type;
             String base = _convertType(array.getBase());
             return base + "[]";
-        }
-        else if (type instanceof TypeStruct)
-	{
-	    return ((TypeStruct)type).getName();
-	}
-	else if (type instanceof TypeStructRef)
+        } else if (type instanceof TypeStructRef)
         {
 	    return ((TypeStructRef)type).getName();
         }
@@ -180,8 +175,6 @@ public class NodesToJava extends SymbolTableVisitor
                 return null;
             }
         }
-        else if (t instanceof TypeStruct)
-            return ((TypeStruct)t).getName() + ".class";
         else if (t instanceof TypeArray)
             return "(" + makeConstructor(t) + ").getClass()";
         else
@@ -234,7 +227,7 @@ public class NodesToJava extends SymbolTableVisitor
         {
             Parameter param = (Parameter)iter.next();
             symtab.registerVar(param.getName(),
-                    actualType(param.getType()),
+ (param.getType()),
                     param,
                     SymbolTable.KIND_FUNC_PARAM);
             if (!first) result += ", ";
@@ -451,7 +444,7 @@ public class NodesToJava extends SymbolTableVisitor
         for (int i = 0; i < field.getNumFields(); i++)
         {
         	symtab.registerVar(field.getName(i),
-                    actualType(field.getType(i)),
+ (field.getType(i)),
                     field,
                     SymbolTable.KIND_FIELD);
             if (i > 0) result += ", ";
@@ -486,7 +479,7 @@ public class NodesToJava extends SymbolTableVisitor
 
 
 
-    public String outputStructure(TypeStruct struct){
+    public String outputStructure(StructDef struct){
     	String result = "";
     	result += indent + "class " + struct.getName() +
         " extends Structure {\n";
@@ -674,7 +667,7 @@ public class NodesToJava extends SymbolTableVisitor
         for (int i = 0; i < stmt.getNumVars(); i++)
         {
         	symtab.registerVar(stmt.getName(i),
-                    actualType(stmt.getType(i)),
+ (stmt.getType(i)),
                     stmt,
                     SymbolTable.KIND_LOCAL);
             if (i > 0)
@@ -703,7 +696,7 @@ public class NodesToJava extends SymbolTableVisitor
         nres.setPackage(spec);
 
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
-            TypeStruct struct = (TypeStruct) iter.next();
+            StructDef struct = (StructDef) iter.next();
             result += outputStructure(struct);
         }
 
@@ -776,7 +769,7 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitTypePrimitive(TypePrimitive t) { return null; }
     public Object visitTypeArray(TypeArray t) { return null; }
     public Object visitParameter(Parameter par){ return null; }
-    public Object visitTypeStruct(TypeStruct ts){return null;}
+    public Object visitStructDef(StructDef ts){return null;}
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
     public Object visitStmtAtomicBlock(StmtAtomicBlock block){return null;}
     public Object visitExprNullPtr(ExprNullPtr nptr){ return "null"; }

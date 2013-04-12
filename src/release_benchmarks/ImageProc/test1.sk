@@ -9,9 +9,6 @@ harness void main(){
     writeImg(im);    
 }
 
-generator int abs(int i){
-    return i>0?i:-i;
-}
 
 void cleanup2(int c, int r, ref int[c][r] tmp2){
     int K = 5;

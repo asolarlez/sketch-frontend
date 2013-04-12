@@ -1,0 +1,24 @@
+
+pragma options "--bnd-unroll-amnt 32 --debug-show-dag";
+
+struct bas{
+    int x;
+}
+
+void boo(ref int x){
+    ++x;
+}
+
+
+harness void foo(int i){
+    bas b = new bas(x=i);
+    int[b.x] x = 0;
+    void moo(){
+        boo(i);        
+    }
+    void too(){
+        b = null;
+    }
+    moo();
+    too(); //TypeError
+}

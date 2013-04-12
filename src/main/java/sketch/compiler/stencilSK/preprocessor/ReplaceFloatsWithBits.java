@@ -123,8 +123,8 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
 		Type ot = par.getType();
 		Type t = (Type) par.getType().accept(this);
 
-		symtab.registerVar(par.getName(),
-                actualType(ot), // We want to remember the old type even if the type changed.
+        symtab.registerVar(par.getName(), (ot), // We want to remember the old type even
+                                                // if the type changed.
                 par,
                 SymbolTable.KIND_FUNC_PARAM);
 

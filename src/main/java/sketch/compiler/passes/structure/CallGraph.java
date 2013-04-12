@@ -12,6 +12,7 @@ import sketch.util.datastructures.HashmapSet;
 import sketch.util.datastructures.ObjPairBase;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.datastructures.TypedHashSet;
+import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.IsChanging;
 import static sketch.util.Misc.nonnull;
 
@@ -75,7 +76,10 @@ public class CallGraph extends FEReplacer {
 
     @Override
     public Object visitExprFunCall(ExprFunCall exp) {
-        assert enclosing != null : "function call not within a function?";
+
+        if (enclosing == null) {
+            throw new ExceptionAtNode("Function call not allowed outside a function", exp);
+        }
         fcnCallEnclosing.put(exp, enclosing);
         return exp;
     }

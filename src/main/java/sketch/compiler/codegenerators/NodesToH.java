@@ -7,7 +7,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 
 public class NodesToH extends NodesToC {
 
@@ -21,7 +21,7 @@ public class NodesToH extends NodesToC {
 		this.addIncludes = false;
 	}
 	
-	public String outputStructure(TypeStruct struct){
+	public String outputStructure(StructDef struct){
     	String result = "";
     	result += indent + "class " + escapeCName(struct.getName()) + "{\n  public:";
     	addIndent();
@@ -57,12 +57,12 @@ public class NodesToH extends NodesToC {
         nres.setPackage(spec);
 
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
-            TypeStruct struct = (TypeStruct) iter.next();
+            StructDef struct = (StructDef) iter.next();
             result += "class " + escapeCName(struct.getName()) + "; \n";
         }
 
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
-            TypeStruct struct = (TypeStruct) iter.next();
+            StructDef struct = (StructDef) iter.next();
             result += outputStructure(struct);
         }
 

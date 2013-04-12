@@ -1,0 +1,20 @@
+struct Foo{
+    Foo x;
+}
+
+harness void main(int i){    
+    if(i==3){
+        Foo t = foo().x.x; // TypeError
+    }
+}
+
+Foo foo(int i){
+    Foo f = new Foo();
+    if(i==4){
+        f = null;
+    }
+    if(i==5){
+        f.x = new Foo(x=new Foo()); 
+    }
+    return f;
+}

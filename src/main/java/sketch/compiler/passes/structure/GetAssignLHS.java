@@ -33,7 +33,7 @@ public class GetAssignLHS extends FETypedVisitor<ExprVar> {
     }
 
     public ExprVar visitExprBinary(ExprBinary exp) {
-        throw new TypeErrorException(exp.getCx() + ": Illegal l-value. ");
+        throw new TypeErrorException("Illegal l-value. ", exp);
     }
 
 

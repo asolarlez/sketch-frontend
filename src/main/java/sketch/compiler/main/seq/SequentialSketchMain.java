@@ -234,9 +234,7 @@ public class SequentialSketchMain extends CommonSketchMain
         return new LowerSyntaxSugar();
     }
 
-    public LowerHighLevelConstructs getIRStage1() {
-        return new LowerHighLevelConstructs();
-    }
+
 
     public LowLevelCStage getIRStage2_LLC(Program prog) {
         if (new ContainsStencilFunction().run(prog)) {
@@ -414,6 +412,7 @@ public class SequentialSketchMain extends CommonSketchMain
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
+        prog.debugDump("After DCTC");
         if (!dtc.good) {
             throw new ProgramParseException("Semantic check failed");
         }

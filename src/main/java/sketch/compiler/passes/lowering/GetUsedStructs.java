@@ -18,7 +18,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
 /**
@@ -131,14 +131,14 @@ public class GetUsedStructs extends FEReplacer {
         }
 
         @Override
-        public Object visitTypeStruct(TypeStruct ts) {
+        public Object visitStructDef(StructDef ts) {
             currentSet.add(ts.getFullName());
-            return super.visitTypeStruct(ts);
+            return super.visitStructDef(ts);
         }
 
         @Override
         public Object visitTypeStructRef(TypeStructRef t) {
-            TypeStruct ts = nres.getStruct(t.getName());
+            StructDef ts = nres.getStruct(t.getName());
             currentSet.add(ts.getFullName());
             return super.visitTypeStructRef(t);
         }

@@ -9,6 +9,6 @@ public class InternalSketchException extends SketchException {
 
     @Override
     protected String messageClass() {
-        return "Internal sketch exception";
+        return "Internal Sketch Error";
     }
 }

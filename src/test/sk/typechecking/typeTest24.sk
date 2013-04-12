@@ -1,0 +1,10 @@
+
+void foo([int n, int m], int[n] x, int[m] y){
+    
+}
+
+harness void moo(int i, int j){
+    int[i] x;
+    int[j] y;
+    foo(i, x, y); //TypeError
+}

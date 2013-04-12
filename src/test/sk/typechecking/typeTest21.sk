@@ -1,0 +1,16 @@
+
+pragma options "--bnd-unroll-amnt 32 --debug-show-dag";
+
+
+void boo(ref int x){
+    ++x;
+}
+
+
+harness void foo(int i){
+    int[i] x = 0;
+    void moo(){
+        boo(i);
+    }
+    moo(); //TypeError
+}

@@ -287,7 +287,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             obj = (Function) super.visitFunction(func);
         } catch (ArrayIndexOutOfBoundsException e) {
             if (func.isSketchHarness() || func.getSpecification() != null) {
-                throw new SketchNotResolvedException(e.getMessage());
+                throw new SketchNotResolvedException("", e.getMessage());
             }
             obj =
                     func.creator().body(

@@ -29,10 +29,10 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
 
@@ -113,8 +113,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        List<Parameter> newParams = new ArrayList<Parameter>();
 	        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); ) {
 	            Parameter param = (Parameter)iter.next();
-	            symtab.registerVar(param.getName(),
-	                               actualType(param.getType()),
+                symtab.registerVar(param.getName(), (param.getType()),
 	                               param,
 	                               SymbolTable.KIND_FUNC_PARAM);
 	            newParams.add ((Parameter) param.accept (this));
@@ -165,8 +164,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	        for (Iterator iter = func.getParams().iterator(); iter.hasNext(); ) {
 	            Parameter param = (Parameter)iter.next();
-	            symtab.registerVar(param.getName(),
-	                               actualType(param.getType()),
+                symtab.registerVar(param.getName(), (param.getType()),
 	                               param,
 	                               SymbolTable.KIND_FUNC_PARAM);
 	            newParams.add ((Parameter) param.accept (this));
@@ -236,17 +234,22 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 */
 	public Object visitExprField (ExprField ef) {
 
-        Type t = this.actualType(getType(ef.getLeft()));
+        StructDef t = this.getStructDef(getType(ef.getLeft()));
         if (!t.isStruct()) {
 			ef.report ("Trying to read field of non-struct variable.");
 			throw new RuntimeException ("reading field of non-struct");
 		}
 
         StructTracker struct =
-                structs.get(nres.getStructName(((TypeStruct) t).getName()));
+                structs.get(nres.getStructName(((StructDef) t).getName()));
 		String field = ef.getName ();
 
-        return struct.getFieldAccess(ef, field, (Expression) ef.getLeft().accept(this));
+        Expression basePtr = (Expression) ef.getLeft().accept(this);
+        if (newStatements != null) {
+            addStatement(new StmtAssert(new ExprBinary(basePtr, "!=",
+                    ExprConstInt.minusone), false));
+        }
+        return struct.getFieldAccess(ef, field, basePtr);
 
 	}
 
@@ -258,32 +261,51 @@ public class EliminateStructs extends SymbolTableVisitor {
     			"Sorry, only structs are supported in 'new' statements.");
 
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
-        StructTracker struct = structs.get(nres.getStructName(name));        
-        List<Expression> rhs = new ArrayList<Expression>();
+        StructTracker struct = structs.get(nres.getStructName(name));
+
         Map<String, Expression> fieldExprs = new HashMap<String, Expression>();
+        VarSetReplacer vsr = new VarSetReplacer(fieldExprs);
+
+        List<ExprNamedParam> rl =
+                new ArrayList<ExprNamedParam>(expNew.getParams().size());
+
         for (ExprNamedParam en : expNew.getParams()) {
-            Expression tt = (Expression) en.getExpr().accept(this);
-            fieldExprs.put(en.getName(), tt);
-            Expression lhs = new ExprVar(expNew, varGen.nextVar());
-            addStatement(new StmtVarDecl(expNew, (Type) getType(tt).accept(this),
-                    lhs.toString(), tt));
-            rhs.add(lhs);
+            Type etype = struct.struct.getType(en.getName());
+            if (!(etype instanceof TypeArray)) {
+                Expression tt = (Expression) en.getExpr().accept(this);
+                fieldExprs.put(en.getName(), tt);
+                Expression lhs = new ExprVar(expNew, varGen.nextVar());
+                addStatement(new StmtVarDecl(expNew, etype, lhs.toString(), tt));
+
+                rl.add(new ExprNamedParam(en, en.getName(), lhs));
+
+            }
+        }
+        for (ExprNamedParam en : expNew.getParams()) {
+            Type etype =
+                    (Type) ((Type) struct.struct.getType(en.getName()).accept(vsr)).accept(this);
+            if ((etype instanceof TypeArray)) {
+                Expression tt = (Expression) en.getExpr().accept(this);
+                fieldExprs.put(en.getName(), tt);
+                Expression lhs = new ExprVar(expNew, varGen.nextVar());
+                addStatement(new StmtVarDecl(expNew, etype, lhs.toString(), tt));
+                rl.add(new ExprNamedParam(en, en.getName(), lhs));
+
+            }
         }
 
-        VarSetReplacer vsr = new VarSetReplacer(fieldExprs);
-        int i = 0;
-        for (ExprNamedParam en : expNew.getParams()) {
-            Expression lhs =
+        for (ExprNamedParam en : rl) {
+            Expression alhs =
                     struct.getLHSFieldAccess(expNew, en.getName(),
                             struct.nextInstancePointer, vsr);
-            addStatement(new StmtAssign(lhs, rhs.get(i)));
-            ++i;
+            addStatement(new StmtAssign(alhs, en.getExpr()));
         }
+
         // this.addStatement (struct.makeAllocationGuard (expNew));
     	return struct.makeAllocation (expNew);
     }
 
-    public Object visitTypeStruct (TypeStruct ts) {
+    public Object visitStructDef (StructDef ts) {
     	// return TypePrimitive.inttype;
     	return ts;
     }
@@ -356,7 +378,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	 */
 	private class StructTracker {
 
-		private TypeStruct struct;
+		private StructDef struct;
 		private TypeStructRef sref;
 		private FENode cx;
         // private final ExprVar heapSzVar;
@@ -402,14 +424,14 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     * @param cx_		The context at which new variables will be declared
 	     * @param varGen	Generator for new variable names
 	     */
-	    public StructTracker (TypeStruct struct_,
+	    public StructTracker (StructDef struct_,
  FENode cx_, TempVarGen varGen,
                 final Expression maxArrSz)
         {
 
             // this.heapsize = heapsize;
 	    	struct = struct_;
-	    	sref = new TypeStructRef(struct.getName());
+            sref = new TypeStructRef(struct.getName(), false);
 	    	cx = cx_;
 
             // heapSzVar = new ExprVar(cx, heapsize);
@@ -476,8 +498,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 
 	    public void registerAsParameters(SymbolTable symtab){
 	    	String nip = nextInstancePointer.getName ();
-	    	symtab.registerVar(nip,
- this.struct,
+            symtab.registerVar(nip, this.sref,
                     nextInstancePointer,
                     SymbolTable.KIND_FUNC_PARAM);
 
@@ -535,18 +556,18 @@ public class EliminateStructs extends SymbolTableVisitor {
                     Type lastType;
                     public Object visitExprField(ExprField ev) {
                         Expression base = (Expression) ev.getLeft().accept(this);
-                        TypeStruct ts = (TypeStruct) lastType;
+                        StructDef ts = getStructDef(lastType);
                         NameResolver lnr = EliminateStructs.this.nres;
                         StructTracker struct =
                                 structs.get(lnr.getStructName((ts).getName()));
-                        lastType = actualType(ts.getType(ev.getName()));
+                        lastType = (ts.getType(ev.getName()));
                         return new ExprArrayRange(ev, struct.getFieldArray(ev.getName()),
                                 base);
                     }
 
                     public Object visitExprVar(ExprVar ev) {
                         String nm = ev.getName();
-                        lastType = actualType(struct.getType(nm));
+                        lastType = (struct.getType(nm));
                         return new ExprArrayRange(ev, getFieldArray(nm), basePtr);
                     }
                 };
@@ -613,7 +634,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public Expression makeAllocation (FENode cx) {
             String tvar = varGen.nextVar();
-            EliminateStructs.this.addStatement((Statement) new StmtVarDecl(cx, struct,
+            EliminateStructs.this.addStatement((Statement) new StmtVarDecl(cx, sref,
                     tvar, nextInstancePointer).accept(EliminateStructs.this));
             EliminateStructs.this.addStatement(new StmtAssign(nextInstancePointer,
                     new ExprBinary(nextInstancePointer, "+", ExprConstInt.one)));

@@ -1,0 +1,6 @@
+pragma options "--bnd-unroll-amnt 32 --debug-show-dag";
+
+
+harness void boo(ref int x){
+    ++x;
+}

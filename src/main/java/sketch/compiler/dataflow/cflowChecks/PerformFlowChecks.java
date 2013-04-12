@@ -16,6 +16,7 @@ import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.Level;
@@ -100,6 +101,12 @@ public class PerformFlowChecks extends PartialEvaluator {
                 if (vt instanceof TypeArray) {
                         state.setVarValue(nm, this.vtype.CONST(0));
                     }
+                if (vt instanceof TypeStructRef) {
+                    TypeStructRef tsr = (TypeStructRef) vt;
+                    if (tsr.isUnboxed()) {
+                        state.setVarValue(nm, this.vtype.CONST(0));
+                    }
+                }
                 }
                 /* else{
                     state.setVarValue(nm, this.vtype.BOTTOM("UNINITIALIZED"));

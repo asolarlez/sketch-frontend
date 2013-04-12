@@ -3,7 +3,6 @@ package sketch.compiler.dataflow.nodesToSB;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.abstractValueType;
@@ -33,7 +32,7 @@ public class IntState extends varState {
 				// init( newLHSvalue() );
 			}
 		} else
-		if( t instanceof TypeStructRef || t instanceof TypeStruct){			
+ if (t instanceof TypeStructRef) {
 			init( newLHSvalue() );	
 		}else{
 			assert false :"This shouldn't happen";

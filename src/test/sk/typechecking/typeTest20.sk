@@ -1,0 +1,8 @@
+pragma options "--bnd-unroll-amnt 32";
+
+
+harness void foo(int i){
+    int[i] x = 0;
+    ++i; //TypeError    
+    
+}

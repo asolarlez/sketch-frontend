@@ -219,7 +219,7 @@ public class BitTypeRemover extends SymbolTableVisitor
         // To think about: should we cache GetExprType objects?
         GetExprType get = new GetExprType(preSymtab, nres);
         Type type = (Type)expr.accept(get);
-        return actualType(type);
+        return (type);
     }
 
     private Type getVarPType(Expression e)

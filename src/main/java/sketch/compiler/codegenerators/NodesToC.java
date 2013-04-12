@@ -21,10 +21,10 @@ import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
@@ -314,7 +314,7 @@ public class NodesToC extends NodesToJava {
 		return preamble.toString();
 	}
 
-	public String outputStructure(TypeStruct struct){
+	public String outputStructure(StructDef struct){
     	return "";
     }
 
@@ -331,7 +331,7 @@ public class NodesToC extends NodesToJava {
 
         
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
-            TypeStruct struct = (TypeStruct) iter.next();
+            StructDef struct = (StructDef) iter.next();
             result += outputStructure(struct);
         }
 
@@ -418,7 +418,7 @@ public class NodesToC extends NodesToJava {
 
             if(symtab != null){
 	            symtab.registerVar(escapeCName(param.getName()),
-	                    actualType(param.getType()),
+ (param.getType()),
 	                    param,
 	                    SymbolTable.KIND_FUNC_PARAM);
             }
@@ -448,7 +448,7 @@ public class NodesToC extends NodesToJava {
     public Object visitStmtVarDecl(StmtVarDecl stmt) {
         Vector<String> decls = new Vector<String>();
         for (VarDeclEntry decl : stmt) {
-            symtab.registerVar(escapeCName(decl.getName()), actualType(decl.getType()), stmt,
+            symtab.registerVar(escapeCName(decl.getName()), (decl.getType()), stmt,
                     SymbolTable.KIND_LOCAL);
             Type type = decl.getType();
             if (type instanceof TypeArray) {

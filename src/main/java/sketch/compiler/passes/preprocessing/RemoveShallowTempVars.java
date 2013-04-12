@@ -19,7 +19,7 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 
 /**
  * Simple pass to get rid of temporary variables that only pollute the output code. We
@@ -229,7 +229,7 @@ public class RemoveShallowTempVars extends FEReplacer {
         return super.visitFunction(f);
     }
 
-    public Object visitTypeStruct(TypeStruct ts) {
+    public Object visitStructDef(StructDef ts) {
         return ts;
     }
     

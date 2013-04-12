@@ -32,11 +32,13 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 public class TypeStructRef extends Type
 {
     private String name;
+    private final boolean isUnboxed;
 
     /** Creates a new reference to a structured type. */
-    public TypeStructRef(CudaMemoryType typ, String name) {
+    public TypeStructRef(CudaMemoryType typ, String name, boolean isUnboxed) {
         super(typ);
         this.name = name;
+        this.isUnboxed = isUnboxed;
     }
 
     public TypeStructRef addDefaultPkg(String pkg, NameResolver nres) {
@@ -44,13 +46,14 @@ public class TypeStructRef extends Type
             return this;
         } else {
             String nname = nres.getStructName(name, pkg);
-            return new TypeStructRef(nname);
+            return new TypeStructRef(nname, isUnboxed);
         }
     }
 
+
     /** Creates a new reference to a structured type. */
-    public TypeStructRef(String name) {
-        this(CudaMemoryType.UNDEFINED, name);
+    public TypeStructRef(String name, boolean isUnboxed) {
+        this(CudaMemoryType.UNDEFINED, name, isUnboxed);
     }
 
     public Object accept(FEVisitor v)
@@ -67,6 +70,8 @@ public class TypeStructRef extends Type
     public boolean isStruct () { return true; }
 
     public Expression defaultValue () {
+        if (isUnboxed)
+            return null;
     	return ExprNullPtr.nullPtr;
     }
 
@@ -77,21 +82,20 @@ public class TypeStructRef extends Type
 
     public String toString()
  {
-        return name;
+        if (isUnboxed) {
+            return "|" + name + "|";
+        } else {
+            return name;
+        }
     }
     
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
-        return new TypeStructRef(memtyp, name);
+        return new TypeStructRef(memtyp, name, isUnboxed);
     }
 
     @Override
     public TypeComparisonResult compare(Type other) {
-        if (other instanceof TypeStruct) {
-            TypeStruct that = (TypeStruct) other;
-            return TypeComparisonResult.knownOrNeq(name.equals(that.getName()));
-        }
-
         if (other instanceof TypeStructRef) {
             TypeStructRef that = (TypeStructRef) other;
             return TypeComparisonResult.knownOrNeq(this.name.equals(that.name));
@@ -100,15 +104,24 @@ public class TypeStructRef extends Type
         return TypeComparisonResult.NEQ;
     }
 
-    public boolean promotesTo(Type that) {
-        if (super.promotesTo(that))
+    public boolean promotesTo(Type that, NameResolver nres) {
+        if (super.promotesTo(that, nres))
             return true;
-        if (!(that instanceof TypeStructRef)) {
+        if ((that instanceof TypeStructRef)) {
+            TypeStructRef tsr = (TypeStructRef) that;
+            String name1 = nres.getStructName(tsr.name);
+            String name2 = nres.getStructName(name);
+            return name1.equals(name2);
+        } else {
             if (that instanceof TypeArray) {
-                return this.promotesTo(((TypeArray) that).getBase());
+                return this.promotesTo(((TypeArray) that).getBase(), nres);
             }
         }
         return false;
+    }
+
+    public boolean isUnboxed() {
+        return isUnboxed;
     }
 
 }

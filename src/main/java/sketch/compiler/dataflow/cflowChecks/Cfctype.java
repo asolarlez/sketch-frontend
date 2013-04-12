@@ -207,7 +207,7 @@ public class Cfctype extends abstractValueType {
                     if (!((CfcValue) avlist.get(idx)).maybeinit()) {
                         throw new TypeErrorException("Parameter " + param.getName() +
                                 " to " + fun.getName() +
-                                " is used without first being initialized.");
+                                " is used without first being initialized.", param);
                     }
                 }
                 ++idx;

@@ -9,6 +9,6 @@ public class UnsupportedSketchException extends SketchException {
 
     @Override
     protected String messageClass() {
-        return "Unsupported sketch exception";
+        return "Unsupported Sketch Error";
     }
 }

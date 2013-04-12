@@ -28,8 +28,6 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
-import static sketch.util.DebugOut.assertFalse;
-
 
 /**
  * Converts function that return something to functions that take
@@ -381,7 +379,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 }
                 continue;
             }
-            symtab.registerVar(stmt.getName(i), actualType(stmt.getType(i)), stmt,
+            symtab.registerVar(stmt.getName(i), (stmt.getType(i)), stmt,
                     SymbolTable.KIND_LOCAL);
             Expression oinit = stmt.getInit(i);
             Expression init = null;
@@ -542,8 +540,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 					assert outParam.isParameterOutput();
 
                     Expression defaultValue = p.getType().defaultValue();
-					assert defaultValue != null : "[FunctionParamExtension] default value null!";
-					if (defaultValue == null) { assertFalse(); }
+                    if (defaultValue == null) {
+                        continue;
+                    }
 					
 					stmts.add(0, new StmtAssign(new ExprVar(func, outParamName), defaultValue));
 				}

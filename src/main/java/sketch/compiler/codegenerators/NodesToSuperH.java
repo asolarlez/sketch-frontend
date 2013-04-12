@@ -11,9 +11,9 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.util.datastructures.TypedHashMap;
 
 public class NodesToSuperH extends NodesToSuperCpp {
@@ -22,14 +22,14 @@ public class NodesToSuperH extends NodesToSuperCpp {
     private String filename;
     private String preIncludes;
 
-    public NodesToSuperH(String filename, boolean pythonPrintStatements) {
-        super(null, filename, pythonPrintStatements);
+    public NodesToSuperH(String filename) {
+        super(null, filename);
         // _converter = new NodesToSuperCpp(null, filename, pythonPrintStatements);
         this.filename = filename;
         this.addIncludes = false;
     }
 
-    public String outputStructure(TypeStruct struct){
+    public String outputStructure(StructDef struct){
         String result = "";
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -79,7 +79,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
                 result += ", ";
             }
             result += indent + typeForDecl(ftype) + " " + field + "_";
-            symtab.registerVar(field + "_", actualType(ftype),
+            symtab.registerVar(field + "_", (ftype),
                     struct, SymbolTable.KIND_LOCAL);
             if (ftype instanceof TypeArray) {
                 result += ", int " + field + "_len";
@@ -160,7 +160,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         for (Package pkg : prog.getPackages()) {
             ret += "namespace " + pkg.getName() + "{\n";
-            for (TypeStruct ts : pkg.getStructs()) {
+            for (StructDef ts : pkg.getStructs()) {
                 ret += "  class " + ts.getName() + ";\n";
             }
             ret += "}\n";
@@ -177,12 +177,12 @@ public class NodesToSuperH extends NodesToSuperCpp {
         preIncludes = "";
         result += "namespace " + spec.getName() + "{\n";
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
-            TypeStruct struct = (TypeStruct) iter.next();
+            StructDef struct = (StructDef) iter.next();
             result += "class " + escapeCName(struct.getName()) + "; \n";
         }
 
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
-            TypeStruct struct = (TypeStruct) iter.next();
+            StructDef struct = (StructDef) iter.next();
             result += outputStructure(struct);
         }
 

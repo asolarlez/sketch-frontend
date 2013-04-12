@@ -24,12 +24,11 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
-import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
@@ -51,9 +50,6 @@ public class RemoveFunctionParameters extends FEReplacer {
         final TreeSet<String> dependence;
 
         public ParamInfo(Type pt, boolean changed, TreeSet<String> dependence) {
-            if (pt instanceof TypeStruct) {
-                pt = new TypeStructRef(((TypeStruct) pt).getFullName());
-            }
             this.pt = pt;
             this.changed = changed;
             this.dependence = dependence;
@@ -400,8 +396,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                         }
                         Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
                         if (pt instanceof TypeFunction) {
-                            throw new TypeErrorException(exp.getCx().toString() +
-                                    ": An inner function can not use a function parameter passed to its parent function");
+                            throw new TypeErrorException(
+                                    "An inner function can not use a function parameter passed to its parent function",
+                                    exp);
                         }
                         int kind =
                                 InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
@@ -433,7 +430,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     return exp;
                 }
 
-                public Object visitTypeStruct(TypeStruct ts) {
+                public Object visitStructDef(StructDef ts) {
                     return ts;
                 }
 
@@ -552,7 +549,12 @@ public class RemoveFunctionParameters extends FEReplacer {
             while (nres.getFun(newName) != null) {
                 newName = oldName + (++nfcnt);
             }
-            frmap.declRepl(sfd.getDecl().getName(), newName);
+            String te = frmap.findRepl(oldName);
+            if (te != null) {
+                throw new ExceptionAtNode("You can not redefine the inner function " +
+                        oldName + " in the same scope", sfd);
+            }
+            frmap.declRepl(oldName, newName);
             Function f = sfd.getDecl();
 
             if (isGenerator && !f.isGenerator()) {
@@ -666,8 +668,8 @@ public class RemoveFunctionParameters extends FEReplacer {
     String newFunName(ExprFunCall efc, Function orig) {
         String name = orig.getName();
         if (efc.getParams().size() != orig.getParams().size()) {
-            throw new TypeErrorException(efc.getCx() +
-                    "Incorrect number of parameters to function " + orig);
+            throw new TypeErrorException("Incorrect number of parameters to function " +
+                    orig, efc);
         }
         Iterator<Expression> fp = efc.getParams().iterator();
         for (Parameter p : orig.getParams()) {

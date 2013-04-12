@@ -1,0 +1,25 @@
+include "miniTestb539c.skh";
+include "miniTestb539b.skh";
+
+package c;
+
+struct A{
+    int x;
+    A@b a;
+}
+
+
+A foo(A a){
+    return a;
+}
+
+void moo(A@a x){
+    
+}
+
+harness void main(int x){
+    A@b ab = foo@b({new A@b(y=x)});
+    ab.a = new A@a(z = ab.y);
+    A ra = foo(foo@a(ab.a));
+    assert ra.x == x;    
+}

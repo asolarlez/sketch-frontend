@@ -26,7 +26,7 @@ public class LowerToSketch extends MetaStage {
     public Program visitProgramInner(Program prog) {
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
-        // prog.debugDump("After aaa");
+
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
 
@@ -48,10 +48,20 @@ public class LowerToSketch extends MetaStage {
 
 
 
-        prog = (Program) prog.accept(new EliminateMultiDimArrays(true, varGen));
+        prog =
+                (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
+                        FailurePolicy.ASSERTION, varGen));
+
+        prog.debugDump("After Protect");
+
+        prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
 
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+
+
+
+        
 
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
@@ -64,8 +74,12 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
 
+
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new ExtractVectorsInCasts(varGen));
+
+
+
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new SeparateInitializers());
         // dump (prog, "SeparateInitializers:");
@@ -80,10 +94,7 @@ public class LowerToSketch extends MetaStage {
             prog = (Program) prog.accept(new ReplaceFloatsWithFixpoint(varGen));
         }
 
-
-        prog =
-                (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
-                        FailurePolicy.ASSERTION, varGen));
+        prog = (Program) prog.accept(new LoopInvariantAssertionHoisting());
 
 
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, false));

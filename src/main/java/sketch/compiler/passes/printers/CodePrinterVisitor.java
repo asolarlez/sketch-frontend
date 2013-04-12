@@ -19,7 +19,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -565,7 +565,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
         SymbolTable oldSymtab = symtab;
         symtab = new SymbolTable (symtab);
 
-        for (TypeStruct s : ss.getStructs())
+        for (StructDef s : ss.getStructs())
             s.accept(this);
 
 		// TODO: doesn't fully visit the stream spec
@@ -595,7 +595,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return tp;
 	}
 
-	public Object visitTypeStruct (TypeStruct ts) {
+	public Object visitStructDef (StructDef ts) {
 		printlnIndent ("struct "+ ts.getName ()+ " {");
 		indent ();
         for (Entry<String, Type> fld : ts) {

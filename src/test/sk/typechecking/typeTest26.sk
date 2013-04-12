@@ -1,0 +1,10 @@
+
+int foo(){
+    
+}
+
+harness void bar(){
+    fun f = foo; // TypeError
+    
+    
+}

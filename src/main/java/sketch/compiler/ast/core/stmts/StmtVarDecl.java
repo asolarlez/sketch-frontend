@@ -28,8 +28,6 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtVarDecl.VarDeclEntry;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeStruct;
-import sketch.compiler.ast.core.typs.TypeStructRef;
 
 import static sketch.util.DebugOut.assertFalse;
 
@@ -125,9 +123,7 @@ public class StmtVarDecl extends Statement implements Iterable<VarDeclEntry>
     public StmtVarDecl(FENode context, Type type, String name,
                        Expression init)
     {
-        this(context, Collections.singletonList(nonnull(
-                (type instanceof TypeStruct) ? new TypeStructRef(
-                        ((TypeStruct) type).getName()) : type,
+        this(context, Collections.singletonList(nonnull(type,
                 "null type for StmtVarDecl ctor")), Collections.singletonList(name),
                 Collections.singletonList(init));
     }

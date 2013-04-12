@@ -1,0 +1,17 @@
+pragma options "--bnd-unroll-amnt 64 --bnd-inbits 3";
+
+struct Grid{
+    int n;
+    int m;
+    int[n][m] y;
+}
+
+harness void main(int n, int m, int[n][m] x){
+    Grid g = new Grid(n=n, m=m);
+    for(int i=0; i<n; ++i){
+        for(int j=0; j<m; ++j){
+            g.y[j][i] = x[j][i];
+        }
+    }
+    assert x == g.y;
+}

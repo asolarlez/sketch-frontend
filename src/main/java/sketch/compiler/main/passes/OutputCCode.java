@@ -45,10 +45,9 @@ public class OutputCCode extends MetaStage {
         Program pprog =
                 (Program) prog.accept(new EliminateMultiDimArrays(
                         !options.feOpts.killAsserts, new TempVarGen()));
-        String hcode = (String) pprog.accept(new NodesToSuperH(resultFile, tprintPyStyle));
+        String hcode = (String) pprog.accept(new NodesToSuperH(resultFile));
         String ccode =
-                (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile,
-                        tprintPyStyle));
+ (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile));
 
         if (!options.feOpts.outputCode && !options.feOpts.noOutputPrint) {
             prog.accept(new SimpleCodePrinter());
@@ -78,8 +77,7 @@ public class OutputCCode extends MetaStage {
                 }
                 if (options.feOpts.outputTest) {
                     String testcode =
-                            (String) pprog.accept(new NodesToSuperCTest(resultFile,
-                                    tprintPyStyle));
+                            (String) pprog.accept(new NodesToSuperCTest(resultFile));
                     final String outputFname =
                             options.feOpts.outputDir + resultFile + "_test.cpp";
                     Writer outWriter = new FileWriter(outputFname);

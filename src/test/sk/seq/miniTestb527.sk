@@ -1,0 +1,25 @@
+struct Q{
+    int u;
+    int v;
+}
+
+
+struct F{
+    int x;
+    int y;
+    Q q;
+}
+
+@Native("{ assert (v1==v2); }")
+void secretAssertEquals(int v1, int v2);
+
+
+harness void foo(){
+    F x = new F();
+    |F| a = |F|(x=5, y=7);
+    
+    |F| b = a;
+    a.x = 8;
+    assert b.x == 5;
+    secretAssertEquals(b.x , 5);
+}

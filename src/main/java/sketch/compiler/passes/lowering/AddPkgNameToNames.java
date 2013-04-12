@@ -10,8 +10,8 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class AddPkgNameToNames extends FEReplacer {
@@ -38,8 +38,8 @@ public class AddPkgNameToNames extends FEReplacer {
                 transFun(f.getSpecification())).create();
     }
 
-    public Object visitTypeStruct(TypeStruct ts) {
-        ts = (TypeStruct) super.visitTypeStruct(ts);
+    public Object visitStructDef(StructDef ts) {
+        ts = (StructDef) super.visitStructDef(ts);
         return ts.creator().name(transStruct(ts.getName())).pkg(GLOBALPKG).create();
         // return new TypeStruct(ts.getCudaMemType(), ts.getContext(),
         // transStruct(ts.getName()), ts.getFieldTypMap());
@@ -47,13 +47,12 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitTypeStructRef(TypeStructRef tsr) {
         tsr = (TypeStructRef) super.visitTypeStructRef(tsr);
-        return new TypeStructRef(transStruct(tsr.getName()));
+        return new TypeStructRef(transStruct(tsr.getName()), tsr.isUnboxed());
     }
 
     @Override
     public Object visitType(Type t) {
         t = (Type) super.visitType(t);
-        assert !(t instanceof TypeStruct);
         assert !(t instanceof TypeStructRef);
         return t;
     }
@@ -68,7 +67,7 @@ public class AddPkgNameToNames extends FEReplacer {
         assert prog != null : "FEReplacer.visitProgram: argument null!";
         nres = new NameResolver(prog);
         List<Function> lf = new ArrayList<Function>();
-        List<TypeStruct> ts = new ArrayList<TypeStruct>();
+        List<StructDef> ts = new ArrayList<StructDef>();
         for (Package ssOrig : prog.getPackages()) {
             Package pkg = (Package) ssOrig.accept(this);
             lf.addAll(pkg.getFuncs());

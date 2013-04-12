@@ -18,6 +18,6 @@ public class UnrecognizedVariableException extends ExceptionAtNode {
 
     @Override
     protected String messageClass() {
-        return "UnrecognizedVariableException";
+        return "Unrecognized Variable Error";
     }
 }

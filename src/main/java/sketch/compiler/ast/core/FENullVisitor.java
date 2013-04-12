@@ -26,7 +26,7 @@ import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
@@ -132,7 +132,7 @@ public class FENullVisitor implements FEVisitor
 	public Object visitType(Type t) { return null; }
     public Object visitTypePrimitive(TypePrimitive t) { return null; }
     public Object visitTypeArray(TypeArray t) { return null; }
-    public Object visitTypeStruct(TypeStruct t) { return null; }
+    public Object visitStructDef(StructDef t) { return null; }
     public Object visitTypeStructRef(TypeStructRef t) { return null; }
     public Object visitParameter(Parameter par){ return null; }
     public Object visitStmtFork(StmtFork loop){ return null; }

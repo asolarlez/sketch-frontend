@@ -16,7 +16,7 @@
 
 package sketch.compiler.ast.core;
 
-import sketch.compiler.ast.core.typs.TypeStruct;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.util.exceptions.NotImplementedException;
 
 
@@ -148,7 +148,7 @@ public abstract class FENode
     	context = cx;
     }
 
-    public static FENode anonTypeNode(TypeStruct struct) {
+    public static FENode anonTypeNode(StructDef struct) {
         return new FENode(struct.getContext()) {
             public Object accept(FEVisitor v) {
                 throw new NotImplementedException(

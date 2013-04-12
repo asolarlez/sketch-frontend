@@ -31,7 +31,7 @@ public class EliminateMDCopies extends SymbolTableVisitor {
         List<Expression> newInits = new ArrayList<Expression>(stmt.getNumVars());
         List<Statement> asslist = new ArrayList<Statement>();
         for (int i = 0; i < stmt.getNumVars(); i++) {
-            symtab.registerVar(stmt.getName(i), actualType(stmt.getType(i)), stmt,
+            symtab.registerVar(stmt.getName(i), (stmt.getType(i)), stmt,
                     SymbolTable.KIND_LOCAL);
             Type t = stmt.getType(i);
             if (!(t instanceof TypeArray)) {

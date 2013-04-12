@@ -5,14 +5,15 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.fcns.ZipIdxEnt;
@@ -35,9 +36,10 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         private final SymbolTableVisitor stv;
         Type type;
 
-        UpgradeStarToInt(SymbolTableVisitor stv, Type type) {
+        UpgradeStarToInt(SymbolTableVisitor stv, Type type, NameResolver nres) {
             this.stv = stv;
             this.type = type;
+            this.nres = nres;
         }
 
         public Object visitExprStar(ExprStar star) {
@@ -92,7 +94,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                     Type oldType = type;
                     Type tleft = getType(exp.getLeft());
                     Type tright = getType(exp.getRight());
-                    Type tt = tright.leastCommonPromotion(tleft);
+                    Type tt = tright.leastCommonPromotion(tleft, nres);
                     type = tt; // TypePrimitive.inttype;
                     Expression left = doExpression(exp.getLeft());
                     Expression right = doExpression(exp.getRight());
@@ -120,7 +122,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 case ExprBinary.BINOP_EQ: {
                     Type tleft = stv.getType(exp.getLeft());
                     Type tright = stv.getType(exp.getRight());
-                    Type tboth = tleft.leastCommonPromotion(tright);
+                    Type tboth = tleft.leastCommonPromotion(tright, nres);
                     Type oldType = type;
                     type = tboth;
                     Expression left = doExpression(exp.getLeft());
@@ -151,10 +153,8 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 
         public Object visitExprNew(ExprNew expNew) {
             Type nt = (Type) expNew.getTypeToConstruct().accept(this);
-            TypeStruct ts = null;
-            if (nt instanceof TypeStruct) {
-                ts = (TypeStruct) nt;
-            } else {
+            StructDef ts = null;
+            {
                 assert nt instanceof TypeStructRef;
                 ts =
                         TypeInferenceForStars.this.nres.getStruct(((TypeStructRef) nt).getName());
@@ -259,32 +259,32 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
 		if(stmt.isCond()){
 			Expression ie = stmt.getCond();
-	    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+            ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
 		}
 		return super.visitStmtAtomicBlock(stmt);
 	}
 	
     public Object visitStmtIfThen(StmtIfThen stmt){
     	Expression ie = stmt.getCond();
-    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
     	return super.visitStmtIfThen(stmt);
     }
 
     public Object visitStmtWhile(StmtWhile stmt){
       Expression ie = stmt.getCond();
-      ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
       return super.visitStmtWhile(stmt);
     }
 
     public Object visitStmtDoWhile(StmtDoWhile stmt){
       Expression ie = stmt.getCond();
-      ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
       return super.visitStmtDoWhile(stmt);
     }
 
     @Override
     public Object visitStmtAssert(StmtAssert a){
-    	a.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype) );
+        a.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
     	return a;
     }
 
@@ -297,7 +297,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             newInit = (Statement) stmt.getInit().accept(this);
         }
         if (stmt.getCond() != null) {
-            stmt.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype));
+            stmt.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
         }
         Expression newCond = stmt.getCond();
         Statement newIncr = null;
@@ -318,7 +318,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 
     public Object visitStmtLoop(StmtLoop stmt){
     	Expression ie = stmt.getIter();
-    	ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype, nres));
     	return super.visitStmtLoop(stmt);
     }
 
@@ -332,12 +332,12 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     			lt !=null && rt != null,
     			"internal error: " + lt + "   " + rt);
     	stmt.assertTrue (
-    			rt.promotesTo(lt),
+rt.promotesTo(lt, nres),
     			"Type mismatch " + lt +" !>= " + rt);
         return lt;
     }
     public void upgradeStarToInt(Expression exp, Type ftype){
-     	   exp.accept(new UpgradeStarToInt(this, ftype) );
+        exp.accept(new UpgradeStarToInt(this, ftype, nres));
     }
 	public Object visitStmtAssign(StmtAssign stmt)
     {
@@ -365,7 +365,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         	Expression ie = stmt.getInit(i);
         	if(ie != null){
         		Type rt = getType(ie);
-        		Type ftype = matchTypes(stmt, stmt.getName(i), actualType(stmt.getType(i)), rt);
+                Type ftype = matchTypes(stmt, stmt.getName(i), (stmt.getType(i)), rt);
         		upgradeStarToInt(ie, ftype);
         	}
         }
@@ -384,7 +384,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	@Override
 	public Object visitTypeArray(TypeArray ta){
 	    Expression ie = ta.getLength();
-        ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype) );
+        ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype, nres));
 	    return super.visitTypeArray(ta);
 	}
 }

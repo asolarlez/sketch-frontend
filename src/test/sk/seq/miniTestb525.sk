@@ -1,0 +1,20 @@
+struct Q{
+    int u;
+    int v;
+}
+
+
+struct F{
+    int x;
+    int y;
+    Q q;
+}
+
+harness void foo(){
+    |F| a;
+    a.x = 5;
+    a.y = 7;
+    a.q = new Q();
+    assert a.x + a.y == ??;
+    assert a.q != null;
+}
