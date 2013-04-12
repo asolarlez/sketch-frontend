@@ -84,11 +84,11 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 
 
 // transpose a to b
-void transpose_x_yz(global int nx, global int ny, global int nz, ref double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+void transpose_x_yz(global int nx, global int ny, global int nz, LState a, ref LState b) {
 	global int n = nx*ny*nz/spmdnproc;
-	transpose_local(nx, ny, nz, a, b);
-	spmdalltoall(n, b, a);
-	transpose_finish(nx, ny, nz, a, b);
+	transpose_local(nx, ny, nz, a.a, b.a);
+	spmdalltoall(n, b.a, a.a);
+	transpose_finish(nx, ny, nz, a.a, b.a);
 }
 
 
@@ -101,7 +101,7 @@ void trans_x_yz(global int P, global int nx, global int ny, global int nz, globa
 		LState lr;
 		lr = movein(P, spmdpid, nt, result);
 		spmdbarrier();
-		transpose_x_yz(nx, ny, nz, la.a, lr.a);
+		transpose_x_yz(nx, ny, nz, la, lr);
 		spmdbarrier();
 		moveout(P, spmdpid, nt, result, lr);
 	}
