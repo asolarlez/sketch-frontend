@@ -84,7 +84,8 @@ int main(int argc, char * argv[]) {
 
 	//cout << spmdpid << ": " << "after init" << endl;
 
-	timer t_warm, t_trans;	
+	timer t_warm;
+	timer * t_trans = new timer[iters];
 
 	// warmup
 	mpiBarrier();
@@ -98,17 +99,22 @@ int main(int argc, char * argv[]) {
 	}
 
 	mpiBarrier();
-	for (; iters>0; iters--) {
-		t_trans.start();
+	for (int i=0; i<iters; i++) {
+		timer & t = t_trans[i];
+		t.start();
 		transpose_xy_z(nx, ny, nz, matrix, result);
-		t_trans.stop();
+		t.stop();
 		mpiBarrier();
 	}
 
 	//cout << spmdpid << ": " << "after transpose" << endl;
 	
 	fout << "T_warm: " << t_warm.read() << endl;
-	fout << "T_trans: " << t_trans.read() << endl;
+	fout << "T_trans:";
+       	for (int i=0; i<iters; i++) {
+		fout << ' ' << t_trans[i].read();
+	}
+	fout << endl;
 
 	fout.close();
 	int rc = mpiFinalize();
