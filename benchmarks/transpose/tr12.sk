@@ -47,12 +47,12 @@ void spec(global int P, global int nx, global int ny, global int nz, global doub
 	assume nx*ny*nz/P <= 16 : "nx*ny*nz/P";
 	
 	// we don't use block now
-    for(int y=0; y<ny; ++y) {
-    		for (int x=0; x<nx; ++x) {
-    			for (int z=0; z<nz; ++z) {
-    				result[y*(nx*nz) + x*(nz) + z] = a[z*(nx*ny) + y*(nx) + x];
-    			}
-    		}
+	for (int x=0; x<nx; ++x) {
+		for(int y=0; y<ny; ++y) {
+			for (int z=0; z<nz; ++z) {
+				result[y*(nx*nz) + x*(nz) + z] = a[z*(nx*ny) + y*(nx) + x];
+			}
+		}
     }
 }
 
