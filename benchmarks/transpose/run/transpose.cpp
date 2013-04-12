@@ -69,7 +69,7 @@ int main(int argc, char * argv[]) {
 	pidss << spmdpid;
 	string const pidstr(pidss.str());
 	stringstream fname;
-	fname << "output" << pidstr << ".txt";
+	fname << "transpose.out" << pidstr << ".txt";
 
 	ofstream fout(fname.str().c_str());
 
@@ -91,8 +91,13 @@ int main(int argc, char * argv[]) {
 	t_warm.start();
 	transpose_xy_z(nx, ny, nz, matrix, result);
 	t_warm.stop();
-	mpiBarrier();
+	
+	if (outputMatrix) {
+		fout << "after transpose_xy_z:" << endl;
+		output(fout, nz, nx, ny/spmdnproc, result);
+	}
 
+	mpiBarrier();
 	for (; iters>0; iters--) {
 		t_trans.start();
 		transpose_xy_z(nx, ny, nz, matrix, result);
@@ -102,13 +107,8 @@ int main(int argc, char * argv[]) {
 
 	//cout << spmdpid << ": " << "after transpose" << endl;
 	
-	fout << "T_warm: " << t_warm.read();
-	fout << "T_trans: " << t_trans.read();
-
-	if (outputMatrix) {
-		fout << "after transpose_xy_z:" << endl;
-		output(fout, nz, nx, ny/spmdnproc, result);
-	}
+	fout << "T_warm: " << t_warm.read() << endl;
+	fout << "T_trans: " << t_trans.read() << endl;
 
 	fout.close();
 	int rc = mpiFinalize();
