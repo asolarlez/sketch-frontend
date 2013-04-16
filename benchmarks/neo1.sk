@@ -1,0 +1,105 @@
+pragma options "--bnd-inbits 2 --bnd-cbits 2 --be:ufunSymmetry  --beopt:simplifycex NOSIM --be:showDAG";
+
+//int n = 3;
+bit trace(int n, bit[n][n] a) {
+	bit sum = 0;
+	for (int i=0; i<n; ++i) {
+		sum += a[i][i];
+	}
+	return sum;
+}
+
+//matrix multiplication: C = A' B
+void mults(int n, ref bit[n][n] c, bit[n][n] a, bit[n][n] b) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] += a[k][i] * b[k][j];
+			}
+		}
+	}
+}
+
+//compute tr(A'B)
+//using property: tr(A'B) = tr(AB') = tr(B'A) = tr(BA') = sum_ij Aij * Bij
+bit fuseTrace(int n, bit[n][n] a, bit[n][n] b) implements sepTrace {
+	bit sum = 0;
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			sum += a[i][j] * b[i][j];
+		}
+	}
+	return sum;
+}
+
+bit sepTrace(int n, bit[n][n] a, bit[n][n] b) {
+	bit[n][n] c;
+	
+	// aa = a'
+//	bit[n][n] aa;
+//	trans(aa, a);
+
+	// C = A'B
+	mults(n, c, a, b);
+	return trace(n, c);
+}
+
+
+/*
+bit det3(bit[n][n] a	) {
+	return
+			  a[0][0] * (a[1][1]*a[2][2] - a[1][2]*a[2][1])
+			- a[0][1] * (a[1][0]*a[2][2] - a[1][2]*a[2][0])
+			+ a[0][2] * (a[1][0]*a[2][1] - a[1][1]*a[2][0])
+			;
+}
+
+// compute det3(A'B)
+// = det3(A)*det3(B)
+bit fuseDet3(bit[n][n] a, bit[n][n] b) implements sepDet3 {
+	return det3(a) * det3(b);
+}
+
+bit sepDet3(bit[n][n] a, bit[n][n] b) {
+	bit[n][n] c;
+	
+	// C = A'B
+	mults(c, a, b);
+	return det3(c);
+}
+
+
+
+
+
+
+
+
+
+
+//matrix transpose: C = A'
+void trans(ref bit[n][n] c, bit[n][n] a) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = a[j][i];
+		}
+	}
+}
+
+
+//matrix multiplication: C = A B
+void mul(ref bit[n][n] c, bit[n][n] a, bit[n][n] b) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] += a[i][k] * b[k][j];
+			}
+		}
+	}
+}
+
+
+
+*/

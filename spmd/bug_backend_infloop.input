@@ -1,0 +1,13 @@
+def sk(int P , ! bit[1] pA, bit[1] A){
+A1 = movein[bit](P A)(P==1)[ pa,1];
+A2 = ((P > 0)? (A1) : (A) );
+pA = ((P == 1)? (A2) : (A) );
+}
+def spec(int P, ! bit[1] pA, bit[1] A){
+pA = A;
+}
+def movein(int n, bit[1] a, ! bit[1] pa){
+w = (1 / n);
+pa = ((0 < w)? (a) : (a0) );
+}
+assert sk SKETCHES spec;

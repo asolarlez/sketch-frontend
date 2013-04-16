@@ -26,7 +26,8 @@ public class StencilTransforms extends MetaStage {
         p = (Program) p.accept(new EliminateNestedArrAcc(true));
 
         // dump(p, "BEFORE Stencilification");
-        FunctionalizeStencils fs = new FunctionalizeStencils(varGen);
+        FunctionalizeStencils fs =
+                new FunctionalizeStencils(varGen, options.bndOpts.arrSize);
         p = (Program) p.accept(fs); // convert Function's to ArrFunction's
         p = fs.processFuns(p, varGen); // process the ArrFunction's and create new
                                        // Function's

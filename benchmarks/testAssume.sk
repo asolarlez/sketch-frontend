@@ -1,0 +1,9 @@
+pragma options "-V10";
+int f(int n) {
+	assume n==15;
+	return n*n;
+}
+
+int g(int n) implements f {
+	return n*??;
+}

@@ -13,6 +13,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.seq.SequentialSketchMain;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.spmd.ChangeGlobalStateType;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 
 import static sketch.util.DebugOut.printDebug;
@@ -45,6 +46,7 @@ public class OutputCCode extends MetaStage {
         Program pprog =
                 (Program) prog.accept(new EliminateMultiDimArrays(
                         !options.feOpts.killAsserts, new TempVarGen()));
+        pprog = (Program) pprog.accept(new ChangeGlobalStateType());
         String hcode = (String) pprog.accept(new NodesToSuperH(resultFile));
         String ccode =
  (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile));

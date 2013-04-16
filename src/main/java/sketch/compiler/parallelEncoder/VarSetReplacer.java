@@ -6,6 +6,7 @@ import java.util.Map;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.TypeStruct;
 /**
  * 
  * Similar to VarReplacer, but this replaces any variable appearing in its input map.
@@ -36,5 +37,20 @@ public class VarSetReplacer extends FEReplacer {
 			return rmap.get(name);
 		}
 		return exp; 
+	}
+	
+	public static class IgnoreNamesInStruct extends VarSetReplacer {
+        public IgnoreNamesInStruct(Map<String, Expression> rmap) {
+            super(rmap);
+        }
+
+        public IgnoreNamesInStruct() {
+            super();
+        }
+
+        @Override
+        public Object visitTypeStruct(TypeStruct ts) {
+            return ts;
+        }
 	}
 }

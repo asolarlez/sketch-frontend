@@ -6,19 +6,22 @@ import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.CallGraph;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -44,19 +47,17 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
     public Object visitStreamSpec(Package spec) {
         super.visitStreamSpec(spec);
         
-//        final CodePrinterVisitor pr1 = new CodePrinterVisitor();
-//        pr1.setNres(nres);
-//        System.out.println("before global to local casts:");
-//        spec.accept(pr1);
+        final SimpleCodePrinter pr1 = new SimpleCodePrinter();
+        pr1.setNres(nres);
+        // System.out.println("before global to local casts:");
+        // spec.accept(pr1);
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
         Package result = (Package) cr.visitStreamSpec(spec);
         
         // System.out.println("after global to local casts:");
-        // final CodePrinterVisitor pr2 = new CodePrinterVisitor();
-        // pr2.setNres(nres);
-        // result.accept(pr2);
+        // result.accept(pr1);
         
         return result;
     }
@@ -72,8 +73,14 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
 
         protected ExprArrayInit getImplicitInputParam(ExprFunCall exp, Expression e) {
             Vector<Expression> e_dupl = new Vector<Expression>();
-            for (int a = 0; a < SpmdMaxNProc; a++) {
-                e_dupl.add(e);
+            if (e instanceof SpmdPid) {
+                for (int i = 0; i < SpmdMaxNProc; ++i) {
+                    e_dupl.add(new ExprConstInt(i));
+                }
+            } else {
+                for (int i = 0; i < SpmdMaxNProc; ++i) {
+                    e_dupl.add(e);
+                }
             }
             final ExprArrayInit nextParam = new ExprArrayInit(exp, e_dupl);
             return nextParam;

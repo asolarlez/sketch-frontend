@@ -1,0 +1,32 @@
+/*
+ * triggers a bug in backend: Error: This variable already existed!!
+ * (duplicated variable: H__3, there is a bug when struct used with holes)
+ */
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 4 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+stencil void spec(ref int N) {
+	int i, j, k;
+	int d = (N+1)/(N+1);
+	for (i=0; i<N/d; ++i) {
+		assert i>=0 && i<N;
+	}
+	for (j=1/d; j<N; ++j) {
+		assert j>=0 && j<N;
+	}
+	for (k=1/d; k<N/d; ++k) {
+		assert k>=0 && k<N;
+	}
+}
+
+stencil void sk(ref int N) implements spec {
+	int d = (N+1)/(N+1);
+	for (int i=0; i<N/d; ++i) {
+		assert i>=0 && i<N;
+	}
+	for (int j=1/d; j<N; ++j) {
+		assert j>=0 && j<N;
+	}
+	for (int k=1/d; k<N/d; ++k) {
+		assert k>=0 && k<N;
+	}
+}

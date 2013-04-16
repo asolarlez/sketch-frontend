@@ -227,6 +227,7 @@ pragma_stmt { String args = ""; }
         { handlePragma (p.getText (), args); }
     ;
 
+
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
 	List xs = new ArrayList(); FEContext ctx = null; }
@@ -264,6 +265,7 @@ statement returns [Statement s] { s = null; }
 	|	s=while_statement
 	|	s=do_while_statement SEMI
 	|	s=for_statement
+	|	s=assume_statement SEMI
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
 	|(annotation_list (TK_device | TK_serial | TK_harness |
@@ -527,6 +529,21 @@ pseudo_block returns [StmtBlock sb] { sb=null; Statement s; List l = new ArrayLi
 return_statement returns [StmtReturn s] { s = null; Expression x = null; }
 	:	t:TK_return (x=right_expr)? { s = new StmtReturn(getContext(t), x); }
 	;
+
+assume_statement returns [StmtAssume s] { s = null; Expression cond; }
+	:   (t:TK_assume) cond = right_expr (COLON ass:STRING_LITERAL)? {
+			if (cond != null) {
+				String msg = null;
+				FEContext cx =getContext(t);
+				if(ass!=null){
+					String ps = ass.getText();
+			        ps = ps.substring(1, ps.length()-1);
+					msg = cx + "   "+ ps;	
+				}
+				s = new StmtAssume(cx, cond, msg);
+			}
+		}
+	;
 	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
@@ -537,7 +554,7 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 		if(ass!=null){
 			String ps = ass.getText();
 	        ps = ps.substring(1, ps.length()-1);
-			msg =cx + "   "+ ps;	
+			msg = cx + "   "+ ps;	
 		}
 		s = new StmtAssert(cx, x, msg, t2!=null); }	
 	;
@@ -584,7 +601,7 @@ for_init_statement returns [Statement s] { s = null; }
 	:	(variable_decl) => s=variable_decl
     // |   (implicit_type_variable_decl) => s=implicit_type_variable_decl
 	|	(expr_statement) => s=expr_statement
-	|   (t:SEMI) /* empty */ => { s = new StmtEmpty(getContext(t)); }
+	|   /* empty */ { s = new StmtEmpty((FEContext)null); }
 	;
 
 for_incr_statement returns [Statement s] { s = null; }

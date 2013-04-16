@@ -419,13 +419,12 @@ public class RemoveFunctionParameters extends FEReplacer {
                                 info.changed = true;
                             }
                         }
-
                         // we should also visit the type of the variable.
                         boolean oldIsA = isAssignee;
                         isAssignee = false;
                         pt.accept(this);
                         isAssignee = oldIsA;
-                        dependent = oldDependent;
+                        dependent = oldDependent;      
                     }
                     return exp;
                 }

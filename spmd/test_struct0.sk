@@ -1,0 +1,37 @@
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 4 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --beopt:-bndwrand 50  --bnd-arr-size 16 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+struct LocalState {
+	int len;
+	int glen;
+//	int[len+glen*2] m;
+}
+
+LocalState movein(int rank, global int P, global int N) {
+	int len = N/P;
+	int glen = len/2;
+//	int[len+glen*2] m;
+//	int base1 = len*rank;
+//	for (int i=0; i<len; ++i) {
+//		m[glen+i] = mat[base1+i];  /* glen, base1 */
+//	}
+	LocalState l = new LocalState(len=len, glen=glen);
+	return l;
+}
+
+
+stencil int spec(int P, int N) {
+	if (P>=1 && N%P==0) {
+		return movein(0, P, N).glen;
+	} else {
+		return 0;
+	}
+}
+
+stencil int imp(int P, int N) implements spec {
+	if (P>=1 && N%P==0) {
+		LocalState l = movein(??, P, N);
+		return l.glen;
+	} else {
+		return 0;
+	}
+}

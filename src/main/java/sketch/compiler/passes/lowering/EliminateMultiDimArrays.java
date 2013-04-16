@@ -4,6 +4,7 @@
 package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Parameter;
@@ -49,6 +50,7 @@ import static sketch.util.DebugOut.assertFalse;
 public class EliminateMultiDimArrays extends SymbolTableVisitor {
     TempVarGen varGen;
     final boolean addAsserts;
+    Random rand = new Random();
 
     public EliminateMultiDimArrays(boolean addAsserts, TempVarGen varGen) {
 		super (null);
@@ -261,7 +263,9 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                     }
                     total *= ((ExprConstInt) e).getVal();
                 }
-                star.setType(new TypeArray(tsa.getAbsoluteBase(), new ExprConstInt(total)));
+                TypeArray newtype = new TypeArray(tsa.getAbsoluteBase(), new ExprConstInt(total));
+                newtype.setCudaMemType(tsa.getCudaMemType());
+                star.setType(newtype);
                 return star;
             }
         }
@@ -285,10 +289,11 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
             } else {
                 lenArr = null;
             }
-			return new TypeArray (base.getBase (),
- lenArr,
-					dims,
-                    ta.getMaxlength() * base.getMaxlength());
+            TypeArray newtype =
+                    new TypeArray(base.getBase(), lenArr,
+					dims, ta.getMaxlength() * base.getMaxlength());
+            newtype.setCudaMemType(ta.getCudaMemType());
+            return newtype;
 		} else {
 			return ta;
 		}
@@ -344,7 +349,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                 Integer ci = cond.getIValue();
                 if (addAsserts && !(ci != null && ci == 1)) {
                     addStatement(new StmtAssert(cond, idx.getCx() +
-                            ": Array out of bounds",
+                            ": Array out of bounds" + rand.nextInt(),
                         false));
                 }
             }

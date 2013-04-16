@@ -1,0 +1,17 @@
+void h(int x, ref int y) {
+	y = x*??;
+}
+
+harness void main(int input) {
+	int N = input;
+	int M = 0;
+	void g() {
+		h(input, M);
+	}
+	void f() {
+		N = N+N;
+		g();
+	}
+	f();
+	assert N == M;
+}

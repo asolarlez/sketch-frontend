@@ -50,6 +50,7 @@ import sketch.compiler.passes.cuda.ReplaceParforLoops;
 import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
 import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ConstantReplacer;
+import sketch.compiler.passes.lowering.EliminateComplexForLoops;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
@@ -62,6 +63,7 @@ import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
+import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.passes.structure.ContainsCudaCode;
 import sketch.compiler.passes.structure.ContainsStencilFunction;
@@ -141,9 +143,7 @@ public class SequentialSketchMain extends CommonSketchMain
         public BeforeSemanticCheckStage() {
             super(SequentialSketchMain.this);
             FEVisitor[] passes2 =
-                    { new MinimizeFcnCall(), /* new TprintFcnCall(), */
-            new SpmdbarrierCall(),
-            /* new PidReplacer(), */
+ { new MinimizeFcnCall() /* new TprintFcnCall(), */
             };
             passes = new Vector<FEVisitor>(Arrays.asList(passes2));
         }
@@ -201,6 +201,13 @@ public class SequentialSketchMain extends CommonSketchMain
             // this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new SplitAssignFromVarDef());
             this.passes.add(new FlattenStmtBlocks2());
+            this.passes.add(new EliminateComplexForLoops(varGen));
+            // TODO: should not add tf here
+            // should do this after LowerToSketch
+            // there, all structs are eliminated
+            // and bulk array operations are turned to loops
+            // array bounds checking are performed
+            // we want to add [SpmdMaxNProc] to be the inner most (least significant) dimension
             // SpmdTransform tf = new SpmdTransform(options, varGen);
             // this.passes.add(tf);
             // this.passes.add(new GlobalToLocalCasts(varGen, tf));
@@ -211,11 +218,13 @@ public class SequentialSketchMain extends CommonSketchMain
         protected Program postRun(Program prog) {
             final SemanticCheckPass semanticCheck =
                     new SemanticCheckPass(ParallelCheckOption.DONTCARE, false);
+            // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
             ExtractComplexLoopConditions ec =
                     new ExtractComplexLoopConditions(SequentialSketchMain.this.varGen);
             // final FunctionParamExtension paramExt = new FunctionParamExtension();
 
             prog = (Program) semanticCheck.visitProgram(prog);
+            // FIXME xzl: temporarily disable extractComplexLoopCond to help stencil
             prog = (Program) ec.visitProgram(prog);
             // prog = (Program) paramExt.visitProgram(prog);
             return prog;
@@ -259,6 +268,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
     protected Program preprocessProgram(Program lprog, boolean partialEval) {
         return (new PreprocessStage(varGen, options, /* getPreProcStage1(), getIRStage1(), */
+
                 visibleRControl(lprog), partialEval)).visitProgram(lprog);
     }
 
@@ -409,6 +419,9 @@ public class SequentialSketchMain extends CommonSketchMain
 
         prog = (Program) prog.accept(new ConstantReplacer(null));
         prog = (Program) prog.accept(new MinimizeFcnCall());
+        prog = (Program) prog.accept(new SpmdbarrierCall());
+        prog = (Program) prog.accept(new PidReplacer());
+
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
@@ -509,6 +522,7 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
+                e.printStackTrace();
                 System.exit(1);
             }
         } catch (java.lang.Error e) {
@@ -524,6 +538,7 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
+                e.printStackTrace();
                 System.exit(1);
             }
         }

@@ -1,0 +1,19 @@
+void _nop() {
+	
+}
+
+int f(int x) {
+	if (x>0) {
+		return x+x;
+	} else {
+		_nop();
+	}
+}
+
+int g(int x) implements f {
+	if (x>0) {
+		return x*??;
+	} else {
+		_nop();
+	}
+}

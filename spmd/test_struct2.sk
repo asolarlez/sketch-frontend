@@ -1,0 +1,50 @@
+pragma options "-p preproc --bnd-inbits 3 --bnd-cbits 4 --bnd-unroll-amnt 32 --bnd-inline-amnt 1 --beopt:-bndwrand 50  --bnd-arr-size 10 --be:ufunSymmetry  --beopt:simplifycex NOSIM --beopt:simiters 3"; //  --be:showDAG
+
+struct LocalState {
+	int len;
+	int glen;
+	int[len+glen*2][len+glen*2] m;
+}
+
+// length of ghost region: (T+1)/2*K
+LocalState movein(int rank, global int P, global int N, global int[N][N] mat) {
+	int len = N/P;
+	int glen = len/2;
+	int[len+glen*2][len+glen*2] m;
+	int base1 = len*(rank/P);
+	int base2 = len*(rank%P);
+	for (int i=0; i<len; ++i) {
+		for (int j=0; j<len; ++j) {
+			m[glen+i][glen+j] = mat[base1+i][base2+j];
+		}
+	}
+	LocalState l = new LocalState(len=len, glen=glen, m=m);
+	return l;
+}
+
+void moveout(int rank, int P, int N, ref global int[N][N] mat, LocalState l) {
+	int base1 = l.len*(rank/P);
+	int base2 = l.len*(rank%P);
+	for (int i=0; i<l.len; ++i) {
+		for (int j=0; j<l.len; ++j) {
+			mat[base1+i][base2+j] = l.m[l.glen+i][l.glen+j];
+		}
+	}
+}
+
+stencil int[N][N] spec(int P, int N, int[N][N] mat) {
+	return mat;
+}
+
+stencil int[N][N] imp(int P, int N, int[N][N] mat) implements spec {
+	if (P>=1 && N%P == 0) {
+		int[N][N] m = mat;
+		for (int rank=0; rank<P*P; ++rank) {
+			LocalState l = movein(rank, P, N, m);
+			moveout(rank, P, N, m, l);
+		}
+		return m;
+	} else {
+		return mat;
+	}
+}

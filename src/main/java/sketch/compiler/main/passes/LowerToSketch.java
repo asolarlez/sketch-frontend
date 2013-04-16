@@ -33,7 +33,7 @@ public class LowerToSketch extends MetaStage {
         // prog.accept(prt);
         prog = (Program) prog.accept(new AddArraySizeAssertions());
 
-
+        // FIXME xzl: use efs instead of es, can generate wrong program!
         // System.out.println("before efs:");
         // prog.accept(prt);
 
@@ -61,7 +61,11 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
 
+        // prog.accept(prt);
+
         
+        prog = (Program) prog.accept(new SeparateInitializers());
+        prog = (Program) prog.accept(new FlattenStmtBlocks());
         SpmdTransform tf = new SpmdTransform(options, varGen);
         prog = (Program) prog.accept(tf);
         prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));

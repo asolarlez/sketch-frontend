@@ -1,0 +1,16 @@
+pragma options "-V20 --spmd-max-nproc 2 --bnd-inbits 2 --bnd-cbits 1 --beopt:bndwrand 1000 --bnd-unroll-amnt 4 --bnd-inline-amnt 3 --bnd-arr1d-size 3 --bnd-arr-size 16 --be:ufunSymmetry --be:nosim --beopt:simplifycex NOSIM --beopt:simiters 100 --be:lightverif"; //  --be:showDAG
+
+int SPMD_MAX_NPROC = 2;
+int SPMD_MAX_BUF_LEN = 32;
+include "spmd.skh";
+
+harness void main() {
+	spmdfork(2) {
+		double x = (spmdpid==0) ? 0.0 : 1.0;
+		double[2] a = { x, x };
+		double[2] b;
+		spmdalltoall(2, a, b);
+		assert b[0] == 0.0;
+		assert b[1] == 1.0;
+	}
+}

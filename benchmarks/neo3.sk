@@ -1,0 +1,85 @@
+pragma options "--beopt:simiters 100 --be:lightverif --fe-fpencoding AS_FFIELD --bnd-inbits 2 --bnd-cbits 2 --be:ufunSymmetry --beopt:simplifycex NOSIM --be:showDAG";
+
+package sk_neo;
+
+int n = 3;
+
+//matrix multiplication: c = a b
+void mul(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0.0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] = c[i][j] + a[i][k] * b[k][j];
+			}
+		}
+	}
+}
+
+//matrix multiplication: c = a' b
+void mults(double[n][n] a, double[n][n] b, ref double[n][n] c) {
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			c[i][j] = 0.0;
+			for (int k=0; k<n; ++k) {
+				c[i][j] += c[i][j] + a[k][i] * b[k][j];
+			}
+		}
+	}
+}
+
+double det3(double[n][n] a) {
+	return
+			  a[0][0] * (a[1][1]*a[2][2] - a[1][2]*a[2][1])
+			- a[0][1] * (a[1][0]*a[2][2] - a[1][2]*a[2][0])
+			+ a[0][2] * (a[1][0]*a[2][1] - a[1][1]*a[2][0])
+			;
+}
+
+// b = inverse(a), d = det3(a)
+void inv_det3(double[n][n] a, ref double[n][n] b, ref double d) {
+	d = det3(a);
+	
+	if (d == 0.0) {
+		return;
+	}
+	
+	int i=0;
+	repeat(9) {
+		b[i/3][i%3] = (a[??][??]*a[??][??] - a[??][??]*a[??][??])/d;
+		++i;
+	}
+	
+//	b[0][0] = a[1][1]*a[2][2] - a[1][2]*a[2][1];
+//	b[0][1] = a[0][2]*a[2][1] - a[0][1]*a[2][2];
+//	b[0][2] = a[0][1]*a[1][2] - a[0][2]*a[1][1];
+//	b[1][0] = a[1][2]*a[2][0] - a[1][0]*a[2][2];
+//	b[1][1] = a[0][0]*a[2][2] - a[0][2]*a[2][0];
+//	b[1][2] = a[0][2]*a[1][0] - a[0][0]*a[1][2];	
+//	b[2][0] = a[1][0]*a[2][1] - a[1][1]*a[2][0];
+//	b[2][1] = a[0][1]*a[2][0] - a[0][0]*a[2][1];
+//	b[2][2] = a[1][1]*a[0][0] - a[0][1]*a[1][0];
+}
+
+harness void testInv(double[n][n] a) {
+	double[n][n] b;
+	
+	// b = inverse(a)*det
+	double det;
+	inv_det3(a, b, det);
+	
+	if (det == 0.0) return;
+	
+	double[n][n] c;
+	mul(a, b, c);
+	
+	for (int i=0; i<n; ++i) {
+		for (int j=0; j<n; ++j) {
+			if (i == j) {
+				assert c[i][j] == 1.0;
+			} else {
+				assert c[i][j] == 0.0;
+			}
+		}
+	}
+}
