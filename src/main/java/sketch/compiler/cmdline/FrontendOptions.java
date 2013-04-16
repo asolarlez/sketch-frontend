@@ -64,4 +64,10 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public enum FloatEncoding {
         AS_BIT, AS_FFIELD, AS_FIXPOINT
     }
+
+    @CliParameter(help = "Add assume a[i]==0 for i>length(a) for any varlength array a")
+    public boolean truncVarArr;
+
+    @CliParameter(help = "Eliminate final structs and structs with no alias")
+    public boolean elimFinalStructs;
 }

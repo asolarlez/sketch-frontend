@@ -83,10 +83,11 @@ public class TypeStructRef extends Type
     public String toString()
  {
         if (isUnboxed) {
-            return "|" + name + "|";
+            return this.getCudaMemType().syntaxNameSpace() + "|" + name + "|";
         } else {
-            return name;
+        return this.getCudaMemType().syntaxNameSpace()+ name;
         }
+    }
     }
     
     @Override

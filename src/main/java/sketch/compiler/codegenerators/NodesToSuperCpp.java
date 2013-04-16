@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -432,6 +433,9 @@ public class NodesToSuperCpp extends NodesToJava {
 
     public String getCppFunName(String name) {
         String s = nres.getFunName(name);
+        if (s == null) {
+            return name;
+        }
         int i = s.indexOf('@');
         if (i < 0) {
             return s;
@@ -724,16 +728,17 @@ public class NodesToSuperCpp extends NodesToJava {
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
+        final String funName = exp.getName();
         String result = "";
-        String name = getCppFunName(exp.getName());
+        String name = getCppFunName(funName);
         result = name + "(";
         boolean first = true;
-        Function f = nres.getFun(exp.getName());
         Iterator<Expression> actuals = exp.getParams().iterator();
 
         Map<String, Expression> rmap = new HashMap<String, Expression>();
         VarSetReplacer vsr = new VarSetReplacer(rmap);
         
+        Function f = nres.getFun(funName);
         for (Parameter p : f.getParams()) {
             if (!first)
                 result += ", ";
@@ -801,10 +806,7 @@ public class NodesToSuperCpp extends NodesToJava {
 
     @Override
     public Object visitStmtSpmdfork(StmtSpmdfork stmt) {
-        String result = indent + "spmdfork (";
-        result += stmt.getNProc().accept(this);
-        result += stmt.getBody().accept(this);
-        return result;
+        return stmt.getBody().accept(this);
     }
 
     @Override
@@ -815,6 +817,11 @@ public class NodesToSuperCpp extends NodesToJava {
     @Override
     public Object visitSpmdPid(SpmdPid stmt) {
         return "spmdpid";
+    }
+
+    @Override
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        return "spmdnproc";
     }
 
     public Object visitStmtWhile(StmtWhile sw) {

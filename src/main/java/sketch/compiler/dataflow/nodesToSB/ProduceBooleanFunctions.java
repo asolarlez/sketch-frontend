@@ -151,7 +151,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
      * protected Expression interpretActualParam(Expression e){ return maxArrSize; }
      */
     
-    public void doParams(List<Parameter> params) {
+    public void doParams(List<Parameter> params, List<String> addInitStmts) {
         PrintStream out = ((NtsbVtype)this.vtype).out;
         boolean first = true;
         
@@ -171,7 +171,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }else{
                 state.varDeclare(lhs , ptype);
             }
-            IntAbsValue inval = (IntAbsValue)state.varValue(lhs);
+            IntAbsValue inval = (IntAbsValue) state.varValue(lhs);
+            String invalName = inval.toString();
             
             if( ptype instanceof TypeArray ){
                 TypeArray ta = (TypeArray) ptype;
@@ -208,7 +209,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                                             this));
                         }
                     }else{
-                        out.print(inval.toString() + " ");
+                        out.print(invalName + " ");
                     }
                 }
             }else{
@@ -218,30 +219,49 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     opnames.add(opname);
                     out.print(opname);
                 }else{
-                    out.print(inval.toString() + " ");
+                    out.print(invalName + " ");
                 }
             }
             
-            if(param.isParameterInput() && param.isParameterOutput()){
-                out.print(", ");
-                out.print(printType(ptype) + " ");
-                if( ptype instanceof TypeArray ){
-                    if (inval.isVect()) {
-                        TypeArray ta = (TypeArray) ptype;
-                        IntAbsValue tmp = (IntAbsValue) ta.getLength().accept(this);
-                        assert inval.isVect() : "If it is not a vector, something is really wrong.\n";
-                        int sz = tmp.getIntVal();
-                        for (int tt = 0; tt < sz; ++tt) {
-                            String nnm = inval.getVectValue().get(tt).toString();
-                            {
-                                out.print(nnm + " ");
+            if (param.isParameterOutput()) {
+                if (param.isParameterInput()) {
+                    out.print(", ");
+                    out.print(printType(ptype) + " ");
+                    if (ptype instanceof TypeArray) {
+                        if (inval.isVect()) {
+                            TypeArray ta = (TypeArray) ptype;
+                            IntAbsValue tmp = (IntAbsValue) ta.getLength().accept(this);
+                            assert inval.isVect() : "If it is not a vector, something is really wrong.\n";
+                            int sz = tmp.getIntVal();
+                            for (int tt = 0; tt < sz; ++tt) {
+                                String nnm = inval.getVectValue().get(tt).toString();
+                                {
+                                    out.print(nnm + " ");
+                                }
                             }
+                        } else {
+                            out.print(invalName + " ");
                         }
                     } else {
-                        out.print(inval.toString() + " ");
+                        out.print(invalName + " ");
                     }
                 } else {
-                    out.print(inval.toString() + " ");
+                    if (ptype instanceof TypeArray) {
+                        if (inval.isVect()) {
+                            TypeArray ta = (TypeArray) ptype;
+                            IntAbsValue tmp = (IntAbsValue) ta.getLength().accept(this);
+                            assert inval.isVect() : "If it is not a vector, something is really wrong.\n";
+                            int sz = tmp.getIntVal();
+                            for (int tt = 0; tt < sz; ++tt) {
+                                String nnm = inval.getVectValue().get(tt).toString();
+                                addInitStmts.add(nnm + "=0;");
+                            }
+                        } else {
+                            addInitStmts.add(invalName + "=0;");
+                        }
+                    } else {
+                        addInitStmts.add(invalName + "=0;");
+                    }
                 }
             }
             
@@ -334,11 +354,15 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         opnames = new ArrayList<String>();
         
         Level lvl = state.beginFunction(func.getName());
-        doParams(func.getParams());
+        List<String> initStmts = new ArrayList<String>();
+        doParams(func.getParams(), initStmts);
 
+        PrintStream out = ((NtsbVtype) this.vtype).out;
+        out.println("{");
         
-        ((NtsbVtype)this.vtype).out.println("{");               
-        
+        for (String s : initStmts) {
+            out.println(s);
+        }
         dischargeTodo();
         Statement newBody = (Statement)func.getBody().accept(this);
         
@@ -346,7 +370,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         
         doOutParams(func.getParams());
         
-        ((NtsbVtype)this.vtype).out.println("}");
+        out.println("}");
         state.endFunction(lvl);
         
         opsizes = tmpopsz;
@@ -372,6 +396,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         String name = exp.getName();
         // Local function?
         Function fun = nres.getFun(name);
+        String funPkg = pkgForFun.get(fun);
         if(fun.getSpecification()!= null){
             assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
         }
@@ -418,7 +443,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 }else{
                     if(rcontrol.leaveCallsBehind()){
 //                        System.out.println("        Stopped recursion:  " + fun.getName());
-                        funcsToAnalyze.add(fun);   
+                        funcsToAnalyze.add(fun);
+                        pkgForFun.put(fun, funPkg);
                         Object o = super.visitExprFunCall(exp);
                         dischargeTodo();
                         return  o;
@@ -489,6 +515,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return super.visitStmtAssign(s);
         
     }
+    
 
     @Override
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {

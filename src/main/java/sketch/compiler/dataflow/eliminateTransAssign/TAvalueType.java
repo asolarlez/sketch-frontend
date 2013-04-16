@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
@@ -26,6 +27,10 @@ public class TAvalueType extends abstractValueType {
 	@Override
     public void Assert(abstractValue val, StmtAssert stmt) {
 	}
+
+    @Override
+    public void Assume(abstractValue val, StmtAssume stmt) {
+    }
 
 	@Override
 	public abstractValue BOTTOM() {		

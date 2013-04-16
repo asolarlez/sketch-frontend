@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -146,6 +147,22 @@ public class NtsbVtype extends IntVtype {
                 msg + "\" ;\n");
     }
     
+    public void Assume(abstractValue val, StmtAssume stmt) {
+        String msg = stmt.getMsg();
+        if (val.hasIntVal()) {
+            if (val.getIntVal() == 0) {
+                DebugOut.printWarning(stmt.getCx() +
+                        "This assertion will fail unconditionally when you call this function: " +
+                        msg);
+            }
+            if (val.getIntVal() == 1) {
+                return;
+            }
+        }
+        out.print("assume (" + val + ")" + (msg == null ? "" : (" : \"" + msg + "\"")) +
+                ";\n");
+    }
+
     public varState cleanState(String var, Type t, MethodState mstate){
         return new NtsbState(var, t, this);
     }

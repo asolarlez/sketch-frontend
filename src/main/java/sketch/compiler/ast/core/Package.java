@@ -98,7 +98,8 @@ public class Package extends FENode
      */
     public Package(FEContext context, String name,
  List<StructDef> structs,
-            List vars, List<Function> funcs)
+ List vars,
+            List<Function> funcs)
     {
         super(context);
 
@@ -171,7 +172,8 @@ public class Package extends FENode
 
     public Package newFromFcns(List<Function> fcns) {
         return new Package(this, this.getName(),
-                structs, this.getVars(), Collections.unmodifiableList(fcns));
+ structs, this.getVars(),
+                Collections.unmodifiableList(fcns));
     }
 
     public Package merge(Package s2) {

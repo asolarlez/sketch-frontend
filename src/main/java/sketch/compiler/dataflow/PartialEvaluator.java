@@ -31,11 +31,14 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.promela.stmts.StmtFork;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
+import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -69,7 +72,7 @@ class CloneHoles extends FEReplacer{
     
 }
 
-public class PartialEvaluator extends FEReplacer {
+public class PartialEvaluator extends SymbolTableVisitor {
     protected MethodState state;
     protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
@@ -82,6 +85,7 @@ public class PartialEvaluator extends FEReplacer {
     public boolean isPrecise = true;
 
     protected List<Function> funcsToAnalyze = null;
+    protected Map<Function, String> pkgForFun = null;
     private Set<Function> funcsAnalyzed = null;
 
 
@@ -92,7 +96,7 @@ public class PartialEvaluator extends FEReplacer {
 
 
     public PartialEvaluator(abstractValueType vtype, TempVarGen varGen,  boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
-        super();
+        super(null);
         this.MAX_UNROLL = maxUnroll;
         this.rcontrol = rcontrol;
         this.varGen = varGen;
@@ -219,6 +223,14 @@ public class PartialEvaluator extends FEReplacer {
     public Object visitSpmdPid(SpmdPid pid) {
         if (isReplacer) {
             exprRV = (Expression) super.visitSpmdPid(pid);
+        }
+        return vtype.BOTTOM(TypePrimitive.inttype);
+    }
+
+    @Override
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        if (isReplacer) {
+            exprRV = (Expression) super.visitSpmdNProc(spmdnproc);
         }
         return vtype.BOTTOM(TypePrimitive.inttype);
     }
@@ -674,6 +686,15 @@ public class PartialEvaluator extends FEReplacer {
             isFieldAcc = true;
             super.visitExprField(exp);
             PartialEvaluator.this.visitExprField(exp);
+            assert t.isStruct();
+
+            // FIXME xzl: ideally we want this to be done all the time!
+            // but when it is replacer, we have to compute tlen in VisitEAR
+            // and that tlen will use field names, causing problems!
+            if (false && PartialEvaluator.this instanceof EliminateDeadCode) {
+                TypeStruct ts = (TypeStruct) actualType(t);
+                t = ts.getType(exp.getName());
+            }
             return PartialEvaluator.this.exprRV;
             //return super.visitExprField(exp);
         }
@@ -691,23 +712,36 @@ public class PartialEvaluator extends FEReplacer {
             abstractValue llhsIdx = lhsIdx;
             Expression idxExpr = exprRV;
 
+            // FIXME xzl:
+            // why do we need to do the checking here? it's an EAR, does t have to be
+            // TypeArray?
             if( t instanceof TypeArray ){
                 TypeArray ta = (TypeArray) t;
+                // abstractValue tlen = isReplacer ? typeLen(ta) : null;
                 abstractValue tlen = typeLen(ta);
                 // _debug.append(" ta:" + ta + " tlen:" + tlen + " ");
                 t = ta.getBase();
                 if(olidx != null){
-                    lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen) );
+                    // FIXME: this is rather hacking, what we really want is
+                    // joining the two Idx
+                    // lhsIdx =
+                    // isReplacer ? vtype.plus(lhsIdx, vtype.times(olidx, tlen))
+                    // : vtype.plus(lhsIdx, olidx);
+                    lhsIdx = vtype.plus(lhsIdx, vtype.times(olidx, tlen));
                 }
-                if( llhsIdx.hasIntVal()  ){
+                if (llhsIdx.hasIntVal()) {
                     int iidx = llhsIdx.getIntVal();
-                    if( tlen.hasIntVal() ){
+                    if (tlen.hasIntVal()) {
                         int size = tlen.getIntVal();
                         if(!ear.isUnchecked()&& (iidx < 0 || iidx >= size)  )
                             throw new ArrayIndexOutOfBoundsException(ear.getCx() +
                                     " ARRAY OUT OF BOUNDS !(0<=" + iidx + " < " + size +
                                     ")" /* + _debug.toString() */);
                     }
+                }
+            } else {
+                if (olidx != null && PartialEvaluator.this instanceof EliminateDeadCode) {
+                    lhsIdx = vtype.plus(lhsIdx, olidx);
                 }
             }
 
@@ -1286,6 +1320,22 @@ public class PartialEvaluator extends FEReplacer {
                 stmt.getAssertMax()) : stmt;
     }
 
+    public Object visitStmtAssume(StmtAssume stmt) {
+        /* Evaluate given assertion expression. */
+        Expression cond = stmt.getCond();
+        abstractValue vcond = (abstractValue) cond.accept(this);
+        Expression ncond = exprRV;
+        String msg = null;
+        msg = stmt.getMsg();
+        try {
+            state.Assume(vcond, stmt);
+        } catch (RuntimeException e) {
+            System.err.println(stmt.getCx() + ":" + e.getMessage());
+            throw e;
+        }
+        return isReplacer ? new StmtAssume(stmt, ncond, stmt.getMsg()) : stmt;
+    }
+
     @Override
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
         stmtMinimize.getMinimizeExpr().accept(this);
@@ -1426,7 +1476,13 @@ public class PartialEvaluator extends FEReplacer {
         abstractValue avlen = (abstractValue) t.getLength().accept(this);
         Expression nlen = exprRV;
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        return isReplacer ? new TypeArray(nbase, nlen, t.getMaxlength()) : t;
+        if (isReplacer) {
+            TypeArray newtype = new TypeArray(nbase, nlen, t.getMaxlength());
+            newtype.setCudaMemType(t.getCudaMemType());
+            return newtype;
+        } else {
+            return t;
+        }
     }
 
     public Object visitStructDef(StructDef ts) {
@@ -1628,19 +1684,21 @@ public class PartialEvaluator extends FEReplacer {
         nres = new NameResolver(p);
         rcontrol.setNameRes(nres);
         funcsToAnalyze = new ArrayList<Function>();
-        Map<Function, String> pkgForFun = new HashMap<Function, String>();
+        pkgForFun = new HashMap<Function, String>();
         Map<String, Package> pkgs = new HashMap<String, Package>();
         Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
-            funcsToAnalyze.addAll(functionsToAnalyze(pkg));
+            List<Function> toAnalyze = functionsToAnalyze(pkg);
+            funcsToAnalyze.addAll(toAnalyze);
             if (pkgs.containsKey(pkg.getName())) {
                 throw new RuntimeException("Duplicate package name.");
             }
-            pkgs.put(pkg.getName(), pkg);
-            newfuns.put(pkg.getName(), new ArrayList<Function>() );
+            String pkgName = pkg.getName();
+            pkgs.put(pkgName, pkg);
+            newfuns.put(pkgName, new ArrayList<Function>());
             for (Function f : pkg.getFuncs()) {
-                pkgForFun.put(f, pkg.getName());
+                pkgForFun.put(f, pkgName);
             }
         }
         if (funcsToAnalyze.size() == 0) {
@@ -1721,7 +1779,8 @@ public class PartialEvaluator extends FEReplacer {
         //assert preFil.size() == 0 : "This should never happen";
 
         return isReplacer ? new Package(spec, spec.getName(), newStructs,
-                newVars, newFuncs) : spec;
+ newVars,
+                newFuncs) : spec;
     }
 
     /**

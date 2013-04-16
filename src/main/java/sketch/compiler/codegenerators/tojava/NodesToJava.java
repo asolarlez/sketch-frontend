@@ -654,6 +654,10 @@ public class NodesToJava extends SymbolTableVisitor
                 (String) stmt.getCond().accept(this) + ")";
     }
 
+    public Object visitStmtAssume(StmtAssume stmt) {
+        return "// assume (" + (String) stmt.getCond().accept(this) + ")";
+    }
+
     public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
 

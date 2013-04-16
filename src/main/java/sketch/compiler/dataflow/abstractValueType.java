@@ -5,6 +5,7 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 
 
@@ -77,13 +78,20 @@ public abstract class abstractValueType{
 	abstract public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse);
 
     abstract public void Assert(abstractValue val, StmtAssert stmt);
-	/**
-	 * 
-	 * @param fun
-	 * @param avlist Contains the abstractValue for the input parameters only.
-	 * @param outSlist This is an output parameter. Needs to be set with 1 entry per output parameter.
-	 * @param pathCond This is the path condition for the function call. The call only executes if path cond is true.
-	 */
+
+    abstract public void Assume(abstractValue val, StmtAssume stmt);
+
+    /**
+     * @param fun
+     * @param avlist
+     *            Contains the abstractValue for the input parameters only.
+     * @param outSlist
+     *            This is an output parameter. Needs to be set with 1 entry per output
+     *            parameter.
+     * @param pathCond
+     *            This is the path condition for the function call. The call only executes
+     *            if path cond is true.
+     */
 	abstract public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond);
 }
 

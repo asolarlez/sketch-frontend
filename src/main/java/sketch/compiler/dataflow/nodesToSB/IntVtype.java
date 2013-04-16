@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -77,6 +78,10 @@ public class IntVtype extends abstractValueType {
 		 }
 	}
 
+    public void Assume(abstractValue val, StmtAssume stmt) {
+        // TODO xzl:
+        // currently do nothing, can we utilize the assumption?
+    }
 
 	public varState cleanState(String var, Type t, MethodState mstate){
 		return new IntState(t, this);

@@ -29,7 +29,7 @@ import sketch.util.exceptions.NotImplementedException;
  */
 public abstract class Type
 {
-    private final CudaMemoryType memtyp;
+    protected CudaMemoryType memtyp;
 
 
     public Type(CudaMemoryType memtyp) {
@@ -49,6 +49,10 @@ public abstract class Type
 
     public CudaMemoryType getCudaMemType() {
         return memtyp;
+    }
+
+    public void setCudaMemType(CudaMemoryType mt) {
+        memtyp = mt;
     }
 
     public Expression defaultValue () {
@@ -107,4 +111,5 @@ public abstract class Type
     public Type withMemType(CudaMemoryType memtyp) {
         throw new NotImplementedException();
     }
+
 }

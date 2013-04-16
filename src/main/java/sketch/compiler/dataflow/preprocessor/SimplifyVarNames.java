@@ -48,6 +48,10 @@ public class SimplifyVarNames extends FEReplacer {
                 cur = name.indexOf('_', last + 1);
             }
 
+            // FIXME xzl: why do we require at least two '_' ?
+            if (prevlast < 0) {
+                prevlast = last;
+            }
             assert prevlast > 0;
             String s1 = name.substring(0, prevlast);
 	        if(s1.length() == 0){

@@ -27,6 +27,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -535,6 +536,11 @@ public class NodesToC extends NodesToJava {
   
   @Override
   public Object visitSpmdPid(SpmdPid stmt) { return "spmdpid"; }
+
+    @Override
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        return "spmdnproc";
+    }
 
   public Object visitStmtLoop(StmtLoop stmt)
   {

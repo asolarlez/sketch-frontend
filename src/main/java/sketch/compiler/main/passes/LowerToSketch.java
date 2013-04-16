@@ -8,6 +8,10 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
+import sketch.compiler.passes.printers.SimpleCodePrinter;
+import sketch.compiler.passes.spmd.GlobalToLocalCasts;
+import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
+import sketch.compiler.passes.spmd.SpmdTransform;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithBits;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFiniteField;
 import sketch.compiler.stencilSK.preprocessor.ReplaceFloatsWithFixpoint;
@@ -24,8 +28,26 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
-
+        SimpleCodePrinter prt = new SimpleCodePrinter();
+        // System.out.println("before aasa:");
+        // prog.accept(prt);
         prog = (Program) prog.accept(new AddArraySizeAssertions());
+
+
+        // System.out.println("before efs:");
+        // prog.accept(prt);
+
+        if (options.feOpts.elimFinalStructs) {
+            prog =
+                    (Program) prog.accept(new EliminateFinalStructs(varGen,
+                            options.bndOpts.arr1dSize));
+            System.out.println("after efs:");
+            prog.accept(prt);
+        }
+
+        prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
+        // System.out.println("after mmde:");
+        // prog.accept(prt);
 
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
         // dump (prog, "after replskwspecs:");
@@ -35,12 +57,18 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new MakeBodiesBlocks());
         // dump (prog, "MBB:");
 
-
         prog = stencilTransform.visitProgram(prog);
-
 
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
 
+        
+        SpmdTransform tf = new SpmdTransform(options, varGen);
+        prog = (Program) prog.accept(tf);
+        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
+        
+        prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
+        
+        
         prog = (Program) prog.accept(new EliminateArrayRange(varGen));
 
 
@@ -51,6 +79,15 @@ public class LowerToSketch extends MetaStage {
         prog =
                 (Program) prog.accept(new ProtectDangerousExprsAndShortCircuit(
                         FailurePolicy.ASSERTION, varGen));
+                        
+
+
+                        
+        System.out.println("after rpear:");
+        prog.accept(prt);
+        // System.out.println("after ear:");
+        // prog.accept(prt);
+        // prog.accept(prt);
 
         prog.debugDump("After Protect");
 
@@ -60,14 +97,13 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
 
+        // TODO xzl: temporarily remove EliminateStructs
 
         
 
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
                         options.bndOpts.arrSize)));
-
-
 
         // dump (prog, "After Stencilification.");
 
@@ -80,12 +116,10 @@ public class LowerToSketch extends MetaStage {
 
 
 
-        // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new SeparateInitializers());
-        // dump (prog, "SeparateInitializers:");
-        // prog = (Program)prog.accept(new NoRefTypes());
-        // prog.debugDump("Before SVA");
 
+
+        // FIXME xzl: all replacing does not consider += -= etc.
         if (options.feOpts.fpencoding == FloatEncoding.AS_BIT) {
             prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
         } else if (options.feOpts.fpencoding == FloatEncoding.AS_FFIELD) {
@@ -99,9 +133,13 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, false));
 
-        // prog.debugDump("After SVA");
 
         prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
+        
+
+        if (options.feOpts.truncVarArr) {
+            prog = (Program) prog.accept(new TruncateVarArray(options, varGen));
+        }
         return prog;
     }
 }

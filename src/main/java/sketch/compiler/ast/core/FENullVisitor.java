@@ -36,6 +36,7 @@ import sketch.compiler.ast.cuda.stmts.CudaSyncthreads;
 import sketch.compiler.ast.cuda.stmts.StmtParfor;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.promela.stmts.StmtJoin;
+import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -138,6 +139,10 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtFork(StmtFork loop){ return null; }
     public Object visitStmtSpmdfork(StmtSpmdfork loop){ return null; }
     public Object visitSpmdPid(SpmdPid x){ return null; }
+
+    public Object visitSpmdNProc(SpmdNProc spmdnproc) {
+        return null;
+    }
     public Object visitSpmdBarrier(SpmdBarrier stmt){ return null; }
     public Object visitStmtReorderBlock(StmtReorderBlock block){return null;}
 
@@ -153,4 +158,8 @@ public class FENullVisitor implements FEVisitor
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) { return null; }
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) { return null; }
     public Object visitExprType(ExprType exprtyp) { return null; }
+
+    public Object visitStmtAssume(StmtAssume stmtAssume) {
+        return null;
+    }
 }

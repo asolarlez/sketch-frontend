@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
@@ -493,6 +494,10 @@ public class MethodState {
         vtype.Assert(val, stmt);
     }
 
+    public void Assume(abstractValue val, StmtAssume stmt) {
+        vtype.Assume(val, stmt);
+    }
+
 
     
     public void setVarValueLight(String var, abstractValue val){
@@ -752,5 +757,4 @@ public class MethodState {
         popLevel(lvl);
         if(!rvstack.isEmpty()){ rvflag = rvstack.pop(); rvname = rvnamestack.pop() ; cvmap = outparStack.pop(); }else{ rvflag = null; }
     }
-
 }

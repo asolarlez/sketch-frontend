@@ -132,6 +132,7 @@ public class NtsbState extends varState {
                 }
             }
             vtype.out.print("$[ " + idx + "]=" +  val +";");
+            vtype.out.println();
         }
     }
     
