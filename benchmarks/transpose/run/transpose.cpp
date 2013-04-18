@@ -1,3 +1,4 @@
+//#define __dbg__ 1
 #include "spmd.h"
 using namespace spmd;
 
@@ -17,10 +18,15 @@ using std::setw;
 using namespace npb;
 
 int init(int nx, int ny, int nz, double ** matrix) {
-	int nt = nx*ny*nz;
-	int ntdivnp = nt / spmdnproc;
+	int ntdivnp = nx*ny*(nz/spmdnproc);
 	int base = ntdivnp*spmdpid;
+#ifdef __dbg__
+	cout << spmdpid << ": before new" << endl;
+#endif
 	double * a = new double[ntdivnp];
+#ifdef __dbg__
+	cout << spmdpid << ": after new ntdivnp=" << ntdivnp << endl;
+#endif
 	for (int i=0; i<ntdivnp; i++) {
 		a[i] = base + i;
 	}
@@ -89,9 +95,15 @@ int main(int argc, char * argv[]) {
 
 	// warmup
 	mpiBarrier();
+#ifdef __dbg__
+	cout << spmdpid << ": before warm" << endl;
+#endif
 	t_warm.start();
 	transpose_xy_z(nx, ny, nz, matrix, result);
 	t_warm.stop();
+#ifdef __dbg__
+	cout << spmdpid << ": after warm" << endl;
+#endif
 	
 	if (outputMatrix) {
 		fout << "after transpose_xy_z:" << endl;
@@ -101,10 +113,16 @@ int main(int argc, char * argv[]) {
 	mpiBarrier();
 	for (int i=0; i<iters; i++) {
 		timer & t = t_trans[i];
+#ifdef __dbg__
+		cout << spmdpid << ": iter=" << i << endl;
+#endif
 		t.start();
 		transpose_xy_z(nx, ny, nz, matrix, result);
 		t.stop();
 		mpiBarrier();
+#ifdef __dbg__
+		cout << spmdpid << ": after iter=" << i << endl;
+#endif
 	}
 
 	//cout << spmdpid << ": " << "after transpose" << endl;
