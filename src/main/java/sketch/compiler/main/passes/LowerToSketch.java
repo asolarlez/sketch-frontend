@@ -8,7 +8,6 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
@@ -28,9 +27,7 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
-        SimpleCodePrinter prt = new SimpleCodePrinter();
-        // System.out.println("before aasa:");
-        // prog.accept(prt);
+
         prog = (Program) prog.accept(new AddArraySizeAssertions());
 
         // FIXME xzl: use efs instead of es, can generate wrong program!
@@ -41,28 +38,20 @@ public class LowerToSketch extends MetaStage {
             prog =
                     (Program) prog.accept(new EliminateFinalStructs(varGen,
                             options.bndOpts.arr1dSize));
-            System.out.println("after efs:");
-            prog.accept(prt);
         }
 
-        prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
-        // System.out.println("after mmde:");
-        // prog.accept(prt);
 
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
-        // dump (prog, "after replskwspecs:");
+
 
         prog = (Program) prog.accept(new AddPkgNameToNames());
 
         prog = (Program) prog.accept(new MakeBodiesBlocks());
-        // dump (prog, "MBB:");
+
 
         prog = stencilTransform.visitProgram(prog);
 
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
-
-        // prog.accept(prt);
-
         
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new FlattenStmtBlocks());
@@ -87,13 +76,6 @@ public class LowerToSketch extends MetaStage {
 
 
                         
-        System.out.println("after rpear:");
-        prog.accept(prt);
-        // System.out.println("after ear:");
-        // prog.accept(prt);
-        // prog.accept(prt);
-
-        prog.debugDump("After Protect");
 
         prog = (Program) prog.accept(new EliminateMultiDimArrays(false, varGen));
 
@@ -133,7 +115,6 @@ public class LowerToSketch extends MetaStage {
         }
 
         prog = (Program) prog.accept(new LoopInvariantAssertionHoisting());
-
 
         prog = (Program) prog.accept(new ScalarizeVectorAssignments(varGen, false));
 

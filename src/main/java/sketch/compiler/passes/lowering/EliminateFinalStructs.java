@@ -22,11 +22,12 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStruct;
-import sketch.compiler.ast.core.typs.TypeStruct.StructFieldEnt;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 
@@ -235,8 +236,8 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
     {
         symtab.registerVar(name, origType, decl, SymbolTable.KIND_LOCAL);
         if (typ.isStruct()) {
-            Type tt = this.actualType(typ);
-            TypeStruct t = (TypeStruct) tt;
+
+            StructDef t = nres.getStruct(((TypeStructRef) typ).getName());
 
             Map<String, ExprVar> fields = new HashMap<String, ExprVar>();
             assert !structs.containsKey(name) : "re-define variable " + name;
@@ -410,7 +411,8 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
             }
         }
         // ts: the struct type for the next field operator
-        TypeStruct ts = (TypeStruct) this.actualType(typ);
+
+        StructDef ts = nres.getStruct(((TypeStructRef) typ).getName());
 
         boolean outerRange = false;
         for (int i = steps.size() - 1; i >= 0; --i) {
@@ -434,7 +436,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
                     }
                 }
                 if (typ.isStruct()) {
-                    ts = (TypeStruct) this.actualType(typ);
+                    ts = nres.getStruct(((TypeStructRef) typ).getName());
                 } else {
                     ts = null;
                 }
@@ -513,7 +515,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
             boolean result = locate(lhs, lhsLoc, addStmts);
             assert result : "for new expr lhs must be complex!";
             assert lhsLoc.remainingLens.isEmpty() : "new expr cannot apply to array!";
-            TypeStruct ts = (TypeStruct) actualType(lhsLoc.typ);
+            StructDef ts = nres.getStruct(((TypeStructRef) lhsLoc.typ).getName());
 
             for (ExprNamedParam en : ((ExprNew) rhs).getParams()) {
                 String field = en.getName();
@@ -592,7 +594,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         ExprVar rhs = rhsLoc.var;
         if (lhsLoc.typ.isStruct()) {
             assert rhsLoc.typ.isStruct() : "both sides must have same type";
-            TypeStruct t = (TypeStruct)this.actualType(lhsLoc.typ);
+            StructDef t = nres.getStruct(((TypeStructRef) lhsLoc.typ).getName());
             for (StructFieldEnt en : t.getFieldEntriesInOrder()) {
                 String field = en.getName();
                 Type typ = en.getType();
@@ -619,7 +621,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
     private void expandPassParam(Collection<Expression> c, LocationInfo loc) {
         ExprVar rhs = loc.var;
         if (loc.typ.isStruct()) {
-            TypeStruct t = (TypeStruct) this.actualType(loc.typ);
+            StructDef t = nres.getStruct(((TypeStructRef) loc.typ).getName());
             for (StructFieldEnt en : t.getFieldEntriesInOrder()) {
                 String field = en.getName();
                 Type typ = en.getType();

@@ -1,0 +1,22 @@
+pragma options "--bnd-unroll-amnt 32";
+
+
+void bar(int n, int[n] x){
+    void foo(){
+        x[0] = 10;
+    }
+    foo();
+    
+}
+
+void boo(int[10] y){
+    assert y[0] == 5;
+}
+
+harness void main(int[10] x){
+    x[0] = 5;
+    int[10] y = x;
+    bar(10, x);
+    assert y == x;
+    boo(y);    
+}

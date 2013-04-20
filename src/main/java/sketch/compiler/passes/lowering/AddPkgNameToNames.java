@@ -35,7 +35,7 @@ public class AddPkgNameToNames extends FEReplacer {
     public Object visitFunction(Function f) {
         f = (Function) super.visitFunction(f);
         return f.creator().name(transFun(f.getName())).spec(
-                transFun(f.getSpecification())).create();
+                transFun(f.getSpecification())).pkg(GLOBALPKG).create();
     }
 
     public Object visitStructDef(StructDef ts) {

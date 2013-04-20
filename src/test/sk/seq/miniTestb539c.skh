@@ -1,0 +1,10 @@
+package a;
+
+struct A{
+    int z;
+    A@c a;
+}
+
+A@c foo(A a){
+    return new A@c(x = a.z);
+}

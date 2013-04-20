@@ -91,12 +91,8 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 
 
-        prog.debugDump("Before MDE");
-
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
 
-
-        prog.debugDump("After MDE");
 
         if (partialEval) {
             prog =
@@ -104,7 +100,6 @@ public class PreprocessStage extends MetaStage {
                             options.bndOpts.unrollAmnt, rctrl));
         }
 
-        prog.debugDump("After Preproc");
         return prog;
     }
 }

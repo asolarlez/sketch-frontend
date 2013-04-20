@@ -24,7 +24,6 @@ public class StencilTransforms extends MetaStage {
     public Program visitProgramInner(Program p) {
         p = (Program) p.accept(new MatchParamNames());
         p = (Program) p.accept(new EliminateNestedArrAcc(true));
-
         // dump(p, "BEFORE Stencilification");
         FunctionalizeStencils fs =
                 new FunctionalizeStencils(varGen, options.bndOpts.arrSize);

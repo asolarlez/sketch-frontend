@@ -106,6 +106,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
                 if (hasSpec) {
                     oldfcn = oldfcn.creator().spec(null).create();
                 }
+            } else {
+                fcnToTransformed.put(fcn.getName(), oldfcn);
             }
             oldProcFcns.add(oldfcn);
         }

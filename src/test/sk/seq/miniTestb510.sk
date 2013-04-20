@@ -1,3 +1,4 @@
+pragma options "--bnd-unroll-amnt 32";
 
 void foo(){
     assert false;

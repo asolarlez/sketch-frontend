@@ -1,0 +1,10 @@
+package b;
+
+struct A{
+    int y;
+    A@a a;
+}
+
+A foo(A[1] a){
+    return a[0];
+}

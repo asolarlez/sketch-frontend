@@ -85,11 +85,11 @@ public class TypeStructRef extends Type
         if (isUnboxed) {
             return this.getCudaMemType().syntaxNameSpace() + "|" + name + "|";
         } else {
-        return this.getCudaMemType().syntaxNameSpace()+ name;
+            return this.getCudaMemType().syntaxNameSpace() + name;
         }
     }
-    }
     
+
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
         return new TypeStructRef(memtyp, name, isUnboxed);

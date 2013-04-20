@@ -1,3 +1,4 @@
+pragma options "--bnd-unroll-amnt 32";
 
 harness void main(int n, int[n] a){
     int m = n+1;

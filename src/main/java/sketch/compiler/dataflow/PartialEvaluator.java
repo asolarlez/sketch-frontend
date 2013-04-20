@@ -85,7 +85,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public boolean isPrecise = true;
 
     protected List<Function> funcsToAnalyze = null;
-    protected Map<Function, String> pkgForFun = null;
     private Set<Function> funcsAnalyzed = null;
 
 
@@ -691,10 +690,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
             // FIXME xzl: ideally we want this to be done all the time!
             // but when it is replacer, we have to compute tlen in VisitEAR
             // and that tlen will use field names, causing problems!
-            if (false && PartialEvaluator.this instanceof EliminateDeadCode) {
-                TypeStruct ts = (TypeStruct) actualType(t);
-                t = ts.getType(exp.getName());
-            }
+            // if (false && PartialEvaluator.this instanceof EliminateDeadCode) {
+            // TypeStruct ts = (TypeStruct) actualType(t);
+            // t = ts.getType(exp.getName());
+            // }
             return PartialEvaluator.this.exprRV;
             //return super.visitExprField(exp);
         }
@@ -1684,7 +1683,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
         nres = new NameResolver(p);
         rcontrol.setNameRes(nres);
         funcsToAnalyze = new ArrayList<Function>();
-        pkgForFun = new HashMap<Function, String>();
         Map<String, Package> pkgs = new HashMap<String, Package>();
         Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
         for (Package pkg : p.getPackages()) {
@@ -1697,9 +1695,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
             String pkgName = pkg.getName();
             pkgs.put(pkgName, pkg);
             newfuns.put(pkgName, new ArrayList<Function>());
-            for (Function f : pkg.getFuncs()) {
-                pkgForFun.put(f, pkgName);
-            }
         }
         if (funcsToAnalyze.size() == 0) {
             System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
@@ -1711,7 +1706,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         }
         while (funcsToAnalyze.size() > 0) {
             Function f = funcsToAnalyze.get(0);
-            String pkgName = pkgForFun.get(f);
+            String pkgName = f.getPkg();
             nres.setPackage(pkgs.get(pkgName));
             if (!funcsAnalyzed.contains(f)) {
 

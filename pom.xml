@@ -2,13 +2,13 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>edu.berkeley.cs.sketch</groupId>
+    <groupId>edu.mit.csail.sketch</groupId>
     <artifactId>sketch-frontend</artifactId>
     <name>SKETCH compiler frontend</name>
     <description>SKETCH compiler frontend, responsible for AST lowering
         and optimization</description>
     <version>1.6.4</version>
-    <url>http://sketch.cs.berkeley.edu</url>
+    <url>http://sketch1.csail.mit.edu</url>
 
     <properties>
         <!-- assembly is not very intelligent... -->
@@ -175,6 +175,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.14.1</version>
                 <configuration>
                     <includes>
                         <include>**/*JunitTest*</include>
@@ -186,6 +187,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
                         <phase>default</phase>
@@ -207,6 +209,7 @@
             -->
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.9</version>
                 <configuration>
                     <downloadSources>true</downloadSources>
                 </configuration>
