@@ -1,5 +1,5 @@
+      integer np
       common /procgrid/ np
-
 
       integer transblock, transblockpad
       parameter(transblock=32, transblockpad=34)
@@ -39,8 +39,8 @@ c 2:        xyz       xyz       yxz
 c 3:        xyz       zyx       zxy
 
 c the array dimensions are stored in dims(coord, phase)
-      integer nx, ny, nz
-      common /layout/ nx, ny, nz
+      integer nx, ny, nz, ntdivnp
+      common /layout/ nx, ny, nz, ntdivnp
 
       integer T_warm
       integer T_trans(1000)

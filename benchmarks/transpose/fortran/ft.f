@@ -24,9 +24,13 @@ c referenced directly anywhere else. Padding is to avoid accidental
 c cache problems, since all array sizes are powers of two.
 c---------------------------------------------------------------------
 
-      common /bigarrays/ u0, u1
-
       integer iter
+      interface
+          subroutine init(u0, u1)
+          double precision, allocatable :: u0(:), u1(:)
+          end subroutine init
+
+      end interface
 
       call MPI_Init(ierr)
 
@@ -44,21 +48,33 @@ c---------------------------------------------------------------------
 
       call setup()
       call init(u0, u1)
+
+      if (outputMatrix .gt. 0) then
+          write(fout, 5010)
+5010      format('initial matrix:')
+          call output_matrix(nx, ny, nz/np, u0)
+      endif
       
       call MPI_Barrier(MPI_COMM_WORLD, ierr)
 
       call timer_start(T_warm)
       call transpose_xy_z(u0, u1)
-      call timer_stop(T_init)
+      call timer_stop(T_warm)
 
-      if (me .eq. 0) then
+      if (outputMatrix .gt. 0) then
+          write(fout, 5020)
+5020      format('after transpose_xy_z:')
+          call output_matrix(nz, nx, ny/np, u1)
       endif
+
+      outputMatrix = 0
 
       do iter = 1, niter
          call MPI_Barrier(MPI_COMM_WORLD, ierr)
          call timer_start(T_trans(iter))
          call transpose_xy_z(u0, u1)
          call timer_stop(T_trans(iter))
+         call MPI_Barrier(MPI_COMM_WORLD, ierr)
       end do
 
       call MPI_Finalize(ierr)
@@ -74,9 +90,9 @@ c---------------------------------------------------------------------
 
       subroutine init(u0, u1)
       implicit none
-      include 'global.h'
       double precision, allocatable :: u0(:), u1(:)
       integer base, i
+      include 'global.h'
 
       ntdivnp = nx*ny*(nz/np)
       if (.not.allocated(u0)) allocate( u0(ntdivnp) )
@@ -92,13 +108,40 @@ c---------------------------------------------------------------------
       implicit none
       include 'global.h'
       double precision t
+      integer i
 
-      write(fout, 1010) read_timer(T_warm)
-1010  format('T_warm: ', F)
+      t = timer_read(T_warm)
+      write(fout, 1010) t
+1010  format('T_warm: ', F16.5)
 
-      write(fout, 'T_trans:')
+      write(fout, 1020)
+1020  format('T_trans:')
+
       do i = 1, niter
-          write(fout, '(F)', read_timer(T_trans(i))
+          t = timer_read(T_trans(i))
+          write(fout, 1030) t
+1030      format(F16.5)
+      end do
+
+      return
+      end
+
+      subroutine output_matrix(nnx, nny, nnz, matrix)
+      implicit none
+      include 'global.h'
+      double precision matrix(nnx, nny, nnz)
+      integer nnx, nny, nnz, x, y, z
+
+6000  format('')
+      do z = 1, nnz
+          do y = 1, nny
+              do x = 1, nnx
+                  write(fout, 6010, advance='no') matrix(x, y, z)
+6010              format(F4.0, ' ')
+              end do
+              write(fout, 6000)
+          end do
+          write(fout, 6000)
       end do
 
       return
@@ -115,44 +158,62 @@ c---------------------------------------------------------------------
       integer argc
       character(1024) arg
       character(1024) fname
+
+      external iargc
+      integer iargc
+
       call MPI_Comm_size(MPI_COMM_WORLD, np, ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD, me, ierr)
 
       dc_type = MPI_DOUBLE
 
       argc = iargc()
-      if (argc .lt. 4) then
+      if (argc .lt. 3) then
          call getarg(0, arg)
          write(*, 238) arg
- 238     format('Usage: mpirun -np <nproc> ', A, ' nx ny nz [iters
-[outputMatrix?]]')
+ 238     format('Usage: mpirun -np <nproc> ', A,
+     >    ' nx ny nz [iters [outputMatrix?]]')
          call MPI_Abort(MPI_COMM_WORLD, 1, ierr)
       endif
 
+ 355  format(I10)
       call getarg(1, arg)
-      read(arg, '(i10)', nx)
+      read(arg, 355) nx
       call getarg(2, arg)
-      read(arg, '(i10)', ny)
+      read(arg, 355) ny
       call getarg(3, arg)
-      read(arg, '(i10)', nz)
-      if (argc > 4) then
+      read(arg, 355) nz
+      niter = 0
+      outputMatrix = 0
+      if (argc .ge. 4) then
          call getarg(4, arg)
-         read(arg, '(i10)', niter)
+         read(arg, 355) niter
       endif
-      if (argc > 5) then
+      if (argc .ge. 5) then
          call getarg(5, arg)
-         read(arg, '(i10)', outputMatrix)
+         read(arg, 355) outputMatrix
       endif
 
+      if (me .eq. 0) then
+         print *, 'argc=', argc
+         print *, 'nx=', nx
+         print *, 'ny=', ny
+         print *, 'nz=', nz
+         print *, 'np=', np
+         print *, 'niter=', niter
+         print *, 'outputMatrix=', outputMatrix
+      endif
+
+
       if (.not. ((nx .gt. 0) .and. (ny .gt. 0) .and. (nz .gt. 0) 
-        > .and. (mod(ny, np) .eq. 0) .and. (mod(nz, np) .eq. 0) )) then
+     >     .and. (mod(ny, np) .eq. 0) .and. (mod(nz, np) .eq. 0) )) then
          write(*, 239)
  239     format('wrong configuration nx, ny, nz, np!')
          call MPI_Abort(MPI_COMM_WORLD, 1, ierr)
       endif
 
       write(fname, 240) me
- 240  format('out.ft', I10, '.txt')
+ 240  format('out.ft', I0, '.txt')
       fout = 22
       open(unit=fout, file=fname, action='write', status='replace')
 
@@ -171,8 +232,29 @@ c---------------------------------------------------------------------
       n1 = nx * ny
       n2 = nz / np
 
+      if (.FALSE. .and. outputMatrix .gt. 0) then
+          write(fout, 3000) ntdivnp
+3000      format('ntdivnp=', I0, ' initial xin:')
+          call output_matrix(nx, ny, nz/np, xin)
+      endif
+
       call transpose2_local(n1, n2, xin, xout)
+      if (.FALSE. .and. outputMatrix .gt. 0) then
+          write(fout, 3005)
+3005      format('after local xout (n2, n1):')
+          call output_matrix(n2, n1, 1, xout)
+          write(fout, 3010)
+3010      format('after local xout (nz/np, nx, ny):')
+          call output_matrix(nz/np, nx, ny, xout)
+      endif
+
       call transpose2_global(xout, xin)
+      if (.FALSE. .and. outputMatrix .gt. 0) then
+          write(fout, 3020)
+3020      format('after global xin:')
+          call output_matrix(nz/np, nx, ny, xin)
+      endif
+
       call transpose2_finish(n1, n2, xin, xout)
 
       return
@@ -198,8 +280,16 @@ c How much does this help? Example: R8000 Power Challenge (90 MHz)
 c Blocked version decreases time spend in this routine 
 c from 14 seconds to 5.2 seconds on 8 nodes class A.
 c---------------------------------------------------------------------
+      if (.FALSE. .and. outputMatrix .gt. 0) then
+          write(fout, 7010) ntdivnp
+7010      format('ntdivnp=', I0, ' initial xin (nx, ny, nz/np):')
+          call output_matrix(nx, ny, nz/np, xin)
+          write(fout, 7020) n1, n2
+7020      format('n1=', I0, ' n2=', I0, ' initial xin (n1, n2):')
+          call output_matrix(n1, n2, 1, xin)
+      endif
 
-      if (n1 .lt. transblock .or. n2 .lt. transblock) then
+      if (.TRUE. .or. (n1 .lt. transblock .or. n2 .lt. transblock)) then
          if (n1 .ge. n2) then 
             do j = 1, n2
                do i = 1, n1
@@ -235,6 +325,16 @@ c---------------------------------------------------------------------
             end do
          end do
       endif
+
+      if (.FALSE. .and. outputMatrix .gt. 0) then
+          write(fout, 7030) ntdivnp
+7030      format('ntdivnp=', I0, ' after local xout (nx, ny, nz/np):')
+          call output_matrix(nz/np, nx, ny, xout)
+          write(fout, 7040) n1, n2
+7040      format('n1=', I0, ' n2=', I0, ' after local xout (n2, n1):')
+          call output_matrix(n2, n1, 1, xout)
+      endif
+
 
       return
       end

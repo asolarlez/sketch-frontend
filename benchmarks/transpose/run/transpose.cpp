@@ -14,6 +14,8 @@ using std::stringstream;
 using std::endl;
 using std::setw;
 
+timer * timers = NULL;
+
 #include "tr17.cpp"
 using namespace npb;
 
@@ -110,12 +112,12 @@ int main(int argc, char * argv[]) {
 		output(fout, nz, nx, ny/spmdnproc, result);
 	}
 
-	mpiBarrier();
 	for (int i=0; i<iters; i++) {
 		timer & t = t_trans[i];
 #ifdef __dbg__
 		cout << spmdpid << ": iter=" << i << endl;
 #endif
+		mpiBarrier();
 		t.start();
 		transpose_xy_z(nx, ny, nz, matrix, result);
 		t.stop();
