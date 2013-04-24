@@ -1,0 +1,2 @@
+module swap PrgEnv-pgi PrgEnv-gnu
+CC -O3  -ffast-math -funroll-loops -ftree-vectorizer-verbose=0 -o transpose.x -I ~/runtime/include transpose.cpp
