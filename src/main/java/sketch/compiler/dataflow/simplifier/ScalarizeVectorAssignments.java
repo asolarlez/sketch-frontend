@@ -97,7 +97,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
             if (isModel) {
                 return 0;
             }
-            System.out.println("Avoiding " + lt + " " + rt + lhs + " = " + rhs);
+            // System.out.println("Avoiding " + lt + " " + rt + lhs + " = " + rhs);
         }
 		/*
         if (lt.equals(rt) && !agressive && (lhs instanceof ExprVar) &&

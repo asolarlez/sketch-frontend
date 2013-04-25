@@ -55,10 +55,12 @@ public class LowerToSketch extends MetaStage {
         
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new FlattenStmtBlocks());
-        SpmdTransform tf = new SpmdTransform(options, varGen);
-        prog = (Program) prog.accept(tf);
-        prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
         
+        if (false) { // temporarily disabled in the main branch.
+            SpmdTransform tf = new SpmdTransform(options, varGen);
+            prog = (Program) prog.accept(tf);
+            prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
+        }
         prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
         
         

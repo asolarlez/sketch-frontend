@@ -1,0 +1,12 @@
+package other;
+
+int x;
+
+void foo(){
+    x = 25;
+}
+
+void checkX(){
+    assert x == 25;
+}
+
