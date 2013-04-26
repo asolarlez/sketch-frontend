@@ -6,5 +6,5 @@ void foo([int n], int[n] x, int[n] y){
 harness void moo(int i, int j){
     int[i] x;
     int[j] y;
-    foo(x, y); //TypeError
+    foo(x, y); //TypeError 
 }

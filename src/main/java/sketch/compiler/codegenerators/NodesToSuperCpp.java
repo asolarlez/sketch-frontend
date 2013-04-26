@@ -746,6 +746,7 @@ public class NodesToSuperCpp extends NodesToJava {
             
             Expression actual =  actuals.next();
             Type parType = (Type) p.getType().accept(vsr);
+            parType = parType.addDefaultPkg(f.getPkg(), nres);
             Type actType = getType(actual);
             rmap.put(p.getName(), actual);
             String partxt = (String) actual.accept(this);

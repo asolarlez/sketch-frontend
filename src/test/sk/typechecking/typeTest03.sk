@@ -8,7 +8,7 @@ bit[128] miniTest69(bit [128] in){
 
 bit[128] miniTest69sk(bit [128] in) implements miniTest69{
     mit[128] out = 0; // TypeError
-    out = !out;
-    out = in[36::92];
-    return out;
+    out = !out; // TypeError: since the declaration fails, all uses are treated as type errors.
+    out = in[36::92]; // TypeError
+    return out; // TypeError
 }
