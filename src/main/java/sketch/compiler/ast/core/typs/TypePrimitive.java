@@ -245,7 +245,8 @@ public class TypePrimitive extends Type
         	return ExprNullPtr.nullPtr;
     	case TYPE_VOID:
             case TYPE_BOTTOM:
-    		assert false : "Type "+ type +" doesn't have a default value.";
+                return ExprConstChar.zero;
+                // assert false : "Type " + type + " doesn't have a default value.";
             case TYPE_CHAR:
                 return ExprConstChar.zero;
     	default:

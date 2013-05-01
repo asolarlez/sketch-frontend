@@ -1,0 +1,13 @@
+package main;
+
+struct car{
+    bit x;
+}
+
+struct bus{
+    int y;
+}
+
+int sk(|car| x) implements spec{
+    return x.x? 5 : 7;
+}

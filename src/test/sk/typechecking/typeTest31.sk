@@ -1,0 +1,14 @@
+package main;
+include "typeTest31a.skh";
+
+struct car{
+    bit x;
+}
+
+struct bus{
+    int y;
+}
+
+int sk(|car| x) implements spec{ // TypeError
+    return x.x? 5 : 7;
+}

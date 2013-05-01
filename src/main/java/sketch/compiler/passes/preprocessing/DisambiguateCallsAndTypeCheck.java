@@ -521,6 +521,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         }
 
         if (func.isSketchHarness()) {
+
             for (Parameter f1 : func.getParams()) {
                 if (f1.getType() instanceof TypeStructRef) {
                     report(func,
@@ -566,26 +567,24 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             while (formals1.hasNext()) {
                 Parameter f1 = (Parameter) formals1.next();
                 Parameter f2 = (Parameter) formals2.next();
-                if ((f1.getType() instanceof TypeArray) &&
-                        (f2.getType() instanceof TypeArray))
-                {
-                    TypeArray f1t = (TypeArray) f1.getType();
-                    TypeArray f2t = (TypeArray) f2.getType();
-                    if (f1t.getBase().equals(f2t.getBase())) {
-                        continue;
-                    }
-                }
-                if (f1.getType().compare(f2.getType()) == TypeComparisonResult.NEQ) {
+
+                Type f1t = f1.getType().addDefaultPkg(func.getPkg(), nres);
+                Type f2t = f2.getType().addDefaultPkg(parent.getPkg(), nres);
+
+                if (f1t.compare(f2t) == TypeComparisonResult.NEQ) {
                     report(func, "Parameters of spec and sketch don't match: " + f1 +
-                            " vs. " + f2);
+                            " vs. " + f2 + " (" + f1t + "!=" + f2t + ")");
                     return super.visitFunction(func);
                 }
 
                 if (f1.getType() instanceof TypeStructRef) {
-                    report(func,
-                            "A harness function can not have a structure or array of structures as input: " +
-                                    f1);
-                    return super.visitFunction(func);
+                    TypeStructRef tr = (TypeStructRef) f1.getType();
+                    if (!tr.isUnboxed()) {
+                        report(func,
+                                "A harness function can not have a structure or array of structures as input: " +
+                                        f1);
+                        return super.visitFunction(func);
+                    }
                 }
                 if (f1.getType() instanceof TypeArray) {
                     if (((TypeArray) f1.getType()).getAbsoluteBase() instanceof TypeStructRef)
@@ -599,10 +598,20 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             }
 
             // check return value
-            if (!func.getReturnType().promotesTo(parent.getReturnType(), nres)) {
+            Type frt = func.getReturnType().addDefaultPkg(func.getPkg(), nres);
+            Type prt = parent.getReturnType().addDefaultPkg(parent.getPkg(), nres);
+            if (!frt.equals(prt)) {
                 report(func, "Return type of sketch & function are not compatible: " +
-                        func.getReturnType() + " vs. " + parent.getReturnType());
+                        frt + " vs. " + prt);
                 return super.visitFunction(func);
+            }
+            if (func.getReturnType() instanceof TypeStructRef) {
+                TypeStructRef tr = (TypeStructRef) func.getReturnType();
+                if (!tr.isUnboxed()) {
+                    report(func,
+                            "A function with an implements modifier can not return a reference. Return type = " +
+                                    tr);
+                }
             }
         }
 

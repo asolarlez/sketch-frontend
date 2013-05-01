@@ -1,0 +1,14 @@
+package a;
+
+struct car{
+    int b;
+    int m;
+}
+
+struct bus{
+    int m;
+}
+
+int spec(|car| x){
+    return x.m; 
+ }

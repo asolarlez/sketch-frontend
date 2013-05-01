@@ -1,0 +1,13 @@
+
+struct Bar{
+    int x;
+}
+
+Bar spec(int x){
+    return |Bar|(x=x+3);
+}
+
+|Bar| sketch(int x) implements spec{ //TypeError
+    Bar t = new Bar(x=x);
+    return |Bar|(x=x+??);
+}

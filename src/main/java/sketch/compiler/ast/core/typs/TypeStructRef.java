@@ -99,7 +99,8 @@ public class TypeStructRef extends Type
     public TypeComparisonResult compare(Type other) {
         if (other instanceof TypeStructRef) {
             TypeStructRef that = (TypeStructRef) other;
-            return TypeComparisonResult.knownOrNeq(this.name.equals(that.name));
+            return TypeComparisonResult.knownOrNeq(this.name.equals(that.name) &&
+                    this.isUnboxed == that.isUnboxed);
         }
 
         return TypeComparisonResult.NEQ;

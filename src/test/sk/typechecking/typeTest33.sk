@@ -1,0 +1,14 @@
+
+struct car{
+    bit x;
+}
+
+int spec(car[5] x){
+    car y = new car(x=0);
+    return x[0].x;
+}
+
+int sk(car[5] x) implements spec{ //TypeError
+    car y = new car(x=1);
+    return x[1].x;
+}

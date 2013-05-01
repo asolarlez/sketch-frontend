@@ -1,0 +1,13 @@
+
+
+struct Stack {
+  bit[18] ptr;
+  bit[18][8] body;
+}
+
+
+
+harness void main(){
+    Stack s = new Stack(body={});
+    
+}
