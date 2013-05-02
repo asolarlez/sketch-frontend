@@ -3,7 +3,7 @@ struct Bar{
     int x;
 }
 
-Bar spec(int x){
+|Bar| spec(int x){
     return |Bar|(x=x+3);
 }
 

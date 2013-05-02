@@ -1,4 +1,3 @@
-package main;
 
 struct car{
     bit x;
