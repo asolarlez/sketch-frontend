@@ -713,7 +713,8 @@ public class MethodState {
             assertFalse();
         }
         varTranslator = varTranslator.popLevel(vars, changeTracker);
-        assert levels.pop() == toPop;
+        boolean chk = (levels.pop() == toPop);
+        assert chk;
         toPop.isDead = true;
     }
 

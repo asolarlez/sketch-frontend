@@ -239,7 +239,7 @@ public class GetExprType extends FENullVisitor
     	if(exp.getType() != null  ){
     		return exp.getType();
     	}else{
-    		return TypePrimitive.bittype;
+            return TypePrimitive.bottomtype;
     	}
     }
 

@@ -891,7 +891,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             lvl = state.pushLevel(new BlockLevel("PartialEvaluator level"));
             s = (Statement)super.visitStmtBlock(stmt);
         }
-        // catch(Exception e1) { e = e1; }
+        // catch (Exception e1) {e = e1; }
         finally{
             if( s == null){
                 s = stmt;
