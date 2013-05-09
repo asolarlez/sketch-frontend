@@ -1,4 +1,4 @@
-pragma options "-V10 --fe-trunc-var-arr  --beopt:simiters 1 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 16 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+//pragma options "-V10 --fe-trunc-var-arr  --beopt:simiters 1 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 16 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 bit validSparseMatrix(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx) {
 	if ( ! (nrows>=0 && ncols>=0 && rowstr[0] == 0 && rowstr[nrows] == nz) ) {
