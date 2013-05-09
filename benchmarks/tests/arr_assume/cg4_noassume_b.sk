@@ -8,10 +8,14 @@ bit validSparseMatrix(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz]
 		if (! (rowstr[i] <= rowstr[i+1]) ) {
 			return false;
 		}
-		for (int k=rowstr[i]; k<rowstr[i+1]; k++) {
-			int j = colidx[k];
-			if ( ! (j >= 0 && j < ncols && (k == rowstr[i] || j>colidx[k-1]) ) ) {
-				return false;
+		int start = rowstr[i];
+		int end = rowstr[i+1];
+		if (start >= 0 && start < nz && end >= 0 && end < nz) {
+			for (int k=start; k<end; k++) {
+				int j = colidx[k];
+				if ( ! (j >= 0 && j < ncols && (k == rowstr[i] || j>colidx[k-1]) ) ) {
+					return false;
+				}
 			}
 		}
 	}
