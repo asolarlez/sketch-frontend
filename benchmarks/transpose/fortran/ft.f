@@ -29,6 +29,17 @@ c---------------------------------------------------------------------
           subroutine init(u0, u1)
           double precision, allocatable :: u0(:), u1(:)
           end subroutine init
+      
+          subroutine output_timers(title, n, timers)
+          character title*(*)
+          integer n, timers(:)
+          end subroutine output_timers
+  
+          subroutine transpose_xy_z(xin, xout, timers)
+          include 'global.h'
+          double precision xin(ntdivnp), xout(ntdivnp)
+          integer timers(:)
+          end subroutine transpose_xy_z
 
       end interface
 
@@ -39,12 +50,15 @@ c Run the entire problem once to make sure all data is touched.
 c This reduces variable startup costs, which is important for such a 
 c short benchmark. The other NPB 2 implementations are similar. 
 c---------------------------------------------------------------------
-      T_warm = 1
-      T_max = 1
-      do i = 1, 1000
+      T_max = 0
+      do i = 1, 4
+         T_max = T_max+1
+         T_warm(i) = T_max
+      enddo
+      do i = 1, 4
          T_max = T_max+1
          T_trans(i) = T_max
-      end do
+      enddo
 
       call setup()
       call init(u0, u1)
@@ -56,10 +70,9 @@ c---------------------------------------------------------------------
       endif
       
       call MPI_Barrier(MPI_COMM_WORLD, ierr)
-
-      call timer_start(T_warm)
-      call transpose_xy_z(u0, u1)
-      call timer_stop(T_warm)
+      call transpose_xy_z(u0, u1, T_warm)
+      call MPI_Barrier(MPI_COMM_WORLD, ierr)
+      call check_result(u1)
 
       if (outputMatrix .gt. 0) then
           write(fout, 5020)
@@ -70,16 +83,17 @@ c---------------------------------------------------------------------
       outputMatrix = 0
 
       do iter = 1, niter
+         call init_matrix(u0)
          call MPI_Barrier(MPI_COMM_WORLD, ierr)
-         call timer_start(T_trans(iter))
-         call transpose_xy_z(u0, u1)
-         call timer_stop(T_trans(iter))
+         call transpose_xy_z(u0, u1, T_trans)
          call MPI_Barrier(MPI_COMM_WORLD, ierr)
-      end do
+         call check_result(u1)
+      enddo
 
       call MPI_Finalize(ierr)
 
-      call output_timers()
+      call output_timers('T_warm', 4, T_warm)
+      call output_timers('T_trans', 4, T_trans)
 
       close(fout)
       end
@@ -88,40 +102,82 @@ c---------------------------------------------------------------------
 c---------------------------------------------------------------------
 c---------------------------------------------------------------------
 
-      subroutine init(u0, u1)
+      subroutine init_matrix(matrix)
       implicit none
-      double precision, allocatable :: u0(:), u1(:)
-      integer base, i
       include 'global.h'
-
-      ntdivnp = nx*ny*(nz/np)
-      if (.not.allocated(u0)) allocate( u0(ntdivnp) )
-      if (.not.allocated(u1)) allocate( u1(ntdivnp) )
-      base = ntdivnp*me - 1
+      double precision matrix(ntdivnp)
+      double precision base
+      integer i
+      base = ntdivnp
+      base = base * me
       do i = 1, ntdivnp
-          u0(i) = base + i
-      end do
+          matrix(i) = base
+          base = base + 1
+      enddo
       return
       end
 
-      subroutine output_timers
+      subroutine check_result(matrix)
       implicit none
       include 'global.h'
-      double precision t
+      double precision matrix(nz, nx, ny/np)
+      double precision correct, diff
+      integer x, y, yy, z, ierr
+      yy = ny/np * me
+      do y = 1, ny/np
+        do x = 1, nx
+          do z = 1, nz
+            correct = z-1
+            correct = correct*(nx*ny) + yy*nx + x-1
+            diff = matrix(z, x, y) - correct
+            if (diff .lt. 0) diff = -diff
+            if (diff > 1e-6) then
+              write(*, 20010) me, x, y, z, matrix(z, x, y), correct
+20010         format(I0, ': Wrong result! x=', I0, ' y=', I0, ' z=', I0,
+     >        ' num=', F0.0, ' correct=', F0.0)
+              write(fout, 20020) x, y, z, matrix(z, x, y), correct
+20020         format('Wrong result! x=', I0, ' y=', I0, ' z=', I0,
+     >        ' num=', F0.0, ' correct=', F0.0)
+              close(fout)
+              call MPI_Finalize(ierr)
+              call exit(555)
+            endif
+          enddo
+        enddo
+        yy = yy + 1
+      enddo
+      return
+      end
+
+
+      subroutine init(u0, u1)
+      implicit none
+      double precision, allocatable :: u0(:), u1(:)
+      include 'global.h'
+
+      ntdivnp = nx*ny*(nz/np)
+      if (.not.allocated(u0)) allocate( u0(ntdivnp+3) )
+      if (.not.allocated(u1)) allocate( u1(ntdivnp+3) )
+      call init_matrix(u0)
+      return
+      end
+
+      subroutine output_timers(title, n, timers)
+      implicit none
+      include 'global.h'
+      character title*(*)
+      integer n, timers(:)
       integer i
+      double precision t
 
-      t = timer_read(T_warm)
-      write(fout, 1010) t
-1010  format('T_warm: ', F16.5)
+      write(fout, 1010) title
+1010  format(A, ':')
 
-      write(fout, 1020)
-1020  format('T_trans:')
-
-      do i = 1, niter
-          t = timer_read(T_trans(i))
+      do i = 1, n
+          t = timer_read(timers(i))
           write(fout, 1030) t
-1030      format(F16.5)
-      end do
+1030      format(' ', F16.5)
+      enddo
 
       return
       end
@@ -138,11 +194,11 @@ c---------------------------------------------------------------------
               do x = 1, nnx
                   write(fout, 6010, advance='no') matrix(x, y, z)
 6010              format(F4.0, ' ')
-              end do
+              enddo
               write(fout, 6000)
-          end do
+          enddo
           write(fout, 6000)
-      end do
+      enddo
 
       return
       end
@@ -222,12 +278,15 @@ c---------------------------------------------------------------------
 
       
 
-      subroutine transpose_xy_z(xin, xout)
+      subroutine transpose_xy_z(xin, xout, timers)
 
       implicit none
       include 'global.h'
       integer n1, n2
       double precision xin(ntdivnp), xout(ntdivnp)
+      integer timers(:)
+
+      call timer_start(timers(1))
 
       n1 = nx * ny
       n2 = nz / np
@@ -238,7 +297,9 @@ c---------------------------------------------------------------------
           call output_matrix(nx, ny, nz/np, xin)
       endif
 
+      call timer_start(timers(2))
       call transpose2_local(n1, n2, xin, xout)
+      call timer_stop(timers(2))
       if (.FALSE. .and. outputMatrix .gt. 0) then
           write(fout, 3005)
 3005      format('after local xout (n2, n1):')
@@ -248,15 +309,20 @@ c---------------------------------------------------------------------
           call output_matrix(nz/np, nx, ny, xout)
       endif
 
+      call timer_start(timers(3))
       call transpose2_global(xout, xin)
+      call timer_stop(timers(3))
       if (.FALSE. .and. outputMatrix .gt. 0) then
           write(fout, 3020)
 3020      format('after global xin:')
           call output_matrix(nz/np, nx, ny, xin)
       endif
 
+      call timer_start(timers(4))
       call transpose2_finish(n1, n2, xin, xout)
+      call timer_stop(timers(4))
 
+      call timer_stop(timers(1))
       return
       end
 
@@ -294,14 +360,14 @@ c---------------------------------------------------------------------
             do j = 1, n2
                do i = 1, n1
                   xout(j, i) = xin(i, j)
-               end do
-            end do
+               enddo
+            enddo
          else
             do i = 1, n1
                do j = 1, n2
                   xout(j, i) = xin(i, j)
-               end do
-            end do
+               enddo
+            enddo
          endif
       else
          do j = 0, n2-1, transblock
@@ -313,17 +379,17 @@ c---------------------------------------------------------------------
                do jj = 1, transblock
                   do ii = 1, transblock
                      z(jj,ii) = xin(i+ii, j+jj)
-                  end do
-               end do
+                  enddo
+               enddo
                
                do ii = 1, transblock
                   do jj = 1, transblock
                      xout(j+jj, i+ii) = z(jj,ii)
-                  end do
-               end do
+                  enddo
+               enddo
                
-            end do
-         end do
+            enddo
+         enddo
       endif
 
       if (.FALSE. .and. outputMatrix .gt. 0) then
@@ -384,9 +450,9 @@ c---------------------------------------------------------------------
          do j = 1, n1/np
             do i = 1, n2
                xout(i+ioff, j) = xin(i, j, p)
-            end do
-         end do
-      end do
+            enddo
+         enddo
+      enddo
 
       return
       end

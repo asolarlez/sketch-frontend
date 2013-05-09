@@ -83,7 +83,7 @@ public class TruncateVarArray extends FEReplacer {
                         }
                         Expression zero = tb.defaultValue();
                         Expression arr = new ExprVar(p, p.getName());
-                        for (int j=1; j<arrSize; ++j) {
+                        for (int j = 0; j < arrSize; ++j) {
                             Expression jexp = constInts.get(j);
                             Expression cond1 =
                                     new ExprBinary(p, ExprBinary.BINOP_GT, v, jexp);

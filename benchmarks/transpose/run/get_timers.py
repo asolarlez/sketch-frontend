@@ -2,6 +2,7 @@ import re
 import os
 import matplotlib.pyplot  as pyplot
 
+### old version
 def timers_sum(fpath):
     result = 0.0
     with open(fpath) as infile:
@@ -19,6 +20,25 @@ def timers_sum(fpath):
     return result
 
 
+def get_timer(fpath):
+    result = []
+    flag = False
+    with open(fpath) as infile:
+        while True:
+            line = infile.readline().lower()
+            if len(line) == 0:
+                break
+            if line.find('trans') >= 0:
+                flag = True
+                continue
+            if flag:
+                for i in line.split():
+                    try:
+                        result.append(float(i))
+                    except ValueError:
+                        pass
+    return result
+
 FILE_NAME_RE = '[a-z\.]*([0-9]+)[a-z\.]*\.[a-z\.]*$'
 FILE_NAME_MATCHER = re.compile(FILE_NAME_RE, re.IGNORECASE)
 
@@ -27,7 +47,7 @@ def get_timers(root):
     for f in os.listdir(root):
         fpath = os.path.join(root, f)
         if os.path.isfile(fpath) and FILE_NAME_MATCHER.match(f) != None:
-            result.append(timers_sum(fpath))
+            result.append(get_timer(fpath))
     return max(result)
 
 def get_all_timers(root):

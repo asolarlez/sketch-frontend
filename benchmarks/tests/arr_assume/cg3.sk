@@ -1,0 +1,67 @@
+pragma options "-V10 --beopt:simiters 30 --fe-trunc-var-arr --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 16 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+
+package npb;
+
+int SPMD_MAX_NPROC = 2;
+include "spmd.skh";
+
+// local sparse matrix
+struct LStateM {
+	int nz;
+	int[nz] colidx;
+	double[nz] elm;
+
+	int nrows;
+	int[nrows+1] rowstr;
+}
+
+// local vector
+struct LStateV {
+	int firstcol;
+	int lastcol;
+	double[lastcol-firstcol+1] vec;
+}
+
+void validRowStr(int nrows, int ncols, int nz, int[nrows+1] rowstr) {
+}
+
+void validSparseMatrix(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx) {
+	assume nrows>=0 && ncols>=0;
+
+	assume rowstr[0] == 0;
+	assume rowstr[nrows] == nz;
+	for (int i=0; i<nrows; i++) {
+		assume !(i>=0 && i<nrows) || rowstr[i] <= rowstr[i+1];
+		for (int k=rowstr[i]; k<rowstr[i+1]; k++) {
+			int j = colidx[k];
+			assume !(i>=0 && i<nrows && k>=rowstr[i] && k<rowstr[i+1]) || (j >= 0 && j < ncols);
+			assume !(i>=0 && i<nrows && k>=rowstr[i] && k<rowstr[i+1]) || (k == rowstr[i] || j>colidx[k-1]);
+		}
+	}
+}
+
+//LStateM movein(global int nproc, int pid, global int n, global int nz,
+//		global int[n] rowstr, global int[nz] colidx, global double[nz] elm) {
+//}
+
+
+harness void main(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx) {
+	//assume nrows <= 2;
+	//assume ncols <= 2;
+	assume nrows*ncols <= 12;
+	validSparseMatrix(nrows, ncols, nz, rowstr, colidx);
+	int[ncols][nrows] matrix;
+	for (int r = 0; r < nrows; r++) {
+		for (int k = rowstr[r]; k < rowstr[r+1]; k++) {
+			int c = colidx[k];
+			matrix[r][c] = 1;
+		}
+	}
+	int sum = 0;
+	for (int r = 0; r < nrows; r++) {
+		for (int c = 0; c < ncols; c++) {
+			sum += matrix[r][c];
+		}
+	}
+	assert sum == nz;
+}

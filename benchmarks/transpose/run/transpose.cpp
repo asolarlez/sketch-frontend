@@ -27,7 +27,7 @@ inline void output_timers(ofstream & fout, string const & name, int n, timer * t
 using namespace npb;
 
 inline void init_matrix(int size, double * matrix) {
-	int base = size * spmdpid;
+	double base = double(size) * spmdpid;
 	for (int i=0; i<size; i++) {
 		matrix[i] = base + i;
 	}
@@ -40,7 +40,7 @@ inline void check_result(ofstream & fout, int nx, int ny, int nz, double * matri
 	int z = 0;
 	for (int i=0; i<nz*nx*nydivnp; i++, matrix++) {
 		double num = *matrix;
-		double correct = z*ny*nx + y*nx + x;
+		double correct = double(z)*ny*nx + y*nx + x;
 		double diff = num - correct;
 		if (diff < 0.0) {
 			diff = -diff;

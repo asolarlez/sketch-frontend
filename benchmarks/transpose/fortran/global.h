@@ -42,8 +42,8 @@ c the array dimensions are stored in dims(coord, phase)
       integer nx, ny, nz, ntdivnp
       common /layout/ nx, ny, nz, ntdivnp
 
-      integer T_warm
-      integer T_trans(1000)
+      integer T_warm(4)
+      integer T_trans(4)
       integer T_max
 
       common /timers/ T_warm, T_trans, T_max
