@@ -1,0 +1,61 @@
+// Sparse Matrix Multiplying a normal Vector
+
+pragma options "--fe-trunc-var-arr  --beopt:simiters 30 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 16 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+
+package test;
+
+bit validSparseMatrix(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx) {
+	if ( ! (nrows>=0 && ncols>=0 && rowstr[0] == 0 && rowstr[nrows] == nz) ) {
+		return false;
+	}
+	for (int i=0; i<nrows; i++) {
+		if (! (rowstr[i] <= rowstr[i+1]) ) {
+			return false;
+		}
+	}
+	for (int i=0; i<nrows; i++) {
+		for (int k=rowstr[i]; k<rowstr[i+1]; k++) {
+			int j = colidx[k];
+			if ( ! (j >= 0 && j < ncols && (k == rowstr[i] || j>colidx[k-1]) ) ) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+void desparsify(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx, float[nz] elm, ref float[ncols][nrows] matrix) {
+	for (int r = 0; r < nrows; r++) {
+		for (int k = rowstr[r]; k < rowstr[r+1]; k++) {
+			int c = colidx[k];
+			matrix[r][c] = elm[k];
+		}
+	}
+}
+
+void mul_mv(int nrows, int ncols, float[ncols][nrows] matrix, float[ncols] vec, ref float[nrows] result) {
+	for (int r=0; r<nrows; r++) {
+		result[r] = 0.0;
+		for (int c=0; c<ncols; c++) {
+			result[r] += matrix[r][c] * vec[c];
+		}
+	}
+}
+
+void spmv(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx, float[nz] elm, float[ncols] vec, ref float[nrows] result) {
+	assume nrows*ncols <= 15;
+	assume validSparseMatrix(nrows, ncols, nz, rowstr, colidx);
+	float[ncols][nrows] matrix;
+	desparsify(nrows, ncols, nz, rowstr, colidx, elm, matrix);
+	mul_mv(nrows, ncols, matrix, vec, result);
+}
+
+void spmv2(int nrows, int ncols, int nz, int[nrows+1] rowstr, int[nz] colidx, float[nz] elm, float[ncols] vec, ref float[nrows] result) implements spmv {
+	for (int r=0; r<nrows; r++) {
+		result[r] = 0.0;
+		for (int k = rowstr[r]; k < rowstr[r+1]; k++) {
+			int c = colidx[k];
+			result[r] += elm[k] * vec[c];
+		}
+	}
+}
