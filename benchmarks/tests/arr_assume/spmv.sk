@@ -1,6 +1,6 @@
 // Sparse Matrix Multiplying a normal Vector
 
-pragma options "--fe-trunc-var-arr  --beopt:simiters 30 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 16 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--fe-trunc-var-arr --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 16 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package test;
 
