@@ -5,10 +5,29 @@ package npb;
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
 
-struct LStateV {
-	int firstcol;
-	int lastcol;
-	double[lastcol-firstcol+1] r;
+struct LState {
+	int n;
+	double[n] a;
+}
+
+LState movein(global int ncols, global double[ncols] ga) {
+	assert ncols % spmdnproc == 0;
+	int n = ncols / spmdnproc;
+	int base = n * spmdpid;
+	double[n] a;
+	for (int i=0; i<n; i++) {
+		a[i] = ga[base+i];
+	}
+	LState s = new LState(n=n, a=a);
+	return s;
+}
+
+void moveout(global int ncols, ref global double[ncols] ga, LState s) {
+	int n = s.n;
+	int base = n * spmdpid;
+	for (int i=0; i<n; i++) {
+		ga[base+i] = s.a[i];
+	}
 }
 
 bit powerOf2(int n) {
@@ -25,17 +44,26 @@ bit powerOf2(int n) {
 	}
 }
 
-void spec_rnorm(int ncols, double[ncols] r, ref double result) {
-	assume powerOf2(ncols);
-	result = 0.0;
+void spec_rnorm(global int P, global int ncols, global double[ncols] r, ref global double[P] result) {
+	assume powerOf2(P);
+	assume ncols>0 && ncols%P == 0;
+	double sum = 0.0;
 	for (int i=0; i<ncols; i++) {
-		result = result + r[i] * r[i];
+		sum = sum + r[i] * r[i];
+	}
+	for (int p=0; p<P; p++) {
+		result[p] = sum;
 	}
 }
 
-void sk1_rnorm(int ncols, double[ncols] r, ref double result) implements spec_rnorm {
-	result = r[??]*r[??];
+void sk1_rnorm(int P, int ncols, double[ncols] r, ref global double[P] result) implements spec_rnorm {
+	double sum = r[??]*r[??];
 	for (int i=??; i<ncols; i++) {
-		result = result + r[i] * r[i];
+		sum = sum + r[i] * r[i];
+	}
+	for (int p=0; p<P; p++) {
+		result[p] = sum;
 	}
 }
+
+
