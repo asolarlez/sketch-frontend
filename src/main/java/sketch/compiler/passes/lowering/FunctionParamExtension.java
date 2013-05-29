@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FunctionCreator;
@@ -18,8 +17,6 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
-import sketch.compiler.parallelEncoder.VarSetReplacer;
-import sketch.compiler.parallelEncoder.VarSetReplacer.IgnoreNamesInStruct;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -585,19 +582,29 @@ public class FunctionParamExtension extends SymbolTableVisitor
             func.accept(checkProperDecl);
 
             if (retVar != null) {
-                for (Parameter p : func.getParams()) {
+                List<Parameter> params = func.getParams();
+                List<Parameter> newpars = new ArrayList<Parameter>(params);
+                boolean changed = false;
+                for (int i = 0; i < params.size(); i++) {
+                    Parameter p = params.get(i);
                     if (p.getName() == getOutParamName() &&
                             retVarMemType != CudaMemoryType.UNDEFINED)
                     {
                         Type t = p.getType();
                         if (t.getCudaMemType() == CudaMemoryType.UNDEFINED) {
-                            t.setCudaMemType(retVarMemType);
+                            Type newt = t.withMemType(retVarMemType);
+                            Parameter newp = p.withNewType(newt);
+                            newpars.set(i, newp);
+                            changed = true;
                         } else {
                             assert t.getCudaMemType() == retVarMemType : "return var memtype mismatch! " +
                                     p + " in " + func;
                         }
                         break;
                     }
+                }
+                if (changed) {
+                    func = func.creator().params(newpars).create();
                 }
             }
         }

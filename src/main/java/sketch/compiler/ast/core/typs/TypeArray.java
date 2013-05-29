@@ -48,8 +48,19 @@ public class TypeArray extends Type
         this(base, length, length != null && length.isConstant() ? length.getIValue() : 0);
     }
 
+    public TypeArray(CudaMemoryType memtyp, Type base, Expression length) {
+        this(memtyp, base, length,
+                length != null && length.isConstant() ? length.getIValue() : 0);
+    }
+
     public TypeArray(Type base, Expression length, int maxlength) {
         this(CudaMemoryType.UNDEFINED, base, length, null, maxlength);
+    }
+
+    public TypeArray(CudaMemoryType memtyp, Type base, Expression length,
+            int maxlength)
+    {
+        this(memtyp, base, length, null, maxlength);
     }
 
     /**

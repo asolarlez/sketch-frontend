@@ -51,6 +51,11 @@ public class Parameter extends FENode implements Comparable<Parameter>
                 : false);
     }
 
+    public Parameter withNewType(Type newt) {
+        return new Parameter(this.getOrigin(), newt, this.name, this.partype,
+                this.isImplicit);
+    }
+
     public Parameter(FENode fn, Type type, String name, int ptype, boolean isImplicit) {
         super(fn);
         assert type != null;

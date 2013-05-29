@@ -48,9 +48,11 @@ public abstract class Type
         return memtyp;
     }
 
-    public void setCudaMemType(CudaMemoryType mt) {
-        memtyp = mt;
-    }
+    // ERROR! this is a huge bug! If you set a type such as "int" to global, then all int
+    // becomes global and you are screwed!
+    // public void setCudaMemType(CudaMemoryType mt) {
+    // memtyp = mt;
+    // }
 
     public Expression defaultValue () {
     	assert false : "Implement me!";

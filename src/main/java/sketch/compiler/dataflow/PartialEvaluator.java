@@ -1477,8 +1477,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
         Expression nlen = exprRV;
         if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
         if (isReplacer) {
-            TypeArray newtype = new TypeArray(nbase, nlen, t.getMaxlength());
-            newtype.setCudaMemType(t.getCudaMemType());
+            TypeArray newtype =
+                    new TypeArray(t.getCudaMemType(), nbase, nlen, t.getMaxlength());
             return newtype;
         } else {
             return t;

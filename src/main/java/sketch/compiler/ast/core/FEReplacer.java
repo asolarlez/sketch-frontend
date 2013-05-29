@@ -795,8 +795,8 @@ public class FEReplacer implements FEVisitor
             nlen = (Expression) t.getLength().accept(this);
         }
     	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
-        TypeArray newtype = new TypeArray(nbase, nlen, t.getMaxlength());
-        newtype.setCudaMemType(t.getCudaMemType());
+        TypeArray newtype =
+                new TypeArray(t.getCudaMemType(), nbase, nlen, t.getMaxlength());
         return newtype;
     }
 
