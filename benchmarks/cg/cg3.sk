@@ -87,9 +87,13 @@ int setup_l2npcols() {
 
 void setup_reduce(int l2npcols, ref int[l2npcols] arr) {
 	int div_factor = spmdnproc;
+	generator int num() {
+		return {| spmdpid | div_factor | div_factor/2 |};
+	}
 	for (int i=0; i<l2npcols; i++) {
 //		int j = (spmdpid + div_factor/2) % div_factor + (spmdpid/div_factor)*div_factor;
-		int j = expr(3, {spmdpid, div_factor, div_factor/2}, 3, {PLUS, TIMES, MOD});
+//		int j = expr(3, {spmdpid, div_factor, div_factor/2}, 3, {PLUS, TIMES, MOD});	//Error: AN INTEGER GOT REALLY BIG, AND IS NOW BEYOND THE SCOPE OF THE SOLVER
+		int j = (num()+num())%num() + (num()/num())*num();
 		arr[i] = j;
 		div_factor = div_factor/2;
 	}
