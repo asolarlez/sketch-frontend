@@ -34,7 +34,7 @@ int MOD=4;
 """
 
 Lower = 0
-Upper = 5
+Upper = 11
 NaN = -222
 
 Plus = Opr('PLUS', 0, lambda a,b: a+b, Lower, Upper, NaN)
@@ -43,8 +43,8 @@ Times = Opr('TIMES', 2, lambda a,b: a*b, Lower, Upper, NaN)
 Div = Opr('DIV', 3, lambda a,b: NaN if b==0 else a/b, Lower, Upper, NaN)
 Mod = Opr('MOD', 4, lambda a,b: NaN if b==0 else a%b, Lower, Upper, NaN)
 
-#Oprs = [Plus, Minus, Times, Div, Mod]
-Oprs = [Plus, Times, Div, Mod]
+#Oprs = [Plus, Times, Div, Mod]
+Oprs = [Plus, Minus, Times, Div, Mod]
 AllInt = xrange(Lower, Upper+1)
 
 def gen():
