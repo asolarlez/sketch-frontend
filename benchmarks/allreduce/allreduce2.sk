@@ -1,10 +1,10 @@
-pragma options "-V10 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 8 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 5 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 4 --bnd-inline-amnt 5 --bnd-arr1d-size 4 --bnd-arr-size 4 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
 
-int SPMD_MAX_NPROC = 8;
-int SPMD_MAX_BUF_LEN = 1;
+int SPMD_MAX_NPROC = 4;
+int SPMD_MAX_BUF_LEN = 2;
 include "spmd.skh";
 
 include "boundedgen.skh";
@@ -66,7 +66,7 @@ void spec_rnorm(global int P, global int ncols, global double[ncols] r, ref glob
 	assume powerOf2(P);
 	assume ncols>0 && ncols%P == 0;
 	assume P <= SPMD_MAX_NPROC;
-	assume ncols <= 8;
+	assume ncols <= 4;
 	double sum = 0.0;
 	for (int i=0; i<ncols; i++) {
 		sum = sum + r[i] * r[i];
@@ -122,7 +122,7 @@ void sk_rnorm(int P, int ncols, double[ncols] r, ref global double[P] result) im
 		
 		double sum = 0.0;
 		for (int i=0; i<s.n; i++) {
-			sum = sum + s.a[i];
+			sum = sum + s.a[i]*s.a[i];
 		}
 		res.val = allreduce(l2npcols, reduce_exch_proc, sum);
 		moveout_single(result, res);

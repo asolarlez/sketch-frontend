@@ -69,7 +69,7 @@ void spec_rnorm(global int P, global int ncols, global double[ncols] r, ref glob
 	assume ncols <= 4;
 	double sum = 0.0;
 	for (int i=0; i<ncols; i++) {
-		sum = sum + r[i] * r[i];
+		sum = sum + r[i];
 	}
 	for (int p=0; p<P; p++) {
 		result[p] = sum;
