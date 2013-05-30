@@ -20,7 +20,7 @@ generator int boundedexpr(int N, int[N] pars, int T, int[T] ops){
     return result;
 }
 
-generator int boundedop(int cop, int a, int b, bit canplus, bit cantimes){
+int boundedop(int cop, int a, int b, bit canplus, bit cantimes){
     assert cop <= MOD && cop >=0  : "Must pass a valid operator";
     assert canplus || cop != PLUS;
     assert cantimes || cop != TIMES;
