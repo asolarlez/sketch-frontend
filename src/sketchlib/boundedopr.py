@@ -34,7 +34,7 @@ int MOD=4;
 """
 
 Lower = 0
-Upper = 16
+Upper = 5
 NaN = -222
 
 Plus = Opr('PLUS', 0, lambda a,b: a+b, Lower, Upper, NaN)
