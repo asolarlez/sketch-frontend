@@ -53,11 +53,11 @@ def gen():
     print 'package generators;'
     print
     print 'int NaN =', NaN, ';'
-    print 'generator void checkinbound(int a) {'
+    print 'void checkinbound(int a) {'
     print '    assert a == NaN || ( a >=', Lower, ' && a <=', Upper, ') : "Bounded Integer Overflow!";'
     print '}'
     print
-    print 'generator int boundedopr(int op, int a, int b) {'
+    print 'int boundedopr(int op, int a, int b) {'
     print '    if (a == NaN || b == NaN) { return NaN; }'
     print '    checkinbound(a);'
     print '    checkinbound(b);'

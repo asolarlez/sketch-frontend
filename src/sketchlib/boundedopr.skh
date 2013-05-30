@@ -3,11 +3,11 @@ include "generators.skh";
 package generators;
 
 int NaN = -222 ;
-generator void checkinbound(int a) {
+void checkinbound(int a) {
     assert a == NaN || ( a >= 0  && a <= 5 ) : "Bounded Integer Overflow!";
 }
 
-generator int boundedopr(int op, int a, int b) {
+int boundedopr(int op, int a, int b) {
     if (a == NaN || b == NaN) { return NaN; }
     checkinbound(a);
     checkinbound(b);
