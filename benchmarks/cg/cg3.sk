@@ -1,4 +1,4 @@
-pragma options "-V10 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 8 --bnd-arr1d-size 16 --bnd-arr-size 16 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 4 --bnd-inline-amnt 5 --bnd-arr1d-size 4 --bnd-arr-size 4 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
@@ -7,7 +7,7 @@ int SPMD_MAX_NPROC = 4;
 int SPMD_MAX_BUF_LEN = 2;
 include "spmd.skh";
 
-include "generators.skh";
+include "boundedgen.skh";
 
 struct LState {
 	int n;
@@ -66,6 +66,7 @@ void spec_rnorm(global int P, global int ncols, global double[ncols] r, ref glob
 	assume powerOf2(P);
 	assume ncols>0 && ncols%P == 0;
 	assume P <= SPMD_MAX_NPROC;
+	assume ncols <= 4;
 	double sum = 0.0;
 	for (int i=0; i<ncols; i++) {
 		sum = sum + r[i] * r[i];
@@ -91,9 +92,9 @@ void setup_reduce(int l2npcols, ref int[l2npcols] arr) {
 		return {| spmdpid | div_factor | div_factor/2 |};
 	}
 	for (int i=0; i<l2npcols; i++) {
-//		int j = (spmdpid + div_factor/2) % div_factor + (spmdpid/div_factor)*div_factor;
-//		int j = expr(3, {spmdpid, div_factor, div_factor/2}, 3, {PLUS, TIMES, MOD});	//Error: AN INTEGER GOT REALLY BIG, AND IS NOW BEYOND THE SCOPE OF THE SOLVER
-		int j = (num()+num())%num() + (num()/num())*num();
+		//int j = (spmdpid + div_factor/2) % div_factor + (spmdpid/div_factor)*div_factor;
+		int j = boundedexpr(3, {spmdpid, div_factor, div_factor/2}, 4, {PLUS, TIMES, DIV, MOD});	//Error: AN INTEGER GOT REALLY BIG, AND IS NOW BEYOND THE SCOPE OF THE SOLVER
+		//int j = (num()+num())%num() + (num()/num())*num();
 		arr[i] = j;
 		div_factor = div_factor/2;
 	}
