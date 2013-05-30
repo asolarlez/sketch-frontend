@@ -9,13 +9,14 @@ package generators;
  * given.
  * 
  */
-generator int boundedexpr(int N, int[N] pars, int T, int[T] ops){
+generator int boundedexpr(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
     bit isb; int choice;
     generator int tmp(ref int choice){
         choice = ??;
         return ?? ? pars[choice] : ??(2);
     }
-    int result = boundedexprb(tmp, T, ops, true, true, isb, choice);
+    ops_usage = 0;
+    int result = boundedexprb(tmp, T, ops, true, true, isb, choice, ops_usage);
     assert result != NaN;
     return result;
 }
@@ -28,7 +29,7 @@ int boundedop(int cop, int a, int b, bit canplus, bit cantimes){
 }
 
 
-generator int boundedexprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice){
+generator int boundedexprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int ops_usage){
     if ( T>0 && ??(1) ) {
         isbase = false;
         int ch = ??;
@@ -38,8 +39,9 @@ generator int boundedexprb(fun chose, int T, int[T] ops, bit canplus, bit cantim
         bit lib, rib;
         int lch; int rch;
         
-        int xa = boundedexprb(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch);
-        int xb = boundedexprb(chose, T, ops, true, true, rib, rch);
+        ops_usage++;
+        int xa = boundedexprb(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch, ops_usage);
+        int xb = boundedexprb(chose, T, ops, true, true, rib, rch, ops_usage);
         if(lib && rib && 
                 (och ==PLUS || 
                         och==TIMES)){ 
