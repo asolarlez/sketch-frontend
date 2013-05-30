@@ -13,6 +13,24 @@ generator int boundedexpr(int N, int[N] pars, int T, int[T] ops, ref int ops_usa
     bit isb; int choice;
     generator int tmp(ref int choice){
         choice = ??;
+        return pars[choice];
+    }
+    ops_usage = 0;
+    int result = boundedexprb(tmp, T, ops, true, true, isb, choice, ops_usage);
+    assert result != NaN;
+    return result;
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands (and some constants<=3) and T operators
+ * given.
+ * 
+ */
+generator int boundedexpr_withc(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
         return ?? ? pars[choice] : ??(2);
     }
     ops_usage = 0;
