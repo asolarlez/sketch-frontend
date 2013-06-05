@@ -1,4 +1,4 @@
-pragma options "-V10 --bnd-int-range 16 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 8 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 6 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --bnd-int-range 16 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 8 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 5 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
@@ -43,13 +43,14 @@ bit powerOf2(int n) {
 	}
 }
 
-void spec_allreduce(global int P, global double[P] v, ref global double result) {
+double spec_allreduce(global int P, global double[P] v) {
 	assume powerOf2(P);
 	assume P <= SPMD_MAX_NPROC;
-	result = 0.0;
+	double result = 0.0;
 	for (int i=0; i<P; i++) {
 		result = result + v[i];
 	}
+	return result;
 }
 
 int setup_l2npcols() {
@@ -88,7 +89,8 @@ double allreduce(global int l2npcols, int[l2npcols] reduce_exch_proc, double x) 
 	return sum[0];
 }
 
-void sk_allreduce(int P, double[P] v, ref global double result) implements spec_allreduce {
+double sk_allreduce(int P, double[P] v) implements spec_allreduce {
+	global double result;
 	spmdfork(P) {
 		double s = movein(v);
 		double res; // = movein_single(result);
@@ -100,4 +102,5 @@ void sk_allreduce(int P, double[P] v, ref global double result) implements spec_
 		res = allreduce(l2npcols, reduce_exch_proc, s);
 		moveout_single(result, res);
 	}
+	return result;
 }
