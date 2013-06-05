@@ -92,6 +92,7 @@ void setup_reduce(int l2npcols, ref int[l2npcols] arr) {
 		//int j = (spmdpid + div_factor/2) % div_factor + (spmdpid/div_factor)*div_factor;
 		int ops_usage;
 		int j = expr2(3, {spmdpid, div_factor, div_factor/2}, 4, {PLUS, TIMES, DIV, MOD}, ops_usage);
+		minimize(ops_usage);
 		arr[i] = j;
 		div_factor = div_factor/2;
 	}
