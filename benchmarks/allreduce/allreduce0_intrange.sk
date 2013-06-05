@@ -1,6 +1,4 @@
-pragma options "-V10 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 4 --bnd-inline-amnt 5 --bnd-arr1d-size 4 --bnd-arr-size 4 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
-
-// BUG: when use FFIELD, there is a cex: P=1, r[0]==7, and EQ 7 == 0 will fail!
+pragma options "-V10 --bnd-int-range 8 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 4 --bnd-inline-amnt 5 --bnd-arr1d-size 4 --bnd-arr-size 4 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
@@ -9,18 +7,35 @@ int SPMD_MAX_NPROC = 4;
 int SPMD_MAX_BUF_LEN = 2;
 include "spmd.skh";
 
-include "boundedgen.skh";
+include "generators2.skh";
 
-double movein(global double[spmdnproc] ga) {
-	return ga[spmdpid];
-}
-
-void moveout(ref global double[spmdnproc] ga, double local) {
-	ga[spmdpid] = local;
+struct LState {
+	int n;
+	double[n] a;
 }
 
 struct LSingle {
 	double val;
+}
+
+LState movein(global int ncols, global double[ncols] ga) {
+	assert ncols % spmdnproc == 0;
+	int n = ncols / spmdnproc;
+	int base = n * spmdpid;
+	double[n] a;
+	for (int i=0; i<n; i++) {
+		a[i] = ga[base+i];
+	}
+	LState s = new LState(n=n, a=a);
+	return s;
+}
+
+void moveout(global int ncols, ref global double[ncols] ga, LState s) {
+	int n = s.n;
+	int base = n * spmdpid;
+	for (int i=0; i<n; i++) {
+		ga[base+i] = s.a[i];
+	}
 }
 
 LSingle movein_single(global double[spmdnproc] gv) {
@@ -47,12 +62,14 @@ bit powerOf2(int n) {
 }
 
 // NOTE: how to assert that value is on every processor? now the double[P] result seems clumsy!
-void spec(global int P, global double[P] r, ref global double[P] result) {
+void spec_rnorm(global int P, global int ncols, global double[ncols] r, ref global double[P] result) {
 	assume powerOf2(P);
+	assume ncols>0 && ncols%P == 0;
 	assume P <= SPMD_MAX_NPROC;
+	assume ncols <= 4;
 	double sum = 0.0;
-	for (int i=0; i<P; i++) {
-		sum = sum + r[i];
+	for (int i=0; i<ncols; i++) {
+		sum = sum + r[i] * r[i];
 	}
 	for (int p=0; p<P; p++) {
 		result[p] = sum;
@@ -74,8 +91,7 @@ void setup_reduce(int l2npcols, ref int[l2npcols] arr) {
 	for (int i=0; i<l2npcols; i++) {
 		//int j = (spmdpid + div_factor/2) % div_factor + (spmdpid/div_factor)*div_factor;
 		int ops_usage;
-		int j = boundedexpr(3, {spmdpid, div_factor, div_factor/2}, 4, {PLUS, TIMES, DIV, MOD}, ops_usage);	//Error: AN INTEGER GOT REALLY BIG, AND IS NOW BEYOND THE SCOPE OF THE SOLVER
-		minimize(ops_usage);
+		int j = expr2(3, {spmdpid, div_factor, div_factor/2}, 4, {PLUS, TIMES, DIV, MOD}, ops_usage);
 		arr[i] = j;
 		div_factor = div_factor/2;
 	}
@@ -94,17 +110,20 @@ double allreduce(global int l2npcols, int[l2npcols] reduce_exch_proc, double x) 
 	return sum[0];
 }
 
-void imp(int P, double[P] r, ref global double[P] result) implements spec {
+void sk_rnorm(int P, int ncols, double[ncols] r, ref global double[P] result) implements spec_rnorm {
 	spmdfork(P) {
-		double x = movein(r);
+		LState s = movein(ncols, r);
 		LSingle res = movein_single(result);
 
 		global int l2npcols = setup_l2npcols();
 		int[l2npcols] reduce_exch_proc;
 		setup_reduce(l2npcols, reduce_exch_proc);
-
-		res.val = allreduce(l2npcols, reduce_exch_proc, x);
 		
+		double sum = 0.0;
+		for (int i=0; i<s.n; i++) {
+			sum = sum + s.a[i]*s.a[i];
+		}
+		res.val = allreduce(l2npcols, reduce_exch_proc, sum);
 		moveout_single(result, res);
 	}
 }
