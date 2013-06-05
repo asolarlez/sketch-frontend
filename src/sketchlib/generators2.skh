@@ -37,7 +37,7 @@ generator int expr2_withc(int N, int[N] pars, int T, int[T] ops, ref int ops_usa
     return result;
 }
 
-int op2(int cop, int a, int b, bit canplus, bit cantimes){
+generator int op2(int cop, int a, int b, bit canplus, bit cantimes){
     assert cop <= MOD && cop >=0  : "Must pass a valid operator";
     assert canplus || cop != PLUS;
     assert cantimes || cop != TIMES;
