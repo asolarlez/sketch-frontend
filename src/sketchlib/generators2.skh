@@ -33,7 +33,6 @@ generator int expr2_withc(int N, int[N] pars, int T, int[T] ops, ref int ops_usa
     }
     ops_usage = 0;
     int result = exprb2(tmp, T, ops, true, true, isb, choice, ops_usage);
-    assert result != NaN;
     return result;
 }
 
