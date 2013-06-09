@@ -1,9 +1,9 @@
-pragma options "-V10 --bnd-int-range 16 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 8 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 5 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --bnd-int-range 16 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 4 --bnd-inline-amnt 5 --bnd-arr1d-size 4 --bnd-arr-size 4 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
 
-int SPMD_MAX_NPROC = 8;
+int SPMD_MAX_NPROC = 4;
 int SPMD_MAX_BUF_LEN = 2;
 include "spmd.skh";
 
@@ -70,7 +70,7 @@ void setup_reduce(int l2npcols, ref int[l2npcols] arr) {
 		int ops_usage;
 		int j = expr2(3, {spmdpid, group_size, 2}, 4, {PLUS, TIMES, DIV, MOD}, ops_usage);
 		minimize(ops_usage);
-		//assert ops_usage == 5;
+		//assert ops_usage == 6;
 		arr[i] = j;
 		group_size = group_size/2;
 	}
