@@ -1,4 +1,4 @@
-pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 5 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 
