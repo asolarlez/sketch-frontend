@@ -70,7 +70,7 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 	for (int i=0; i<iend; ++i) {
 		for (int j=0; j<jend; ++j) {
 			int di_len;
-			int di = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, di_len);
+			int di = expr2(6, {i, j, nx, ny, nz, spmdnproc}, 3, {PLUS, TIMES, DIV}, di_len);
 			b[di] = a[i*num() + j*num()]; 
 		}
 	}
