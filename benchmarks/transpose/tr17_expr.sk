@@ -61,14 +61,11 @@ void spec_xy_z(global int P, global int nx, global int ny, global int nz, global
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
-	}
 	int iend_len;
 	global int iiend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, iend_len);
-	global int iend = nx*ny;
+	global int iend = nz / spmdnproc;
 	//assert iend == iiend;
-	global int jend = nz/spmdnproc;
+	global int jend = nx * ny;
 	assert iend*jend==nx*ny*nz/spmdnproc;
 	for (int i=0; i<iend; ++i) {
 		for (int j=0; j<jend; ++j) {
@@ -80,17 +77,13 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 // n = nx*ny*nz/np
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
-	}
-	global int iend = nx*ny/spmdnproc;
-	global int jend = nz/spmdnproc;
+	global int iend = nz / spmdnproc;
+	global int jend = nx * (ny / spmdnproc);
 	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
-//				b[p*nz/spmdnproc + i*nz + j] = a[p*nx*ny*nz/(spmdnproc*spmdnproc) + i*nz/spmdnproc + j];
-				b[p*nz/spmdnproc + i*nz + j] = a[p*nx*ny*nz/(spmdnproc*spmdnproc) + i*nz/spmdnproc + j];
+				b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
 		}
 	}
