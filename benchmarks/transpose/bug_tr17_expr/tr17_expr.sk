@@ -85,15 +85,19 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 
 //	global int iend = nz / spmdnproc;
 //	global int jend = nx * (ny / spmdnproc);
-//	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
+	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
 
+	int cost2 = 0;
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
-				b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
+				int a_idx = expr2(7, {p, i, j, nx, ny, nz, spmdnproc}, 2, {PLUS, TIMES}, cost2);
+				b[a_idx] = a[p*iend*jend + i + j*iend];
+				//b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
 		}
 	}
+	minimize(cost2);
 }
 
 
