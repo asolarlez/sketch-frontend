@@ -78,9 +78,15 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 // n = nx*ny*nz/np
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-	global int iend = nz / spmdnproc;
-	global int jend = nx * (ny / spmdnproc);
-	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
+	int cost = 0;
+	global int iend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
+	global int jend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
+	minimize(cost);
+
+//	global int iend = nz / spmdnproc;
+//	global int jend = nx * (ny / spmdnproc);
+//	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
+
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
