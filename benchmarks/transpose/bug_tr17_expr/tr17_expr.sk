@@ -1,6 +1,6 @@
-pragma options "--slv-seed 2 --bnd-int-range 75 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 5 --bnd-arr1d-size 16 --bnd-arr-size 32 --beopt:simiters 100 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--slv-seed 2 --bnd-int-range 32 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 5 --bnd-arr1d-size 16 --bnd-arr-size 32 --beopt:simiters 100 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
-// merged with default: now 75 success
+// merged with default: now 32 success
 
 // seed=2: range 75 fail, 76 success
 // seed=5: 75 success
@@ -9,7 +9,7 @@ package spmd;
 
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
-include "generators.skh";
+include "generators2.skh";
 
 struct LState {
 	int ntdivnp;		// total cells per node
@@ -66,8 +66,10 @@ void spec_xy_z(global int P, global int nx, global int ny, global int nz, global
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+	int cost = 0;
 	global int iend = nz / spmdnproc;
-	global int jend = expr(2, {nx, ny}, 1, {TIMES});
+	global int jend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
+	minimize(cost);
 //	global int jjend = nx * ny;
 //	assert jend == jjend;
 //	assert iend*jend==nx*ny*nz/spmdnproc;

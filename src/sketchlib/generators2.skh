@@ -8,14 +8,15 @@ package generators;
  * given.
  * 
  */
-generator int expr2(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
+generator int expr2(int N, int[N] pars, int T, int[T] ops, ref int cost){
     bit isb; int choice;
     generator int tmp(ref int choice){
         choice = ??;
         return pars[choice];
     }
-    ops_usage = 0;
-    int result = exprb2(tmp, T, ops, true, true, isb, choice, ops_usage);
+    // do not clear, just increment
+    // cost = 0;
+    int result = exprb2(tmp, T, ops, true, true, isb, choice, cost);
     return result;
 }
 
@@ -25,14 +26,13 @@ generator int expr2(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
  * given.
  * 
  */
-generator int expr2_withc(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
+generator int expr2_withc(int N, int[N] pars, int T, int[T] ops, ref int cost){
     bit isb; int choice;
     generator int tmp(ref int choice){
         choice = ??;
         return ?? ? pars[choice] : ??(2);
     }
-    ops_usage = 0;
-    int result = exprb2(tmp, T, ops, true, true, isb, choice, ops_usage);
+    int result = exprb2(tmp, T, ops, true, true, isb, choice, cost);
     return result;
 }
 
@@ -54,7 +54,7 @@ generator int op2(int cop, int a, int b, bit canplus, bit cantimes){
 }
 
 
-generator int exprb2(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int ops_usage){
+generator int exprb2(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int cost){
     if ( T>0 && ??(1) ) {
         isbase = false;
         int ch = ??;
@@ -64,9 +64,9 @@ generator int exprb2(fun chose, int T, int[T] ops, bit canplus, bit cantimes, re
         bit lib, rib;
         int lch; int rch;
         
-        ops_usage++;
-        int xa = exprb2(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch, ops_usage);
-        int xb = exprb2(chose, T, ops, true, true, rib, rch, ops_usage);
+        cost++;
+        int xa = exprb2(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch, cost);
+        int xb = exprb2(chose, T, ops, true, true, rib, rch, cost);
         if(lib && rib && 
                 (och ==PLUS || 
                         och==TIMES)){ 
