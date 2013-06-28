@@ -67,7 +67,7 @@ void spec_xy_z(global int P, global int nx, global int ny, global int nz, global
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
 	int cost = 0;
-	global int iend = nz / spmdnproc;
+	global int iend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
 	global int jend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
 	minimize(cost);
 //	global int jjend = nx * ny;
