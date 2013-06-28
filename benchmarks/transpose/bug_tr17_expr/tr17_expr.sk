@@ -67,7 +67,7 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 	minimize(cost);
 //	global int jjend = nx * ny;
 //	assert jend == jjend;
-//	assert iend*jend==nx*ny*nz/spmdnproc;
+	assert iend*jend==nx*ny*nz/spmdnproc;
 	for (int i=0; i<iend; ++i) {
 		for (int j=0; j<jend; ++j) {
 			b[i+j*iend] = a[i*jend + j]; 
@@ -91,7 +91,7 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
-				int a_idx = expr2(7, {p, i, j, nx, ny, nz, spmdnproc}, 2, {PLUS, TIMES}, cost2);
+				int a_idx = expr2(9, {p, i, j, iend, jend, nx, ny, nz, spmdnproc}, 2, {PLUS, TIMES}, cost2);
 				b[a_idx] = a[p*iend*jend + i + j*iend];
 				//b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
