@@ -94,6 +94,7 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
 				int a_idx = expr2(8, {p, i, j, iend, jend, nx, ny, nz}, 2, {PLUS, TIMES}, cost2);
+				assert a_idx == p*iend + i + j*nz;
 				b[a_idx] = a[p*iend*jend + i + j*iend];
 				//b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
