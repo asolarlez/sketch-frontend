@@ -4,7 +4,7 @@ package spmd;
 
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
-include "generators2.skh";
+include "generators.skh";
 
 struct LState {
 	int ntdivnp;		// total cells per node
@@ -89,18 +89,18 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 	global int iend = nz / spmdnproc;
 	global int jend = nx * (ny / spmdnproc);
 
-	int cost2 = 0;
+//	int cost2 = 0;
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
-				int a_idx = expr2(8, {p, i, j, iend, jend, nx, ny, nz}, 2, {PLUS, TIMES}, cost2);
+				int a_idx = expr(5, {p, i, j, iend, nz}, 2, {PLUS, TIMES});
 				assert a_idx == p*iend + i + j*nz;
 				b[a_idx] = a[p*iend*jend + i + j*iend];
 				//b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
 		}
 	}
-	minimize(cost2);
+//	minimize(cost2);
 }
 
 
