@@ -1,4 +1,5 @@
-pragma options "-V10 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 8 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --beopt:simiters 100 --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 8 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+//--fe-trunc-var-arr
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
