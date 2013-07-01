@@ -61,13 +61,15 @@ void spec_xy_z(global int P, global int nx, global int ny, global int nz, global
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-	int cost = 0;
-	global int iend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
-	global int jend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
-	minimize(cost);
-//	global int jjend = nx * ny;
-//	assert jend == jjend;
-	assert iend*jend==nx*ny*nz/spmdnproc;
+//	int cost = 0;
+//	global int iend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
+//	global int jend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, cost);
+//	minimize(cost);
+//	assert iend*jend==nx*ny*nz/spmdnproc;
+
+	global int iend = nz / spmdnproc;
+	global int jend = nx * ny;
+	
 	for (int i=0; i<iend; ++i) {
 		for (int j=0; j<jend; ++j) {
 			b[i+j*iend] = a[i*jend + j]; 
@@ -91,7 +93,7 @@ void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
-				int a_idx = expr2(9, {p, i, j, iend, jend, nx, ny, nz, spmdnproc}, 2, {PLUS, TIMES}, cost2);
+				int a_idx = expr2(8, {p, i, j, iend, jend, nx, ny, nz}, 2, {PLUS, TIMES}, cost2);
 				b[a_idx] = a[p*iend*jend + i + j*iend];
 				//b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
