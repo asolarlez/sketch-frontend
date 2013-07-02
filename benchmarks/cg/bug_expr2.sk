@@ -1,15 +1,16 @@
-pragma options "--bnd-int-range 128 -V10 --beopt:simiters 100 --bnd-inbits 3 --bnd-cbits 3 --bnd-inline-amnt 5 --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--bnd-int-range 16 -V10 --beopt:simiters 100 --bnd-inbits 3 --bnd-cbits 3 --bnd-inline-amnt 5 --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package tests;
 
-include "generators.skh";
+include "generators2.skh";
 
 harness void spmd_vectr(global int nprows, global int npcols, int spmdpid) {
-	if (nprows>0 && nprows<=4 && npcols>0 && npcols<=4 && nprows == npcols) {
+	if (nprows>0 && nprows<=4 && npcols>0 && npcols<=4 && nprows == npcols && spmdpid<nprows*npcols) {
 		int peer = (spmdpid%nprows)*nprows + spmdpid/nprows;
-		//int cost = 0;
-		int peer2 = expr(3, {spmdpid, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD});
+		int cost = 0;
+		int peer2 = expr2(3, {spmdpid, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD}, cost);
 		assert peer == peer2;
+		minimize(cost);
 	}
 }
 
