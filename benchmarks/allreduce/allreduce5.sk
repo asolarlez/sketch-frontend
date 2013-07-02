@@ -1,5 +1,8 @@
 pragma options "-V10 --bnd-int-range 32 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 8 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 5 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
+// execute the plan in reverse order
+// should still be correct
+
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
 
@@ -80,7 +83,7 @@ double allreduce(global int l2npcols, int[l2npcols] reduce_exch_proc, double x) 
 	double[1] sum;
 	sum[0] = x;
 	double[1] buf;
-	for (global int i=0; i<l2npcols; i++) {
+	for (global int i=l2npcols-1; i>=0; i--) {
 		int recipient = reduce_exch_proc[i];
 		//spmdtransfer(global int size, bit scond, double [size] sendbuf, int recipient, bit rcond, ref double [size] recvbuf)
 		spmdtransfer(1, 1, sum, recipient, 1, buf);
