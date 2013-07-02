@@ -4,11 +4,11 @@ package tests;
 
 include "generators.skh";
 
-harness void main(global int nprows, global int npcols, int spmdpid) {
-	if (nprows>0 && nprows<=4 && npcols>0 && npcols<=4 && nprows == npcols && spmdpid<nprows*npcols) {
-		int peer = (spmdpid%nprows)*nprows + spmdpid/nprows;
+harness void main(int nprows, int npcols, int me) {
+	if (nprows>0 && nprows<=4 && npcols>0 && npcols<=4 && nprows == npcols && me<nprows*npcols) {
+		int peer = (me%nprows)*nprows + me/nprows;
 		//int cost = 0;
-		int peer2 = expr(3, {spmdpid, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD});
+		int peer2 = expr(3, {me, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD});
 		assert peer == peer2;
 	}
 }
