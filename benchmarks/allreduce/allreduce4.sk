@@ -1,9 +1,9 @@
-pragma options "-V10 --bnd-int-range 32 --beopt:simiters 100 --fe-trunc-var-arr --spmd-max-nproc 8 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 5 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --bnd-int-range 32 --beopt:simiters 100 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 5 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
 package spmd;
 // NOTE: how to refer to spmd::some_var if I am not in spmd package?
 
-int SPMD_MAX_NPROC = 8;
+int SPMD_MAX_NPROC = 4;
 int SPMD_MAX_BUF_LEN = 2;
 include "spmd.skh";
 

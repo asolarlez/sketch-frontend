@@ -75,8 +75,8 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new GlobalToLocalCasts(varGen, tf));
 
         prog = (Program) prog.accept(new ReplaceParamExprArrayRange(varGen));
-        System.out.println("after rpear:");
-        prog.accept(prt);
+        // System.out.println("after rpear:");
+        // prog.accept(prt);
 
         prog = (Program) prog.accept(new EliminateArrayRange(varGen));
         // System.out.println("after ear:");
@@ -89,12 +89,12 @@ public class LowerToSketch extends MetaStage {
 
 
         prog = (Program) prog.accept(new EliminateMultiDimArrays(true, varGen));
-        System.out.println("after emda:");
-        prog.accept(prt);
+        // System.out.println("after emda:");
+        // prog.accept(prt);
 
         prog = (Program) prog.accept(new EliminateArrayRange(varGen));
-        System.out.println("after ear2:");
-        prog.accept(prt);
+        // System.out.println("after ear2:");
+        // prog.accept(prt);
         prog = (Program) prog.accept(new EliminateMDCopies(varGen));
 
 
@@ -140,8 +140,8 @@ public class LowerToSketch extends MetaStage {
         // prog.debugDump("After SVA");
 
         prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
-        System.out.println("after enaa:");
-        prog.accept(prt);
+        // System.out.println("after enaa:");
+        // prog.accept(prt);
 
 
         // prog = (Program) prog.accept(new EliminateArrayDims());

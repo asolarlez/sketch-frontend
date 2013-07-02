@@ -38,7 +38,6 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.EliminateComplexForLoops;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
-import sketch.compiler.passes.printers.SimpleCodePrinter;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.ASTQuery;
 import sketch.compiler.passes.structure.CallGraph;
@@ -133,16 +132,16 @@ public class SpmdTransform  extends SymbolTableVisitor {
         allFcns.addAll(someProcFcns);
 //	System.out.println("allFcns: " + allFcns.toString());
 
-        SimpleCodePrinter pr = new SimpleCodePrinter();
-        pr.setNres(nres);
-
-        System.out.println("before SpmdTransform:");
-        spec.accept(pr);
+        // SimpleCodePrinter pr = new SimpleCodePrinter();
+        // pr.setNres(nres);
+        //
+        // System.out.println("before SpmdTransform:");
+        // spec.accept(pr);
 
         spec = spec.newFromFcns(allFcns);
 
-        System.out.println("after SpmdTransform:");
-        spec.accept(pr);
+        // System.out.println("after SpmdTransform:");
+        // spec.accept(pr);
         return spec;
     }
 
