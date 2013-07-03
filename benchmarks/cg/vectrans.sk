@@ -1,4 +1,4 @@
-pragma options "-V10 --beopt:simiters 100 --spmd-max-nproc 9 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 9 --bnd-inline-amnt 5 --bnd-arr1d-size 9 --bnd-arr-size 9 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "-V10 --beopt:simiters 100 --spmd-max-nproc 9 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 9 --bnd-inline-amnt 5 --bnd-arr1d-size 9 --bnd-arr-size 9 --be:ufunSymmetry"; //  --be:showDAG --beopt:simplifycex NOSIM
 //--fe-trunc-var-arr
 
 // vector transpose

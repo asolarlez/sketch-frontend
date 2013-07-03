@@ -1,31 +1,89 @@
-pragma options "--bnd-int-range 32 -V10 --beopt:simiters 100 --spmd-max-nproc 9 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 9 --bnd-inline-amnt 5 --bnd-arr1d-size 9 --bnd-arr-size 9 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--beopt:simplifycex NOSIM --slv-seed 5 -V10 --beopt:simiters 100 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 1 --bnd-inline-amnt 5 --bnd-unroll-amnt 4  --bnd-arr-size 4";
 //--fe-trunc-var-arr
+//--beopt:simplifycex NOSIM
 
 // vector transpose
 // assuming that nprows == npcols
 // initially, we have a row-wise partitioned vector
 // after vectr, we get a col-wise partitioned vector
 
-package tests;
-// NOTE: how to refer to spmd::some_var if I am not in spmd package?
+package spmd;
 
-int SPMD_MAX_NPROC = 9;
-int SPMD_MAX_BUF_LEN = 9;
+int SPMD_MAX_NPROC = 4;
+int SPMD_MAX_BUF_LEN = 4;
 include "spmd.skh";
-include "generators.skh";
 
-harness void spmd_vectr(global int nprows, global int npcols, int spmdpid) {
+// local version of vector
+struct LocalVec {
+	int base;
+	int len;
+	double[len] v;
+}
+
+// general movein: to get row/col - wise partition, need to pass nprows/npcols as nparts, and proc_row/proc_col as me
+LocalVec movein(global int nparts, int me, int subidx, global int n, global double[n] gv) {
+	int len = n / nparts;
+	int base = me*len;
+	double[len] a;
+	for (int i=0; i<len; i++) {
+		a[i] = gv[base+i];
+	}
+	return new LocalVec(base=base, len=len, v=a);
+}
+
+//general moveout
+void moveout(global int nparts, int me, int subidx, global int n, ref global double[n] gv, LocalVec lv) {
+	int len = n / nparts;
+	int base = me*len;
+	assert lv.len == len && lv.base == base;
+	if (subidx == 0) {
+		for (int i=0; i<len; i++) {
+			gv[base+i] = lv.v[i];
+		}
+	} else {
+		for (int i=0; i<len; i++) {
+			assert gv[base+i] == lv.v[i];
+		}
+	}
+}
+
+void spec_vectr(global int nprows, global int npcols, global int n, global double[n] v, ref global double[n] u) {
 	assume nprows>0 && npcols>0 && nprows*npcols <= SPMD_MAX_NPROC;
 
+	assume n>0 && n <= SPMD_MAX_NPROC;
 	assume nprows == npcols;
-
-	// why don't we use npcols? because nprows==npcols in this case
-	// when npcols == nprows*2, we should still stick to a row partition first, and peer = (spmdpid/2)%nprows*nprows+spmdpid/2/nprows + spmdpid%2
-	int peer = (spmdpid%nprows)*nprows + spmdpid/nprows;
-	int cost = 0;
-	int peer2 = expr_cost(3, {spmdpid, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD}, cost);
-	assert peer == peer2;
-	minimize(cost);
+	assume n%nprows == 0;
+	
+	for (int i=0; i<n; i++) {
+		u = v;
+	}
 }
 
 
+void spmd_vectr(global int nprows, global int npcols, LocalVec lv, ref LocalVec lu) {
+	// why don't we use npcols? because nprows==npcols in this case
+	// when npcols == nprows*2, we should still stick to a row partition first, and peer = (spmdpid/2)%nprows*nprows+spmdpid/2/nprows + spmdpid%2
+	int peer = (spmdpid%nprows)*nprows + spmdpid/nprows;
+	int peer2 =  (spmdpid%nprows)*nprows + spmdpid*??/nprows;
+	assert peer == peer2;
+
+	global int size = lv.len;
+	spmdtransfer(size, 1, lv.v, peer, 1, lu.v);
+
+	//spmdtransfer(global int size, bit scond, double [size] sendbuf, int recipient, bit rcond, ref double [size] recvbuf)
+}
+
+
+void sk_vectr(global int nprows, global int npcols, global int n, global double[n] v, ref global double[n] u) implements spec_vectr {
+	spmdfork(nprows*npcols) {
+		int proc_row = spmdpid/npcols;
+		int proc_col = spmdpid%npcols;
+		LocalVec lv = movein(nprows, proc_row, proc_col, n, v);
+		LocalVec lu = movein(npcols, proc_col, proc_row, n, u);
+		
+		spmd_vectr(nprows, npcols, lv, lu);
+		
+		moveout(npcols, proc_col, proc_row, n, u, lu);
+		moveout(nprows, proc_row, proc_col, n, v, lv);
+	}
+}
