@@ -1,6 +1,9 @@
-pragma options "--beopt:simplifycex NOSIM --slv-seed 5 -V10 --beopt:simiters 100 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 1 --bnd-inline-amnt 5 --bnd-unroll-amnt 4  --bnd-arr-size 4";
+pragma options "--beopt:simplifycex NOSIM --slv-seed 5 -V10 --spmd-max-nproc 4 --bnd-unroll-amnt 4  --bnd-arr-size 4";
 //--fe-trunc-var-arr
 //--beopt:simplifycex NOSIM
+//--beopt:simiters 100
+//--bnd-inbits 4 --bnd-cbits 1
+//--bnd-inline-amnt 5
 
 // vector transpose
 // assuming that nprows == npcols
