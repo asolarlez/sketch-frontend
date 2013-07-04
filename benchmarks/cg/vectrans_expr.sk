@@ -1,4 +1,4 @@
-pragma options "--bnd-int-range 32 -V10 --beopt:simiters 100 --spmd-max-nproc 9 --bnd-inbits 4 --bnd-cbits 3 --bnd-inline-amnt 5 --bnd-unroll-amnt 9  --bnd-arr-size 9";
+pragma options "--bnd-int-range 32 -V10 --beopt:simiters 10 --spmd-max-nproc 9 --bnd-inbits 4 --bnd-cbits 3 --bnd-inline-amnt 4 --bnd-unroll-amnt 9  --bnd-arr-size 9 --beopt:simplifycex NOSIM";
 //--fe-trunc-var-arr
 //--beopt:simplifycex NOSIM
 
@@ -64,11 +64,11 @@ void spec_vectr(global int nprows, global int npcols, global int n, global doubl
 void spmd_vectr(global int nprows, global int npcols, LocalVec lv, ref LocalVec lu) {
 	// why don't we use npcols? because nprows==npcols in this case
 	// when npcols == nprows*2, we should still stick to a row partition first, and peer = (spmdpid/2)%nprows*nprows+spmdpid/2/nprows + spmdpid%2
-	int peer = (spmdpid%nprows)*nprows + spmdpid/nprows;
+	//int peer2 = (spmdpid%nprows)*nprows + spmdpid/nprows;
 	int cost = 0;
-	int peer2 = expr_cost(3, {spmdpid, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD}, cost);
+	int peer = expr_cost(3, {spmdpid, nprows, npcols}, 4, {PLUS, TIMES, DIV, MOD}, cost);
 	//int peer2 =  (spmdpid%nprows)*nprows + spmdpid*??/nprows;
-	assert peer == peer2;
+	//assert peer == peer2;
 	minimize(cost);
 
 	global int size = lv.len;
