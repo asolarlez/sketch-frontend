@@ -488,7 +488,8 @@ public class SpmdTransform  extends SymbolTableVisitor {
                                 getAllOrNoneExpr(addStmts, false, vref, stmt);
                         stmts.addAll(addStmts);
                         StmtAssert none_at_end = new StmtAssert(FEContext.artificalFrom("allproc while loop", stmt), noneCond, false);
-                        none_at_end.setMsg("All while conds must be false at the end");
+                        none_at_end.setMsg("All while conds must be false at the end " +
+                                stmt.getCx());
                         flushAndAdd(stmts, procLoopStmts, none_at_end);
                     } else if (stmt instanceof StmtAssign) {
                         assert false : "the next allproc cannot be StmtAssign! " + stmt;
