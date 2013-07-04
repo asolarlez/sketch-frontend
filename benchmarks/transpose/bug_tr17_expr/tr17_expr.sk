@@ -1,4 +1,5 @@
-pragma options "--slv-seed 2 --bnd-int-range 64 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 4 --bnd-arr1d-size 16 --bnd-arr-size 32 --beopt:simiters 100 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--beopt:simiters 100 --bnd-int-range 64 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 4 --bnd-arr1d-size 16 --bnd-arr-size 32 --beopt:simiters 100 --be:ufunSymmetry"; //  --be:showDAG
+// --beopt:simplifycex NOSIM
 
 package spmd;
 
