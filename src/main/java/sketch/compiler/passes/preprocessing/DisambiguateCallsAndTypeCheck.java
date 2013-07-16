@@ -1044,14 +1044,14 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     public Object visitExprTernary(ExprTernary expr) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprTernary");
-
+        expr = (ExprTernary) super.visitExprTernary(expr);
         Type at = getType((Expression) expr.getA().accept(this));
         Type bt = getType((Expression) expr.getB().accept(this));
         Type ct = getType((Expression) expr.getC().accept(this));
 
         if (at != null) {
-            if (!at.promotesTo(TypePrimitive.inttype, nres))
-                report(expr, "first part of ternary expression " + "must be int");
+            if (!at.promotesTo(TypePrimitive.bittype, nres))
+                report(expr, "first part of ternary expression " + "must be a bit");
         }
 
         if (bt != null && ct != null) {
@@ -1065,6 +1065,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     public Object visitExprNew(ExprNew expNew) {
+        expNew = (ExprNew) super.visitExprNew(expNew);
         TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct().accept(this);
         StructDef ts = nres.getStruct(nt.getName());
         if (ts == null) {
@@ -1171,21 +1172,26 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     public Object visitStmtAssign(StmtAssign stmt) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitStmtAssign");
 
+        Expression newLHS = doExpression(stmt.getLHS());
+        Expression newRHS = doExpression(stmt.getRHS());
+
         if (!stmt.getLHS().isLValue())
             report(stmt, "assigning to non-lvalue");
-        Type lt = getType((Expression) stmt.getLHS().accept(this));
-        Type rt = getType((Expression) stmt.getRHS().accept(this));
+        Type lt = getType(newLHS);
+        Type rt = getType(newRHS);
         String lhsn = null;
-        Expression lhsExp = stmt.getLHS();
+        Expression lhsExp = newLHS;
 
         if (lhsExp instanceof ExprArrayRange) {
-            lhsExp = ((ExprArrayRange) stmt.getLHS()).getBase();
+            lhsExp = ((ExprArrayRange) newLHS).getBase();
         }
         if (lhsExp instanceof ExprVar) {
             lhsn = ((ExprVar) lhsExp).getName();
         }
         matchTypes(stmt, lt, rt);
-        return (stmt);
+        if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
+            return stmt;
+        return new StmtAssign(stmt, newLHS, newRHS, stmt.getOp());
     }
 
     public Object TcheckStmtVarDecl(StmtVarDecl stmt) {
@@ -1193,6 +1199,17 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
         StmtVarDecl result = (StmtVarDecl) super.visitStmtVarDecl(stmt);
         for (int i = 0; i < result.getNumVars(); i++) {
+            Type t = result.getType(i);
+            if (t instanceof TypeArray) {
+                t = ((TypeArray) t).getAbsoluteBase();
+            }
+            if (t instanceof TypeStructRef) {
+                StructDef sd = nres.getStruct(((TypeStructRef) t).getName());
+                if (sd == null) {
+                    report(stmt, "Type " + t + " does not exist or is ambiguous");
+                }
+            }
+
             Expression ie = result.getInit(i);
             if (ie != null) {
                 Type rt = getType(ie);

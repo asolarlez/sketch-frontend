@@ -8,6 +8,7 @@ import java.util.StringTokenizer;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.ExprConstChar;
+import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.typs.Type;
@@ -18,7 +19,7 @@ public class ValueOracle extends AbstractValueOracle {
 	 * After sketch is resolved, this map will contain the
 	 * value of each variable in store.
 	 */
-	protected Map<String, Integer> valMap;
+    protected Map<String, Number> valMap;
 
 
 
@@ -32,25 +33,35 @@ public class ValueOracle extends AbstractValueOracle {
 
 	public void loadFromStream(LineNumberReader in) throws IOException{
 		String dbRecord = null;
-		valMap = new HashMap<String, Integer>();
+        valMap = new HashMap<String, Number>();
 		while ( (dbRecord = in.readLine()) != null) {
             StringTokenizer st = new StringTokenizer(dbRecord, "\t ");
             String vname = st.nextToken();
             String sval = st.nextToken();
-            int val = Integer.parseInt(sval);
-            valMap.put(vname, val);
+            if (sval.contains(".")) {
+                double val = Double.parseDouble(sval);
+                valMap.put(vname, val);
+            } else {
+                int val = Integer.parseInt(sval);
+                valMap.put(vname, val);
+            }
          }
 	}
 
     protected ExprConstant getVal(FENode node, String var, Type t) {
-		Integer val = valMap.get(var);
+        Number val = valMap.get(var);
 
 		if(val != null){
             if (t.equals(TypePrimitive.chartype)) {
                 return ExprConstChar.createFromInt(val.intValue());
             } else {
-		        int i = val.intValue();
-		        return (new ExprConstInt(node, i));
+                if (t.equals(TypePrimitive.inttype) || t.equals(TypePrimitive.bittype)) {
+                    int i = val.intValue();
+                    return (new ExprConstInt(node, i));
+                } else {
+                    double dd = val.doubleValue();
+                    return new ExprConstFloat(node, dd);
+                }
 		    }
 		}		
 		return new ExprConstInt(node, -1);

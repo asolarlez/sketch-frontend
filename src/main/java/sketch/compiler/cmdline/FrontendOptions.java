@@ -62,7 +62,7 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public String tprintPython = null;
 
     public enum FloatEncoding {
-        AS_BIT, AS_FFIELD, AS_FIXPOINT
+        AS_BIT, AS_FFIELD, AS_FIXPOINT, TO_BACKEND
     }
 
     @CliParameter(help = "Add assume a[i]==0 for i>length(a) for any varlength array a")

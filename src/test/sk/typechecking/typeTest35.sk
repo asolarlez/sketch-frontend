@@ -1,0 +1,79 @@
+struct Relation
+{
+  int sz;
+  Tuple [sz] tuples;
+  Schema schema;
+}
+
+struct Schema
+{
+  int numInts;
+  int [numInts] intColIds;
+}
+
+#define MAX_COLS 5
+struct Tuple
+{
+  int [MAX_COLS] ints;
+}
+
+Relation project (Relation in, Schema outConstraints)
+{
+  Schema outSchema = new Schema(numInts = outConstraints.numInts);
+ 
+  int i = 0;
+  minrepeat 
+  {
+    if (??)
+    {
+      outSchema.intColIds[i] = chooseNum(in.schema.numInts, outSchema.intColIds, i);
+      ++i;
+    }
+  }
+  
+  if (i < outSchema.numInts)
+    assert(false);
+
+  Tuples [in.sz] outTuples; //TypeError Tuples is undefined.
+  // need to initialize outTuples using the chosen column IDs
+  // but for now just set it to be the same as the input 
+  Relation out = new Relation(sz = in.sz, tuples = in.tuples, schema = outSchema);
+  return out;
+}
+
+// return a random number x where 0 <= x < max, and x is not in chosen
+generator int chooseNum (int max, int [MAX_COLS] chosen, int numChosen)
+{
+  int n = ??;
+
+  if (n >= max)
+    assert(false);
+
+  for (int i = 0; i < numChosen; ++i)
+  {
+    if (chosen[i] == n)
+      assert(false);
+  }
+
+  return n;
+}
+
+
+#define MAX_TUPLES 4
+harness void main2 (int [MAX_TUPLES] col1, int [MAX_TUPLES] col2, int [MAX_TUPLES] col3, 
+                    int [MAX_TUPLES] col4, int [MAX_TUPLES] col5)
+{
+  Tuple [MAX_TUPLES] tuples;
+  for (int i = 0; i < MAX_TUPLES; ++i)
+  {
+    tuples[i] = new Tuple(ints = {col1[i], col2[i], col3[i], col4[i], col5[i]});
+  }
+ 
+  // the input relation has 5 columns, and we want to project 3 columns from it 
+  Schema schema = new Schema(numInts = 5, intColIds = {0, 1, 2, 3, 4});
+  Relation in = new Relation(sz = MAX_TUPLES, tuples = tuples[0::MAX_TUPLES], schema = schema);
+
+  Schema outSchema = new Schema();
+  outSchema.numInts = 3;
+  Relation out = project(in, outSchema);
+}

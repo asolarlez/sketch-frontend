@@ -1,0 +1,37 @@
+package string;
+
+pragma options "--bnd-unroll-amnt 32";
+
+
+struct Str{
+   int n;
+   char[n] buf;
+}
+
+
+int cmp(Str s1, Str s2){
+	int i = 0;
+	while(1)
+	{		
+		if(s1.buf[i] != s2.buf[i])
+			return s1.buf[i]-s2.buf[i];
+		if(s1.buf[i] == '\0' && s2.buf[i] == '\0')
+			return 0;
+		i++;
+	}
+	
+}
+
+
+
+harness void mainB(){
+Str s1 = new Str(n=6, buf=??);
+assert s1.n == 6 && s1.buf == "hello";
+
+Str s2 = new Str(n=6, buf=??);
+assert s2.n == 6 && s2.buf == "world";
+
+Str t = new Str(n=11, buf=??);
+assert t.n == 11 && t.buf == "helloworld";
+
+}

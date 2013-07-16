@@ -30,19 +30,18 @@ int[N] sort(int N, int[N] input){
 
 
 
-int[N] MergeSort(int N, int[N] input)implements sort{
+int[N] MergeSort([int N], int[N] input)implements sort{
    int[N] output=0;
    if(N>1){ 
       int No2a = N/2; int No2b = N-No2a;      
       int[No2a] firstHalf = input[0::No2a];
       int[No2b] secondHalf = input[No2a::No2b];
-      firstHalf = MergeSort(No2a, firstHalf);
-      secondHalf = MergeSort(No2b, secondHalf);
+      firstHalf = MergeSort( firstHalf);
+      secondHalf = MergeSort( secondHalf);
       int x=0;
-      int y=0; generator void tt(int x, ref int[x] fh, int s, ref int[s] sh){ }
+      int y=0; 
       generator int chose(ref int choice){
          choice = ??;
-         tt(No2a, firstHalf, No2b, secondHalf);
          if(choice==0){ return firstHalf[x]; }
          if(choice==1){ return secondHalf[y]; }
          if(choice==2){ return N; }

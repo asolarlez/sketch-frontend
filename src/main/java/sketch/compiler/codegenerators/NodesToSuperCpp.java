@@ -490,6 +490,8 @@ public class NodesToSuperCpp extends NodesToJava {
         if (addIncludes) {
             preamble.append("#include <cstdio>\n");
             preamble.append("#include <assert.h>\n");
+            preamble.append("#include <iostream>\n");
+            preamble.append("using namespace std;\n");
             preamble.append("#include \"vops.h\"\n");
             preamble.append("#include \"");
             preamble.append(filename);

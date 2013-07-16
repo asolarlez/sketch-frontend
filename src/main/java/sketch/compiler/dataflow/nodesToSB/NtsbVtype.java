@@ -375,7 +375,11 @@ public class NtsbVtype extends IntVtype {
         if(t.equals(TypePrimitive.bittype)){
             return "bit";
         }else{
-            return "int";
+            if (t.equals(TypePrimitive.floattype) || t.equals(TypePrimitive.doubletype)) {
+                return "float";
+            } else {
+                return "int";
+            }
         }
     }
 }

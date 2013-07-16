@@ -16,6 +16,7 @@
 
 package sketch.compiler.ast.core;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * A formal parameter to a function. Each parameter consists of a string name, a
@@ -63,11 +64,13 @@ public class Parameter extends FENode implements Comparable<Parameter>
     public Parameter(FEContext cex, Type type, String name, int ptype, boolean isImplicit)
     {    	
         super(cex);
-    	assert type != null;
         this.type = type;
         this.name = name;
         this.partype = ptype;
         this.isImplicit = isImplicit;
+        if (type == null) {
+            throw new ExceptionAtNode("Incorrect type", this);
+        }
     }
 
     /**

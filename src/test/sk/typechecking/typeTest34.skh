@@ -1,0 +1,26 @@
+include "string.skh";
+
+
+// declaring struct File
+struct File{
+	Str line;
+	@NeedsInclude("#include <stdio.h>")
+	@NeedsInclude("#include <stdlib.h>")
+	@Native("FILE* cfile;")
+}
+
+// declaring function fopen_r()
+@NeedsInclude("#include \"fopen.c\"")
+@Native("{_out = _fopen_r(filename.buf->cfile);}")
+File fopen_r(Str filename){
+	// assert line == newStr("hihi");
+	return new File();
+}
+
+
+// declaring function fread()
+@NeedsInclude("#include \"fread.c\"")
+@Native("{ _out = fread(pFile);}")
+Str fread(pFile){ // TypeError missing type
+	return new Str(n=6, buf="hello");
+}

@@ -1,0 +1,14 @@
+include "typeTest34.skh";
+
+
+harness void main(){
+	File f = fopen_r(newStr("hellot.txt"));
+	//while(!isEmpty(f)){
+	//Str s = fread(f);
+//	print(s);
+//}
+}
+
+//while((Str s = fread(f)) != null){
+//		print(s);
+//	}

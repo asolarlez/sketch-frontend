@@ -1,0 +1,16 @@
+pragma options "--bnd-unroll-amnt 32";
+
+
+int length([int n], int[n] a){
+    return n;
+}
+
+struct Foo{
+  int y;
+}
+
+
+harness void main(int n, int[n] x){
+	Foo f = new Foo(y=length(x));
+	assert f.y == n;
+}

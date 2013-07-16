@@ -24,8 +24,12 @@ public class EliminateBitSelector extends SymbolTableVisitor {
       if(exp.getOp() == ExprBinary.BINOP_SELECT){
     	  String nm = varGen.nextVar();
     	  ExprVar tmpvar = new ExprVar(exp, nm);
-    	  Type bvtype = this.getType(exp.getRight());
-    	  Type tmptype = bvtype;
+
+            Type bvtypeLeft = this.getType(exp.getLeft());
+            Type bvtypeRight = this.getType(exp.getRight());
+            Type bvtype = bvtypeRight.leastCommonPromotion(bvtypeLeft, nres);
+
+            Type tmptype = bvtype;
 
     	  while(tmptype instanceof TypeArray){
     		  tmptype = ((TypeArray) tmptype).getBase();

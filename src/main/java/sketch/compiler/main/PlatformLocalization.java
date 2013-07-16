@@ -34,6 +34,7 @@ public class PlatformLocalization {
     public String osarch = System.getProperty("os.arch");
     public Properties localization;
     public File usersketchdir;
+    protected static String CEGIS_NAME = "cegis";
     /** only extract to a secure (not shared) location */
     public File tmpdir;
     /**
@@ -114,7 +115,7 @@ public class PlatformLocalization {
         if (options.feOpts.cegisPath != null) {
             return options.feOpts.cegisPath;
         } else {
-            return getCegisPathInner("cegis");
+            return getCegisPathInner(CEGIS_NAME);
         }
     }
 

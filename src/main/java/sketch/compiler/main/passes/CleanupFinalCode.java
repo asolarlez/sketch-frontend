@@ -12,6 +12,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.cleanup.RemoveDumbArrays;
 import sketch.compiler.passes.cleanup.RemoveUselessCasts;
+import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 
 /**
@@ -81,11 +82,11 @@ public class CleanupFinalCode extends MetaStage {
         // FIXME xzl: AssembleInit has bug that reorder vars
         // with incorrect dependency
         // int b; int w; w = ...; b = w/2; will be wrong
-        // prog = (Program) prog.accept(new AssembleInitializers());
+        prog = (Program) prog.accept(new AssembleInitializers());
 
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveShallowTempVars());
-        // prog = (Program) prog.accept(new AssembleInitializers());
+        prog = (Program) prog.accept(new AssembleInitializers());
 
         return prog;
     }

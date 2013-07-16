@@ -124,6 +124,7 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
         
 
+
         if (options.feOpts.truncVarArr) {
             prog = (Program) prog.accept(new TruncateVarArray(options, varGen));
         }

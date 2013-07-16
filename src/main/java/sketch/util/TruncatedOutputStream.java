@@ -23,11 +23,13 @@ public class TruncatedOutputStream extends OutputStream {
 	        System.out.write(arg0);
 	    }
 		if(sbuf.length() < sz){
-			sbuf.append( Character.toChars(arg0)  );
+            sbuf.append((char) arg0);
+            // sbuf.append( Character.toChars(arg0) );
 		}else{
-			char [] tmp = Character.toChars(arg0) ; 
-			for(int i=0; i<tmp.length; ++i){
-				cb[idx] = tmp[i]; 
+            // char [] tmp = Character.toChars(arg0) ;
+            // for(int i=0; i<tmp.length; ++i)
+            {
+                cb[idx] = (char) arg0; // tmp[i];
 				idx = (idx + 1) % sz;
 				if(idx == beg){ beg = (beg + 1) % sz;}
 			}

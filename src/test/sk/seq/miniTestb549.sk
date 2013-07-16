@@ -1,0 +1,22 @@
+
+
+@Native("{ printf(\" w=%d, b=%d \n \", x, y); assert( x == i + j+5); assert(y==(i*9+j*9)/2+3); }")
+void print(int x, int y, int i, int j){  }
+
+harness void main(int i, int j){
+	
+	int w;
+	int x;
+	int y;
+	int z;
+	int zz;
+	zz = i + j;
+	w = zz + 5;
+	z = zz / 2;
+	y = w + z + zz;
+	zz -= 7 ;
+	x = zz + y + w;	
+	print(w, x, i, j);	
+	assert x == (i*(??) + j*(??) + ??)/??;
+	
+}

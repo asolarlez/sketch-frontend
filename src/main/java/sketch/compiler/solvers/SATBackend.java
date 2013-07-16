@@ -33,11 +33,12 @@ public class SATBackend {
 
     String solverErrorStr;
 	final RecursionControl rcontrol;
-	final TempVarGen varGen;
+    protected final TempVarGen varGen;
 	protected ValueOracle oracle;
 	private boolean tracing = false;
 	private SATSolutionStatistics lastSolveStats;
     public final SketchOptions options;
+    protected boolean minimize = false;
 
 	public SATBackend(SketchOptions options, 
 	        RecursionControl rcontrol, TempVarGen varGen)
@@ -51,6 +52,7 @@ public class SATBackend {
 		tracing = true;
 	}
 	
+
 	public String[] getBackendCommandline(Vector<String> commandLineOptions_, String... additional){
         Vector<String> commandLineOptions = (Vector<String>) commandLineOptions_.clone();
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
@@ -84,6 +86,19 @@ public class SATBackend {
         log("After prog.accept(partialEval)");
     }
 
+    public Program preprocess(Program prog) {
+        final HasMinimize hasMinimize = new HasMinimize();
+        hasMinimize.visitProgram(prog);
+        if (hasMinimize.hasMinimize()) {
+            minimize = true;
+            final AbstractCostFcnAssert costFcnAssert =
+                    new AbstractCostFcnAssert(options.bndOpts.mbits);
+            return (Program) costFcnAssert.visitProgram(prog);
+        } else {
+            return prog;
+        }
+    }
+
     public boolean partialEvalAndSolve(Program prog) {
         // prog.debugDump("Program before solving");
         oracle = new ValueOracle(new StaticHoleTracker(varGen));
@@ -91,30 +106,16 @@ public class SATBackend {
         // prog.accept(new SimpleCodePrinter());
         assert oracle != null;
 
-        final HasMinimize hasMinimize = new HasMinimize();
-        hasMinimize.visitProgram(prog);
+
 
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
-        } else if (hasMinimize.hasMinimize()) {
-            options.cleanTemp();
-            {
-                // use the backend
-                final AbstractCostFcnAssert costFcnAssert =
-                        new AbstractCostFcnAssert(options.bndOpts.mbits);
-                writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
-                try {
-                    worked = solve(oracle, true, options.solverOpts.timeout);
-                } catch (SketchSolverException e) {
-                    e.setBackendTempPath(options.getTmpSketchFilename());
-                }
-            }
         } else {
             options.cleanTemp();
-            writeProgramToBackendFormat(prog);
+            writeProgramToBackendFormat(preprocess(prog));
             try {
-                worked = solve(oracle, false, options.solverOpts.timeout);
+                worked = solve(oracle, minimize, options.solverOpts.timeout);
             } catch (SketchSolverException e) {
                 e.setBackendTempPath(options.getTmpSketchFilename());
             }

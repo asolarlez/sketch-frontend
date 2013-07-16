@@ -299,7 +299,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if(type.equals(TypePrimitive.bittype)){
             return "bit";
         }else{
-            return "int";
+            if (type.equals(TypePrimitive.floattype) ||
+                    type.equals(TypePrimitive.doubletype))
+            {
+                return "float";
+            } else {
+                return "int";
+            }
         }
     }
     

@@ -1,12 +1,15 @@
 package sketch.compiler.dataflow.preprocessor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -16,6 +19,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.fcns.ZipIdxEnt;
 
 import static sketch.util.DebugOut.printNote;
@@ -376,11 +380,35 @@ rt.promotesTo(lt, nres),
 	public Object visitExprFunCall(ExprFunCall exp) {
 	    exp = (ExprFunCall) super.visitExprFunCall(exp);
         Function callee = nres.getFun(exp.getName());
+        Map<String, Expression> repl = new HashMap<String, Expression>();
+        VarReplacer vr = new VarReplacer(repl);
 	    for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
-	        upgradeStarToInt(arg.entry, callee.getParams().get(arg.idx).getType());
+            Expression actual = arg.entry;
+            Parameter p = callee.getParams().get(arg.idx);
+            Type t = p.getType();
+            repl.put(p.getName(), actual);
+            upgradeStarToInt(actual, (Type) t.accept(vr));
 	    }
 	    return exp;
 	}
+
+    public Object visitExprNew(ExprNew expNew) {
+        TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct().accept(this);
+        StructDef sd = nres.getStruct(nt.getName());
+        Map<String, Expression> repl = new HashMap<String, Expression>();
+        VarReplacer vr = new VarReplacer(repl);
+        for (ExprNamedParam en : expNew.getParams()) {
+            Expression actual = en.getExpr();
+            repl.put(en.getName(), actual);
+        }
+        for (ExprNamedParam en : expNew.getParams()) {
+            Type t = sd.getType(en.getName());
+            Expression actual = en.getExpr();
+            upgradeStarToInt(actual, (Type) t.accept(vr));
+        }
+        return expNew;
+    }
+
 	@Override
 	public Object visitTypeArray(TypeArray ta){
 	    Expression ie = ta.getLength();
