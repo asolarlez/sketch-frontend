@@ -282,7 +282,9 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
             String var = s.getName(i);
             Type t = currentT.get(var);
             if (t != null) {
-                assert s.getInit(i) == null : "cannot initialize tainted var!";
+                if (s.getInit(i) != null) {
+                    System.err.println("Initializing tainted var:" + s);
+                }
                 changed = true;
                 type.add(t);
             } else {
@@ -303,11 +305,15 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
     public Object visitStmtAssign(StmtAssign s) {
         Object lhs = s.getLHS().accept(this);
         if (lhs instanceof ExprVar) {
-            assert !cTainted(((ExprVar) lhs)) : "cannot manipulate tainted var!";
+            if (cTainted(((ExprVar) lhs))) {
+                System.err.println("Warning: manipulating tainted var: " + lhs);
+            }
         }
         Expression rhs = s.getRHS();
         if (rhs instanceof ExprVar) {
-            assert !cTainted(((ExprVar) rhs)) : "cannot manipulate tainted var!";
+            if (cTainted(((ExprVar) rhs))) {
+                System.err.println("Warning: manipulating tainted var: " + lhs);
+            }
         }
         Object newrhs = rhs.accept(this);
         if (newrhs == null) {
@@ -323,7 +329,9 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
     public Object visitExprField(ExprField e) {
         Object lhs = e.getLeft().accept(this);
         if (lhs instanceof ExprVar) {
-            assert !cTainted(((ExprVar) lhs)) : "cannot manipulate tainted var!";
+            if (cTainted(((ExprVar) lhs))) {
+                System.err.println("Warning: manipulating tainted var: " + lhs);
+            }
         }
         return e;
     }
@@ -332,7 +340,9 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
     public Object visitExprArrayRange(ExprArrayRange e) {
         Object lhs = e.getBase().accept(this);
         if (lhs instanceof ExprVar) {
-            assert !cTainted(((ExprVar) lhs)) : "cannot manipulate tainted var!";
+            if (cTainted(((ExprVar) lhs))) {
+                System.err.println("Warning: manipulating tainted var: " + lhs);
+            }
         }
         return e;
     }

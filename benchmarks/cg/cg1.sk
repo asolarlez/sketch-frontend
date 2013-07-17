@@ -1,0 +1,100 @@
+pragma options "-V10 --beopt:simiters 100 --spmd-max-nproc 4 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 8 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+//--fe-trunc-var-arr
+
+package spmd;
+// NOTE: how to refer to spmd::some_var if I am not in spmd package?
+
+int SPMD_MAX_NPROC = 4;
+include "spmd.skh";
+
+struct LState {
+	int n;
+	double[n] a;
+}
+
+struct LSingle {
+	double val;
+}
+
+LState movein(global int ncols, global double[ncols] ga) {
+	assert ncols % spmdnproc == 0;
+	int n = ncols / spmdnproc;
+	int base = n * spmdpid;
+	double[n] a;
+	for (int i=0; i<n; i++) {
+		a[i] = ga[base+i];
+	}
+	LState s = new LState(n=n, a=a);
+	return s;
+}
+
+void moveout(global int ncols, ref global double[ncols] ga, LState s) {
+	int n = s.n;
+	int base = n * spmdpid;
+	for (int i=0; i<n; i++) {
+		ga[base+i] = s.a[i];
+	}
+}
+
+LSingle movein_single(global double[spmdnproc] gv) {
+	LSingle s = new LSingle(val=gv[spmdpid]);
+	return s;
+}
+
+void moveout_single(ref global double[spmdnproc] gv, LSingle s) {
+	gv[spmdpid] = s.val;
+}
+
+bit powerOf2(int n) {
+	if (n > 0) {
+		while (n > 1) {
+			if (n % 2 != 0) {
+				return false;
+			}
+			n = n / 2;
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
+// NOTE: how to assert that value is on every processor? now the double[P] result seems clumsy!
+void spec_rnorm(global int P, global int ncols, global double[ncols] r, ref global double[P] result) {
+	assume powerOf2(P);
+	assume ncols>0 && ncols%P == 0;
+	assume P <= SPMD_MAX_NPROC;
+	double sum = 0.0;
+	for (int i=0; i<ncols; i++) {
+		sum = sum + r[i] * r[i];
+	}
+	for (int p=0; p<P; p++) {
+		result[p] = sum;
+	}
+}
+
+void sk1_rnorm(int P, int ncols, double[ncols] r, ref global double[P] result) implements spec_rnorm {
+	double sum = r[??]*r[??];
+	for (int i=??; i<ncols; i++) {
+		sum = sum + r[i] * r[i];
+	}
+	for (int p=0; p<P; p++) {
+		result[p] = sum;
+	}
+}
+
+void sk2_rnorm(int P, int ncols, double[ncols] r, ref global double[P] result) implements spec_rnorm {
+	spmdfork(P) {
+		LState s = movein(ncols, r);
+		LSingle res = movein_single(result);
+		double[1] sum;
+		sum[0] = s.a[??]*s.a[??];
+		for (int i=??; i<s.n; i++) {
+			sum[0] = sum[0] + s.a[i];
+		}
+		double[1] tmp;
+		spmdreduce(SPMD_SUM, 1, sum, tmp);
+		res.val = tmp[0];
+		moveout_single(result, res);
+	}
+}

@@ -1,0 +1,17 @@
+pragma options "-V10 --bnd-int-range 1024 --beopt:simiters 100 --bnd-inbits 4 --bnd-cbits 3 --bnd-inline-amnt 5 --beopt:simplifycex NOSIM"; //  --be:showDAG
+
+package tests;
+
+include "generators.skh";
+
+harness void main(int nprows, int npcols, int me) {
+	if (nprows>0 && npcols>0 && nprows*npcols<=4 && nprows==npcols && me<nprows*npcols) {
+		int peer = (me%nprows)*nprows + me/nprows;
+//		int cost = 0;
+		int peer2 = expr(2, {me, nprows}, 4, {PLUS, TIMES, DIV, MOD});
+		assert peer == peer2;
+//		minimize(cost);
+	}
+}
+
+

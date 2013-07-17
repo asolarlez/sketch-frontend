@@ -1,9 +1,10 @@
-pragma options "--beopt:simiters 100 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 3 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+pragma options "--spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 5 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
 
-package npb;
+package spmd;
 
 int SPMD_MAX_NPROC = 2;
 include "spmd.skh";
+include "generators2.skh";
 
 struct LState {
 	int ntdivnp;		// total cells per node
@@ -60,15 +61,13 @@ void spec_xy_z(global int P, global int nx, global int ny, global int nz, global
 // n = nx*ny*nz/np
 // [nx][ny][nz/np] => [nz/np][nx][ny]
 void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | 1 |};
-	}
-	global int iend = num();
-	global int jend = num();
+	int iend_len;
+	global int iend = nz / spmdnproc;
+	global int jend = nx * ny;
 	assert iend*jend==nx*ny*nz/spmdnproc;
 	for (int i=0; i<iend; ++i) {
 		for (int j=0; j<jend; ++j) {
-			b[i*num() + j*num()] = a[i*num() + j*num()]; 
+			b[i+j*iend] = a[i*jend + j]; 
 		}
 	}
 }
@@ -76,17 +75,13 @@ void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*n
 // n = nx*ny*nz/np
 // [nz/np][nx][ny/np][np] => [nz][nx][ny/np]
 void transpose_finish(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
-	generator int num() {
-		return {| nx | ny | nz | 1 |} * {| ny | nz | 1 |} * {| nz | 1 |} / {| spmdnproc | spmdnproc*spmdnproc | 1 |};
-	}
-	global int iend = num();
-	global int jend = num(); //nz/spmdnproc;
+	global int iend = nz / spmdnproc;
+	global int jend = nx * (ny / spmdnproc);
 	assert iend*jend*spmdnproc == nx*ny*nz/spmdnproc;
 	for (int p=0; p<spmdnproc; ++p) {
 		for (int i=0; i<iend; ++i) {
 			for (int j=0; j<jend; ++j) {
-//				b[p*nz/spmdnproc + i*nz + j] = a[p*nx*ny*nz/(spmdnproc*spmdnproc) + i*nz/spmdnproc + j];
-				b[p*num() + i*num() + j*num()] = a[p*num() + i*num() + j*num()];
+				b[p*iend + i + j*nz] = a[p*iend*jend + i + j*iend];
 			}
 		}
 	}

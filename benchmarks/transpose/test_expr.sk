@@ -1,0 +1,12 @@
+pragma options "--bnd-int-range 32 --spmd-max-nproc 2 --bnd-inbits 3 --bnd-cbits 2 --bnd-unroll-amnt 16 --bnd-inline-amnt 2 --bnd-arr1d-size 16 --bnd-arr-size 32 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+
+package spmd;
+include "generators2.skh";
+
+harness void transpose_local(global int nx, global int ny, global int nz, double[nx*ny*nz/spmdnproc] a, ref double[nx*ny*nz/spmdnproc] b) {
+	assume nx*ny*nz <= 32;
+	int iend_len;
+	global int iiend = expr2(4, {nx, ny, nz, spmdnproc}, 2, {TIMES, DIV}, iend_len);
+	global int iend = nx*ny;
+	assert iend == iiend;
+}

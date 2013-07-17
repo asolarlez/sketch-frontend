@@ -263,8 +263,9 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                     }
                     total *= ((ExprConstInt) e).getVal();
                 }
-                TypeArray newtype = new TypeArray(tsa.getAbsoluteBase(), new ExprConstInt(total));
-                newtype.setCudaMemType(tsa.getCudaMemType());
+                TypeArray newtype =
+                        new TypeArray(tsa.getCudaMemType(), tsa.getAbsoluteBase(),
+                                new ExprConstInt(total));
                 star.setType(newtype);
                 return star;
             }
@@ -290,9 +291,8 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
                 lenArr = null;
             }
             TypeArray newtype =
-                    new TypeArray(base.getBase(), lenArr,
+                    new TypeArray(ta.getCudaMemType(), base.getBase(), lenArr,
 					dims, ta.getMaxlength() * base.getMaxlength());
-            newtype.setCudaMemType(ta.getCudaMemType());
             return newtype;
 		} else {
 			return ta;

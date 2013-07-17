@@ -1,0 +1,81 @@
+include "generators.skh";
+
+package generators;
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr2(int N, int[N] pars, int T, int[T] ops, ref int cost){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return pars[choice];
+    }
+    // do not clear, just increment
+    // cost = 0;
+    int result = exprb2(tmp, T, ops, true, true, isb, choice, cost);
+    return result;
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands (and some constants<=3) and T operators
+ * given.
+ * 
+ */
+generator int expr2_withc(int N, int[N] pars, int T, int[T] ops, ref int cost){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    int result = exprb2(tmp, T, ops, true, true, isb, choice, cost);
+    return result;
+}
+
+generator int op2(int cop, int a, int b, bit canplus, bit cantimes){
+    assert cop <= MOD && cop >=0  : "Must pass a valid operator";
+    assert canplus || cop != PLUS;
+    assert cantimes || cop != TIMES;
+    if (cop == PLUS) {
+    	return a+b;
+    } else if (cop == MINUS) {
+    	return a-b;
+    } else if (cop == TIMES) {
+    	return a*b;
+    } else if (cop == DIV) {
+    	return a/b;
+    } else if (cop == MOD) {
+    	return a%b;
+    }
+}
+
+
+generator int exprb2(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int cost){
+    if ( T>0 && ??(1) ) {
+        isbase = false;
+        int ch = ??;
+//        	assert ch>=0 && ch<T;
+	    int och = ops[ch];
+	    
+        bit lib, rib;
+        int lch; int rch;
+        
+        cost++;
+        int xa = exprb2(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch, cost);
+        int xb = exprb2(chose, T, ops, true, true, rib, rch, cost);
+        if(lib && rib && 
+                (och ==PLUS || 
+                        och==TIMES)){ 
+            assert lch <= rch; } 
+        int result = op2(och, xa, xb, canplus, cantimes);
+        return result;
+    } else {
+        isbase = true;
+        return chose(choice);        
+    }
+}
+

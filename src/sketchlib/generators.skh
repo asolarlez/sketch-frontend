@@ -21,6 +21,35 @@ generator int expr(int N, int[N] pars, int T, int[T] ops){
     return exprb(tmp, T, ops, true, true, isb, choice);
 }
 
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr_cost(int N, int[N] pars, int T, int[T] ops, ref int cost){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr_noc_cost(int N, int[N] pars, int T, int[T] ops, ref int cost){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return pars[choice];
+    }
+    return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
+}
 
 /**
  * 
@@ -140,6 +169,28 @@ generator int exprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref
         int och = ops[ch];
         int xa = exprb(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch);
         int xb = exprb(chose, T, ops, true, true, rib, rch);
+      if(lib && rib && 
+                (och ==PLUS || 
+                        och==TIMES)){ 
+            assert lch <= rch; } 
+        return op(ch, xa, xb, T, ops, canplus, cantimes);
+    }else{
+        isbase = true;
+        return chose(choice);        
+    }
+}
+
+generator int exprb_cost(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int cost){
+    cost = cost+1;
+    if(??){
+        assert T>0;
+        int ch = ??;
+        isbase = false;
+        bit lib, rib;
+        int lch; int rch;
+        int och = ops[ch];
+        int xa = exprb_cost(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch, cost);
+        int xb = exprb_cost(chose, T, ops, true, true, rib, rch, cost);
       if(lib && rib && 
                 (och ==PLUS || 
                         och==TIMES)){ 

@@ -1,0 +1,107 @@
+pragma options "-V10 --bnd-int-range 32 --beopt:simiters 10 --spmd-max-nproc 4 --bnd-inbits 4 --bnd-cbits 2 --bnd-unroll-amnt 8 --bnd-inline-amnt 4 --bnd-arr1d-size 8 --bnd-arr-size 8 --be:ufunSymmetry --beopt:simplifycex NOSIM"; //  --be:showDAG
+
+package spmd;
+// NOTE: how to refer to spmd::some_var if I am not in spmd package?
+
+int SPMD_MAX_NPROC = 4;
+int SPMD_MAX_BUF_LEN = 2;
+include "spmd.skh";
+
+include "generators.skh";
+
+double movein(global double[spmdnproc] ga) {
+	return ga[spmdpid];
+}
+
+void moveout(ref global double[spmdnproc] ga, double s) {
+	ga[spmdpid] = s;
+}
+
+double movein_single(global double gv) {
+	return gv;
+}
+
+void moveout_single(ref global double gv, double s) {
+	if (spmdpid == 0) {
+		gv = s;
+	} else {
+		assert gv == s;
+	}
+}
+
+bit powerOf2(int n) {
+	if (n > 0) {
+		while (n > 1) {
+			if (n % 2 != 0) {
+				return false;
+			}
+			n = n / 2;
+		}
+		return true;
+	} else {
+		return false;
+	}
+}
+
+global double spec_allreduce(global int P, global double[P] v) {
+	assume powerOf2(P);
+	assume P <= SPMD_MAX_NPROC;
+	double result = 0.0;
+	for (int i=0; i<P; i++) {
+		result = result + v[i];
+	}
+	return result;
+}
+
+int setup_l2npcols() {
+	int n = spmdnproc/2;
+	int l2npcols = 0;
+	while (n > 0) {
+		l2npcols++;
+		n = n /2;
+	}
+	return l2npcols;
+}
+
+void setup_reduce(int l2npcols, ref int[l2npcols] arr) {
+	int group_size = spmdnproc;
+	for (int i=0; i<l2npcols; i++) {
+		//int j = (spmdpid + group_size/2) % group_size + (spmdpid/group_size)*group_size;
+		int cost;
+		int j = expr_cost(3, {spmdpid, group_size, 2}, 4, {PLUS, TIMES, DIV, MOD}, cost);
+		minimize(cost);
+		//assert ops_usage == 6;
+		arr[i] = j;
+		group_size = group_size/2;
+	}
+}
+
+double allreduce(global int l2npcols, int[l2npcols] reduce_exch_proc, double x) {
+	double[1] sum;
+	sum[0] = x;
+	double[1] buf;
+	for (global int i=0; i<l2npcols; i++) {
+		int recipient = reduce_exch_proc[i];
+		//spmdtransfer(global int size, bit scond, double [size] sendbuf, int recipient, bit rcond, ref double [size] recvbuf)
+		spmdtransfer(1, 1, sum, recipient, 1, buf);
+		sum[0] = sum[0] + buf[0];
+	}
+	return sum[0];
+}
+
+global double sk_allreduce(int P, double[P] v) implements spec_allreduce {
+	global double result = 0.0;
+	spmdfork(P) {
+		double s = movein(v);
+		double res = movein_single(result);
+
+		global int l2npcols = setup_l2npcols();   // the number of phases
+		int[l2npcols] reduce_exch_proc;   // the communication plan:  exch_proc[i] gives the peer I should communicate with in Phase i
+		setup_reduce(l2npcols, reduce_exch_proc);
+		
+		res = allreduce(l2npcols, reduce_exch_proc, s);
+		moveout_single(result, res);
+		moveout(v, s);
+	}
+	return result;
+}

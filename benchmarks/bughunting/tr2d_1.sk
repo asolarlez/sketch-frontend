@@ -1,0 +1,30 @@
+// This manifests a bug: conflicts b/w NodeEvaluator and Solver
+// bug desc: cpvec.vv, not initialized to 0
+// correct behavior: with simulation, should find the correct solution in 1 iteration.
+
+pragma options "--slv-seed 2 --bnd-inbits 2 --bnd-cbits 1 --bnd-unroll-amnt 2 --bnd-inline-amnt 1 --bnd-arr-size 2 --beopt:simplifycex NOSIM --be:nosim"; //  --be:showDAG
+
+// with simulation, the random test will find cex, which is wrong!
+// because of the unused portion of the array might differ from spec to sk
+
+package tests;
+
+void spec(int nx, int ny, double[nx*ny] a, ref double[nx*ny] b) {
+	if (nx>0 && ny>0 && nx*ny <= 2) {
+		for (int x=0; x<nx; ++x) {
+			for(int y=0; y<ny; ++y) {
+	    		b[x*ny + y] = a[y*nx + x];
+			}
+		}
+    }
+}
+
+void sk(int nx, int ny, double[nx*ny] a, ref double[nx*ny] b) implements spec {
+	if (nx>0 && ny>0 && nx*ny <= 2) {
+		for (int y=0; y<ny; ++y) {
+			for(int x=0; x<nx; ++x) {
+	    		b[x*ny + y] = a[y*nx + x];
+			}
+		}
+    }
+}

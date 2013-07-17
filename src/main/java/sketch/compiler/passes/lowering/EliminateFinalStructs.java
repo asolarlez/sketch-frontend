@@ -87,7 +87,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
         if (multiplicity > 1) {
             t = new TypeArray(t, new ExprConstInt(multiplicity));
         }
-        t.setCudaMemType(memtyp);
+        t = t.withMemType(memtyp);
         return t;
     }
 

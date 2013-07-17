@@ -1,0 +1,74 @@
+include "generators.skh";
+include "boundedopr.skh";
+
+package generators;
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int boundedexpr(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return pars[choice];
+    }
+    ops_usage = 0;
+    int result = boundedexprb(tmp, T, ops, true, true, isb, choice, ops_usage);
+    assert result != NaN;
+    return result;
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands (and some constants<=3) and T operators
+ * given.
+ * 
+ */
+generator int boundedexpr_withc(int N, int[N] pars, int T, int[T] ops, ref int ops_usage){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    ops_usage = 0;
+    int result = boundedexprb(tmp, T, ops, true, true, isb, choice, ops_usage);
+    assert result != NaN;
+    return result;
+}
+
+int boundedop(int cop, int a, int b, bit canplus, bit cantimes){
+    assert cop <= MOD && cop >=0  : "Must pass a valid operator";
+    assert canplus || cop != PLUS;
+    assert cantimes || cop != TIMES;
+    return boundedopr(cop, a, b);
+}
+
+
+generator int boundedexprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int ops_usage){
+    if ( T>0 && ??(1) ) {
+        isbase = false;
+        int ch = ??;
+//        	assert ch>=0 && ch<T;
+	    int och = ops[ch];
+	    
+        bit lib, rib;
+        int lch; int rch;
+        
+        ops_usage++;
+        int xa = boundedexprb(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch, ops_usage);
+        int xb = boundedexprb(chose, T, ops, true, true, rib, rch, ops_usage);
+        if(lib && rib && 
+                (och ==PLUS || 
+                        och==TIMES)){ 
+            assert lch <= rch; } 
+        int result = boundedop(och, xa, xb, canplus, cantimes);
+        return result;
+    } else {
+        isbase = true;
+        return chose(choice);        
+    }
+}
+
