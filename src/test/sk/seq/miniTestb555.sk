@@ -1,0 +1,13 @@
+
+include "string.skh";
+
+
+
+harness void main(int i){
+	Str h = newStr("hello ");
+	Str hw = cat(h, newStr("world"));
+	
+	print(newStr("OUT: "));
+	println(hw);
+
+}

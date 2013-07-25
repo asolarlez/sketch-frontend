@@ -1,0 +1,12 @@
+
+
+harness void main(int i){
+	int j=0;
+	while(true){
+		j += 4;
+		if(j > i){
+			return;
+		}
+	}
+	
+}

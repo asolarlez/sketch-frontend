@@ -1,9 +1,17 @@
 package sketch.compiler.passes.preprocessing;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 
 public class MethodRename extends FEReplacer {
@@ -12,6 +20,33 @@ public class MethodRename extends FEReplacer {
         this.oldToNew = oldToNew;
     }
     
+    public Object visitProgram(Program prog) {
+        assert prog != null : "FEReplacer.visitProgram: argument null!";
+        nres = new NameResolver(prog);
+        List<Package> newStreams = new ArrayList<Package>();
+        Set<String> fnames = new HashSet<String>();
+        for (Package sp : prog.getPackages()) {
+            for (Function f : sp.getFuncs()) {
+                fnames.add(f.getName());
+            }
+        }
+        for (Entry<String, String> en : oldToNew.entrySet()) {
+            if (fnames.contains(en.getValue())) {
+                String s = en.getValue();
+                do {
+                    s = "_" + s;
+                } while (fnames.contains(s));
+                oldToNew.put(en.getKey(), s);
+                fnames.add(s);
+            }
+        }
+
+        for (Package ssOrig : prog.getPackages()) {
+            newStreams.add((Package) ssOrig.accept(this));
+        }
+        return prog.creator().streams(newStreams).create();
+    }
+
     public String maybeSub(String s) {
         if (s == null) {
             return s;

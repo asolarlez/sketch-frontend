@@ -1,0 +1,26 @@
+
+int rand(){
+	return 1;
+}
+
+void outpp(int i){ }
+
+harness void main(){
+	int x = 0;	
+	while(x!= 5){
+		int r = rand();
+		outpp(r);		
+		x++;}		
+	_main(7);
+	return;
+}
+
+void _main(int vv){
+	int x = 0;	
+	do{
+		int r = rand();
+		outpp(r);		
+		x++;
+	}while(x!= 5);	
+	return;
+}

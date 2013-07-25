@@ -291,8 +291,15 @@ public class LiveVariableVType extends abstractValueType {
     			outSlist.add(lv);
     			hasOP = true;
     		}
-    	}    	
+        }
+        if (pathCond instanceof LiveVariableAV) {
+            lv.set.add((LiveVariableAV) pathCond);
+        }
+        if (pathCond instanceof LVSet) {
+            lv.set.addAll(((LVSet) pathCond).set);
+        }
     	lv.enliven();
+
 	}
 
 	@Override

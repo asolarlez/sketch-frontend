@@ -1049,7 +1049,12 @@ public class PartialEvaluator extends SymbolTableVisitor {
             report( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
             abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
             int iters = 0;
-            while(!vcond.isBottom() && vcond.getIntVal() > 0){
+
+            while (!vcond.isBottom() &&
+                    vcond.getIntVal() > 0 &&
+                    !state.rvflag.absVal.isBottom() &&
+                    state.rvflag.absVal.getIntVal() == 0)
+            {
                 ++iters;
                 stmt.getBody().accept(this);
                 if (stmt.getIncr() != null){
@@ -1064,7 +1069,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 }
             }
 
-            if(vcond.isBottom()){
+            if (vcond.isBottom() || vcond.getIntVal() > 0) {
                 int remIters = this.MAX_UNROLL - iters;
                 if(remIters > 0){
                     if (stmt.isCanonical()) {

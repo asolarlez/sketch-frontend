@@ -1,0 +1,21 @@
+
+
+int rand(){
+	return 1;
+}
+
+void outpp(int i){ }
+
+struct ff{
+	int x;
+}
+
+harness void main(int i){
+	int x = ?? + i;
+	ff u = new ff(x=x);
+	if(u.x  > 2 + i){
+		outpp(rand());
+	}
+	
+	return;
+}

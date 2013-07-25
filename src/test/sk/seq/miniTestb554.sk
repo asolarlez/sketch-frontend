@@ -1,0 +1,20 @@
+
+int rand(){
+	return 1;
+}
+
+void outpp(int i){ }
+
+harness void main(){
+	
+	for(int x=0;x!= 5; x++){
+		int r = rand();
+		outpp(r);		
+	}
+	int v=0;
+	for(;v!= 5; v++){
+		int r = rand();
+		outpp(r);		
+	}		
+	return;
+}

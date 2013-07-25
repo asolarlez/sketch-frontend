@@ -52,11 +52,16 @@ public class CleanupFinalCode extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateTransAssns(varGen));
 
+
         prog = (Program) prog.accept(new RemoveUselessCasts());
 
+        prog.debugDump("Before EDC");
         prog =
                 (Program) prog.accept(new EliminateDeadCode(varGen,
                         !options.feOpts.killAsserts));
+
+        prog.debugDump("After EDC");
+
         // System.out.println("ElmDead");
         // prog.accept(new SimpleCodePrinter());
 
@@ -67,6 +72,7 @@ public class CleanupFinalCode extends MetaStage {
         // prog.accept(new SimpleCodePrinter());
 
         prog = (Program) prog.accept(new EliminateTransAssns(varGen));
+
 
 
         prog =

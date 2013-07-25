@@ -12,14 +12,10 @@ Str newStr([int n], char [n] w){
 }
 
 
-// @NeedsInclude("#include <cstream>")
 @Native("{ printf(\"%s \n \", s->buf); }")
-void println(Str buf){
-
+void println(Str s){
 	if(s.n>0){
-
   		assert s.buf[s.n-1]=='\0';
-
 	}	
 }
 

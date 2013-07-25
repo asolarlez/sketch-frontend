@@ -123,9 +123,11 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
         	String errMsg = "";
         	while(!f.canRead()){
         		if(lit != null && lit.hasNext()){
-        			String tmp = lit.next(); 
         			errMsg += "\n\t" +  f.getCanonicalPath();
-        			f = new File (tmp, name);	
+        			String tmp = lit.next(); 
+        			File tmpf = new File(tmp);
+        			String dir = tmpf.getCanonicalPath();
+        			f = new File (dir, name);	
         		}else{
         			errMsg += "\n\t" + f.getCanonicalPath();
         			throw new IllegalArgumentException ("File not found: "+ name + "\n" + 
