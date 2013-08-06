@@ -1,0 +1,11 @@
+pragma options "-V10 --be:showDAG --be:nosim --fe-keep-tmp";
+
+harness void f(){
+    int t = ??;
+    assert t > 0 && t < 2;
+}
+
+harness void g(){
+	int x = ??;
+    assert x > 0;
+}
