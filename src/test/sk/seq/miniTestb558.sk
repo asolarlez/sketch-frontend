@@ -22,7 +22,7 @@ bit[n] reverse_sk(int n, bit[n] a) {
 }
 
 harness void main(int n, bit[n] a) {
-    assume n > 0;
+    assume n < 8;
     bit[n] b = reverse(n, a);
     bit[n] c = reverse_sk(n, a);
     assert b == c;
