@@ -12,6 +12,8 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
@@ -88,8 +90,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
     }
 
-    Map<String, NewFunInfo> extractedInnerFuns =
-            new HashMap<String, RemoveFunctionParameters.NewFunInfo>();
+    Map<String, NewFunInfo> extractedInnerFuns = new HashMap<String, NewFunInfo>();
     Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
     Map<String, String> reverseEquiv = new HashMap<String, String>();
     final TempVarGen varGen;
@@ -440,6 +441,19 @@ public class RemoveFunctionParameters extends FEReplacer {
                     ef.getLeft().accept(this);
                     isAssignee = oldIsA;
                     return ef;
+                }
+
+                public Object visitExprArrayRange(ExprArrayRange ear) {
+                    ear.getBase().accept(this);
+                    boolean oldIsA = isAssignee;
+                    RangeLen rl = ear.getSelection();
+                    isAssignee = false;
+                    rl.start().accept(this);
+                    if (rl.hasLen()) {
+                        rl.getLenExpression().accept(this);
+                    }
+                    isAssignee = oldIsA;
+                    return ear;
                 }
 
                 public Object visitExprUnary(ExprUnary exp) {
