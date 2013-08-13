@@ -134,6 +134,8 @@ public class RemoveDumbArrays extends FEReplacer {
                 }
                 newInits.add(init);
                 newTypes.add(t);
+                // NOTE xzl: don't forget to add the old name! this is a bug fix
+                newNames.add(stmt.getName(i));
             }
         }
         if (!changed) {

@@ -1,0 +1,21 @@
+// test RemoveDumbArrays bug with newNames
+
+generator int op(int x, int y) {
+	return {| x+y | x-y |};
+}
+
+generator int exp(int a, int b) {
+	int[2] x;
+	repeat(2) {
+		x[??] = {| a | b |};
+	}
+	return op(x[0], x[1]);
+}
+
+int f(int a, int b) {
+	return a + b;
+}
+
+int g(int a, int b) implements f {
+	return exp(a, b);
+}
