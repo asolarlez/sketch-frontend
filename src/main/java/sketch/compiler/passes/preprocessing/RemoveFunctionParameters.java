@@ -493,10 +493,10 @@ public class RemoveFunctionParameters extends FEReplacer {
             // get the new function info
             // i.e. the used variables that are in f's containing function
             // among the used variables, some are modified, we also track if a used var is
-            // changed
+            // changed. curFun is the function that lexically encloses f.
+            final String theNewFunName = nres.getFunName(f.getName());
             final NewFunInfo nfi =
-                    new NewFunInfo(nres.getFunName(f.getName()),
-                            nres.getFunName(curFun.getName()));
+                    new NewFunInfo(theNewFunName, nres.getFunName(curFun.getName()));
             SymbolTableVisitor stv = new SymbolTableVisitor(null) {
                 boolean isAssignee = false;
                 TreeSet<String> dependent = null;
@@ -531,9 +531,19 @@ public class RemoveFunctionParameters extends FEReplacer {
                         // signature must have a "ref" for x, so just by looking at the
                         // call to "twice" we know that "x" is modified
                         Function hoistedFun = nres.getFun(name);
-                        if (hoistedFun != null && extractedInnerFuns.containsKey(nres.getFunName(name))) {
-                            hoistedFun.accept(this);
-                            return exp;
+                        if (hoistedFun != null) {
+                            String fullName = nres.getFunName(name);
+                            if (fullName.equals(theNewFunName)) {
+                                // We are processing theNewFunName to get its NewFunInfo,
+                                // so we don't need to inline itself. It is not in the
+                                // symtab chain, so we must return early otherwise the
+                                // lookup will throw exception.
+                                return exp;
+                            }
+                            if (extractedInnerFuns.containsKey(fullName)) {
+                                hoistedFun.accept(this);
+                                return exp;
+                            }
                         }
                         Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
                         if (pt instanceof TypeFunction) {
@@ -629,6 +639,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                 public Object visitExprFunCall(ExprFunCall efc) {
                     final String name = efc.getName();
                     Function fun = nres.getFun(name);
+                    // NOTE the function passed to funInfo() is not in extractedInnerFuns
+                    // yet, so it will not be inlined here, which is the correct behavior.
                     if (extractedInnerFuns.containsKey(nres.getFunName(name))) {
                         // FIXME xzl:
                         // this is raises a problem of lexical v.s. dynamic scope.
@@ -670,6 +682,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                             throw new ExceptionAtNode("Function " + efc.getName() +
                                     " has not been defined when used", efc);
                         }
+                        // at this moment, we don't know about fun's signature,
+                        // so we assume that all arguments might be changed for soundness
                         List<Expression> existingArgs = efc.getParams();
                         final boolean oldIsA = isAssignee;
                         for (Expression e : existingArgs) {
