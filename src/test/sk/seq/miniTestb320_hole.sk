@@ -1,1 +1,38 @@
-/Users/tim/sketch/sketch-frontend/src/test/sk/seq/miniTestb320_small.sk
+
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 9 --bnd-arr-size 9 --bnd-unroll-amnt 9 -p lowering";
+
+void forLoop(fun body, int low, int high){
+    if(low < high){
+        body(low);
+        forLoop(body, low+1, high);
+    }
+}
+
+float[N][T] cacheObv1d(int N, int T, float[N] in, float[N][T] f){
+    float[N][T] out = 0.0;
+    for(int i=0; i<T; ++i)
+        for(int j=0; j<N; ++j){
+            out[i][j] = in[j] + f[i][j];
+        }
+    return out;
+}
+
+
+float[N][T] cacheObv1dSK(int N, int T, float[N] in, float[N][T] f) implements cacheObv1d{
+    generator int num1() { return {| N | T | 0 |} + ??; }
+
+    float[N][T] out = 0.0;
+    generator void t1(int i){
+        generator int num2(){ return {| N | T | i | 0 |} + ??; }
+
+        generator void t2(int j){
+            generator int num3() { return {| N | T | i | j | 0 |} + ??; }
+            out[num3()][num3()] = in[num3()] + f[num3()][num3()]; // trigger bug in frontend
+            //out[i][j] = in[j] + f[i][j];
+        }
+        forLoop(t2, num2(), num2());
+    }
+    forLoop(t1, num1(), num1());
+    
+    return out; 
+}
