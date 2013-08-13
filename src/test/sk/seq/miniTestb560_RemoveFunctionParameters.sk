@@ -1,0 +1,34 @@
+// test RemoveFunctionParameters
+
+void twice(fun f) {
+	f(); f();
+}
+
+harness void main() {
+	int x = 0;
+	int y = 1;
+	int z = 2;
+
+	void f() {
+		int x=0;
+		
+		void g() {
+			generator int num() {
+				int r = ??;
+				assert r>0;
+				return r;
+			}
+			x += num();  // any nonzero int
+			y += num();  // 1
+			z += num();  // 2
+		}
+		
+		twice(g);
+	}
+
+	twice(f);
+	
+	assert x == 0;
+	assert y == 5;
+	assert z == 10;
+}

@@ -62,6 +62,12 @@ public class NameResolver {
         registerStuff(pkgForFun, funMap, f, f.getName());
     }
 
+    public void reRegisterFun(Function f) {
+        String name = f.getName();
+        assert pkgForFun.get(name).equals(pkg.getName());
+        funMap.put(compound(pkg.getName(), name), f);
+    }
+
     public void registerVar(FieldDecl fd) {
         for (int i = 0; i < fd.getNumFields(); ++i) {
             registerStuff(pkgForVar, varMap, fd, fd.getName(i));
