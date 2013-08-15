@@ -1,6 +1,6 @@
 // a thorough test of the angelic feature
 
-pragma options "-V10 --bnd-inbits 2 --bnd-cbits 3 --bnd-angelicbits 5 --bnd-angelic-arrsz 12 --bnd-unroll-amnt 12 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+pragma options "--bnd-inbits 2 --bnd-cbits 3 --bnd-angelicbits 5 --bnd-angelic-arrsz 12 --bnd-unroll-amnt 12 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
 
 include "generators.skh";
 

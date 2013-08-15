@@ -1,6 +1,6 @@
 // a thorough test of angelic feature: the model based expr generator, which might be faster
 
-pragma options "-V10 --bnd-int-range 30 --bnd-inbits 2 --bnd-cbits 4 --bnd-angelicbits 5 --bnd-unroll-amnt 10 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+pragma options "--bnd-int-range 30 --bnd-inbits 2 --bnd-cbits 4 --bnd-angelicbits 5 --bnd-unroll-amnt 10 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
 
 include "generators.skh";
 
