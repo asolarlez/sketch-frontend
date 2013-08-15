@@ -28,6 +28,10 @@ public class CommonSketchMain {
         backendOptions.addAll(options.backendArgs);
         backendOptions.add("--bnd-inbits");
         backendOptions.add(""+ options.bndOpts.inbits);
+        backendOptions.add("--bnd-angelicbits");
+        backendOptions.add("" + options.bndOpts.angelicbits);
+        backendOptions.add("--bnd-angelic-arrsz");
+        backendOptions.add("" + options.bndOpts.angelicArrsz);
         backendOptions.add("--verbosity");
         backendOptions.add(""+ options.debugOpts.verbosity);
         backendOptions.add("--print-version"); // run by default
@@ -60,8 +64,13 @@ public class CommonSketchMain {
         }
 
         if (options.bndOpts.intRange > 0) {
-            backendOptions.add("--bndwrand");
+            backendOptions.add("--bnd-int-range");
             backendOptions.add("" + options.bndOpts.intRange);
+        }
+
+        if (options.bndOpts.wrand > 0 && options.bndOpts.intRange <= 0) {
+            backendOptions.add("--bndwrand");
+            backendOptions.add("" + options.bndOpts.wrand);
         }
 
         if (options.solverOpts.lightverif) {

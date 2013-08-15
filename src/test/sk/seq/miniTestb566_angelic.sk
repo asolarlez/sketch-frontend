@@ -1,0 +1,104 @@
+// a thorough test of angelic feature: the model based expr generator, which might be faster
+
+pragma options "-V10 --bnd-int-range 30 --bnd-inbits 2 --bnd-cbits 4 --bnd-angelicbits 5 --bnd-unroll-amnt 10 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+include "generators.skh";
+
+package generators;
+
+int maxlen = 6;
+
+generator int do_op(int cop, int a, int b){
+    if(cop==PLUS){
+        return a + b;
+    }
+    if(cop==MINUS){            
+        return a - b;
+    }
+    if(cop==TIMES){
+        return a * b;
+    }
+    if(cop==DIV){
+        return a / b;
+    }
+    if(cop==MOD){
+        return a % b;
+    }
+}
+
+int[maxlen] moo(int len, int N, int[N] in, int[maxlen] rator, int[maxlen] xrand, int[maxlen] yrand);
+//int moo(int i);
+
+model int[maxlen] calc(int len, int N, int[N] in, int[maxlen] rator, int[maxlen] xrand, int[maxlen] yrand) {
+	int[maxlen] result = moo(len, N, in, rator, xrand, yrand);
+	
+	generator int access(int p) {
+		int v;
+		if (p < N) {
+			v = in[p];
+		} else {
+			v = result[p-N];
+		}
+		return v;
+	}
+	
+	int i = 0;
+	repeat(maxlen) {
+		int o = rator[i];
+		int x = xrand[i];
+		int y = yrand[i];
+		
+		assert o <= MOD;
+		assert x < N+i;
+		assert y < N+i;
+		
+		int a = access(x);
+		int b = access(y);
+		assert i>=len || result[i] == do_op(o, a, b);
+		
+		i++;
+	}
+	return result;
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
+	int[maxlen] rator;
+	int[maxlen] xrand;
+	int[maxlen] yrand;
+	int i = 0;
+	repeat(maxlen) {
+		int r = ops[??];
+		rator[i] = r;
+		
+		int x = ??;
+		assert x < N+i;
+		xrand[i] = x;
+		
+		int y = ??;
+		assert y < N+i;
+		yrand[i] = y;
+		
+		i++;
+	}
+	
+	int[maxlen] result = calc(len, N, pars, rator, xrand, yrand);
+	return result[len-1];
+}
+
+int N = 4;
+harness void main(int[N] a) {
+	assume a[3] > 0;
+	int x = (a[2]*a[3]+a[1]*a[0]+a[0]*a[2])/a[3];
+//	int x = (a[2]*a[3]+a[1]*a[0]+a[0]*a[2])+a[3];
+//	int x = a[0]+a[2];
+	int len = ??;
+	minimize(len);
+	int y = expr3(N, a, 3, {PLUS, TIMES, DIV}, len);
+	assert x == y;
+}
