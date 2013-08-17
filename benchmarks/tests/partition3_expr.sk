@@ -9,7 +9,6 @@ int maxlen = 5;
 int maxint = 15;
 
 int[maxlen+1] moo(int len, int N, int[N] in, int[maxlen] rator, int[maxlen] xrand, int[maxlen] yrand);
-//int moo(int i);
 
 model int[maxlen+1] calc(int len, int N, int[N] in, int[maxlen] rator, int[maxlen] xrand, int[maxlen] yrand) {
 	int[maxlen+1] result = moo(len, N, in, rator, xrand, yrand);
@@ -123,31 +122,20 @@ generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
 	return result[len-1];
 }
 
-void partition(int p, int P, int N, ref int ibeg, ref int iend){
+harness void partition(int p, int P, int N){
+	assume P>0;
+	assume N>0;
+	assume p<P;
+		
 	generator int num() {
 		int len = ??;
 		minimize(len);
 		return expr3(3, {p, P, N}, 4, {PLUS, TIMES, DIV, MOD}, len);
 	}
-    if( p < num() ){
-        iend = num();  
-        ibeg = num();  
-    }else{
-        iend = num();  
-        ibeg = num();  
-    }
-}
 
-harness void testPartition(int p, int N, int P){
-    assume N>0 && P>0 && p<P;
-    int ibeg, iend;
-    partition(p, P, N, ibeg, iend);
-    assert iend - ibeg < (N/P) + 2;
-    if(p+1 < P){
-        int ibeg2, iend2;
-        partition(p+1, P, N, ibeg2, iend2);
-        assert iend == ibeg2;
-    }
-    if(p==0){ assert ibeg == 0; }
-    if(p==P-1){ assert iend == N; }
+	assert num() == N % P;
+	assert num() == p * (1 + (N / P));
+	assert num() == (1 + p) * (1 + (N / P));
+	assert num() == p * (N/P) + N%P;
+	assert num() == (1 + p) * (N/P) + N%P;
 }
