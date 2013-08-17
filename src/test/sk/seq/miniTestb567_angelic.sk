@@ -1,4 +1,5 @@
-//@Description Partition the range [0, N-1] int P similar partitions.
+// a thorough test of angelic feature: the model based expr generator, which might be faster
+// this triggers a bug in the backend's miniSAT solver.cpp: see backend Issue #6
 
 pragma options "--be:nosim --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 4 --bnd-unroll-amnt 6 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
 
@@ -23,60 +24,58 @@ model int[maxlen+1] calc(int len, int N, int[N] in, int[maxlen] rator, int[maxle
 		return v;
 	}
 	
-	bit flag = 1;
+	bit flag = 0;
 	int i = 0;
 	repeat(maxlen) {
 		int o = rator[i];
 		int x = xrand[i];
 		int y = yrand[i];
-		
-		assert x < N+i;
-		assert y < N+i;
+
+		if (! (o<=MOD && x<N+i && y<N+i) ) {
+			flag = 1;
+		}
 		
 		int a = access(x);
 		int b = access(y);
-		if (i < len && flag) {
-			int r;
-			if (o == PLUS) {
-				r = a+b;
-				if (r > maxint) {
-					flag = 0;
-				}
+		if (o == PLUS) {
+			int r = a+b;
+			if (r > maxint) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == MINUS) {
-				r = a-b;
-				if (r < 0) {
-					flag = 0;
-				}
+		}
+		if (o == MINUS) {
+			int r = a-b;
+			if (a < b) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == TIMES) {
-				r = a*b;
-				if (r > maxint) {
-					flag = 0;
-				}
+		}
+		if (o == TIMES) {
+			int r = a*b;
+			if (r > maxint) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == DIV) {
-				if (b == 0) {
-					flag = 0;
-					r = 0;
-				} else {
-					r = a/b;
-				}
+		}
+		if (o == DIV) {
+			int r = a/b;
+			if (b == 0) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == MOD) {
-				if (b == 0) {
-					flag = 0;
-					r = 0;
-				} else {
-					r = a%b;
-				}
+		}
+		if (o == MOD) {
+			int r = a%b;
+			if (b == 0) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o > MOD) {
-				flag = 0;
-				r = 0;
-			}
-			
-			assert (!flag) || (r == result[i]);
 		}
 		
 		i++;
@@ -116,37 +115,25 @@ generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
 	}
 	
 	int[maxlen+1] result = calc(len, N, pars, rator, xrand, yrand);
-	int flag = result[maxlen];
-	assert flag != 0;
+	assert result[maxlen] == 0;
 	
 	return result[len-1];
 }
 
-void partition(int p, int P, int N, ref int ibeg, ref int iend){
+harness void partition(int p, int P, int N){
+	assume P>0;
+	assume N>0;
+	assume p<P;
+		
 	generator int num() {
 		int len = ??;
+		assert len <= maxlen;
 		minimize(len);
 		return expr3(3, {p, P, N}, 4, {PLUS, TIMES, DIV, MOD}, len);
 	}
-    if( p < num() ){
-        iend = num();  
-        ibeg = num();  
-    }else{
-        iend = num();  
-        ibeg = num();  
-    }
-}
 
-harness void testPartition(int p, int N, int P){
-    assume N>0 && P>0 && p<P;
-    int ibeg, iend;
-    partition(p, P, N, ibeg, iend);
-    assert iend - ibeg < (N/P) + 2;
-    if(p+1 < P){
-        int ibeg2, iend2;
-        partition(p+1, P, N, ibeg2, iend2);
-        assert iend == ibeg2;
-    }
-    if(p==0){ assert ibeg == 0; }
-    if(p==P-1){ assert iend == N; }
+	assert num() == N % P;
+	assert num() == p * (1 + (N / P));
+	assert num() == (1 + p) * (1 + (N / P));
+	assert num() == p * (N/P) + N%P;
 }

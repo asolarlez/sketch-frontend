@@ -28,10 +28,14 @@ public class CommonSketchMain {
         backendOptions.addAll(options.backendArgs);
         backendOptions.add("--bnd-inbits");
         backendOptions.add(""+ options.bndOpts.inbits);
-        backendOptions.add("--bnd-angelicbits");
-        backendOptions.add("" + options.bndOpts.angelicbits);
-        backendOptions.add("--bnd-angelic-arrsz");
-        backendOptions.add("" + options.bndOpts.angelicArrsz);
+        if (options.bndOpts.angelicbits > 0) {
+            backendOptions.add("--bnd-angelicbits");
+            backendOptions.add("" + options.bndOpts.angelicbits);
+        }
+        if (options.bndOpts.angelicArrsz > 0) {
+            backendOptions.add("--bnd-angelic-arrsz");
+            backendOptions.add("" + options.bndOpts.angelicArrsz);
+        }
         backendOptions.add("--verbosity");
         backendOptions.add(""+ options.debugOpts.verbosity);
         backendOptions.add("--print-version"); // run by default
