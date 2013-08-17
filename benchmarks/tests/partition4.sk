@@ -21,60 +21,58 @@ model int[maxlen+1] calc(int len, int N, int[N] in, int[maxlen] rator, int[maxle
 		return v;
 	}
 	
-	bit flag = 1;
+	bit flag = 0;
 	int i = 0;
 	repeat(maxlen) {
 		int o = rator[i];
 		int x = xrand[i];
 		int y = yrand[i];
-		
-		assert x < N+i;
-		assert y < N+i;
+
+		if (! (o<=MOD && x<N+i && y<N+i) ) {
+			flag = 1;
+		}
 		
 		int a = access(x);
 		int b = access(y);
-		if (i < len && flag) {
-			int r;
-			if (o == PLUS) {
-				r = a+b;
-				if (r > maxint) {
-					flag = 0;
-				}
+		if (o == PLUS) {
+			int r = a+b;
+			if (r > maxint) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == MINUS) {
-				r = a-b;
-				if (r < 0) {
-					flag = 0;
-				}
+		}
+		if (o == MINUS) {
+			int r = a-b;
+			if (a < b) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == TIMES) {
-				r = a*b;
-				if (r > maxint) {
-					flag = 0;
-				}
+		}
+		if (o == TIMES) {
+			int r = a*b;
+			if (r > maxint) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == DIV) {
-				if (b == 0) {
-					flag = 0;
-					r = 0;
-				} else {
-					r = a/b;
-				}
+		}
+		if (o == DIV) {
+			int r = a/b;
+			if (b == 0) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o == MOD) {
-				if (b == 0) {
-					flag = 0;
-					r = 0;
-				} else {
-					r = a%b;
-				}
+		}
+		if (o == MOD) {
+			int r = a%b;
+			if (b == 0) {
+				flag = 1;
+			} else {
+				assert r == result[i];
 			}
-			if (o > MOD) {
-				flag = 0;
-				r = 0;
-			}
-			
-			assert (!flag) || (r == result[i]);
 		}
 		
 		i++;
@@ -114,8 +112,7 @@ generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
 	}
 	
 	int[maxlen+1] result = calc(len, N, pars, rator, xrand, yrand);
-	int flag = result[maxlen];
-	assert flag != 0;
+	assert result[maxlen] == 0;
 	
 	return result[len-1];
 }
