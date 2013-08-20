@@ -240,6 +240,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         Expression nproc = null;
         Level lvl = state.pushLevel("StmtSpmdFork");
         try {
+            // TODO xzl: is this unnecessary?
             startSpmdfork(null);
             try {
                 abstractValue vnproc = (abstractValue) stmt.getNProc().accept(this);
@@ -247,6 +248,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 body = (Statement) stmt.getBody().accept(this);
 
             } finally {
+                // TODO xzl: is this unnecessary?
                 state.popParallelSection();
             }
         } finally {
@@ -907,8 +909,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
 //                printFailure("related exception", e);
 //                assertFalse();
 //            }
-            assert level == state.getLevel() : "Somewhere we lost a level!!";
-            assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
+            assert level == state.getLevel() : "PartialEvaluator visitStmtBlock: Somewhere we lost a level!!";
+            assert ctlevel == state.getCTlevel() : "PartialEvaluator visitStmtBlock: Somewhere we lost a ctlevel!!";
         }
         return s;
     }
@@ -1014,6 +1016,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
     protected void startSpmdfork(StmtSpmdfork stmt) {
+        // TODO xzl: is this unnecessary?
         state.pushParallelSection();
     }
 

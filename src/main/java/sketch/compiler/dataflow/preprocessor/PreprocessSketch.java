@@ -229,8 +229,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 result = new StmtBlock(exp, newStatements);
             } finally {
                 state.popLevel(lvl);
-                assert level == state.getLevel() : "Somewhere we lost a level!!";
-                assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
+                assert level == state.getLevel() : "PreprocessSketch inliner2: Somewhere we lost a level!!";
+                assert ctlevel == state.getCTlevel() : "PreprocessSketch inliner2: Somewhere we lost a ctlevel!!";
                 newStatements = oldNewStatements;
             }
             addStatement(result);
@@ -268,8 +268,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 result = new StmtBlock(exp, newStatements);
             } finally {
                 state.popLevel(lvl);
-                assert level == state.getLevel() : "Somewhere we lost a level!!";
-                assert ctlevel == state.getCTlevel() : "Somewhere we lost a ctlevel!!";
+                assert level == state.getLevel() : "PreprocessSketch inliner: Somewhere we lost a level!!";
+                assert ctlevel == state.getCTlevel() : "PreprocessSketch inliner: Somewhere we lost a ctlevel!!";
                 newStatements = oldNewStatements;
             }
             addStatement(result);
