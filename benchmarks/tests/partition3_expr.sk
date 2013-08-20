@@ -1,0 +1,140 @@
+pragma options "--be:nosim --bnd-inbits 2 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 6 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+include "generators.skh";
+
+package generators;
+int maxlen = 5;
+int maxint = 7;
+
+int[maxlen+1] moo(int len, int N, int[N] in, int[maxlen] rator, int[maxlen] xrand, int[maxlen] yrand);
+
+model int[maxlen+1] calc(int len, int N, int[N] in, int[maxlen] rator, int[maxlen] xrand, int[maxlen] yrand) {
+	int[maxlen+1] result = moo(len, N, in, rator, xrand, yrand);
+	
+	generator int access(int p) {
+		int v;
+		if (p < N) {
+			v = in[p];
+		} else {
+			v = result[p-N];
+		}
+		return v;
+	}
+	
+	bit flag = 1;
+	int i = 0;
+	repeat(maxlen) {
+		int o = rator[i];
+		int x = xrand[i];
+		int y = yrand[i];
+		
+		assert x < N+i;
+		assert y < N+i;
+		
+		int a = access(x);
+		int b = access(y);
+		if (i < len && flag) {
+			int r;
+			if (o == PLUS) {
+				r = a+b;
+				if (r > maxint) {
+					flag = 0;
+				}
+			}
+			if (o == MINUS) {
+				r = a-b;
+				if (r < 0) {
+					flag = 0;
+				}
+			}
+			if (o == TIMES) {
+				r = a*b;
+				if (r > maxint) {
+					flag = 0;
+				}
+			}
+			if (o == DIV) {
+				if (b == 0) {
+					flag = 0;
+					r = 0;
+				} else {
+					r = a/b;
+				}
+			}
+			if (o == MOD) {
+				if (b == 0) {
+					flag = 0;
+					r = 0;
+				} else {
+					r = a%b;
+				}
+			}
+			if (o > MOD) {
+				flag = 0;
+				r = 0;
+			}
+			
+			assert (!flag) || (r == result[i]);
+		}
+		
+		i++;
+	}
+	
+	assert flag == result[maxlen];
+	return result;
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
+//	int[maxlen] rator = {3, 0, 2};
+//	int[maxlen] xrand = {2, 4, 0};
+//	int[maxlen] yrand = {1, 3, 5};
+	int[maxlen] rator;
+	int[maxlen] xrand;
+	int[maxlen] yrand;
+	int i = 0;
+	repeat(maxlen) {
+		int r = ops[??];
+		rator[i] = r;
+		
+		int x = ??;
+		assert x < N+i;
+		xrand[i] = x;
+		
+		int y = ??;
+		assert y < N+i;
+		yrand[i] = y;
+		
+		i++;
+	}
+	
+	int[maxlen+1] result = calc(len, N, pars, rator, xrand, yrand);
+	int flag = result[maxlen];
+	assert flag != 0;
+	
+	return result[len-1];
+}
+
+harness void partition(int p, int P, int N){
+	assume P>0;
+	assume N>0;
+	assume p<P;
+		
+	generator int num() {
+		int len = ??;
+		assert len<=maxlen;
+		minimize(len);
+		return expr3(3, {p, P, N}, 4, {PLUS, TIMES, DIV, MOD}, len);
+	}
+
+	assert num() == N % P;
+	assert num() == p * (1 + (N / P));
+	assert num() == (1 + p) * (1 + (N / P));
+	assert num() == p * (N/P) + N%P;
+	assert num() == (1 + p) * (N/P) + N%P;
+}

@@ -1,0 +1,34 @@
+// test a bug when Angelic CTRL is an array. Issue #102 in frontend, #5 in backend.
+// buggy backend: an Angelic CTRL array is translated to one single integer hole,
+// causing synthesis to fail
+// But if there is no normal CTRL (i.e. just verification), backend succeeds.
+
+pragma options "--bnd-inbits 2 --bnd-cbits 2 --bnd-unroll-amnt 3 --bnd-arr-size 3 --beopt:simplifycex NOSIM";
+
+
+// o[i] = (sum(in[0..i])+p)%q
+int[N] moo(int N, int[N] in, int p, int q);
+
+model int[N] foo(int N, int[N] in, int p, int q) {
+	int[N] o = moo(N, in, p, q);
+	
+	int prev = p;
+	for (int i=0; i<N; i++) {
+		assert o[i] == (prev+in[i])%q;
+		prev = o[i];
+	}
+	
+	return o;
+}
+
+harness void main(int N, int[N] a) {
+	int p = ??;
+	int q = ??;
+//	int p = 1;
+//	int q = 3;
+	int[N] b = foo(N, a, p, q);
+	assert N==0 || b[0] == (a[0]+1)%3;
+	for (int i=1; i<N; i++) {
+		assert (b[i]-b[i-1]+3) %3 == a[i] %3;
+	}
+}

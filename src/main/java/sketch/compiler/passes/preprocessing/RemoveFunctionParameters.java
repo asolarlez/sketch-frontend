@@ -12,6 +12,8 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprUnary;
@@ -37,6 +39,40 @@ import sketch.util.exceptions.TypeErrorException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
+    /**
+     * this FEReplacer does a complex job: 1. flatten all functions so that there is no
+     * inner functions 2. all inner functions are hoisted out, so we need to pass
+     * parameters in the scope of their containing functions, and care must be taken to
+     * add "ref" if the modified vars 3. all parameters that are "fun" are now removed, by
+     * specializing the callee. Example: <code>
+     *   void twice(fun f) {
+     *     f(); f();
+     *   }
+     *   harness void main() {
+     *     int x = 0;
+     *     void addone() {
+     *       x++;
+     *     }
+     *     twice(addone);
+     *     assert x == 2;
+     *   }
+     *   =>
+     *   void addone1(ref int x) {
+     *     x++;
+     *   }
+     *   void twice_addone1(ref int x) {
+     *     addone1(x); addone1(x);
+     *   }
+     *   harness void main() {
+     *     int x = 0;
+     *     twice_addone1(x);
+     *     assert x == 2;
+     *   }
+     * </code>
+     * 
+     * @author asolar, tim
+     */
+    
     static final class ParamInfo {
         final Type pt;
         // whether this variable has been changed
@@ -59,6 +95,11 @@ public class RemoveFunctionParameters extends FEReplacer {
         public ParamInfo clone() {
             return new ParamInfo(this.pt, this.changed,
                     (TreeSet<String>) this.dependence.clone());
+        }
+
+        @Override
+        public String toString() {
+            return (this.changed ? "@" : "") + this.pt.toString();
         }
     }
 
@@ -86,10 +127,14 @@ public class RemoveFunctionParameters extends FEReplacer {
             this.containingFunction = containingFunction;
             paramsToAdd = new HashMap<String, ParamInfo>();
         }
+
+        @Override
+        public String toString() {
+            return paramsToAdd.toString();
+        }
     }
 
-    Map<String, NewFunInfo> extractedInnerFuns =
-            new HashMap<String, RemoveFunctionParameters.NewFunInfo>();
+    Map<String, NewFunInfo> extractedInnerFuns = new HashMap<String, NewFunInfo>();
     Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
     Map<String, String> reverseEquiv = new HashMap<String, String>();
     final TempVarGen varGen;
@@ -98,6 +143,13 @@ public class RemoveFunctionParameters extends FEReplacer {
         this.varGen = varGen;
     }
 
+    /**
+     * This is the very last step: after all inner functions have been hoisted out and
+     * function params removed, we need to pass around variables that are used in inner
+     * functions. "Thread" the closures.
+     * 
+     * @author asolar
+     */
     class ThreadClosure extends FEReplacer {
         // funName => (varName => varInfo)
         Map<String, HashMap<String, ParamInfo>> funsToVisit =
@@ -221,11 +273,14 @@ public class RemoveFunctionParameters extends FEReplacer {
         public Object visitExprFunCall(ExprFunCall efc) {
             String name = nres.getFunName(efc.getName());
             if (funsToVisit.containsKey(name)) {
-                List<Expression> pl = new ArrayList<Expression>(efc.getParams());
-                for (Parameter p : getAddedParams(name)) {
-                    pl.add(new ExprVar(efc, p.getName()));
+                List<Parameter> addedParams = getAddedParams(name);
+                if (addedParams.size() != 0) {
+                    List<Expression> pl = new ArrayList<Expression>(efc.getParams());
+                    for (Parameter p : addedParams) {
+                        pl.add(new ExprVar(efc, p.getName()));
+                    }
+                    efc = new ExprFunCall(efc, efc.getName(), pl);
                 }
-                efc = new ExprFunCall(efc, efc.getName(), pl);
             }
             return super.visitExprFunCall(efc);
         }
@@ -241,8 +296,15 @@ public class RemoveFunctionParameters extends FEReplacer {
             return super.visitFunction(fun);
         }
 
-    }
+    } // end of ThreadClosure
 
+    /**
+     * Hoist out inner functions, and extract the information about which inner function
+     * used what variables defined in its containing function (the "closure"). This
+     * visitor will define the value of <code> extractedInnerFuns </code>.
+     * 
+     * @author asolar, tim
+     */
     class InnerFunReplacer extends SymbolTableVisitor {
 
         boolean isGenerator = false;
@@ -253,6 +315,15 @@ public class RemoveFunctionParameters extends FEReplacer {
         InnerFunReplacer() {
             super(null);
         }
+
+        /**
+         * This is a leveled lookup table of the hoisted functions. If "f" is hoisted out
+         * to "f2", then when we visit "f(x)" we need to replace it with "f2(x)". But
+         * local variable in the deeper block might shadow "f", so FunReplMap needs to be
+         * like a symtab.
+         * 
+         * @author asolar, tim
+         */
         class FunReplMap {
             FunReplMap parent = null;
             Map<String, String> frmap = new HashMap<String, String>();
@@ -272,6 +343,12 @@ public class RemoveFunctionParameters extends FEReplacer {
 
             void declRepl(String old, String notold) {
                 frmap.put(old, notold);
+            }
+
+            @Override
+            public String toString() {
+                return frmap.toString() +
+                        (parent == null ? "" : (" : " + parent.toString()));
             }
         }
 
@@ -368,13 +445,68 @@ public class RemoveFunctionParameters extends FEReplacer {
             return o;
         }
 
+        public Object visitStmtFunDecl(StmtFunDecl sfd) {
+            String pkg = nres.curPkg().getName();
+            String oldName = sfd.getDecl().getName();
+            String newName = oldName + (++nfcnt);
+            while (nres.getFun(newName) != null) {
+                newName = oldName + (++nfcnt);
+            }
+            String te = frmap.findRepl(oldName);
+            if (te != null) {
+                throw new ExceptionAtNode("You can not redefine the inner function " +
+                        oldName + " in the same scope", sfd);
+            }
+            frmap.declRepl(oldName, newName);
+            Function f = sfd.getDecl();
+
+            if (isGenerator && !f.isGenerator()) {
+                throw new ExceptionAtNode(
+                        "You can not define a non-generator function inside a generator",
+                        sfd);
+            }
+            if (f.isSketchHarness()) {
+                throw new ExceptionAtNode(
+                        "You can not define a harness inside another function", sfd);
+            }
+
+            Function newFun = f.creator().name(newName).pkg(pkg).create();
+            nres.registerFun(newFun);
+            newFun = (Function) newFun.accept(this);
+            newFuncs.add(newFun);
+
+            // NOTE xzl: overwrite the incorrect newFun with the correct newFun with
+            // processed body. This is needed for later funInfo(fun) to work properly if
+            // "fun" calls "newFun", because it inlines "newFun" to "fun" when
+            // extracting the used set of "fun", and if "newFun" is in the old
+            // form, newFun.body will refer to old unhoisted function names which nres
+            // does not know about. Also notice that we cannot simply registerFun(newFun)
+            // again.
+            nres.reRegisterFun(newFun);
+
+            NewFunInfo nfi = funInfo(newFun);
+            extractedInnerFuns.put(nfi.funName, nfi);
+            return null;
+        }
+
         NewFunInfo funInfo(Function f) {
+            // get the new function info
+            // i.e. the used variables that are in f's containing function
+            // among the used variables, some are modified, we also track if a used var is
+            // changed. curFun is the function that lexically encloses f.
+            final String theNewFunName = nres.getFunName(f.getName());
             final NewFunInfo nfi =
-                    new NewFunInfo(nres.getFunName(f.getName()),
-                            nres.getFunName(curFun.getName()));
+                    new NewFunInfo(theNewFunName, nres.getFunName(curFun.getName()));
             SymbolTableVisitor stv = new SymbolTableVisitor(null) {
                 boolean isAssignee = false;
                 TreeSet<String> dependent = null;
+
+                public Object visitStmtFunDecl(StmtFunDecl decl) {
+                    // just ignore the inner function declaration
+                    // because it will not affect the used/modified set
+                    return decl;
+                }
+
                 public Object visitExprVar(ExprVar exp) {
                     final String name = exp.getName();
 
@@ -387,12 +519,31 @@ public class RemoveFunctionParameters extends FEReplacer {
                         // it's local to stmtblock (thus should not be considered
                         // closure-passed variable that's defined outside the inner
                         // function)
-                        if (nres.getFun(name) != null) {
-                            if (extractedInnerFuns.containsKey(nres.getFunName(name)))
-                            {
-                                nres.getFun(name).accept(this);
+
+                        // TODO xzl: Is this really sound? need to check
+                        // If name is a hoisted function, consider it will be called, and
+                        // inline it to get an over-estimation of the used/modified sets
+                        // Note that this is still sound, even in the case "twice" is
+                        // opaque:
+                        // int x; void f() { void g(ref x) {...}; twice(g, x); }
+                        // Although the ideal reasoning is that g modifies x, and we
+                        // cannot know that, for twice(g, x) to modify x, twice's
+                        // signature must have a "ref" for x, so just by looking at the
+                        // call to "twice" we know that "x" is modified
+                        Function hoistedFun = nres.getFun(name);
+                        if (hoistedFun != null) {
+                            String fullName = nres.getFunName(name);
+                            if (fullName.equals(theNewFunName)) {
+                                // We are processing theNewFunName to get its NewFunInfo,
+                                // so we don't need to inline itself. It is not in the
+                                // symtab chain, so we must return early otherwise the
+                                // lookup will throw exception.
+                                return exp;
                             }
-                            return exp;
+                            if (extractedInnerFuns.containsKey(fullName)) {
+                                hoistedFun.accept(this);
+                                return exp;
+                            }
                         }
                         Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
                         if (pt instanceof TypeFunction) {
@@ -424,7 +575,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         isAssignee = false;
                         pt.accept(this);
                         isAssignee = oldIsA;
-                        dependent = oldDependent;      
+                        dependent = oldDependent;
                     }
                     return exp;
                 }
@@ -440,6 +591,19 @@ public class RemoveFunctionParameters extends FEReplacer {
                     ef.getLeft().accept(this);
                     isAssignee = oldIsA;
                     return ef;
+                }
+
+                public Object visitExprArrayRange(ExprArrayRange ear) {
+                    ear.getBase().accept(this);
+                    boolean oldIsA = isAssignee;
+                    RangeLen rl = ear.getSelection();
+                    isAssignee = false;
+                    rl.start().accept(this);
+                    if (rl.hasLen()) {
+                        rl.getLenExpression().accept(this);
+                    }
+                    isAssignee = oldIsA;
+                    return ear;
                 }
 
                 public Object visitExprUnary(ExprUnary exp) {
@@ -475,7 +639,23 @@ public class RemoveFunctionParameters extends FEReplacer {
                 public Object visitExprFunCall(ExprFunCall efc) {
                     final String name = efc.getName();
                     Function fun = nres.getFun(name);
+                    // NOTE the function passed to funInfo() is not in extractedInnerFuns
+                    // yet, so it will not be inlined here, which is the correct behavior.
                     if (extractedInnerFuns.containsKey(nres.getFunName(name))) {
+                        // FIXME xzl:
+                        // this is raises a problem of lexical v.s. dynamic scope.
+                        // <code>
+                        // int x=0, y=0;
+                        // void f() { x++; }
+                        // void g() { int x=0; f(); y++; }
+                        // </code>
+                        // Then the current approach determines that g does not modify
+                        // outer x, which is wrong under lexical scope.
+                        //
+                        // Also note that this is not the only place of inlining
+                        // see below the "existingArgs" code.
+                        //
+                        // the old comment:
                         // This is necessary, it's essentially inlining every inner
                         // function
                         // if you have f(...) { g(...) { } ; h(...) { ... g() ... } }
@@ -500,8 +680,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                         Type t = this.symtab.lookupVar(efc.getName(), efc);
                         if (t == null || (!(t instanceof TypeFunction))) {
                             throw new ExceptionAtNode("Function " + efc.getName() +
-                                " has not been defined when used", efc);
+                                    " has not been defined when used", efc);
                         }
+                        // at this moment, we don't know about fun's signature,
+                        // so we assume that all arguments might be changed for soundness
                         List<Expression> existingArgs = efc.getParams();
                         final boolean oldIsA = isAssignee;
                         for (Expression e : existingArgs) {
@@ -530,6 +712,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     for (int i = starti; i < params.size(); i++) {
                         Parameter p = params.get(i);
                         isAssignee = p.isParameterOutput();
+                        // NOTE xzl: if this arg is a function, it will be inlined.
                         existingArgs.get(i - starti).accept(this);
                         isAssignee = oldIsA;
                     }
@@ -541,41 +724,10 @@ public class RemoveFunctionParameters extends FEReplacer {
             return nfi;
         }
 
-        public Object visitStmtFunDecl(StmtFunDecl sfd) {
-            String pkg = nres.curPkg().getName();
-            String oldName = sfd.getDecl().getName();
-            String newName = oldName + (++nfcnt);
-            while (nres.getFun(newName) != null) {
-                newName = oldName + (++nfcnt);
-            }
-            String te = frmap.findRepl(oldName);
-            if (te != null) {
-                throw new ExceptionAtNode("You can not redefine the inner function " +
-                        oldName + " in the same scope", sfd);
-            }
-            frmap.declRepl(oldName, newName);
-            Function f = sfd.getDecl();
+    } // end of InnerFunReplacer
 
-            if (isGenerator && !f.isGenerator()) {
-                throw new ExceptionAtNode(
-                        "You can not define a non-generator function inside a generator",
-                        sfd);
-            }
-            if (f.isSketchHarness()) {
-                throw new ExceptionAtNode(
-                        "You can not define a harness inside another function", sfd);
-            }
 
-            Function newFun = f.creator().name(newName).pkg(pkg).create();
-            nres.registerFun(newFun);
-            newFun = (Function) newFun.accept(this);
-            newFuncs.add(newFun);
-            NewFunInfo nfi = funInfo(newFun);
-            extractedInnerFuns.put(nfi.funName, nfi);
-            return null;
-        }
-    }
-
+    // begin of actual ReplaceFunctionParamters
 
     Map<String, Function> funToReplace = new HashMap<String, Function>();
 

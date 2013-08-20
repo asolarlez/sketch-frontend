@@ -1,0 +1,93 @@
+// a thorough test of the angelic feature
+
+pragma options "--bnd-inbits 2 --bnd-cbits 3 --bnd-angelicbits 5 --bnd-angelic-arrsz 12 --bnd-unroll-amnt 12 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+include "generators.skh";
+
+package generators;
+
+int len = 8;
+
+generator int do_op(int cop, int a, int b){
+    if(cop==PLUS){
+        return a + b;
+    }
+    if(cop==MINUS){            
+        return a - b;
+    }
+    if(cop==TIMES){
+        return a * b;
+    }
+    if(cop==DIV){
+        return a / b;
+    }
+    if(cop==MOD){
+        return a % b;
+    }
+}
+
+int[N+len] moo(int N, int[N] in, int[len] rator, int[len] xrand, int[len] yrand);
+//int moo(int i);
+
+model int[N+len] calc(int N, int[N] in, int[len] rator, int[len] xrand, int[len] yrand) {
+	int[N+len] result = moo(N, in, rator, xrand, yrand);
+	int i = 0;
+	
+	assert result[0::N] == in;
+	
+	i = N;
+	int j = 0;
+	repeat(len) {
+		int r = result[i];
+		int o = rator[j];
+		int x = xrand[j];
+		int y = yrand[j];
+		assert o <= MOD;
+		assert x < i;
+		assert y < i;
+		assert r == do_op(o, result[x], result[y]);
+		
+		i++;
+		j++;
+	}
+	return result;
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr3(int N, int[N] pars, int T, int[T] ops, int p) {
+	int[len] rator;
+	int[len] xrand;
+	int[len] yrand;
+	int i = 0;
+	repeat(len) {
+		int r = ops[??];
+		rator[i] = r;
+		
+		int x = ??;
+		assert x < N+i;
+		xrand[i] = x;
+		
+		int y = ??;
+		assert y < N+i;
+		yrand[i] = y;
+		
+		i++;
+	}
+	
+	int[N + len] result = calc(N, pars, rator, xrand, yrand);
+	return result[N+p-1];
+}
+
+int N = 4;
+harness void main(int[N] a) {
+	int x = a[2]*a[3]+a[1]*a[0]+a[0]*a[2]+a[3];
+	int cost = ??;
+	minimize(cost);
+	int y = expr3(N, a, 2, {PLUS, TIMES}, cost);
+	assert x == y;
+}

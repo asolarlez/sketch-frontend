@@ -1,0 +1,12 @@
+// test RemoveFunctionParameters
+// with lexical scope
+// see Issue #101
+
+harness void main() {
+  int x = 0;
+  int y = 0;
+  void f() { x++; }
+  void g() { int x=0; f(); y++; }
+  g();
+  assert x == 1 && y == 1;
+}

@@ -1,0 +1,30 @@
+pragma options "--be:showDAG";
+
+bit[n] moo(int n, bit[n] a);
+
+model bit[n] reverse(int n, bit[n] a){
+    bit[n] rv = moo(n, a);
+    int i = 0, j = n-1;
+    while (i < n) {
+      assert rv[i] == a[j];
+      i++;
+      j--;
+    }
+    return rv;
+}
+
+bit[n] reverse_sk(int n, bit[n] a) {
+    bit[n] b;
+    for (int i=0; i<n; i++) {
+        b[i] = a[n-??-i];
+    }
+    return b;
+}
+
+harness void main(int n, bit[n] a) {
+    assume n < 8;
+    bit[n] b = reverse(n, a);
+    bit[n] c = reverse_sk(n, a);
+    assert b == c;
+}
+

@@ -32,6 +32,13 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "The number of bits to use for integer inputs.")
     public int inbits = 5;
+
+    @CliParameter(help = "The number of bits to use for integer angelic ctrls.")
+    public int angelicbits = -1;
+
+    @CliParameter(help = "The max length of angelic array.")
+    public int angelicArrsz = -1;
+
     @CliParameter(help = "(Deprecated) System will ignore this flag.")
     public int heapSize = 11;
     @CliParameter(help = "Tells the solver to incrementally grow the size of integer "
@@ -55,5 +62,8 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Maximum absolute value of integers modeled by the system; -1 means there is no bound.")
     public int intRange = -1;
+
+    @CliParameter(help = "Maximum absolute value of integers modeled by the system, larger integers will be treated random; -1 means there is no bound.")
+    public int wrand = -1;
 
 }

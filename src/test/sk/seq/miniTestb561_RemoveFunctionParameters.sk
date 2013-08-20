@@ -1,0 +1,23 @@
+// test RemoveFunctionParameters
+// with an opaque function and ref parameter
+
+void twice(fun f, ref int i) {
+  f(i);
+  f(i);
+}
+
+harness void main() {
+  int x = 0;
+  int y = 0;
+  void f() {
+    void g(ref int i) {
+      i += ??;  // 4
+      // NOTE that you cannot use x++;
+      // because the "ref" has copy in copy out semantic
+      y += ??;	// 1
+    }
+    twice(g, x);
+  }
+  f();
+  assert x == 8 && y == 2;
+}

@@ -1,0 +1,17 @@
+// test RemoveFunctionParameters
+
+void twice(fun f) {
+	f(); f();
+}
+
+harness void main() {
+	int x = 0;
+	void addone() {
+		int num() {
+			return ??;	// 3
+		}
+		x += num();
+	}
+	twice(addone);
+	assert x == 6;
+}

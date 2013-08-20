@@ -1,0 +1,6 @@
+
+harness void main(int i){
+    assume i>10;
+    int x = ??;
+    assert (i-10)%x == 0;
+}
