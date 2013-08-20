@@ -1,26 +1,25 @@
 package sketch.compiler.codegenerators;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.List;
 
 import sketch.compiler.ast.core.Annotation;
-import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.util.datastructures.TypedHashMap;
+import sketch.util.Pair;
 
 public class NodesToSuperH extends NodesToSuperCpp {
 
     // private NodesToSuperCpp _converter;
     private String filename;
     private String preIncludes;
+    private String creators;
 
     public NodesToSuperH(String filename) {
         super(null, filename);
@@ -29,7 +28,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
         this.addIncludes = false;
     }
 
-    public String outputStructure(StructDef struct){
+
+
+    public String outputStructure(StructDef struct) {
         String result = "";
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -40,36 +41,45 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         result += indent + "class " + escapeCName(struct.getName()) + "{\n  public:\n";
         addIndent();
+
+        for (Annotation a : struct.getAnnotation("Native")) {
+            String s = a.rawParams.substring(1, a.rawParams.length() - 1);
+            s = s.replace("\\\"", "\"");
+            s = s.replace("\\\\", "\\");
+            result += indent + s + "\n";
+        }
+
+        List<Pair<String, TypeArray>> fl = new ArrayList<Pair<String, TypeArray>>();
         for (String field : struct.getOrderedFields()) {
             Type ftype = struct.getType(field);
-            result +=
- indent + typeForDecl(ftype) + " " + field + ";\n";
+            if (ftype instanceof TypeArray) {
+                fl.add(new Pair<String, TypeArray>(field, (TypeArray) ftype));
+                continue;
+            }
+            result += indent + typeForDecl(ftype) + " " + field + ";\n";
         }
-        
-//        result += indent + escapeCName(struct.getName()) + "(){\n";
-//        addIndent();
-//        for (Entry<String, Type> entry : struct) {
-//            String init;            
-//            if(entry.getValue() instanceof TypeArray){
-//                TypeArray ta = (TypeArray) entry.getValue();
-//                String typename = typeForDecl(ta.getBase());
-//                String lenString = (String)ta.getLength().accept(this);
-//                init = "new " + typename + "[" + lenString + "]";
-//                init += "; memset(" + entry.getKey() + ", " + ta.getBase().defaultValue().accept(this) 
-//                + ", sizeof(" + typename + ")*" + lenString + ")";  
-//            }else{
-//                init = (String) entry.getValue().defaultValue().accept(this);
-//            }
-//            result +=
-//                    indent + entry.getKey() + " = " + init + ";\n";
-//        }
-//        unIndent();
-//        result += indent + "}\n";
+        int cnt = 0;
+        int sz = fl.size();
+        for (Pair<String, TypeArray> af : fl) {
+            ++cnt;
+            if (cnt == sz) {
+                result +=
+                        indent + typeForDecl(af.getSecond().getBase()) + " " +
+                                af.getFirst() + "[];\n";
+            } else {
+                result +=
+                        indent + typeForDecl(af.getSecond()) + " " + af.getFirst() +
+                                ";\n";
+            }
+        }
 
         if (struct.getNumFields() != 0) {
             result += indent + escapeCName(struct.getName()) + "(){}\n";
         }
-        result += indent + escapeCName(struct.getName()) + "(";
+
+
+
+        result += indent + "static " + escapeCName(struct.getName()) + "* create(";
         boolean first = true;
         for (String field : struct.getOrderedFields()) {
             Type ftype = struct.getType(field);
@@ -79,69 +89,17 @@ public class NodesToSuperH extends NodesToSuperCpp {
                 result += ", ";
             }
             result += indent + typeForDecl(ftype) + " " + field + "_";
-            symtab.registerVar(field + "_", (ftype),
-                    struct, SymbolTable.KIND_LOCAL);
+            symtab.registerVar(field + "_", (ftype), struct, SymbolTable.KIND_LOCAL);
             if (ftype instanceof TypeArray) {
                 result += ", int " + field + "_len";
             }
         }
-        result += "){\n";
-        addIndent();
-
-        final TypedHashMap<String, Type> fmap = struct.getFieldTypMap();
-        FEReplacer fer = new FEReplacer() {
-            public Object visitExprVar(ExprVar ev) {
-                if (fmap.containsKey(ev.getName())) {
-                    return new ExprVar(ev, ev.getName() + "_");
-                } else {
-                    return ev;
-                }
-            }
-        };
-
-        for (String field : struct.getOrderedFields()) {
-            Type ftype = struct.getType(field);
-
-            if (ftype instanceof TypeArray) {
-                TypeArray ta = (TypeArray) ftype;
-                String typename = typeForDecl(ta.getBase());
-                String lenString =
-                        (String) ((Expression) ta.getLength().accept(fer)).accept(this);
-                result +=
-                        indent + field + " = " + "new " + typename + "[" +
-                                lenString + "]" + ";\n";
-                result +=
-                        indent +
- "CopyArr(" + field + ", " + field +
-                                "_, " +
- lenString +
-                                ", " + field + "_len ); \n";
-            } else {
-                result += indent + field + " = " + " " + field + "_;\n";
-            }
-        }
-
-        unIndent();
-        result += indent + "}\n";
+        result += ");\n";
 
         result += indent + "~" + escapeCName(struct.getName()) + "(){\n";
-        addIndent();
-
-        for (Entry<String, Type> entry : struct) {
-            if (entry.getValue() instanceof TypeArray) {
-                result += indent + "delete[] " + entry.getKey() + ";\n";
-            }
-        }
-
-        unIndent();
         result += indent + "}\n";
 
-        for (Annotation a : struct.getAnnotation("Native")) {
-            String s = a.rawParams.substring(1, a.rawParams.length() - 1);
-            s = s.replace("\\\"", "\"");
-            s = s.replace("\\\\", "\\");
-            result += s + "\n";
-        }
+        result += indent + "void operator delete(void* p){ free(p); }\n";
 
         unIndent();
         result += indent + "};\n";
@@ -196,10 +154,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
     public Object visitFunction(Function func) {
         setNres(nres);
-        for (Annotation a : func.getAnnotation("NeedsInclude")) {
-            preIncludes += a.contents() + "\n";
-        }
-        String result = indent + "extern ";
+        String result = "";
+
+        result += indent + "extern ";
         result += convertType(func.getReturnType()) + " ";
         result += escapeCName(func.getName());
         String prefix = null;

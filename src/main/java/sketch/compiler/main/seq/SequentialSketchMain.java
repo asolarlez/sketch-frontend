@@ -17,11 +17,18 @@
 package sketch.compiler.main.seq;
 
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
@@ -409,8 +416,54 @@ public class SequentialSketchMain extends CommonSketchMain
         rm.put("main", "_main");
         prog = (Program) prog.accept(new MethodRename(rm));
         prog = (Program) prog.accept(new EliminateAliasesInRefParams(varGen));
-        outputCCode(prog);
+        if (options.feOpts.customCodegen == null) {
+            outputCCode(prog);
+        } else {
+            customCodegen(options.feOpts.customCodegen, prog);
+        }
     }
+
+    public void customCodegen(String jarfile, Program prog) {
+
+        try {
+            JarFile jf = new JarFile(jarfile);
+            Enumeration<JarEntry> entries = jf.entries();
+            URL[] urls = { new URL("jar:file:" + jarfile + "!/") };
+            ClassLoader cl = URLClassLoader.newInstance(urls);
+            while (entries.hasMoreElements()) {
+                JarEntry je = entries.nextElement();
+                if (je.isDirectory() || !je.getName().endsWith(".class")) {
+                    continue;
+                }
+                String className = je.getName().substring(0, je.getName().length() - 6);
+                className = className.replace('/', '.');
+                Class c = cl.loadClass(className);
+                Annotation an = c.getAnnotation(sketch.util.annot.CodeGenerator.class);
+                if (an != null) {
+                    System.out.println("Class " + className + " is a code generator.");
+                    System.out.println("Generating code with " + className);
+                    try {
+                        FEVisitor fev = (FEVisitor) c.newInstance();
+                        prog.accept(fev);
+                        return;
+                    } catch (IllegalAccessException iae) {
+                        System.err.println(iae);
+                    } catch (InstantiationException iae) {
+                        System.err.println(iae);
+                    }
+                } else {
+                    System.out.println("Class " + className + " is not a code generator");
+                }
+            }
+        } catch (IOException ioe) {
+            System.err.println("Jar file " + jarfile + " not found");
+            System.err.println(ioe);
+        } catch (ClassNotFoundException cnfe) {
+            System.err.println(cnfe);
+        }
+        System.err.println("No code generators were found in file " + jarfile);
+    }
+
 
     public Program preprocAndSemanticCheck(Program prog) {
 

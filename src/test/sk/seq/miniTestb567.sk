@@ -1,0 +1,15 @@
+include "filehandler.skh";
+pragma options "--bnd-unroll-amnt 64";
+
+harness void main(){
+	File f = fopen(newStr("miniTestb557.in"));
+	if(f != null){
+	while(!isEmpty(f)){
+	Str s = fread(f);
+	if(s == null){
+		return;}
+	print(s);
+	}
+	}
+}
+

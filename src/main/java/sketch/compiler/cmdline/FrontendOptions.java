@@ -50,6 +50,10 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public String outputProgName;
     @CliParameter(metavar = "FILE", help = "Output the values of holes as XML to a file, \"--\" for stdout")
     public String outputXml = null;
+
+    @CliParameter(metavar = "FILE", help = "Do custom code generation based on the visitor class from this jar file.")
+    public String customCodegen = null;
+
     @CliParameter(help = "Set the directory where you want the generated code to be written.")
     public String outputDir = "./";
     @CliParameter(help = "Produce also a harness to test the generated C code.")

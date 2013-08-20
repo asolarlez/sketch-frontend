@@ -15,6 +15,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.optimization.AbstractCostFcnAssert;
 import sketch.compiler.passes.optimization.CostFcnAssert;
 import sketch.compiler.passes.structure.HasMinimize;
+import sketch.compiler.solvers.constructs.RandomValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.Misc;
@@ -140,8 +141,17 @@ public class SATBackend {
         }
 
         File[] solutions = options.getSolutionsFiles();
+
         if (solutions.length == 0) {
-            assertFalse("No solutions found in folder", options.sktmpdir());
+            if (options.feOpts.forceCodegen || options.debugOpts.fakeSolver) {
+                oracle = new RandomValueOracle(new StaticHoleTracker(varGen));
+                System.err.println("***********************************************************************");
+                System.err.println("*WARNING: The system is generating unchecked and possibly buggy code***");
+                System.err.println("***********************************************************************");
+            } else {
+                assertFalse("No solutions found in folder", options.sktmpdir());
+            }
+            return worked;
         }
         extractOracleFromOutput(solutions[0].getPath());
         if (!(options.feOpts.keepTmp || options.debugOpts.fakeSolver)) {

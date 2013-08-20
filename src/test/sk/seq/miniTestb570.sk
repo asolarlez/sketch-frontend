@@ -1,0 +1,10 @@
+
+   generator bit cond(int x, int y) {
+      return {| x (< | == | > ) y |};
+    }
+    harness void main() {
+      int before = 2;
+      int after = 1;
+      assert cond(before, after);
+    }
+
