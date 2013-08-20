@@ -1,0 +1,35 @@
+package fileIO;
+include "string.skh";
+
+// declaring struct File
+struct File{
+	int numlines;
+	@NeedsInclude("#include <stdio.h>")
+	@NeedsInclude("#include <stdlib.h>")
+	@Native("FILE* cfile;")
+}
+
+// declaring function fopen()
+@NeedsInclude("#include \"fopen.h\"")
+@Native("{_out = _fopen(filename->buf);}")
+File fopen(Str filename){
+	return new File(numlines=5);
+}
+
+// declaring function isEmpty()
+@NeedsInclude("#include \"isEmpty.h\"")
+@Native("{_out = _isEmpty(f->cfile);}")
+bit isEmpty(File f){
+	return f.numlines <= 0;
+}
+
+
+
+// declaring function fread()
+@NeedsInclude("#include \"fread.h\"")
+@Native("{ _out = _fread(f->cfile);}")
+Str fread(File f){
+  f.numlines = f.numlines - 1;
+  return new Str(n=6, buf="hello");
+}
+
