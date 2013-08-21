@@ -63,7 +63,4 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Maximum absolute value of integers modeled by the system; -1 means there is no bound.")
     public int intRange = -1;
 
-    @CliParameter(help = "Maximum absolute value of integers modeled by the system, larger integers will be treated random; -1 means there is no bound.")
-    public int wrand = -1;
-
 }

@@ -68,13 +68,8 @@ public class CommonSketchMain {
         }
 
         if (options.bndOpts.intRange > 0) {
-            backendOptions.add("--bnd-int-range");
-            backendOptions.add("" + options.bndOpts.intRange);
-        }
-
-        if (options.bndOpts.wrand > 0 && options.bndOpts.intRange <= 0) {
             backendOptions.add("--bndwrand");
-            backendOptions.add("" + options.bndOpts.wrand);
+            backendOptions.add("" + options.bndOpts.intRange);
         }
 
         if (options.solverOpts.lightverif) {
