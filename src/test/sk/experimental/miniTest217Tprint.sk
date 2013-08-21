@@ -1,9 +1,0 @@
-pragma options "-n";
-
-int operator(int x) {
-    return 3;
-}
-
-printfcn void main() {
-    tprint("operator", operator(3));
-}

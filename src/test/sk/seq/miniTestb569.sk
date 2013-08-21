@@ -1,0 +1,43 @@
+pragma options "--bnd-unroll-amnt 32";
+
+
+struct Foo{
+	int n;
+	Moo[n] a;
+	int m;
+	Moo[m] b;
+	Moo c;
+	int[c.sz] d;	
+}
+
+struct Moo{
+	int sz;
+	int[sz] x;
+	int[sz][3] y;
+}
+
+harness void main(int i){
+	Moo m1 = new Moo(sz = 4, x={1,2,4}, y={{1,2,3,4}, {11, 12, 13, 14}, {21, 22, 23, 24}});
+	
+	Foo f = new Foo(n=i, m=7, c=m1);
+	
+	f.d = m1.x;
+	
+	for(int t=0; t<i; ++t){
+		f.a[t] = m1;
+	}
+	
+	for(int t=0; t<f.m; ++t){
+		f.b[t] = new Moo(sz = 4, x={t*??,t*2,t*??}, y={{1,2,3,4}, {11, 12, 13, 14}, {21, 22, 23, 24}});
+	}
+	
+	for(int t=0; t< f.n; ++t){
+		assert f.a[t] == m1;
+	}
+	
+	for(int t=0; t<f.m; ++t){
+		assert f.b[t].x[0] == t;
+		assert f.b[t].x[2] == t*4;
+	}
+
+}

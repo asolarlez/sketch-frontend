@@ -1,5 +1,7 @@
 pragma options "--be:showDAG";
 
+
+@Native("{ for(int i=0; i<n; ++i){ _out[i] = a[n-i-1]; } }")
 bit[n] moo(int n, bit[n] a);
 
 model bit[n] reverse(int n, bit[n] a){

@@ -1,0 +1,36 @@
+pragma options "--debug-show-dag --beopt:-olevel 7";
+
+
+struct Foo{
+	int x;
+}
+
+harness
+void main(int i){
+	if(i==??){
+		return;
+	}
+	Foo f = new Foo(x=i);
+	Foo g = new Foo(x=i+1);
+	
+	if(i==??){
+		f = null;
+	}
+	if(i==??){
+		f = g;
+	}
+	if(i==??){
+		g = null;
+	}
+	
+	if(f.x == g.x){
+		return;
+	}
+	
+	if(f.x + 1 != g.x){
+		assert false;
+	}
+	
+	
+
+}

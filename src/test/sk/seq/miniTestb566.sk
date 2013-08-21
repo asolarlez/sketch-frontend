@@ -1,0 +1,26 @@
+pragma options "--debug-show-dag";
+
+harness void main(int i){
+generator void foo(){
+	if(i< 12){
+	if(i != 7){
+	if(i>5){
+		return;
+	}
+	int q = ??;
+	assert q < 7;
+	
+	if(i>=11){
+		return;
+	}
+	
+	if(i<2){
+		return;
+	}
+
+	assert q <7;
+	}
+	}
+	}
+	foo();
+}
