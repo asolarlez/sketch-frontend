@@ -1,4 +1,4 @@
-pragma options "--be:nosim --beopt:simiters 15 --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 14 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+pragma options "--be:nosim --beopt:simiters 15 --bnd-inbits 3 --bnd-cbits 2 --bnd-angelicbits 3 --bnd-unroll-amnt 7 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
 
 package tests;
 
