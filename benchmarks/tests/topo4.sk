@@ -1,0 +1,47 @@
+pragma options "--be:nosim --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 14 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+package tests;
+
+// edge[u][0] is the number of edges, edge[u][i]=v means u->v, i.e. v depends on u, i.e. u must be earlier than v 
+
+int[n] foo(int n, int[n][n] edge);
+
+model int[n] topo(int n, int[n][n] edge) {
+	int[n] result = foo(n, edge);
+	for (int i = 0; i < n; i++) {
+		int u = result[i];
+		assert u < n;
+		for (int j = 0; j < i; j++) {
+			int v = result[j];
+			assert u != v;
+			for (int k = 1; k < n && k <= edge[u][0]; k++) {
+				int w = edge[u][k];
+				assert v != w;
+			}
+		}
+	}
+	return result;
+}
+
+harness void main(int n, int[n][n] edge) {
+	bit failed = 0;
+	int[n] result = topo(n, edge);
+	//int[n] result = topo_impl(n, edge, failed);
+	if (failed) {
+		return;
+	}
+	int sum = 0;
+	for (int i = 0; i < n; i++) {
+		sum = sum + result[i];
+	}
+	assert sum == n*(n-??)/2;
+	bit[n] visited;
+	for (int i = 0; i < n; i++) {
+		int u = result[i];
+		for (int j = 1; j < n && j <= edge[u][0]; j++) {
+			int v = edge[u][j];
+			assert v >= n || !visited[v];
+		}
+		visited[u] = 1;
+	}
+}

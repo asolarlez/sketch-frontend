@@ -1,4 +1,4 @@
-pragma options "--beopt:simiters 15 --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 14 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+pragma options "--be:nosim --beopt:simiters 15 --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 14 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
 
 package tests;
 
@@ -75,8 +75,8 @@ int[n] topo_impl(int n, bit[n][n] edge, ref bit failed) {
 
 harness void main(int n, bit[n][n] edge) {
 	bit failed = 0;
-//	int[n] result = topo(n, edge);
-	int[n] result = topo_impl(n, edge, failed);
+	int[n] result = topo(n, edge);
+//	int[n] result = topo_impl(n, edge, failed);
 	if (failed) {
 		return;
 	}
