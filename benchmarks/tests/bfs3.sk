@@ -1,0 +1,113 @@
+pragma options "--be:nosim --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 14 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+package tests;
+
+generator void check_step(int n, bit[n][n] edge, int[n] dist, bit[n] wavefront, int[n*2] result) {
+	for (int j=0; j<n; j++) {
+		if (result[j*2] == 0) {		// check if node j is in the next wavefront
+			if (dist[j] == n) {
+				for (int i=0; i<n; i++) {
+					assert !(wavefront[i] && edge[i][j]);
+				}
+			}
+		} else {
+			// if j is in the next wavefront
+			int i = result[j*2+1];	// i is the parent of j
+			assert dist[j] == n && wavefront[i] && edge[i][j];
+		}
+	}
+}
+
+harness void step_impl(int n, bit[n][n] edge, int[n] dist, bit[n] wavefront) {
+	int[n*2] result;
+	
+	for (int i=0; i<n; i++) {
+		if (wavefront[i]) {
+			for (int j=0; j<n; j++) {
+				if (edge[i][j] && dist[j] == n && result[j*2]==0) {
+					result[j*2] = 1;
+					result[j*2+1] = i + ??;	// parent
+				}
+			}
+		}
+	}
+	
+	check_step(n, edge, dist, wavefront, result);
+}
+
+int[n*2] moo(int n, bit[n][n] edge, int[n] dist, bit[n] wavefront);
+
+model int[n*2] step(int n, bit[n][n] edge, int[n] dist, bit[n] wavefront) {
+	int[n*2] result = moo(n, edge, dist, wavefront);
+	
+	check_step(n, edge, dist, wavefront, result);
+	
+	return result;
+}
+
+int[n] bfs(int n, bit[n][n] edge) implements bfs_spec {
+	int[n] dist;
+	dist[0] = 0;
+	for (int i=1; i<n; i++) {
+		dist[i] = n;
+	}
+		
+	bit[n] wavefront;
+	wavefront[0] = 1;
+	for (int i=1; i<n; i++) {
+		wavefront[i] = 0;
+	}
+	
+	int d = 0;
+	bit hasWave = 1;
+	while (hasWave) {
+		// next[i*2] means if node i is in the next wavefront
+		// next[i*2+1] is the parent of node i (if i is in the next wavefront)
+		int[n*2] next = step(n, edge, dist, wavefront);
+		hasWave = 0;
+		for (int j=0; j<n; j++) {
+			if (next[j*2] == 0) {
+				wavefront[j] = 0;
+			} else {
+				int i = next[j*2+1];		// i is the parent of node j
+				assert dist[j] == n && dist[i] == d && edge[i][j];
+				wavefront[j] = 1;
+				dist[j] = d+1;
+				hasWave = 1;
+			}
+		}
+		d++;
+	}
+	
+	return dist;
+}
+
+int[n] bfs_spec(int n, bit[n][n] edge) {
+	assume n > 0;
+	int[n] dist;
+	dist[0] = 0;
+	for (int i=1; i<n; i++) {
+		dist[i] = n;
+	}
+
+	int[n] queue;
+	queue[0] = 0;
+	int head = 0;
+	int tail = 1;
+	
+	while (head < tail) {
+		int i = queue[head];
+		head++;
+		int d = dist[i]+1;
+		
+		for (int j=0; j<n; j++) {
+			if (edge[i][j] && dist[j] == n) {
+				dist[j] = d;
+				queue[tail] = j;
+				tail++;
+			}
+		}
+	}
+	
+	return dist;
+}

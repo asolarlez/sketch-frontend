@@ -1,0 +1,96 @@
+pragma options "--beopt:simiters 15 --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 3 --bnd-unroll-amnt 14 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+package tests;
+
+// edge[u][v] means u->v, i.e. v depends on u, i.e. u must be earlier than v 
+
+// check_topo will greatly slow down verification. why?
+generator void check_topo(int n, bit[n][n] edge, int[n] result) {
+	for (int i = 0; i < n; i++) {
+		assert result[i] < n;
+		for (int j = 0; j < i; j++) {
+			assert result[i] != result[j];
+			assert !edge[result[j]][result[i]];
+		}
+	}
+}
+
+int[n] foo(int n, bit[n][n] edge);
+
+model int[n] topo(int n, bit[n][n] edge) {
+	int[n] result = foo(n, edge);
+	for (int i = 0; i < n; i++) {
+		int u = result[i];
+		assert u < n;
+		for (int j = 0; j < i; j++) {
+			int v = result[j];
+			assert u != v;
+			assert !edge[u][v];
+		}
+	}
+	return result;
+}
+
+int[n] topo_impl(int n, bit[n][n] edge, ref bit failed) {
+	int[n] result;
+	int[n] indeg;
+	int head = 0;
+	int tail = 0;
+	for (int u = 0; u < n; u++) {
+		indeg[u] = 0;
+		for (int v = 0; v < n; v++) {
+			if (u != v && edge[v][u]) {
+				indeg[u] = indeg[u] + 1;
+			}
+		}
+		if (indeg[u] == 0) {
+			result[tail] = u;
+			tail++;
+		}
+	}
+	
+	failed = 0;
+	for (; tail < n; ) {
+		if (head >= tail) {
+			failed = 1;
+			return result;
+		}
+		
+		int u = result[head];
+		head++;
+		
+		for (int v = 0; v < n; v++) {
+			if (u != v && edge[u][v]) {
+				indeg[v] = indeg[v] - 1;
+				if (indeg[v] == 0) {
+					result[tail] = v;
+					tail++;
+				}
+			}
+		}
+	}
+	
+	return result;
+}
+
+harness void main(int n, bit[n][n] edge) {
+	bit failed = 0;
+//	int[n] result = topo(n, edge);
+	int[n] result = topo_impl(n, edge, failed);
+	if (failed) {
+		return;
+	}
+	int sum = 0;
+	for (int i = 0; i < n; i++) {
+		sum = sum + result[i];
+	}
+	assert sum == n*(n-??)/2;
+	bit[n] visited;
+	for (int i = 0; i < n; i++) {
+		int u = result[i];
+		for (int v = 0; v < n; v++) {
+			assert !(visited[v] && edge[u][v]);
+		}
+		visited[u] = 1;
+	}
+}
