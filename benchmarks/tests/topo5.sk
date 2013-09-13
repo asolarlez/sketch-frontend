@@ -1,0 +1,79 @@
+pragma options "--be:nosim --bnd-inbits 3 --bnd-cbits 2 --bnd-angelicbits 3 --bnd-unroll-amnt 7 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+package tests;
+
+// edge[u][0] is the number of edges, edge[u][i]=v means u->v, i.e. v depends on u, i.e. u must be earlier than v 
+
+int[n] topo_impl(int n, int[n][n] edge, ref bit failed) {
+	int[n] result;
+	int[n] indeg;
+	int head = 0;
+	int tail = 0;
+	
+	for (int u = 0; u < n; u++) {
+		indeg[u] = 0;
+	}
+	
+	for (int u = 0; u < n; u++) {
+		for (int i = 1; i < n && i <= edge[u][0]; i++) {
+			int v = edge[u][i];
+			if (u != v && v < n) {
+				indeg[v] = indeg[v] + 1;
+			}
+		}
+	}
+	
+	for (int u = 0; u < n; u++) {
+		if (indeg[u] == 0) {
+			result[tail] = u;
+			tail++;
+		}
+	}
+	
+	failed = 0;
+	for (; tail < n; ) {
+		if (head >= tail) {
+			failed = 1;
+			return result;
+		}
+		
+		int u = result[head];
+		head++;
+		
+		for (int i = 1; i < n && i <= edge[u][0]; i++) {
+			int v = edge[u][i];
+			if (u != v && v < n) {
+				indeg[v] = indeg[v] - 1;
+				if (indeg[v] == 0) {
+					result[tail] = v;
+					tail++;
+				}
+			}
+		}
+	}
+	
+	return result;
+}
+
+harness void main(int n, int[n][n] edge) {
+	bit failed = 0;
+	//int[n] result = topo(n, edge);
+	int[n] result = topo_impl(n, edge, failed);
+	if (failed) {
+		return;
+	}
+	int sum = 0;
+	for (int i = 0; i < n; i++) {
+		sum = sum + result[i];
+	}
+	assert sum == n*(n-??)/2;
+	bit[n] visited;
+	for (int i = 0; i < n; i++) {
+		int u = result[i];
+		for (int j = 1; j < n && j <= edge[u][0]; j++) {
+			int v = edge[u][j];
+			assert v >= n || !visited[v];
+		}
+		visited[u] = 1;
+	}
+}

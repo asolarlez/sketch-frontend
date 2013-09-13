@@ -1,0 +1,66 @@
+pragma options "--beopt:simiters 150 --bnd-inbits 3 --bnd-cbits 2 --bnd-angelicbits 3 --bnd-unroll-amnt 7 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+
+package tests;
+
+// edge[u][0] is the number of edges, edge[u][i]=v means u->v, i.e. v depends on u, i.e. u must be earlier than v 
+
+harness void topo_impl(int n, int[n][n] edge) {
+	int[n] result;
+	int[n] indeg;
+	int head = 0;
+	int tail = 0;
+	
+	for (int u = 0; u < n; u++) {
+		indeg[u] = 0;
+	}
+	
+	for (int u = 0; u < n; u++) {
+		for (int i = 1; i < n && i <= edge[u][0]; i++) {
+			int v = edge[u][i];
+			if (u != v && v < n) {
+				indeg[v] = indeg[v] + 1;
+			}
+		}
+	}
+	
+	for (int u = 0; u < n; u++) {
+		if (indeg[u] == 0) {
+			result[tail] = u;
+			tail++;
+		}
+	}
+	
+	for (; tail < n; ) {
+		if (head >= tail) {
+			return;
+		}
+		
+		int u = result[head];
+		head++;
+		
+		for (int i = 1; i < n && i <= edge[u][0]; i++) {
+			int v = edge[u][i];
+			if (u != v && v < n) {
+				indeg[v] = indeg[v] - 1;
+				if (indeg[v] == 0) {
+					result[tail] = v;
+					tail++;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < n; i++) {
+		int u = result[i];
+		assert u < n;
+		for (int j = 0; j < i; j++) {
+			int v = result[j];
+			assert u != v;
+			for (int k = 1; k < n && k <= edge[u][0]; k++) {
+				int w = edge[u][k];
+				assert v != w;
+			}
+		}
+	}
+}
+
