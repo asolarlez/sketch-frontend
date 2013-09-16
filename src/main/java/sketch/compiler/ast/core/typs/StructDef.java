@@ -58,6 +58,9 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     private final String name;
     private String pkg;
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
+    // For sake of ADT
+    private final String parentName;
+    private boolean isInstantiable;
     private final List<String> fieldOrder;
     private HashmapList<String, Annotation> annotations =
             new HashmapList<String, Annotation>();
@@ -78,6 +81,9 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     public static class TStructCreator {
         private String name;
         private String pkg;
+        // for sake of ADT
+        private String parentName;
+        private boolean isInstantiable;
         private ImmutableTypedHashMap<String, Type> fieldTypMap;
         private List<String> fieldOrder;
         private Object base;
@@ -91,6 +97,9 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
             base = ts;
             name = ts.name;
             pkg = ts.pkg;
+            // ADT
+            parentName = ts.parentName;
+            isInstantiable = ts.isInstantiable;
             fieldOrder = ts.fieldOrder;
             fieldTypMap = ts.fieldTypMap;
             annotations = ts.annotations;
@@ -104,6 +113,18 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
         public TStructCreator pkg(final String pkg) {
             this.pkg = pkg;
+            return this;
+        }
+
+        // ADT
+        public TStructCreator parentName(final String parentName) {
+            this.parentName = parentName;
+            return this;
+        }
+
+        // ADT
+        public TStructCreator isInstantiable(boolean isInstantiable) {
+            this.isInstantiable = isInstantiable;
             return this;
         }
 
@@ -137,12 +158,16 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
         public StructDef create() {
             if (base == null || base instanceof FEContext) {
-                return new StructDef((FEContext) base, name, pkg, fieldTypMap,
+                // changed for ADT
+                return new StructDef((FEContext) base, name, pkg, parentName,
+                        isInstantiable, fieldTypMap,
                         fieldOrder,
                         annotations);
             } else {
+                // changed for ADT
                 return new StructDef(((StructDef) base).getContext(), name,
-                        pkg,
+ pkg,
+                        parentName, isInstantiable,
                         fieldTypMap, fieldOrder,
                         annotations);
             }
@@ -159,10 +184,17 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         this.pkg = pkg;
     }
 
-    public static TStructCreator creator(FEContext ctx, String name, List<String> fields,
+    // For ADT - check
+    public void setIsInstantiable(boolean isInstantiable) {
+        this.isInstantiable = isInstantiable;
+    }
+
+    public static TStructCreator creator(FEContext ctx, String name, String parentName,
+            boolean isInstantiable, List<String> fields,
             List<Type> ftypes, HashmapList<String, Annotation> annotations)
     {
-        return (new TStructCreator(ctx)).name(name).fields(fields, ftypes).annotations(
+        return (new TStructCreator(ctx)).name(name).parentName(parentName).isInstantiable(
+                isInstantiable).fields(fields, ftypes).annotations(
                 annotations);
     }
 
@@ -184,13 +216,16 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
      * @param ftypes
      *            list of <code>Type</code> containing the types of the fields
      */
-    public StructDef(FEContext context, String name, String pkg,
+    public StructDef(FEContext context, String name, String pkg, String parentName,
+            boolean isInstantiable,
             List<String> fields, List<Type> ftypes,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
         this.name = name;
         this.pkg = pkg;
+        this.parentName = parentName;
+        this.isInstantiable = isInstantiable;
         TypedHashMap<String, Type> types = new TypedHashMap<String, Type>();
         fieldOrder = fields;
         for (int i = 0; i < fields.size(); i++)
@@ -199,7 +234,8 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         this.annotations = annotations;
     }
 
-    public StructDef(FEContext context, String name, String pkg,
+    public StructDef(FEContext context, String name, String pkg, String parentName,
+            boolean isInstantiable,
             TypedHashMap<String, Type> map, List<String> forder,
             HashmapList<String, Annotation> annotations)
     {
@@ -207,6 +243,8 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         fieldOrder = (forder);
         this.name = name;
         this.pkg = pkg;
+        this.parentName = parentName;
+        this.isInstantiable = isInstantiable;
         this.fieldTypMap = map.immutable();
         this.annotations = annotations;
     }
@@ -231,6 +269,14 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         return name + '@' + pkg;
     }
 
+    // ADT
+    public String getParentName() {
+        return parentName;
+    }
+
+    public boolean isInstantiable() {
+        return isInstantiable;
+    }
     /**
      * Returns the number of fields.
      *
@@ -276,6 +322,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         return v.visitStructDef (this);
     }
 
+    // change if needed for ADT
     public TypeComparisonResult compare(StructDef other) {
         if (other instanceof StructDef) {
             StructDef that = (StructDef) other;

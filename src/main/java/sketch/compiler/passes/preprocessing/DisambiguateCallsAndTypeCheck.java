@@ -1071,16 +1071,35 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (ts == null) {
             report(expNew, "Trying to instantiate a struct that doesn't exist");
         }
+        // ADT
+        if (!ts.isInstantiable()) {
+            report(expNew,
+                    "Struct representing an Algebraic Data Type cannot be instantiated");
+        }
+
         for (ExprNamedParam en : expNew.getParams()) {
             Expression rhs = doExpression(en.getExpr());
-            if (!ts.hasField(en.getName())) {
-                report(expNew, "The struct does not have a field named " + en.getName());
+            // ADT
+            // Changed this to check if the parent has the field
+            StructDef current = ts;
+            boolean err = true;
+            while (current.getParentName() != null) {
+                if (current.hasField(en.getName())) {
+                    err = false;
+                    break;
+                } else {
+                    current = nres.getStruct(current.getParentName());
+                }
             }
+
+            if (err && !current.hasField(en.getName()))
+                report(expNew, "The struct does not have a field named " + en.getName());
+
             Type rhsType = getType(rhs);
-            Type lhsType = ts.getType(en.getName());
+            Type lhsType = current.getType(en.getName());
             lhsType = lhsType.addDefaultPkg(ts.getPkg(), nres);
             matchTypes(expNew, lhsType, rhsType);
-            
+
         }
         // TODO Do more
         return expNew;
@@ -1091,6 +1110,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
         Type lt = getType((Expression) expr.getLeft().accept(this));
 
+
         // Either lt is a structure type, or it's null, or it's an error.
         if (lt == null) {
             // pass
@@ -1098,7 +1118,18 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             StructDef ts = getStructDef(lt);
             String rn = expr.getName();
             boolean found = false;
-            for (Entry<String, Type> entry : ts) {
+            // Changed for ADT
+            StructDef current = ts;
+            outerloop: while (current.getParentName() != null) {
+                for (Entry<String, Type> entry : current) {
+                    if (entry.getKey().equals(rn)) {
+                        found = true;
+                        break outerloop;
+                    }
+                }
+                current = nres.getStruct(current.getParentName());
+            }
+            for (Entry<String, Type> entry : current) {
                 if (entry.getKey().equals(rn)) {
                     found = true;
                     break;

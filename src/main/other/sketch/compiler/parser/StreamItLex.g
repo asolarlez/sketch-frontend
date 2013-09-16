@@ -96,6 +96,9 @@ tokens {
     "include";
     "pragma";
     "package";
+    
+    //ADT
+    "extends";
 }
 
 ARROW :	"->" ;

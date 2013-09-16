@@ -43,6 +43,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.util.datastructures.HashmapList;
 
 import sketch.compiler.ast.core.Package;
@@ -78,6 +79,8 @@ options {
     private Set<Directive> directives = new HashSet<Directive> ();
     private boolean preprocess;
     private List<String> cppDefs;
+     //ADT
+    private List<String> parentStructNames = new ArrayList<String>();
 
 	public StreamItParserFE(StreamItLex lexer, Set<String> includes,
                             boolean preprocess, List<String> cppDefs)
@@ -177,6 +180,7 @@ program	 returns [Program p]
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
+   
     String file = null;
     String pkgName = null;
     FEContext pkgCtxt = null;
@@ -198,11 +202,13 @@ program	 returns [Program p]
 				pkgName="ANONYMOUS";
 			}
 			for(StructDef struct : structs){
+				if(parentStructNames.contains(struct.getName())) struct.setIsInstantiable(false);
 				struct.setPkg(pkgName);	
 			}
 			for(Function fun : funcs){
 				fun.setPkg(pkgName);	
 			}
+			
 			 Package ss=new Package(pkgCtxt, 
  				pkgName,
  				structs, vars, funcs);
@@ -263,6 +269,7 @@ statement returns [Statement s] { s = null; }
 	|	(expr_statement) => s=expr_statement SEMI!
 	|	tb:TK_break SEMI { s = new StmtBreak(getContext(tb)); }
 	|	tc:TK_continue SEMI { s = new StmtContinue(getContext(tc)); }
+	|	s=switch_statement
 	|	s=if_else_statement
 	|	s=while_statement
 	|	s=do_while_statement SEMI
@@ -572,6 +579,12 @@ assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar
 	}
 	s = StmtAssert.createAssertMax(cx, cond, msg, (defer!=null)); }	
 ;
+//ADT
+switch_statement returns [Statement s]
+{ s = null; Expression x; Statement b; }
+	:	u:TK_switch LPAREN x=right_expr RPAREN b=pseudo_block
+		{s= new StmtSwitch(getContext(u), x,b);}
+	;
 	
 if_else_statement returns [Statement s]
 { s = null; Expression x; Statement t, f = null; }
@@ -991,6 +1004,12 @@ struct_decl returns [StructDef ts]
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	t:TK_struct id:ID
+		//ADT
+		(TK_extends parent:ID 
+		{
+			parentStructNames.add(parent.getText());
+		}
+		)?
 		LCURLY
 		(p=param_decl SEMI
 			{ names.add(p.getName()); types.add(p.getType()); }
@@ -998,5 +1017,10 @@ struct_decl returns [StructDef ts]
 			an=annotation{ annotations.append(an.tag, an); }
 		)*
 		RCURLY
-		{ ts = StructDef.creator(getContext(t), id.getText(), names, types, annotations).create(); }
+		{ 
+			if(parent != null) {
+				ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, annotations).create();
+			}else{
+				ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, annotations).create();
+			} }
 	;
