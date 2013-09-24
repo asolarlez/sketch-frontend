@@ -88,11 +88,12 @@ public class LowerToSketch extends MetaStage {
         // TODO xzl: temporarily remove EliminateStructs
 
         
-
+        prog.debugDump("Before Eliminate Structs");
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
                         options.bndOpts.arrSize)));
 
+        prog.debugDump("Before Eliminate Structs");
         // dump (prog, "After Stencilification.");
 
 

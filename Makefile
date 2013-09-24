@@ -2,7 +2,7 @@
 
 SHELL = /bin/bash
 
-VERSION = 1.6.4
+VERSION = 1.6.5
 # If you change the version you also need to change pom.xml and sketch.compiler.main.PlatformLocalization.java and scripts/windows/final/sketch as well as README and the bitbucket site.
 
 MVN_PATH = $(shell which mvn)
@@ -131,6 +131,7 @@ light-distr:
 	cp -r src/sketchlib  ../sketch-distr
 	cp -r src/runtime  ../sketch-distr
 	cp -r src/test  ../sketch-distr
+	rm -r ../sketch-distr/test/deprecated
 	cp src/testrunner.mk ../sketch-distr
 	make assemble-noarch
 	cp $$(ls -d target/sketch-$(VERSION)-noarch-launchers*)/*.jar ../sketch-distr/.
@@ -141,6 +142,6 @@ light-distr:
 	mkdir ../sketch-$(VERSION) 
 	mv ../sketch-distr ../sketch-$(VERSION)/sketch-frontend
 	cp -r ../sketch-backend ../sketch-$(VERSION)/.
-	cp LIGHT_README ../sketch-$(VERSION)/README
+	cat LIGHT_README | sed 's/\\Ver/$(VERSION)/g' > ../sketch-$(VERSION)/README
 	rm -rf ../sketch-$(VERSION)/sketch-backend/.hg
 	cd ../sketch-$(VERSION)/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend

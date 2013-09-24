@@ -5,7 +5,7 @@ scriptname="$(which "$0")"
 dirname="$(dirname "$scriptname")"
 
 # SEARCH FOR JAR FILES
-for fname in "$dirname/sketch-1.6.4-noarch.jar" "$dirname/sketch-${version}-all-${osname}-${osarch}.jar" "$SKETCHJAR"; do
+for fname in "$dirname/sketch-1.6.5-noarch.jar" "$dirname/sketch-${version}-all-${osname}-${osarch}.jar" "$SKETCHJAR"; do
     if [ -f "$fname" ]; then
         jarname="$fname"
     fi

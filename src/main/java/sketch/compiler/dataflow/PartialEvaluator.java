@@ -1052,6 +1052,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
             report( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
             abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
             int iters = 0;
+            System.out.println("===============");
+            System.out.println("For = " + stmt);
+            System.out.println("Cond Eval = " + stmt.getCond().toString() + "    " +
+                    vcond.toString());
 
             while (!vcond.isBottom() &&
                     vcond.getIntVal() > 0 &&
@@ -1070,8 +1074,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     throw new ArrayIndexOutOfBoundsException(stmt.getCx() +
                             "Loop seems to repeat more than 2^13 times");
                 }
+                System.out.println("Cond Eval = " + stmt.getCond().toString() + "    " +
+                        vcond.toString());
             }
-
+            System.out.println("Now to unroll." + (this.MAX_UNROLL - iters) + " times");
             if (vcond.isBottom() || vcond.getIntVal() > 0) {
                 int remIters = this.MAX_UNROLL - iters;
                 if(remIters > 0){
