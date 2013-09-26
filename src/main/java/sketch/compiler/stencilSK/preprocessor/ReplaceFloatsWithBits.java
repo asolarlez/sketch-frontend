@@ -167,9 +167,9 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
             return new ExprBinary(exp, newOp, left, right, exp.getAlias());
     }
 	
-	public Object visitStreamSpec(Package spec)
+	public Object visitPackage(Package spec)
     {
-        spec = (Package) super.visitStreamSpec(spec);
+        spec = (Package) super.visitPackage(spec);
         if (floatConstants.size() == 0) {
             return spec;
         } else {

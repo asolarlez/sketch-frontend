@@ -321,7 +321,7 @@ public class NodesToC extends NodesToJava {
 
 
 
-	public Object visitStreamSpec(Package spec){
+	public Object visitPackage(Package spec){
 
 
         SymbolTable oldSymTab = symtab;

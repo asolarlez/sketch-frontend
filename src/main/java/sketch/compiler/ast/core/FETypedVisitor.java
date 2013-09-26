@@ -274,7 +274,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, stmt);
     }
 
-    public T visitStreamSpec(Package spec) {
+    public T visitPackage(Package spec) {
         throw new FEVisitorException(this, spec);
     }
 

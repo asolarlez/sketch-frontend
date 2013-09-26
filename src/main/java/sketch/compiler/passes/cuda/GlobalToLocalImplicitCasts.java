@@ -62,12 +62,12 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitStreamSpec(Package spec) {
-        super.visitStreamSpec(spec);
+    public Object visitPackage(Package spec) {
+        super.visitPackage(spec);
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
-        return cr.visitStreamSpec(spec);
+        return cr.visitPackage(spec);
     }
 
     protected class CallReplacer extends SymbolTableVisitor {

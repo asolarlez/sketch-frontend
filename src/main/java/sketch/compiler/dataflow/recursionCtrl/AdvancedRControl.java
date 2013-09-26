@@ -88,8 +88,8 @@ public class AdvancedRControl extends RecursionControl {
 			funmap = new HashMap<String, FunInfo>();
 		}
 
-        public Object visitStreamSpec(Package spec) {
-			 return super.visitStreamSpec(spec);
+        public Object visitPackage(Package spec) {
+			 return super.visitPackage(spec);
 		 }
 		public Object visitFunction(Function func){
 			String altName = null;

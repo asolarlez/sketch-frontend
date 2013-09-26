@@ -691,7 +691,7 @@ public class NodesToJava extends SymbolTableVisitor
             ") " + (String)stmt.getBody().accept(this);
     }
 
-    public Object visitStreamSpec(Package spec)
+    public Object visitPackage(Package spec)
     {
 
         String result = "";

@@ -52,7 +52,7 @@ public class NodesToH extends NodesToC {
 		return ret;
 	}
 
-	public Object visitStreamSpec(Package spec){
+	public Object visitPackage(Package spec){
 		String result = "";
         nres.setPackage(spec);
 

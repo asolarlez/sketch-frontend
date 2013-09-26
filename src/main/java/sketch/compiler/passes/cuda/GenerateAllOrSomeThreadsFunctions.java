@@ -120,12 +120,12 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         oldThreadFcns = new Vector<Function>();
         allThreadsFcns = new Vector<Function>();
         someThreadsFcns = new Vector<Function>();
 
-        spec = (Package) super.visitStreamSpec(spec);
+        spec = (Package) super.visitPackage(spec);
         Vector<Function> allFcns = new Vector<Function>();
         allFcns.addAll(oldThreadFcns);
         allFcns.addAll(allThreadsFcns);

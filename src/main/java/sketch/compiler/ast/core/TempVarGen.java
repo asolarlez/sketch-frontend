@@ -81,14 +81,14 @@ public class TempVarGen
                     return super.visitExprVar(expr);
                 }
 
-                public Object visitStreamSpec(Package ss)
+                public Object visitPackage(Package ss)
                 {
                     String name = ss.getName();
                     if (name != null &&
                         name.startsWith("AnonFilter_") &&
                         name.length() > 11)
                         checkPrefix(name.charAt(11));
-                    return super.visitStreamSpec(ss);
+                    return super.visitPackage(ss);
                 }
             });
     }

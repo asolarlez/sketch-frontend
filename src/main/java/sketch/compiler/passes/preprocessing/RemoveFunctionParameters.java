@@ -811,7 +811,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         return fname.substring(0, i >= 0 ? i : fname.length());
     }
 
-    public Object visitStreamSpec(Package spec)
+    public Object visitPackage(Package spec)
     {
         return null;
     }

@@ -48,9 +48,9 @@ public class LockPreprocessing extends SymbolTableVisitor {
 		return exp;
     }
 
-	public Object visitStreamSpec(Package spec)
+	public Object visitPackage(Package spec)
     {
-		Package sspec = (Package)super.visitStreamSpec(spec);
+		Package sspec = (Package)super.visitPackage(spec);
 
 		sspec.getVars().add(new FieldDecl(spec, TypePrimitive.inttype, NTYPES.getName(), new ExprConstInt(lockedTypes.size())));
         sspec.getFuncs().add(

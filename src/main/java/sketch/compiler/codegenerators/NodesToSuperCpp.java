@@ -651,7 +651,7 @@ public class NodesToSuperCpp extends NodesToJava {
         return res;
     }
 
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
 
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);

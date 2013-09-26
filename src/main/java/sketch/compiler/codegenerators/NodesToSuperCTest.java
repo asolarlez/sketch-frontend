@@ -73,7 +73,7 @@ public class NodesToSuperCTest extends NodesToJava {
         return output.toString();
     }
 
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         nres.setPackage(spec);
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext();) {
             Function func = (Function) iter.next();

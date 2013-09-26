@@ -23,7 +23,7 @@ public class CleanupRemoveMinFcns extends FEReplacer {
     protected static boolean isMinFcn;
 
     @Override
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         Vector<Function> newFcns =
                 vecmap_nonnull(spec.getFuncs(), new VectorMapFcn<Function, Function>() {
                     public Function map(Function fcn) {

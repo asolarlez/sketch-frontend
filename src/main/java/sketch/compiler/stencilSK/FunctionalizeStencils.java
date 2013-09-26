@@ -422,7 +422,7 @@ public class FunctionalizeStencils extends FEReplacer {
 
 
 
-	 public Object visitStreamSpec(Package spec)
+	 public Object visitPackage(Package spec)
 	    {
 
 	        for (Iterator iter = spec.getVars().iterator(); iter.hasNext(); )

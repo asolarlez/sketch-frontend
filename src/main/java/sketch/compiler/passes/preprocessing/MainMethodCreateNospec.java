@@ -39,10 +39,10 @@ public class MainMethodCreateNospec extends FEReplacer {
     public MainMethodCreateNospec() {}
 
     @Override
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         // see super for how to create a new one
         mainFcns.clear();
-        spec = (Package) super.visitStreamSpec(spec);
+        spec = (Package) super.visitPackage(spec);
         if (!mainFcns.isEmpty()) {
             ArrayList<Function> newFcns = new ArrayList<Function>();
             for (Function f : spec.getFuncs()) {

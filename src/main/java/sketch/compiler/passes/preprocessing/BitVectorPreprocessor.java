@@ -335,10 +335,10 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 
 
 	@Override
-	public Object visitStreamSpec(Package spec)
+	public Object visitPackage(Package spec)
 	{
 		starCheck=new HasStars(spec);
-		return super.visitStreamSpec(spec);
+		return super.visitPackage(spec);
 	}
 
 	@Override

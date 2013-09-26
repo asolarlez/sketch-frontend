@@ -121,13 +121,13 @@ public class SpmdTransform  extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         oldProcFcns= new Vector<Function>();
         allProcFcns = new Vector<Function>();
         someProcFcns = new Vector<Function>();
         fcnToTransformed = new HashMap<String, Function>();
 
-        spec = (Package) super.visitStreamSpec(spec);
+        spec = (Package) super.visitPackage(spec);
         Vector<Function> allFcns = new Vector<Function>();
         allFcns.addAll(oldProcFcns);
         allFcns.addAll(allProcFcns);

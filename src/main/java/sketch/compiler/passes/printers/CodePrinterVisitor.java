@@ -561,7 +561,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return sw;
 	}
 
-	public Object visitStreamSpec (Package ss) {
+	public Object visitPackage (Package ss) {
         SymbolTable oldSymtab = symtab;
         symtab = new SymbolTable (symtab);
 

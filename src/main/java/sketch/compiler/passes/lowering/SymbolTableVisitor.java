@@ -298,7 +298,7 @@ public class SymbolTableVisitor extends FEReplacer
         return super.visitStmtImplicitVarDecl(decl);
     }
 
-    public Object visitStreamSpec(Package spec)
+    public Object visitPackage(Package spec)
     {
 
         SymbolTable oldSymTab = symtab;
@@ -312,7 +312,7 @@ public class SymbolTableVisitor extends FEReplacer
 	    Function func = (Function)iter.next();
 	    symtab.registerFn(func);
 	}
-        Object result = super.visitStreamSpec(spec);
+        Object result = super.visitPackage(spec);
         symtab = oldSymTab;
         return result;
     }

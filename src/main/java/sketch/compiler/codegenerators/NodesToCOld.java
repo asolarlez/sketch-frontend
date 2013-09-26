@@ -169,7 +169,7 @@ public class NodesToCOld extends NodesToJava {
 		return preamble.toString();
 	}
 
-	public Object visitStreamSpec(Package spec){
+	public Object visitPackage(Package spec){
 		String result = "";
         nres.setPackage(spec);
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )

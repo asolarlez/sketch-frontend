@@ -222,7 +222,7 @@ public class Preprocessor extends FEReplacer {
 
 
 
-	public Object visitStreamSpec(Package spec){
+	public Object visitPackage(Package spec){
         // Oof, there's a lot here.  At least half of it doesn't get
         // visited...
         nres.setPackage(spec);

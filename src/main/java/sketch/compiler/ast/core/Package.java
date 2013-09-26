@@ -167,7 +167,7 @@ public class Package extends FENode
      */
     public Object accept(FEVisitor v)
     {
-        return v.visitStreamSpec(this);
+        return v.visitPackage(this);
     }
 
     public Package newFromFcns(List<Function> fcns) {

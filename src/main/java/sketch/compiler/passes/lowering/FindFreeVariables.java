@@ -60,18 +60,18 @@ public class FindFreeVariables extends SymbolTableVisitor
         return result;
     }
 
-    public Object visitStreamSpec(Package spec)
+    public Object visitPackage(Package spec)
     {
         // Skip all of this if the spec is named.
         if (spec.getName() != null)
-            return super.visitStreamSpec(spec);
+            return super.visitPackage(spec);
 
         List oldFreeVars = freeVars;
         freeVars = new java.util.ArrayList();
         // Wrap this in an empty symbol table.
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(null);
-        Object result = super.visitStreamSpec(spec);
+        Object result = super.visitPackage(spec);
         symtab = oldSymTab;
         for (Iterator iter = freeVars.iterator(); iter.hasNext(); )
         {

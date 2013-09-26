@@ -125,7 +125,7 @@ public class FENullVisitor implements FEVisitor
         return null;
     }
 
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         return null;
     }
 

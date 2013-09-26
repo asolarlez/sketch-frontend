@@ -56,7 +56,7 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
 
     class BackwardTaint extends FEReplacer {
         @Override
-        public Object visitStreamSpec(Package p) {
+        public Object visitPackage(Package p) {
             List<Function> funcs = p.getFuncs();
             int n = funcs.size();
             lookupFunc = new HashMap<String, Function>(n);
@@ -210,8 +210,8 @@ public class ChangeGlobalStateType extends SymbolTableVisitor {
     }
     
     @Override
-    public Object visitStreamSpec(Package p) {
-        backTainter.visitStreamSpec(p);
+    public Object visitPackage(Package p) {
+        backTainter.visitPackage(p);
         for (int i = order.size() - 1; i >= 0; --i) {
             Function f = order.get(i);
             String name = f.getName();

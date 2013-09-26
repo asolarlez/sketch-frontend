@@ -166,7 +166,7 @@ public class SemanticChecker
 				return super.visitStmtFor(stmt);
 			}
 
-			public Object visitStreamSpec(Package ss)
+			public Object visitPackage(Package ss)
 			{
 				//System.out.println("checkStatementPlacement::visitStreamSpec");
 
@@ -174,7 +174,7 @@ public class SemanticChecker
 
 				Package oldSpec = spec;
 				spec = ss;
-				Object result = super.visitStreamSpec(ss);
+				Object result = super.visitPackage(ss);
 				spec = oldSpec;
 				return result;
 			}

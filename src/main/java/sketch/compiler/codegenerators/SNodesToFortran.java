@@ -159,7 +159,7 @@ public class SNodesToFortran extends FENullVisitor {
 		return ret;
 	}
 
-	public Object visitStreamSpec(Package spec){
+	public Object visitPackage(Package spec){
 		String ret = "";
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {

@@ -41,8 +41,8 @@ public class ReplaceParamExprArrayRange extends SymbolTableVisitor {
     }
 
      @Override
-    public Object visitStreamSpec(Package spec) {
-        super.visitStreamSpec(spec);
+    public Object visitPackage(Package spec) {
+        super.visitPackage(spec);
         
 //        final CodePrinterVisitor pr1 = new CodePrinterVisitor();
 //        pr1.setNres(nres);
@@ -51,7 +51,7 @@ public class ReplaceParamExprArrayRange extends SymbolTableVisitor {
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
-        Package result = (Package) cr.visitStreamSpec(spec);
+        Package result = (Package) cr.visitPackage(spec);
         
 //        System.out.println("after replace param range:");
 //        final CodePrinterVisitor pr2 = new CodePrinterVisitor();

@@ -44,8 +44,8 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
     }
 
      @Override
-    public Object visitStreamSpec(Package spec) {
-        super.visitStreamSpec(spec);
+    public Object visitPackage(Package spec) {
+        super.visitPackage(spec);
         
         final SimpleCodePrinter pr1 = new SimpleCodePrinter();
         pr1.setNres(nres);
@@ -54,7 +54,7 @@ public class GlobalToLocalCasts extends SymbolTableVisitor {
 
         final CallReplacer cr = new CallReplacer(symtab);
         cr.setNres(nres);
-        Package result = (Package) cr.visitStreamSpec(spec);
+        Package result = (Package) cr.visitPackage(spec);
         
         // System.out.println("after global to local casts:");
         // result.accept(pr1);

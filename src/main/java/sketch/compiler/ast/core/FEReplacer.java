@@ -697,7 +697,7 @@ public class FEReplacer implements FEVisitor
      * variable declarations. spec.getStructs() gets you the structure declarations.
      * spec.getFuncs() gets you all the function declarations.
      */
-    public Object visitStreamSpec(Package spec)
+    public Object visitPackage(Package spec)
     {
 
         if (nres != null)

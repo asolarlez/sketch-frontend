@@ -129,7 +129,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         return ret;
     }
 
-    public Object visitStreamSpec(Package spec) {
+    public Object visitPackage(Package spec) {
         String result = "";
         nres.setPackage(spec);
         preIncludes = "";

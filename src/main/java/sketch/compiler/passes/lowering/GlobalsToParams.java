@@ -145,8 +145,8 @@ public class GlobalsToParams extends FEReplacer {
     }
 
     @Override
-    public Object visitStreamSpec(Package spec) {
-        spec = (Package) super.visitStreamSpec(spec);
+    public Object visitPackage(Package spec) {
+        spec = (Package) super.visitPackage(spec);
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         for (Function fcn : this.fcnsToAdd) {
             fcns.add(fcn);

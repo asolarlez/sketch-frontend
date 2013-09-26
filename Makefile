@@ -142,6 +142,6 @@ light-distr:
 	mkdir ../sketch-$(VERSION) 
 	mv ../sketch-distr ../sketch-$(VERSION)/sketch-frontend
 	cp -r ../sketch-backend ../sketch-$(VERSION)/.
-	cat LIGHT_README | sed 's/\\Ver/$(VERSION)/g' > ../sketch-$(VERSION)/README
+	cat LIGHT_README | sed 's/\\VER/$(VERSION)/g' > ../sketch-$(VERSION)/README
 	rm -rf ../sketch-$(VERSION)/sketch-backend/.hg
 	cd ../sketch-$(VERSION)/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend

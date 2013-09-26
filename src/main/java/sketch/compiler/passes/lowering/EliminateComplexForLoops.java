@@ -273,13 +273,13 @@ public class EliminateComplexForLoops extends FEReplacer {
 		}
 	}
     @Override
-    public Object visitStreamSpec(Package p) {
+    public Object visitPackage(Package p) {
         List<Function> funcs = p.getFuncs();
         int n = funcs.size();
         lookupFunc = new HashMap<String, Function>(n);
         for (Function f : funcs) {
             lookupFunc.put(f.getName(), f);
         }
-        return super.visitStreamSpec(p);
+        return super.visitPackage(p);
     }
 }

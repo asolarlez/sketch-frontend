@@ -14,12 +14,12 @@ public class ReplaceSketchesWithSpecs extends FEReplacer {
 
     protected Package ss;
     
-    public Object visitStreamSpec(Package spec)
+    public Object visitPackage(Package spec)
     {
 
         Package oldSS = ss;
         ss = spec;
-        Object o = super.visitStreamSpec(spec);
+        Object o = super.visitPackage(spec);
         ss = oldSS;
         return o;
     }

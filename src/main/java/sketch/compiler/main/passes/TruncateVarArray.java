@@ -39,7 +39,7 @@ public class TruncateVarArray extends FEReplacer {
     }
 
     @Override
-    public Object visitStreamSpec(Package p) {
+    public Object visitPackage(Package p) {
         HashSet<String> tochange = new HashSet<String>();
         List<Function> funcs = p.getFuncs();
         for (int i = 0; i < funcs.size(); ++i) {

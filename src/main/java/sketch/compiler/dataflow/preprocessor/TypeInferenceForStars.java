@@ -256,8 +256,8 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
 	}
 	
 	@Override
-    public Object visitStreamSpec(Package spec) {
-	    return super.visitStreamSpec(spec);
+    public Object visitPackage(Package spec) {
+	    return super.visitPackage(spec);
 	}
 
 	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){

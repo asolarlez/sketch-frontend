@@ -97,7 +97,7 @@ public interface FEVisitor
     public Object visitStmtVarDecl(StmtVarDecl stmt);
     public Object visitStmtWhile(StmtWhile stmt);
     public Object visitStmtFunDecl(StmtFunDecl stmt);
-    public Object visitStreamSpec(Package spec);    
+    public Object visitPackage(Package spec);    
     public Object visitOther(FENode node);
     public Object visitType(Type t);
     public Object visitTypePrimitive(TypePrimitive t);

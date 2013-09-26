@@ -72,7 +72,7 @@ public class PromelaCodePrinter extends CodePrinterVisitor {
 		println ("");
 	}
 
-	public Object visitStreamSpec (Package ss) {
+	public Object visitPackage (Package ss) {
         SymbolTable oldSymtab = symtab;
         symtab = new SymbolTable (symtab);
 
