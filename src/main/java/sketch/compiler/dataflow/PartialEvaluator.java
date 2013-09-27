@@ -1046,19 +1046,16 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitStmtFor(StmtFor stmt)
     {
         Level lvl = state.pushLevel("StmtFor");
+        int unrollamnt = this.MAX_UNROLL;
         try{
             if (stmt.getInit() != null)
                 stmt.getInit().accept(this);
             report( stmt.getCond() != null , "For now, the condition in your for loop can't be null");
             abstractValue vcond = (abstractValue) stmt.getCond().accept(this);
             int iters = 0;
-            System.out.println("===============");
-            System.out.println("For = " + stmt);
-            System.out.println("Cond Eval = " + stmt.getCond().toString() + "    " +
-                    vcond.toString());
 
             while (!vcond.isBottom() &&
-                    vcond.getIntVal() > 0 &&
+ vcond.getIntVal() > 0 &&
                     !state.rvflag.absVal.isBottom() &&
                     state.rvflag.absVal.getIntVal() == 0)
             {
@@ -1074,12 +1071,27 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     throw new ArrayIndexOutOfBoundsException(stmt.getCx() +
                             "Loop seems to repeat more than 2^13 times");
                 }
-                System.out.println("Cond Eval = " + stmt.getCond().toString() + "    " +
-                        vcond.toString());
             }
-            System.out.println("Now to unroll." + (this.MAX_UNROLL - iters) + " times");
+            if (!vcond.isBottom() && vcond.getIntVal() > 0) {
+                Expression ubound = stmt.getRangeMax();
+                Expression lbound = stmt.getRangeMin();
+                Expression incr = stmt.getIncrVal();
+                if (ubound != null && lbound != null && incr != null) {
+                    Integer ub = ubound.getIValue();
+                    Integer lb = lbound.getIValue();
+                    Integer i = incr.getIValue();
+                    if (ub != null && lb != null && i != null) {
+                        int tmp = (ub.intValue() - lb.intValue() + 1) / i.intValue();
+                        if (tmp > 0 && tmp < this.MAX_UNROLL * 10) {
+                            unrollamnt = tmp;
+                        }
+                    }
+                }
+            }
+
+
             if (vcond.isBottom() || vcond.getIntVal() > 0) {
-                int remIters = this.MAX_UNROLL - iters;
+                    int remIters = unrollamnt - iters;
                 if(remIters > 0){
                     if (stmt.isCanonical()) {
                         Statement nbody =

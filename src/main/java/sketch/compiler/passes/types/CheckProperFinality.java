@@ -274,6 +274,9 @@ public class CheckProperFinality extends SymbolTableVisitor {
                     {
                         stmt.makeCanonical();
                     }
+                    if (stmt.getIncr().toString().equals(ivname + " = 1 + " + ivname)) {
+                        stmt.makeCanonical();
+                    }
                     if (stmt.getIncr().toString().equals(ivname + " += 1")) {
                         stmt.makeCanonical();
                     }

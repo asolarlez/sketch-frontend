@@ -20,6 +20,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -129,6 +130,43 @@ public class StmtFor extends Statement
         return (Expression) cond.accept(vr);
     }
 
+    public Expression getIncrVal() {
+        if (incr instanceof StmtExpr) {
+            StmtExpr se = (StmtExpr) incr;
+            if (se.getExpression() instanceof ExprUnary) {
+                ExprUnary eu = (ExprUnary) se.getExpression();
+                int op = eu.getOp();
+                if (op == ExprUnary.UNOP_POSTINC || op == ExprUnary.UNOP_PREINC) {
+                    return ExprConstInt.one;
+                }
+                if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_PREDEC) {
+                    return ExprConstInt.minusone;
+                }
+            }
+        }
+        if (incr instanceof StmtAssign) {
+            StmtAssign sa = (StmtAssign) incr;
+            if (sa.getOp() == 0) {
+                if (sa.getRHS() instanceof ExprBinary) {
+                    ExprBinary eb = (ExprBinary) sa.getRHS();
+                    if (eb.getLeft().equals(sa.getLHS())) {
+                        return eb.getRight();
+                    }
+                    if (eb.getRight().equals(sa.getLHS())) {
+                        return eb.getLeft();
+                    }
+                }
+            }
+            if (sa.getOp() == ExprBinary.BINOP_ADD) {
+                return sa.getRHS();
+            }
+            if (sa.getOp() == ExprBinary.BINOP_SUB) {
+                return new ExprUnary("-", sa.getRHS());
+            }
+        }
+        return null;
+    }
+
     public Expression getRangeMin() {
         if (init instanceof StmtVarDecl) {
             StmtVarDecl svd = (StmtVarDecl) init;
@@ -142,6 +180,9 @@ public class StmtFor extends Statement
     }
 
     public Expression getRangeMax() {
+        if (!(cond instanceof ExprBinary)) {
+            return null;
+        }
         ExprBinary eb = (ExprBinary) cond;
         if (eb.getOp() == ExprBinary.BINOP_LE) {
             return eb.getRight();

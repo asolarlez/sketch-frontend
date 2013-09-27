@@ -138,6 +138,18 @@ public class DisambiguateUnaries extends SymbolTableVisitor
     		}
     	}
 
+        if (inc instanceof StmtAssign) {
+            // Technically this is not really about unary operators, but we use this
+            // opportunity to get rid of += in for loops to make
+            // later passes simpler.
+            StmtAssign sa = (StmtAssign) inc;
+            if (sa.getOp() != 0) {
+                inc =
+                        new StmtAssign(sa.getLHS(), new ExprBinary(sa.getOp(),
+                                sa.getLHS(), sa.getRHS()));
+            }
+        }
+
         Statement newBody = (Statement)stmt.getBody().accept(this);
 
         Statement newInit = (Statement)stmt.getInit().accept(this);

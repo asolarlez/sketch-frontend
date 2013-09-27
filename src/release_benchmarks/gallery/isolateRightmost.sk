@@ -20,6 +20,6 @@ generator bit[W] gen(bit[W] x, int bnd){
 }
 
 bit[W] isolate0sk (bit[W] x)  implements isolate0 {		
-	return gen(x, 4);
+	return gen(x, 3);
 }
 
