@@ -7,6 +7,14 @@
 #include <string>
 
 using namespace std;
+
+class AssumptionFailedException{
+public:
+	AssumptionFailedException(){
+	
+	}
+};
+
 /*
 template<typename T>
 inline void CopyArr(T* lhs, T* rhs, int lsize, int rsize){

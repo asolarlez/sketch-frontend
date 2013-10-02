@@ -1,0 +1,34 @@
+
+pragma options "--debug-show-dag";
+
+int foo(int x){
+	assume x > 10;
+	int t= x-10;
+	assert t > 0;
+	return t;
+}
+
+int moo(int x) implements foo{
+	assume x > 3;
+	int t = x-??;
+	assert t > 0;
+	return t;
+	
+}
+
+int boo(int x) implements foo{
+	main(x-5);
+	return x - ??;
+}
+
+
+harness void main(int x){
+	assume x > 5;
+	int t = ??;
+	moo(x+t);
+	minimize(t);
+	secretAssert(t==5);
+}
+
+@Native("{ assert (t); }")
+void secretAssert(bit t);

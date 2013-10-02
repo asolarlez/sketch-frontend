@@ -6,8 +6,8 @@ import java.util.Stack;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -55,6 +55,7 @@ public class AdvancedRControl extends RecursionControl {
 	Map<String, FunInfo> funmap;
 	WeightFunctions funWeighter = new WeightFunctions();
 	int FACTOR = 0;
+    final boolean ignoreStatics;
 	/**
 	 * For each function, we must keep the following information: <BR>
 	 * - Current recursion depth <BR>
@@ -66,8 +67,11 @@ public class AdvancedRControl extends RecursionControl {
 	private static class FunInfo{
 		int rdepth;
 		final boolean isTerminal;
-		FunInfo(boolean isTerminal){
+        final boolean isStatic;
+
+        FunInfo(boolean isTerminal, boolean isStatic) {
 			this.isTerminal = isTerminal;
+            this.isStatic = isStatic;
 			rdepth = 0;
 		}
 		public String toString(){
@@ -104,7 +108,7 @@ public class AdvancedRControl extends RecursionControl {
             currentFun = nres.getFunName(func.getName());
 			currentCalls = 0;
 			Object obj = super.visitFunction(func);
-			FunInfo fin = new FunInfo(currentCalls==0);
+            FunInfo fin = new FunInfo(currentCalls == 0, func.isStatic());
 			funmap.put(currentFun, fin);
 			if(altName != null){
                 funmap.put(nres.getFunName(altName), fin);
@@ -129,6 +133,7 @@ public class AdvancedRControl extends RecursionControl {
 		int bfactor = 0;
 		boolean forbiddenCalls = false;
 		String callsContained = "";
+
 		public Object visitStmtIfThen(StmtIfThen stmt)
 	    {
 			//We don't want to look into If Statements. We don't know if they'll execute.
@@ -145,14 +150,16 @@ public class AdvancedRControl extends RecursionControl {
             String func = nres.getFunName(exp.getName());
             assert null != funmap.get(func) : "unknown function '" + func +
                     "'; known functions: " + new ScRichString(", ").join(funmap.keySet());
-			if( !(funmap.get(func).isTerminal )){
-				++bfactor; // += funWeighter.funWeight.get(exp.getName());
-			}
+            FunInfo fi = funmap.get(func);
+            if (!(fi.isStatic && ignoreStatics)) {
+                if (!(fi.isTerminal)) {
+                    ++bfactor; // += funWeighter.funWeight.get(exp.getName());
+                }
+            }
 			if( ! testCall(exp) ){
 				forbiddenCalls = true;
 			}
-			//System.out.println("Finished testing bf =" + bfactor);
-            FunInfo fi = funmap.get(nres.getFunName(exp.getName()));
+            // System.out.println("Finished testing bf =" + bfactor);
 			callsContained += exp.getName() +"(" + fi.rdepth  + ")"+ ", ";
 			return exp;
 	    }
@@ -161,7 +168,9 @@ public class AdvancedRControl extends RecursionControl {
 	
 	
 	
-	public AdvancedRControl(int branchingThreshold, int maxInline, Program prog){
+    public AdvancedRControl(int branchingThreshold, int maxInline, boolean ignoreStatics,
+            Program prog)
+    {
 		this.branchingTheshold = branchingThreshold;
 		bfStack = new Stack<Integer>();
 		bfStack.push(1);
@@ -172,6 +181,7 @@ public class AdvancedRControl extends RecursionControl {
 		}*/
 		FACTOR = (funWeighter.maxWeight * 2 ) / 3;
 		MAX_INLINE = maxInline;		
+        this.ignoreStatics = ignoreStatics;
 	}
 	
 	

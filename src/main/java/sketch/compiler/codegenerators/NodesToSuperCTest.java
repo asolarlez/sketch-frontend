@@ -394,11 +394,14 @@ public class NodesToSuperCTest extends NodesToJava {
                 skInputs += param.getName() + "_" + OUTSK;
             }
         }
-
-        writeLine(makecpp(nres.getFunName(func)) + "(" + specInputs + ");");
+        writeLine("try{");
+        this.addIndent();
+        // The call to the spec should go first because it may have stronger assumptions.
         writeLine(makecpp(nres.getFunName(func.getSpecification())) + "(" + skInputs +
                 ");");
-
+        writeLine(makecpp(nres.getFunName(func)) + "(" + specInputs + ");");
+        this.unIndent();
+        writeLine("}catch(AssumptionFailedException& afe){  }");
         for (Parameter outPar : outPars) {
             doCompare(outPar.getName() + "_" + OUTSK, outPar.getName() + "_" + OUTSP,
                     outPar.getType(), fname, inPars, outPar);

@@ -1,0 +1,34 @@
+pragma options "--debug-show-dag ";
+
+harness void main(int i, int j){
+	int i_orig=i, j_orig=j;
+	if(i > ??){ // u1
+		i = ??; // u2
+	}
+	if(j > ??){ // u3
+		j = ??; // u4
+	}
+	if(i_orig > 3 && j_orig > 3)
+    	assert 2*i + j > 6;
+	minimize(i);
+	minimize(j);
+}
+
+int count=0;
+int twox(int x, int y){
+	++count;
+	return x + x;
+}
+
+int expr1(int x, int y){
+	return x*?? + y*??;
+}
+int expr2(int x, int y) implements twox{
+	count = count+??;
+	return x*?? + y*??;
+}
+
+harness void foo(){
+	assert expr1(5,2)*expr2(2,4)== 24;
+}
+

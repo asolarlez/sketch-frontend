@@ -67,7 +67,7 @@ public class MainMethodCreateNospec extends FEReplacer {
 
     protected Function getNospecFunction(Function mainWrapperFcn) {
         final FEContext ctx = FEContext.artificalFrom("nospec", mainWrapperFcn);
-        return Function.creator(ctx, mainWrapperFcn.getSpecification(), FcnType.Static).body(
+        return Function.creator(ctx, mainWrapperFcn.getSpecification(), FcnType.Wrapper).body(
                 new StmtBlock(ctx)).params(unrefParams(mainWrapperFcn.getParams())).pkg(
                 mainWrapperFcn.getPkg()).create();
     }
@@ -95,7 +95,7 @@ public class MainMethodCreateNospec extends FEReplacer {
         stmts.add(new StmtExpr(new ExprFunCall(artificalFrom, mainFcn.getName(),
                 Collections.unmodifiableList(vars))));
         return Function.creator(artificalFrom, mainFcn.getName() + "__Wrapper",
-                FcnType.Static).params(unrefParams(mainFcn.getParams())).spec(
+                FcnType.Wrapper).params(unrefParams(mainFcn.getParams())).spec(
                 mainFcn.getName() + "__WrapperNospec").body(
                 new StmtBlock(artificalFrom, stmts)).printType(
                 mainFcn.getInfo().printType).pkg(mainFcn.getPkg()).create();

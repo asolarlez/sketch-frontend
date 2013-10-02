@@ -1,0 +1,26 @@
+
+void foo(){  }
+int moo(int x){
+	foo();
+	return x;
+}
+
+
+harness void main(int x){
+	if(x>3){
+		int t = moo(x);
+		t = moo(x);
+		t = moo(x);
+		t = moo(x);
+		t = moo(x);
+		t = moo(x);
+		t = moo(x);
+		if(x>5){
+			t = moo(x);
+			t = moo(x);
+			t = moo(x);
+			t = moo(x);
+			t = moo(x);
+		}
+	}
+}

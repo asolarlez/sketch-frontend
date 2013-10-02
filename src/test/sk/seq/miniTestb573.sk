@@ -1,0 +1,43 @@
+
+pragma options "--bnd-unroll-amnt 30";
+
+harness void main(int i){
+	int N = 80;
+	int[N] a = 0;
+	if(??){
+		assert i > N;
+		return;
+	}
+	for(int t = 0; t < N; ++t){
+		a[t] = t;
+	}
+	for(int t = 0; t < N; t++){
+		a[t] += t;
+		if(??){
+			assert t < 5;
+			return;
+		}
+	}
+	for(int t = 0; t < N; t+=1){
+		a[t] += t;
+		if(??){
+			assert t < 5;
+			return;
+		}
+	}
+	for(int t = 0; t < N; t=t+1){
+		a[t] += t;
+		if(??){
+			assert t < 5;
+			return;
+		}
+	}
+	for(int t = 0; t < N; t=1+t){
+		a[t] += t;
+		if(??){
+			assert t < 5;
+			return;
+		}
+	}	
+
+}

@@ -43,6 +43,9 @@ public class Function extends FENode {
         Static(""),
         // Harness function. Also static.
         Harness("harness"),
+        // Indicates an auto-generated wrapper function that initializes globals, also
+        // static.
+        Wrapper(""),
         // Used for SMT solver, which is now unused. Email developers or look for notes on
         // wiki.
         BuiltinHelper("builtin helper"),
@@ -336,7 +339,8 @@ public class Function extends FENode {
     }
 
     public boolean isStatic() {
-        return getFcnType() == FcnType.Static || getFcnType() == FcnType.Model;
+        return getFcnType() == FcnType.Static || getFcnType() == FcnType.Model ||
+                getFcnType() == FcnType.Wrapper;
     }
 
     public boolean isStencil() {
@@ -351,6 +355,10 @@ public class Function extends FENode {
         return getFcnType() == FcnType.Generator;
     }
 
+    public boolean isWrapper() {
+        return getFcnType() == FcnType.Wrapper;
+    }
+
     public boolean isModel() {
         return getFcnType() == FcnType.Model;
     }
@@ -358,6 +366,10 @@ public class Function extends FENode {
     /** Returns the name of this function, or null if it is anonymous. */
     public String getName() {
         return name;
+    }
+
+    public String getFullName() {
+        return name + "@" + pkg;
     }
 
     /**

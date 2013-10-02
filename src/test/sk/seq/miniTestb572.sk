@@ -1,0 +1,35 @@
+pragma options "--bnd-unroll-amnt 6 --bnd-inbits 2 --bnd-arr-size 6 --debug-show-dag";
+
+struct Node{
+	Node a;
+	bit mark;
+	int v;
+}
+
+
+harness void main(int x, int[x] y){
+	Node[x] nn;
+	for(int i=0; i<x; ++i){
+		nn[i] = new Node(v=i, mark=0);	
+	}
+	for(int i=0; i<x; ++i){
+		assume y[i] < x;
+		nn[i].a = nn[y[i]];	
+	}
+	int c = ??;
+	Node cur = nn[0];
+	cur.mark=??;
+	while(c<x){
+		repeat(2){
+		  if({| cur(.a)?(.mark) == ?? |}	){
+			if(??){ cur.mark= ??; }
+			if(??){ cur = cur.a; }
+			if(??){ cur = nn[(cur.v + 1) % x]; }
+			if(??){ ++c; }
+		  }		
+		}
+	}
+	for(int i=0; i<x; ++i){
+		assert nn[i].mark == 1;	
+	}		
+}

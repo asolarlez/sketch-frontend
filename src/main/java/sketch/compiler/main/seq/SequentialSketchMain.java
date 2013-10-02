@@ -116,7 +116,8 @@ public class SequentialSketchMain extends CommonSketchMain
 
     public RecursionControl visibleRControl (Program p) {
 		// return new BaseRControl(params.inlineAmt);
-		return new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p);
+        return new AdvancedRControl(options.bndOpts.branchAmnt,
+                options.bndOpts.inlineAmnt, true, p);
 	}
 
 	/**
@@ -351,7 +352,9 @@ public class SequentialSketchMain extends CommonSketchMain
                     null, System.out
                     , options.bndOpts.unrollAmnt 
                     , options.bndOpts.arrSize
-                    ,new AdvancedRControl(options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt, p ), false);
+, new AdvancedRControl(
+                                options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt,
+                                true, p), false);
         log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
         log("MAX ARRAY SIZE  = " + options.bndOpts.arrSize);

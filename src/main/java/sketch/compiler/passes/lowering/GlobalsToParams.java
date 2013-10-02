@@ -166,13 +166,14 @@ public class GlobalsToParams extends FEReplacer {
         // the hashmap only contains keys for the old function.
         // NOTE -- a litte messy, please add better ideas if you have them.
         if (newParamsForCall.containsKey(inputFcn)) {
-            if (!callGraph.isSketchOrSpec(inputFcn)) {
+                if (!inputFcn.isWrapper()) {
                 final Vector<Parameter> params = new Vector<Parameter>(fcn.getParams());
 
                 // same here, need to look up the old function
                 params.addAll(getParametersForFcn(inputFcn));
                 return fcn.creator().params(params).create();
             } else {
+
                 StmtBlock body = (StmtBlock) fcn.getBody();
                 Vector<Statement> stmts = new Vector<Statement>(body.getStmts());
                 for (AddedParam param : newParamsForCall.get(inputFcn).values()) {

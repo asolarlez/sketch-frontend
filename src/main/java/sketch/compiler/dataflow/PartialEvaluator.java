@@ -85,7 +85,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public boolean isPrecise = true;
 
     protected List<Function> funcsToAnalyze = null;
-    private Set<Function> funcsAnalyzed = null;
+    private Set<String> funcsAnalyzed = null;
 
 
     public String transName(String name){
@@ -1726,7 +1726,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
         }
 
-        funcsAnalyzed = new HashSet<Function>();
+        funcsAnalyzed = new HashSet<String>();
         if (funcsToAnalyze.size() == 0) {
             System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
         }
@@ -1734,7 +1734,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             Function f = funcsToAnalyze.get(0);
             String pkgName = f.getPkg();
             nres.setPackage(pkgs.get(pkgName));
-            if (!funcsAnalyzed.contains(f)) {
+            if (!funcsAnalyzed.contains(f.getFullName())) {
 
                 if (!f.isUninterp()) {
                     Function nstmt = (Function) f.accept(this);
@@ -1742,7 +1742,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                         newfuns.get(pkgName).add(nstmt);
                     }
                 }
-                funcsAnalyzed.add(f);
+                funcsAnalyzed.add(f.getFullName());
             }
             Function tf = funcsToAnalyze.remove(0);
             assert tf == f;

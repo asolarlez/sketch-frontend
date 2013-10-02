@@ -1164,6 +1164,11 @@ public class NodesToSuperCpp extends NodesToJava {
         return "((" + convertType(exp.getType()) + ")(" + exprInner + "))";
     }
 
+    public Object visitStmtAssume(StmtAssume stmt) {
+        return "if(!(" + (String) stmt.getCond().accept(this) +
+                ")){ throw AssumptionFailedException();  }";
+    }
+
     @Override
     public String convertType(Type type) {
         if (type instanceof TypeStructRef) {

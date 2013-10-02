@@ -19,6 +19,77 @@ void main(int x){
 }
 \end{lstlisting}
 
+
+\subsection{Harnesses and function equivalence requirement}
+A program in sketch can have multiple harness functions each encoding different requirements of the problem. Sketch will guarantee that all harnesses will run to completion without triggering assertion failures for all inputs within bounds. Harness functions are not allowed to take heap allocated objects as inputs and all global variables are reset to their initial values before the evaluation of each harness. Because of this, the order of evaluation of the harnesses does not matter. 
+
+Sketch also allows the programmer to express that a function---we call it the implementation---must be functionally equivalent to another function---the specification---by writing \C{implements $fname$} at the end of the signature of the implementation function. When the specification and implementation do not access global variables, the equivalence constraint created by implements can be seen as syntactic sugar for a harness that calls both the implementation and the specification and compares their results. However, using \C{implements} is preferable to writing such a harness because it lets the compiler know that it can replace one function for the other when reasoning about the program. The implements directive imposes stronger constraints than harness; same function cannot have a \C{harness} and an \C{implements} directive.
+
+If the implementation or the specification access global variables, then their equivalence must hold for all possible values of those global variables---not just for their initial values---and they must leave the global variables in the same state after they terminate. This is to ensure that replacing the specification with its implementation will always be semantics preserving. For this same reason, the spec and the sketch cannot access global variables that point to heap allocated values.
+
+\begin{Example}
+As a simple example of the use of harnesses and \C{implements}, consider the following sketch.
+\begin{lstlisting}
+int count=0;
+int twox(int x, int y){
+	++count;
+	return x + x;
+}
+
+int expr1(int x, int y){
+	return x*?? + y*??;
+}
+int expr2(int x, int y) implements twox{
+	count = count+??;
+	return x*?? + y*??;
+}
+
+harness void foo(){
+	assert expr1(5,2)*expr2(2,4)== 24;
+}
+\end{lstlisting}
+The harness imposes a constraint on the product of the two functions. The \C{implements} in the declaration of \C{expr2} imposes the additional constraint that \C{expr2} must be equivalent to \C{twox}. Because \C{twox} modifies the global variable \C{count}, \C{expr2} must modify the variable in the same way.
+
+\end{Example}
+
+\paragraph{Implementation note} As of the current \Sk{} release, there is a requirement that the specification should not have any unknowns. It is likely that this requirement will be relaxed in future releases. Also, when two functions are related by an \C{implements} directive, the compiler assumes that the specification is simpler than the implementation. The compiler exploits this by replacing every call to the implementation with a call to the specification during the analysis phase. This generally leads to big performance improvements for the solver, but it means that if the implementation calls itself recursively the system will not catch bugs that lead to infinite recursion. 
+
+
+\subsection{Assumptions}
+In some cases, we may want to require that the guarantees of the absence of assertion failures or of functional equivalence only hold for a subset of the inputs to the harness or specification. In \Sk{} you can specify this by using \C{assume} statements. In the presence of \C{assume}, sketch will only guarantee lack of assertion failures and functional equivalence for all inputs that satisfy the assumptions. Note that this means that even if the assertions occur before the assume statements are encountered, those assertions will be ignored for inputs that cause the assumptions to fail because those inputs will never be considered. Therefore, in order to avoid unexpected behavior, it is advised that \C{assume} be used only at the beginning of harnesses and specifications or implementations so that it is easy to identify the inputs that will be ignored by the synthesizer.
+
+When a function is called by another function, any assumptions in the callee become assertions from the point of view of the caller; \ie{} the caller must guarantee that the inputs and environment it passes to the callee satisfy the assumptions. 
+
+Also, when a function implements a specification, its assumptions must be weaker than those of the specification. In other words, any input that is legal for the specification must be legal for the implementation. 
+
+\begin{Example}
+\begin{lstlisting}
+harness int foo(int x){
+	assume x > 10;
+	int t= x-10;
+	assert t > 0;
+	return t;
+}
+
+int moo(int x) implements foo{
+	assume x > 3;
+	int t = x-??;
+	assert t > 0;
+	return t;
+}
+
+
+harness void main(int x){
+	assume x > 5;
+	int t = ??;
+	moo(x+t);
+	minimize(t);
+}
+\end{lstlisting}
+In the example above, the harness \C{foo} assumes \C{x>10}, which allows it to satisfy the assertion \C{t>0}. In the case of \C{moo}, the unknown will resolve to \C{10} because of the constraint of equivalence with \C{foo}. Note that the assumption in \C{moo} is not strong enough to prove the assertion, but because \C{moo} implements \C{foo}, it inherits its preconditions. 
+\end{Example}
+
+
 \subsection{Types for Constant Generators}
 The constant hole \C{??} can actually stand for any of the following different types of constants: 
 \begin{itemize}
@@ -38,7 +109,35 @@ The flag \C{bnd-ctrlbits} tells the synthesizer what range of values to consider
 
 
 \subsection{Minimizing Hole Values}
-In many cases, it is useful to ask the synthesizer for the smallest constant that will satisfy a specification. For such cases, the synthesizer supports a function \C{minimize($e$)}, which asks the synthesizer to make $e$ as small as possible. More specifically, the synthesizer will find a minimal $bnd$ such that $e < bnd$ for all inputs.
+In many cases, it is useful to ask the synthesizer for the smallest constant that will satisfy a specification. For such cases, the synthesizer supports a function \C{minimize($e$)}, which asks the synthesizer to make $e$ as small as possible. More specifically, the synthesizer will find a minimal $bnd$ such that $e < bnd$ for all inputs. If the program includes multiple \C{minimize} statements, the synthesizer will find a locally minimal set of bounds such that there is no other set of bounds that is strictly better than the one found. 
+
+\flagdoc{bnd-mbits}{
+The flag \C{bnd-mbits} tells the synthesizer how many bits to use to represent all bounds introduced by \C{minimize(e)}(default 5). Note that the largest value of \C{(e)} will be less than the bound, so if \C{e} can have value $n$, the bound needs enough bits to be able to reach $n+1$.
+}
+
+
+\begin{Example}
+For example, consider the following simple program: 
+
+\begin{lstlisting}
+harness void main(int i, int j){
+	int i_orig=i, j_orig=j;
+	if(i > ??){ // we'll call this unknown u1
+		i = ??; // u2
+	}
+	if(j > ??){ // u3
+		j = ??; // u4
+	}
+	if(i_orig > 3 && j_orig > 3)
+    	   assert 2*i + j > 6;
+	minimize(i);
+	minimize(j);
+}
+\end{lstlisting}
+In the program above, synthesizer will try to minimize the upper bound on \C{i} (we'll call it $b_i$) and the upper bound on j ($b_j$). One possible solution is to have $u1=3$, $u2=4$, $u3=0$, $u4=0$. This will allow the upper bounds $(b_1, b_2)$ to be $(5,1)$. A different possible solution is to have $u1=0$, $u2=0$, $u3=0$, $u4=7$, which will allow the upper bounds to be $(1, 8)$. While the first set of bounds appears better than the second, they are actually incomparable. By contrast, a solution that had $(b_1, b_2)=(6,1)$ would not be allowed because the solution with bounds $(5,1)$ is strictly better.
+\end{Example}
+
+
 
 The synthesizer has some syntactic sugar on top of \C{minimize} to support the synthesis of a minimal number of statements, a common idiom in \Sk{}. For example, the code below will produce the minimal number of assignments required to swap \C{x} and \C{y}.
 \begin{lstlisting}

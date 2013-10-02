@@ -40,9 +40,11 @@ public class LowerToSketch extends MetaStage {
                             options.bndOpts.arr1dSize));
         }
 
-
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
 
+        // prog.debugDump("Before reinterpret");
+        prog = (Program) prog.accept(new ReinterpretAssumes());
+        // prog.debugDump("After reinterpret");
 
         prog = (Program) prog.accept(new AddPkgNameToNames());
 
