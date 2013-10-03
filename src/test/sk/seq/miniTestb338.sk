@@ -29,7 +29,11 @@ bit isPalindrome(int [N] a){
 }
 
 
-bit isPalindromeSketch(int[N] a) implements isPalindrome{
+harness void check(int[N] a){
+	assert isPalindromeSketch(a) == isPalindrome(a);
+}
+
+bit isPalindromeSketch(int[N] a) {
 
   if(a == 0) return 0;
   

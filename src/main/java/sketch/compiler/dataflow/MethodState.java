@@ -671,7 +671,9 @@ public class MethodState {
          * tv.update(vtype.CONST(ta.getBase().defaultValue().getIValue()), vtype); } }
          */
        vars.put(newname, tv);
-       cvmap.add(newname);
+        if (!tv.checkSpecial()) {
+            cvmap.add(newname);
+        }
    }
 
 

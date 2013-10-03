@@ -3,6 +3,7 @@ package sketch.compiler.passes.lowering;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -26,6 +27,7 @@ import sketch.compiler.passes.structure.CallGraph.CallEdge;
 import sketch.util.datastructures.HashmapSet;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.datastructures.TypedHashSet;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * convert global variables to inout parameters, with a static initializer function.
@@ -134,10 +136,42 @@ public class GlobalsToParams extends FEReplacer {
             }
         }
 
+
         // replace all function calls
         // System.err.println(this);
         prog = (Program) super.visitProgram(prog);
         assert fcnsToAdd.isEmpty();
+        nres = new NameResolver(prog); // get the new versions of functions into the nres.
+        for (Package pkg : prog.getPackages()) {
+            for (Function f : pkg.getFuncs()) {
+                if (f.getSpecification() != null) {
+                    Function spec = nres.getFun(f.getSpecification());
+                    if (spec.getParams().size() != f.getParams().size()) {
+                        String msg =
+                                "The following global variables are not being updated by spec and sketch in the same way: ";
+                        Iterator<Parameter> p1 = spec.getParams().iterator();
+                        Iterator<Parameter> p2 = f.getParams().iterator();
+                        while (p1.hasNext() || p2.hasNext()) {
+                            Parameter pp1 = null, pp2 = null;
+                            if (p1.hasNext()) {
+                                pp1 = p1.next();
+                            }
+                            if (p2.hasNext()) {
+                                pp2 = p2.next();
+                            }
+                            if (pp1 == null) {
+                                msg += pp2.getName() + ", ";
+                            }
+                            if (pp2 == null) {
+                                msg += pp1.getName() + ", ";
+                            }
+                        }
+                        throw new ExceptionAtNode(msg, f);
+                    }
+                }
+            }
+        }
+
         // System.err.println(this.toString());
         // prog.debugDump();
         // System.exit(0);

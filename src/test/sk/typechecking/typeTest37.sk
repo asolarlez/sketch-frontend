@@ -1,0 +1,18 @@
+int c;
+
+harness int foo(int x){
+	int t = ??;
+	if(x<2){
+		assert t == 13;
+	}
+	++c;
+	return t*x;
+}
+
+int boo(int x) implements foo{ // TypeError
+	return 13*x;
+}
+
+harness void moo(int x){
+	foo(x+5);
+}

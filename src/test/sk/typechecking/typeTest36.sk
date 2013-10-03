@@ -1,0 +1,68 @@
+pragma options "--bnd-inbits 3 --bnd-unroll-amnt 8 --bnd-cbits 3 ";
+bit disableAssert = 0;
+
+int lcmuf(int a, int b);
+
+model int lcm(int a, int b){
+    int rv = lcmuf(a,b);
+
+    if(a ==0 || b == 0)
+        disableAssertion (rv == 0);
+                if(disableAssert) return 0;
+    else{
+        disableAssertion (rv % a == 0);
+                if(disableAssert) return 0;
+        disableAssertion (rv % b == 0);
+                if(disableAssert) return 0;
+                disableAssertion (rv != 0);
+                if(disableAssert) return 0;
+                for(int i=1; i<rv; i++){
+                 disableAssertion (i % a != 0 || i %b != 0);
+                 if(disableAssert) return 0;
+                }
+    }
+
+    return rv;
+}
+void disableAssertion(bit b) {
+        if(!b){
+                 disableAssert = 1;
+        }
+}
+
+
+
+// synthesize algorithm for computing lcm of N numbers
+harness void multi_lcm(int N, int[N] nums){		
+
+        for(int i=0; i<N; i++)
+          if(nums[i] <= 1) return;
+        if(N<2) return;
+
+        int result = lcm(nums[0], nums[1]);
+        if(disableAssert) return;
+        for(int i =??; i<{| N | N-1 | N-2 |}; i++){
+          result = lcm({| result | nums[i]|}, {| result | nums[i]|});
+          if(disableAssert) return;
+        }
+
+
+        for(int i=0; i<N; i++){
+                guardAssertion (result % nums[i] == 0);
+        }
+
+        for(int i=1; i < result; i++)
+        {
+          bit divisible = 1;
+          for(int j=0; j<N; j++){
+            divisible = divisible && (i % nums[j] == 0);
+      }
+      guardAssertion (!divisible);
+        }
+
+}
+void guardAssertion(bit b){
+        if(!disableAssert){
+                assert b;
+        }
+}
