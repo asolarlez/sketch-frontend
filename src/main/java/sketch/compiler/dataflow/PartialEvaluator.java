@@ -595,7 +595,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
         // Function nfun = fun.creator().params(nplist).create();
         try {
-            vtype.funcall(fun, avlist, outSlist, state.pathCondition());
+            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true));
         } catch (SketchException se) {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }
@@ -1492,7 +1492,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitStmtReturn(StmtReturn stmt)
     {
-        state.freturn();        
+        // state.testReturn();
+        state.freturn();
         return super.visitStmtReturn(stmt);
     }
 

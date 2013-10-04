@@ -167,6 +167,8 @@ public class MethodState {
      */
     private ChangeTracker changeTracker;
 
+    private ChangeTracker returnTracker = null;
+
     public static class Level {
         public final String msg;
         public boolean isDead;
@@ -184,6 +186,7 @@ public class MethodState {
 
     private Stack<Level> levels = new Stack<Level>();
     private int changeTrackers = 0;
+    protected boolean useRetTracker = false;
 
     public int getLevel(){
         return levels.size();
@@ -199,7 +202,11 @@ public class MethodState {
     }
 
 
-    public MethodState(abstractValueType vtype){
+    public void useRetTracker() {
+        this.useRetTracker = true;
+    }
+
+    public MethodState(abstractValueType vtype) {
         // System.out.println("New Method State for new method.");
         vars = new HashMap<String, varState>();
         changeTracker = null;
@@ -233,16 +240,30 @@ public class MethodState {
         }
     }
 
+    public void testReturn() {
+        freturn(vtype.CONST(1));
+        if (cvmap.isEmpty()) {
+            return;
+        }
+        pushReturnTracker(pathCondition(false), false);
+        ChangeTracker tmpct = returnTracker;
+        for (String var : cvmap) {
+            tmpct.setVarValue(var, UTvarValue(var));
+        }
+    }
+
     public void freturn(){
         freturn(vtype.CONST(1));        
     }
     
     public void freturn(abstractValue v){
+
         if(changeTracker != null){
             changeTracker.freturn(v);
         }else{
             rvflag.update(v, vtype);            
         }
+
     }
     
     private void UTsetVarValue(String var, abstractValue idx, abstractValue val){
@@ -421,12 +442,16 @@ public class MethodState {
 
 
 
-    public abstractValue pathCondition() {
+    public abstractValue pathCondition(boolean includeReturnCond) {
         abstractValue val;
         if (changeTracker != null) {
-            val = vtype.not(assertHelper(changeTracker, false));
+            val = vtype.not(assertHelper(changeTracker, false, includeReturnCond));
         } else {
+            if (includeReturnCond) {
             val = vtype.not(getRvflag().state(vtype));
+            } else {
+                val = vtype.CONST(0);
+            }
         }
         return val;
     }
@@ -450,7 +475,9 @@ public class MethodState {
     }
 
 
-    public abstractValue assertHelper(ChangeTracker tmpTracker, boolean isSuper){
+    public abstractValue assertHelper(ChangeTracker tmpTracker, boolean isSuper,
+            boolean includeReturnCond)
+    {
         abstractValue nestCond;
         if(tmpTracker.isMethodBoundary() && isSuper){
             return vtype.CONST(0);
@@ -462,9 +489,14 @@ public class MethodState {
             nestCond = vtype.CONST(0);
         }
         if(tmpTracker.kid == null){
-            return vtype.or(nestCond, getRvflag().state(vtype));
+            if (includeReturnCond) {
+                return vtype.or(nestCond, getRvflag().state(vtype));
+            } else {
+                return nestCond;
+            }
         }else{
-            return vtype.or(nestCond, assertHelper(tmpTracker.kid, isSuper) );
+            return vtype.or(nestCond,
+                    assertHelper(tmpTracker.kid, isSuper, includeReturnCond));
         }       
     }
     
@@ -472,7 +504,10 @@ public class MethodState {
         /* Compose complex expression by walking all nesting conditionals. */
         int isSuper = stmt.isSuper();
         if(changeTracker != null && isSuper != StmtAssert.UBER){        
-            val = vtype.or(val, assertHelper(changeTracker, isSuper==StmtAssert.SUPER) );
+            val =
+                    vtype.or(
+                            val,
+                            assertHelper(changeTracker, isSuper == StmtAssert.SUPER, true));
         }else{
             if(isSuper != StmtAssert.UBER){
                 val = vtype.or(val, getRvflag().state(vtype) );
@@ -516,7 +551,7 @@ public class MethodState {
             return;
         }
        var = this.transName(var);
-        if (cvmap != null && cvmap.contains(var)) {
+        if (cvmap != null && cvmap.contains(var) && !useRetTracker) {
            if(val.isVect()){
                val = getVecTernaryValue(var, val);
            }else{
@@ -549,7 +584,7 @@ public class MethodState {
     
     public void setVarValue(String var, abstractValue idx, abstractValue val){
         var = this.transName(var);
-        if(cvmap.contains(var)){
+        if (cvmap.contains(var) && !useRetTracker) {
             if(val.isVect()){
                 assert idx == null : "NYI";
                 val = getVecTernaryValue(var, val);
@@ -642,6 +677,15 @@ public class MethodState {
         changeTrackers++;
     }
 
+    public void pushReturnTracker(abstractValue cond, boolean isNegated) {
+        /*
+         * Add new change tracker layer, including nesting conditional expression and
+         * value.
+         */
+        ChangeTracker oldChangeTracker = returnTracker;
+        returnTracker = new ChangeTracker(cond, isNegated);
+        returnTracker.kid = oldChangeTracker;
+    }
 
     /** Returns a set of the TRANSLATED variables names that are currently
      * in scope. */
@@ -756,7 +800,14 @@ public class MethodState {
         return lvl;
     }
 
-    public void endFunction(Level lvl){
+    public void handleReturnTrackers() {
+        while (returnTracker != null) {
+            procChangeTrackers(returnTracker);
+            returnTracker = returnTracker.kid;
+        }
+    }
+
+    public void endFunction(Level lvl) {
         popLevel(lvl);
         if(!rvstack.isEmpty()){ rvflag = rvstack.pop(); rvname = rvnamestack.pop() ; cvmap = outparStack.pop(); }else{ rvflag = null; }
     }

@@ -566,7 +566,12 @@ return result;
 }
 
 //harness int[N] compute_deriv_driver(int N, int[N] poly_list_int){
-int[N] compute_deriv_driver(int N, int[N] poly_list_int) implements compute_deriv_teacher_list_int_driver{
+
+harness void main(int N, int[N] poly_list_int){
+	assert compute_deriv_driver(N, poly_list_int) == compute_deriv_teacher_list_int_driver(N, poly_list_int);
+}
+
+int[N] compute_deriv_driver(int N, int[N] poly_list_int){
 if (N==0) return 0;
 int[N] result = 0;
 MultiType poly_list_intMT = createMTFromArray(N, poly_list_int);

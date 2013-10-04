@@ -1,3 +1,4 @@
+pragma options "--bnd-unroll-amnt 4 --debug-show-dag";
 
 int test(int x) {
 	

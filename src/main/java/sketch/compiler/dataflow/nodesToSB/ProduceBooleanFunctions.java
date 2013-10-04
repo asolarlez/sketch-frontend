@@ -16,6 +16,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
@@ -74,6 +75,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             rcontrol.activateTracing();
         }
         this.maxArrSize = maxArrSize;
+        state.useRetTracker();
     }
     
     private String convertType(Type type) {
@@ -338,6 +340,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     }
     
     
+    public Object visitStmtReturn(StmtReturn sr) {
+        state.testReturn();
+        return sr;
+    }
+
     public Object visitFunction(Function func)
     {
         if(tracing)
@@ -373,11 +380,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         Statement newBody = (Statement)func.getBody().accept(this);
         
         
-        
+        state.handleReturnTrackers();
         doOutParams(func.getParams());
         
-        out.println("}");
         state.endFunction(lvl);
+        out.println("}");
         
         opsizes = tmpopsz;
         opnames = tmpopnm;
