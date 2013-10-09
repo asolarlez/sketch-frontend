@@ -3,8 +3,8 @@
  */
 package sketch.compiler.passes.cuda;
 
-import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 
 @CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class FlattenStmtBlocks2 extends FlattenStmtBlocks { }

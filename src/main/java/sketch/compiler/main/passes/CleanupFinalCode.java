@@ -4,7 +4,6 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
-import sketch.compiler.dataflow.preprocessor.FlattenStmtBlocks;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -13,6 +12,7 @@ import sketch.compiler.passes.cleanup.MakeCastsExplicit;
 import sketch.compiler.passes.cleanup.RemoveDumbArrays;
 import sketch.compiler.passes.cleanup.RemoveUselessCasts;
 import sketch.compiler.passes.lowering.AssembleInitializers;
+import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 
 /**

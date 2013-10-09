@@ -116,7 +116,7 @@ public class EliminateReturns extends SymbolTableVisitor{
         // first let the superclass process the parameters (which may be function calls)
         exp=(ExprFunCall) super.visitExprFunCall(exp);
         addStatement( conditionWrap(new StmtExpr(exp)));
-        return ExprConstInt.zero;
+        return null;
     }
     
     

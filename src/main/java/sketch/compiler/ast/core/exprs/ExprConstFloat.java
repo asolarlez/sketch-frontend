@@ -29,7 +29,8 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
  */
 public class ExprConstFloat extends ExprConstant
 {
-	public static final ExprConstFloat ZERO = new ExprConstFloat ((FEContext)null, 0.0);
+    public static final ExprConstFloat ZERO = new ExprConstFloat(new FEContext(
+            "SYNTHETIC"), 0.0);
 
     public static enum FloatType {
         Float, Double, Unknown
