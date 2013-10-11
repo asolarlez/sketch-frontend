@@ -60,11 +60,12 @@ public class NodesToSuperCTest extends NodesToJava {
         writeLine("#include \"" + filename + ".h\"\n");
         writeLine("using namespace std;\n");
         super.visitProgram(prog);
-        writeLine("int main(void) {");
+        writeLine("int main(int argc, char** argv) {");
         addIndent();
+        writeLine("Parameters p(argc, argv);");
         writeLine("srand(time(0));");
         for (Iterator<String> iter = testFuncs.iterator(); iter.hasNext();) {
-            writeLine(iter.next() + "();");
+            writeLine(iter.next() + "(p);");
         }
         writeLine("printf(\"Automated testing passed for " + filename + "\\n\");");
         writeLine("return 0;");
@@ -254,6 +255,21 @@ public class NodesToSuperCTest extends NodesToJava {
             unIndent();
             writeLine("}");
         }
+        writeLine("if(p.verbosity > 2){");
+        addIndent();
+        if (isArr) {
+            writeLine("cout<<\"" + name + "=[\";");
+            writeLine("for(int _i_=0;_i_<" + len + ";_i_++) {");
+            addIndent();
+            writeLine("cout<<" + name + "[_i_]<<\", \";");
+            unIndent();
+            writeLine("}");
+            writeLine("cout<<\"]\"<<endl;");
+        } else {
+            writeLine("cout<<\"" + name + "=\"<<" + name + "<<endl;");
+        }
+        unIndent();
+        writeLine("}");
         // padVar(name, t);
     }
 
@@ -339,7 +355,7 @@ public class NodesToSuperCTest extends NodesToJava {
         String fname = remColon(nres.getFunName(func)) + "Test";
         testFuncs.add(fname);
         Function spec = nres.getFun(func.getSpecification());
-        writeLine("void " + fname + "() {");
+        writeLine("void " + fname + "(Parameters& p) {");
         addIndent();
         List<Parameter> paramsList = func.getParams();
         List<Parameter> inPars = new ArrayList<Parameter>();
@@ -353,7 +369,7 @@ public class NodesToSuperCTest extends NodesToJava {
             }
         }
 
-        writeLine("for(int _test_=0;_test_<" + NTESTS + ";_test_++) {");
+        writeLine("for(int _test_=0;_test_< p.niters ;_test_++) {");
         addIndent();
         for (Parameter inPar : inPars) {
             if (!inPar.isParameterOutput()) {

@@ -30,6 +30,13 @@ public class MethodState {
         protected Map<String, varState> deltas;
         protected int methodBoundary = 0;
         varState rvf = null;
+        /*
+         * When I hit a return, the current changeTracker will be poisoned to indicate
+         * that those changes don't matter anymore. The state of the program as it stood
+         * before the return has been transfered somewhere else, so there is no need to
+         * keep track of it here anymore.
+         */
+        protected boolean isPoisoned = false;
 
         public void freturn(abstractValue v){
             if(rvf == null){
@@ -50,6 +57,13 @@ public class MethodState {
             }
         }
         
+        public boolean isPoisoned() {
+            return isPoisoned;
+        }
+        public void poison() {
+            isPoisoned = true;
+        }
+
         public void pushMethodBoundary(){
             methodBoundary++;
         }
@@ -250,6 +264,9 @@ public class MethodState {
         for (String var : cvmap) {
             tmpct.setVarValue(var, UTvarValue(var));
         }
+        if (changeTracker != null) {
+            changeTracker.poison();
+        }
     }
 
     public void freturn(){
@@ -323,6 +340,16 @@ public class MethodState {
 
     public void procChangeTrackers (ChangeTracker ch1){
 
+        if (ch1.isPoisoned()) {
+            // If the changeTracker was poisoned, we can ignore all other updates that
+            // happened in it.
+            if (ch1.rvf != null) {
+                this.freturn(this.getRvflag().condjoin(ch1.condition, ch1.rvf, vtype).state(
+                        vtype));
+            }
+            return;
+        }
+
         HashMap<String, varState> mmap = new HashMap<String, varState>();
 
         for(Entry<String, varState> me : ch1.deltas.entrySet()){
@@ -350,6 +377,64 @@ public class MethodState {
     }
 
     public void procChangeTrackers (ChangeTracker ch1, ChangeTracker ch2){
+
+        if (ch1.rvf != null) {
+            if (ch2.rvf == null) {
+                this.freturn(this.getRvflag().condjoin(ch1.condition, ch1.rvf, vtype).state(
+                        vtype));
+            } else {
+                this.freturn(ch2.rvf.condjoin(ch1.condition, ch1.rvf, vtype).state(vtype));
+            }
+        } else {
+            if (ch2.rvf != null) {
+                this.freturn(this.getRvflag().condjoin(ch2.condition, ch2.rvf, vtype).state(
+                        vtype));
+            }
+        }
+        if (ch1.isPoisoned()) {
+            if (ch2.isPoisoned()) {
+                // Both branches returned, so we need to poison the parent changeset.
+                if (changeTracker != null) {
+                    changeTracker.poison();
+                }
+                return;
+            }
+            // ch1 is poisoned but ch2 is not.
+            // We unconditionally propagate the changes from ch2.
+            for (Entry<String, varState> me : ch2.deltas.entrySet()) {
+                String nm = me.getKey();
+                varState merged = me.getValue();
+                if (merged.isArr()) {
+                    for (Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext();)
+                    {
+                        Entry<Integer, abstractValue> tmp = ttt.next();
+                        this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),
+                                tmp.getValue());
+                    }
+                } else {
+                    this.UTsetVarValue(me.getKey(), merged.state(vtype));
+                }
+            }
+
+        } else {
+            // ch2 is poisoned but ch1 is not.
+            // we unconditionally propagate the changes from ch1.
+            for (Entry<String, varState> me : ch1.deltas.entrySet()) {
+                String nm = me.getKey();
+                varState merged = me.getValue();
+                if (merged.isArr()) {
+                    for (Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext();)
+                    {
+                        Entry<Integer, abstractValue> tmp = ttt.next();
+                        this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),
+                                tmp.getValue());
+                    }
+                } else {
+                    this.UTsetVarValue(me.getKey(), merged.state(vtype));
+                }
+            }
+        }
+
         HashMap<String, varState> mmap = new HashMap<String, varState>();
 
         for(Entry<String, varState> me : ch1.deltas.entrySet()){
@@ -377,18 +462,6 @@ public class MethodState {
             mmap.put(me.getKey(), merged);
         }
         
-        
-        if(ch1.rvf != null){
-            if(ch2.rvf == null){
-                this.freturn(this.getRvflag().condjoin(ch1.condition,ch1.rvf , vtype).state(vtype));
-            }else{
-                this.freturn(ch2.rvf.condjoin(ch1.condition, ch1.rvf, vtype).state(vtype));
-            }            
-        }else{
-            if(ch2.rvf != null){
-                this.freturn(this.getRvflag().condjoin(ch2.condition,ch2.rvf , vtype).state(vtype));
-            }
-        }
         
         
         

@@ -1,0 +1,23 @@
+
+
+harness void main(bit[5] b, ref int x){
+	int[5] bar=0;
+	if(x<8 && x > 5){
+		int q = x;
+		int[q] foo=0;
+		
+		if(b[0]){
+			x = 1;
+			bar[3] = 8;
+			foo[2] = 11;
+			return;					
+		}else{
+			x = 2;
+			bar[4] = 6;
+			return;		
+		}
+		x = 3;
+		assert x == 4;	
+	}
+
+}

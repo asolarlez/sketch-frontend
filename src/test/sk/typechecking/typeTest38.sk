@@ -1,0 +1,15 @@
+
+void foo(int x, int y);
+
+harness void tester1(){
+	int x= ??;
+	int t;
+	if(x>7){
+		t = 5
+	}else{
+		t = 15;
+	}
+	foo(t, x);
+	minimize(x + t);
+
+}

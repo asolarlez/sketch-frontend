@@ -8,6 +8,42 @@
 
 using namespace std;
 
+class Parameters{
+public:
+	int niters;
+	int verbosity;
+	Parameters(int argc, char** argv){	
+		niters = 100;	
+		verbosity = 0;
+		for(int i=0; i<argc; ++i){
+			if(string(argv[i]) == "-n"){
+				if(i==argc-1){
+					cerr<<" -n requires a parameter"<<endl;
+					exit(0);
+				}
+				niters = atoi(argv[i+1]);
+				i+=1; 
+				continue;
+			}
+			if(string(argv[i]) == "-v"){
+				if(i==argc-1){
+					cerr<<" -v requires a parameter"<<endl;
+					exit(0);
+				}
+				verbosity = atoi(argv[i+1]);
+				i+=1; 
+				continue;
+			}	
+			if(string(argv[i])== "-h"){
+				cout<<" -n iters \t number of iterations for test"<<endl;
+				cout<<" -v level \t verbosity level"<<endl;
+				continue;
+			}	
+		}
+	}
+};
+
+
 class AssumptionFailedException{
 public:
 	AssumptionFailedException(){

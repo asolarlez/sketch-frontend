@@ -1,0 +1,26 @@
+pragma options "--debug-show-dag";
+
+struct A{
+	int x;
+}
+
+
+void foo(int i){
+	
+	if(i > 5){
+		return;	
+	}
+	if(i==6){
+		A a = new A(x=5);
+		assert a.x == 5;
+	}
+}
+
+harness void main(int i){
+	
+	foo(i);
+	
+	A b = new A(x=7);
+	assert b.x == 7;
+
+}

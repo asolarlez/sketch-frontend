@@ -1,0 +1,49 @@
+pragma options "--debug-show-dag";
+
+
+harness void main(bit[5] b){
+	int t = 11;
+	foo(b, t);
+	if(b[0]){
+		assert t < 6;
+	}
+}
+
+void foo(bit[5] b, ref int x){
+	if(b[0]){
+		x = 1;
+		if(b[1]){
+			x = 2;
+			if(b[2]){
+				return;
+			}
+			if(b[3]){
+				x = 3;
+				return;
+			}
+			x = 4;
+		}	
+		x = 5;
+	}
+}
+
+
+harness void mm(int t, bit[5] b, ref int x){
+	moo(t, b, x);
+	assert x == 1;
+}
+
+void moo(int t, bit[5] b, ref int x){
+	x = 0;
+	int i=0; 
+	while(i<5 && i<t){
+		if(b[i]){
+			x = x + 1;
+			return;
+		}
+		++i;	
+	}
+	x = 1;
+	return ;
+}
+
