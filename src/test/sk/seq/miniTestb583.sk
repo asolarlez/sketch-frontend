@@ -1,0 +1,49 @@
+pragma options "--bnd-inline-amnt 10 --bnd-cbits 4 --bnd-int-range 50 --debug-show-dag";
+
+int PLUS=0;
+int CONST=1;
+struct Node{
+    int type;
+    Node m;
+    Node f;
+}
+
+Node parse(int n, char[n] x, int inpos, ref int outpos, int rbnd){
+    Node left = null;
+    if(x[inpos]=='(' && rbnd > 0){
+        left = parse(n, x, inpos+1, outpos, rbnd-1);        
+        
+    }else if(x[inpos]<='9' && x[inpos]>='0'){
+        outpos = inpos + 1;
+        left = new Node(type=CONST);
+    }
+    inpos = outpos ;
+    if(x[inpos]=='+' && rbnd > 0){
+        Node right = parse(n, x, inpos+1, outpos, rbnd-1);        
+        return new Node(type=PLUS, m=left, f=right);
+    }else{
+        return left;
+    }    
+}
+/*
+harness void test2(){
+	char[8] x = "(4+2)+3";
+	int op=0;
+	Node n = parse(8, x, 0, op, 3);
+	assert n.type == PLUS;
+	assert n.m.type == PLUS;
+	assert n.f.type == CONST;
+	assert n.m.m.type ==CONST;
+	assert n.m.f.type ==CONST; 
+}
+*/
+harness void main2(){
+    char[8] x = "4+(3+2)";
+    int op=0;
+    Node n = parse(8, x, 0, op, 3);
+    assert n.type == PLUS;
+    assert n.m.type == CONST;
+    assert n.f.type == PLUS;
+    assert n.f.m.type == CONST;
+    assert n.f.f.type == CONST;        
+}

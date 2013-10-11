@@ -255,7 +255,7 @@ public class NodesToSuperCTest extends NodesToJava {
             unIndent();
             writeLine("}");
         }
-        writeLine("if(p.verbosity > 2){");
+        writeLine("if(_p_.verbosity > 2){");
         addIndent();
         if (isArr) {
             writeLine("cout<<\"" + name + "=[\";");
@@ -355,7 +355,7 @@ public class NodesToSuperCTest extends NodesToJava {
         String fname = remColon(nres.getFunName(func)) + "Test";
         testFuncs.add(fname);
         Function spec = nres.getFun(func.getSpecification());
-        writeLine("void " + fname + "(Parameters& p) {");
+        writeLine("void " + fname + "(Parameters& _p_) {");
         addIndent();
         List<Parameter> paramsList = func.getParams();
         List<Parameter> inPars = new ArrayList<Parameter>();
@@ -369,7 +369,7 @@ public class NodesToSuperCTest extends NodesToJava {
             }
         }
 
-        writeLine("for(int _test_=0;_test_< p.niters ;_test_++) {");
+        writeLine("for(int _test_=0;_test_< _p_.niters ;_test_++) {");
         addIndent();
         for (Parameter inPar : inPars) {
             if (!inPar.isParameterOutput()) {

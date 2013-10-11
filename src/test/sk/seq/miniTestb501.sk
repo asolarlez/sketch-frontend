@@ -27,7 +27,7 @@ Node parse(int n, char[n] x, int inpos, ref int outpos, int rbnd){
         return left;
     }    
 }
-
+/*
 harness void main(){
     char[8] x = "(1+2)+3";
     int op=0;
@@ -38,7 +38,7 @@ harness void main(){
     assert n.m.m.type == CONST;
     assert n.m.f.type == CONST;        
 }
-
+*/
 
 harness void main2(){
     char[8] x = "4+(3+2)";
@@ -50,7 +50,7 @@ harness void main2(){
     assert n.f.m.type == CONST;
     assert n.f.f.type == CONST;        
 }
-
+/*
 harness void main3(){
     char[8] x = "4+(2)";
     int op=0;
@@ -59,4 +59,4 @@ harness void main3(){
     assert n.m.type == CONST;
     assert n.f.type == CONST;
 }
-
+*/

@@ -1,0 +1,35 @@
+pragma options "--debug-show-dag";
+
+struct A{
+	int x;
+	A nxt;
+}
+
+A foo(int i, A a){    
+	if(i<5){
+		return  new A(x=i, nxt=a);		
+	}
+	A tt = new A(x=777);
+	return a;
+}
+
+harness void maian(int i){
+	if(i > 0 && i < 7){
+		A a = null;
+		a = foo(i, a);
+		a = foo(i+1, a);
+		a = foo(i+2, a);
+		if(i==2){
+			A pp = new A(x=1);	
+			if(??){ pp = a.nxt.nxt; }		
+			for(int qq=0; qq<5; ++qq){
+				pp.x +=pp.x;
+			}
+			assert a.x == 4;
+			assert a.nxt.x == 3;
+			assert a.nxt.nxt.x == 2;
+			assert pp.x == 10 + ??;
+		}
+	}
+
+}

@@ -1147,7 +1147,11 @@ int[N] compute_deriv_teacher_driver(int N, int[N] poly){
   return result;
 }
 
-int[N] compute_deriv_student_driver(int N, int[N] poly) implements compute_deriv_teacher_driver{
+harness void main(int N, int[N] poly){
+	assert compute_deriv_student_driver(N, poly) == compute_deriv_teacher_driver(N, poly);
+}
+
+int[N] compute_deriv_student_driver(int N, int[N] poly){
   int[N] result = 0;
   if(N==0) return result;
   MultiType polyMT = createMTFromArray(N, poly);

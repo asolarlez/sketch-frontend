@@ -415,23 +415,27 @@ public class MethodState {
                     this.UTsetVarValue(me.getKey(), merged.state(vtype));
                 }
             }
-
+            return;
         } else {
-            // ch2 is poisoned but ch1 is not.
-            // we unconditionally propagate the changes from ch1.
-            for (Entry<String, varState> me : ch1.deltas.entrySet()) {
-                String nm = me.getKey();
-                varState merged = me.getValue();
-                if (merged.isArr()) {
-                    for (Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext();)
-                    {
-                        Entry<Integer, abstractValue> tmp = ttt.next();
-                        this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),
-                                tmp.getValue());
+            if (ch2.isPoisoned()) {
+                // ch2 is poisoned but ch1 is not.
+                // we unconditionally propagate the changes from ch1.
+                for (Entry<String, varState> me : ch1.deltas.entrySet()) {
+                    String nm = me.getKey();
+                    varState merged = me.getValue();
+                    if (merged.isArr()) {
+                        for (Iterator<Entry<Integer, abstractValue>> ttt =
+                                merged.iterator(); ttt.hasNext();)
+                        {
+                            Entry<Integer, abstractValue> tmp = ttt.next();
+                            this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),
+                                    tmp.getValue());
+                        }
+                    } else {
+                        this.UTsetVarValue(me.getKey(), merged.state(vtype));
                     }
-                } else {
-                    this.UTsetVarValue(me.getKey(), merged.state(vtype));
                 }
+                return;
             }
         }
 
@@ -788,9 +792,9 @@ public class MethodState {
          * tv.update(vtype.CONST(ta.getBase().defaultValue().getIValue()), vtype); } }
          */
        vars.put(newname, tv);
-        if (!tv.checkSpecial()) {
+        // if (!tv.checkSpecial()) {
             cvmap.add(newname);
-        }
+        // }
    }
 
 
