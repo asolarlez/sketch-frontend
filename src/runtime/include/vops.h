@@ -1,6 +1,7 @@
 #ifndef VOPS_H
 #define VOPS_H 1
 
+#include <iostream>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>

@@ -529,6 +529,8 @@ public class SequentialSketchMain extends CommonSketchMain
             prog = parseProgram();
         } catch (SketchException se) {
             throw se;
+        } catch (IllegalArgumentException ia) {
+            throw ia;
         } catch (RuntimeException re) {
             throw new ProgramParseException("Sketch failed to parse");
         }

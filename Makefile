@@ -143,6 +143,7 @@ light-distr:
 	mv ../sketch-distr ../sketch-$(VERSION)/sketch-frontend
 	cp -r ../sketch-backend ../sketch-$(VERSION)/.
 	cat LIGHT_README | sed 's/\\VER/$(VERSION)/g' > ../sketch-$(VERSION)/README
+	echo "-----------------------------------" >> ../sketch-$(VERSION)/README
 	echo "frontend version:" >> ../sketch-$(VERSION)/README
 	hg log -l 1 | head -n 4 >> ../sketch-$(VERSION)/README
 	echo "backend version:" >> ../sketch-$(VERSION)/README

@@ -218,7 +218,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             return super.visitProgram(prog);
         }
 
-        private List<Parameter> getAddedParams(String funName) {
+        private List<Parameter> getAddedParams(String funName, boolean isGenerator) {
             List<Parameter> result = addedParams.get(funName);
             if (result == null) {
                 HashMap<String, ParamInfo> params = funsToVisit.get(funName);
@@ -259,8 +259,11 @@ public class RemoveFunctionParameters extends FEReplacer {
                         }
                     }
                     ParamInfo info = params.get(name);
-                    result.add(new Parameter(null, info.pt, name,
-                            info.changed ? Parameter.REF
+                    boolean makeRef = info.changed;
+                    if (isGenerator) {
+                        makeRef = makeRef || info.pt instanceof TypeArray;
+                    }
+                    result.add(new Parameter(null, info.pt, name, makeRef ? Parameter.REF
                             : Parameter.IN));
 
                 }
@@ -272,8 +275,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         public Object visitExprFunCall(ExprFunCall efc) {
             String name = nres.getFunName(efc.getName());
+            Function f = nres.getFun(efc.getName());
             if (funsToVisit.containsKey(name)) {
-                List<Parameter> addedParams = getAddedParams(name);
+                List<Parameter> addedParams = getAddedParams(name, f.isGenerator());
                 if (addedParams.size() != 0) {
                     List<Expression> pl = new ArrayList<Expression>(efc.getParams());
                     for (Parameter p : addedParams) {
@@ -289,7 +293,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             String name = nres.getFunName(fun.getName());
             if (funsToVisit.containsKey(name)) {
                 List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
-                pl.addAll(getAddedParams(name));
+                pl.addAll(getAddedParams(name, fun.isGenerator()));
 
                 fun = fun.creator().params(pl).create();
             }

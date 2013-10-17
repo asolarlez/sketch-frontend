@@ -1,0 +1,5 @@
+foobaz bad; // TypeError
+
+harness void main(int x){	
+
+}

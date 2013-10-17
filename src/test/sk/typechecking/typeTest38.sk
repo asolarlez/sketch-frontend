@@ -6,7 +6,7 @@ harness void tester1(){
 	int t;
 	if(x>7){
 		t = 5
-	}else{
+	}else{ // TypeError TypeError
 		t = 15;
 	}
 	foo(t, x);

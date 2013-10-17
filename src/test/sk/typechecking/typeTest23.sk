@@ -4,7 +4,7 @@ pragma options "--bnd-unroll-amnt 32 --debug-show-dag";
 
 
 harness void foo(int i){    
-    int[i] x = 0; //TypeError
+    int[i] x = 0; 
     int  g(){
     int f(){
         i=7;

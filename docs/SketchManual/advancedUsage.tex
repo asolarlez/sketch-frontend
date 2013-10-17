@@ -1,6 +1,35 @@
 \section{Advanced Usage and Diagnostics}
 
 
+\subsection{Custom Code Generators}
+
+For many applications, the user's goal is not to generate C code, but instead to derive code details that will later be used by other applications. In order to simplify this process, \Sk{} makes it easy to create custom code generators that will be invoked by the sketch compiler at code generation time. 
+
+Custom code generators must implement the \C{FEVisitor} interface defined in the \C{sketch.compiler.ast.core} package and must have a default constructor that the compiler can use to instantiate them. In order to ask the compiler to use a custom code generator, you must label your custom code generator with the \C{@CodeGenerator} annotation. You must then package your code generator together with any additional classes it uses into a single jar file, and you must tell \Sk{} to use this jar file by using the flag \C{--fe-custom-codegen}. 
+
+\flagdoc{--fe-custom-codegen}{Flag takes as an argument the name of a jar file and forces \Sk{} to use the first code generator it finds in that file.}
+
+
+To illustrate how to create a custom code generator, the \Sk{} distribution includes a folder called C{sketch-frontend/customcodegen} that contains a custom code generator called \C{SCP} that simply pretty-prints the program to the terminal. In order to get \Sk{} to use this class as a code generator, follow these simple steps:
+
+\begin{itemize}
+\item From the \C{sketch-frontend} directory, compile the code generator by running \newline
+ \C{> javac -cp sketch-}\version{}\C{-noarch.jar customcodegen/SCP.java}
+\item Create a jar file by running \newline
+\C{> jar -cvf customcodegen.jar customcodegen/}
+\item Try out your new code generator by running \newline
+\C{> sketch --fe-custom-codegen customcodegen.jar test/seq/sk/miniTest1.sk}
+\end{itemize}
+
+When you run, you should see the following messages in the output:
+\begin{lstlisting}
+Class customcodegen.SCP is a code generator.
+Generating code with customcodegen.SCP
+(followed by the pretty-printed version of your code).
+\end{lstlisting}
+
+
+
 \subsection{Temporary Files and Frontend Backend Communication}
 
 The sketch frontend communicates with the solver through temporary files. 
@@ -17,3 +46,4 @@ Also, if you are doing advanced development on the system, you will sometimes wa
 the temporary files from being deleted. You can do this by using the \C{--fe-keep-tmp} flag.
 
 \flagdoc{fe-keep-tmp}{Keep intermediate files used by the sketch frontend to communicate with the solver.}
+

@@ -230,6 +230,14 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                 }
             }
+
+            if (type instanceof TypeStructRef) {
+                StructDef sd = nres.getStruct(((TypeStructRef) type).getName());
+                if (sd == null) {
+                    report(field, "Type " + type + " is ambiguous or undefined.");
+                }
+            }
+
         }
         assert !inFieldDecl;
         inFieldDecl = true;
