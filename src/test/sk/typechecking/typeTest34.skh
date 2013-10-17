@@ -22,5 +22,5 @@ File fopen_r(Str filename){
 @NeedsInclude("#include \"fread.c\"")
 @Native("{ _out = fread(pFile);}")
 Str fread(pFile){ // TypeError missing type
-	return new Str(n=6, buf="hello");
+	return new Str(n=6, buf="hello"); // parser will give an error here too. TypeError
 }

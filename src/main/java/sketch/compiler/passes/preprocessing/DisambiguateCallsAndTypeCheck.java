@@ -438,7 +438,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                                 addStatement(new StmtAssert(
                                         exp,
                                         new ExprBinary(newParams.get(idx), "==", actLen),
-                                        actLen.getCx() +
+                                        exp.getCx() +
                                                 ": Inconsistent array lengths for implicit parameter " +
                                                 len + ".", false));
                             }
