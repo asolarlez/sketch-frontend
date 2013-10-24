@@ -17,6 +17,7 @@
 package sketch.compiler.ast.core;
 
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.NotImplementedException;
 
 
@@ -131,7 +132,7 @@ public abstract class FENode
     public void assertTrue (boolean cond, String msg) {
     	if (!cond) {
     		report (msg);
-    		throw new RuntimeException ();
+            throw new ExceptionAtNode(msg, this);
     	}
     }
 

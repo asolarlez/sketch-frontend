@@ -221,13 +221,14 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     // check that lengths match
                     Expression lengthExpr = ((TypeArray) type).getLength();
                     // only check it if we have resolved it
+                    /*
                     if (lengthExpr instanceof ExprConstInt) {
                         int length = ((ExprConstInt) lengthExpr).getVal();
                         if (length != ((ExprArrayInit) init).getElements().size()) {
                             report(field, "declared array length does not match "
                                     + "array initializer");
                         }
-                    }
+                    }*/
                 }
             }
 

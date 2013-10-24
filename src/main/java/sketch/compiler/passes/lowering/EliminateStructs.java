@@ -97,6 +97,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
 	
     Map<String, Set<String>> usedStructNames;
+    Map<String, Set<String>> createdStructNames;
 	
 	/**
 	 * Add variable declarations to the body of 'func', and rewrite its body.
@@ -104,6 +105,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	public Object visitFunction (Function func) {
 		boolean isMain = false;
         String funName = nres.getFunName(func.getName());
+        structs.clear();
         if (mainFunctions.contains(funName)) {
 
 			isMain = true;
@@ -120,14 +122,12 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        }
 
             List<Statement> newBodyStmts = new ArrayList<Statement>();
-            // ExprStar es = new ExprStar(func, 2);
-            // es.setType(TypePrimitive.inttype);
-            // newBodyStmts.add(new StmtVarDecl(func, TypePrimitive.inttype, heapSzVar,
-            // new ExprBinary(new ExprConstInt(HSIZE), "+", es)));
+            Set<String> createdSN = createdStructNames.get(funName);
             for (String name : usedStructNames.get(funName)) {
 
 				StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
+                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize,
+                                createdSN.contains(name));
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
 				structs.put (name, tracker);
@@ -152,11 +152,12 @@ public class EliminateStructs extends SymbolTableVisitor {
 			SymbolTable oldSymTab = symtab;
 	        symtab = new SymbolTable(symtab);
 	        List<Parameter> newParams = new ArrayList<Parameter>();
-
+            Set<String> createdSN = createdStructNames.get(funName);
             List<Statement> newBodyStmts = new LinkedList<Statement>();
             for (String name : usedStructNames.get(funName)) {
                 StructTracker tracker =
-                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize);
+                        new StructTracker(nres.getStruct(name), func, varGen, maxArrSize,
+                                createdSN.contains(name));
                 tracker.registerAsParameters(symtab);
                 tracker.addParams(func, newParams);
                 structs.put(name, tracker);
@@ -207,9 +208,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 
         List<Expression> newplist = new ArrayList<Expression>(fc.getParams().size());
         Set<String> names = usedStructNames.get(newName);
+        Set<String> created = createdStructNames.get(newName);
         for (String name : names) {
 
-            structs.get(name).addActualParams(newplist);
+            structs.get(name).addActualParams(newplist, created.contains(name));
         }
 
         for (Expression e : fc.getParams()) {
@@ -330,6 +332,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         GetUsedStructs gus = new GetUsedStructs(nres);
         gus.visitProgram(p);
         usedStructNames = gus.get();
+        createdStructNames = gus.getCreated();
 
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
@@ -411,6 +414,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         }
 
         private final Map<String, FieldInfo> fieldInfo;
+        private final boolean includeNIcounter;
         MakeArrFieldsConst mafc;
 
         // private final String heapsize;
@@ -427,7 +431,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	     */
 	    public StructTracker (StructDef struct_,
  FENode cx_, TempVarGen varGen,
-                final Expression maxArrSz)
+                final Expression maxArrSz, boolean includeNIcounter)
         {
 
             // this.heapsize = heapsize;
@@ -440,6 +444,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	nextInstancePointer =
                     new ExprVar(cx, varGen.nextVar("#" + struct.getName() + "_" +
                             "nextInstance_"));
+
+            this.includeNIcounter = includeNIcounter;
 
 	    	fieldArrays = new HashMap<String, ExprVar> ();
             fieldInfo = new HashMap<String, FieldInfo>();
@@ -479,9 +485,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 
         public void addParams(FENode ctx, List<Parameter> newParams) {
 
-
-	    	newParams.add(new Parameter(ctx, sref, nextInstancePointer.getName(),
+            if (includeNIcounter) {
+                newParams.add(new Parameter(ctx, sref, nextInstancePointer.getName(),
                     Parameter.REF));
+            }
             // newParams.add(new Parameter(TypePrimitive.inttype, heapsize));
 	    	for (String field : fieldArrays.keySet ()) {
                 newParams.add(new Parameter(ctx, typeofFieldArr(field), fieldArrays.get(
@@ -489,8 +496,11 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	}
 	    }
 
-	    public void addActualParams(List<Expression> params){
-	    	params.add(nextInstancePointer);
+        public void addActualParams(List<Expression> params, boolean calleeNeedsNIcounter)
+        {
+            if (calleeNeedsNIcounter) {
+                params.add(nextInstancePointer);
+            }
             // params.add(heapSzVar);
 	    	for (String field : fieldArrays.keySet ()) {
 	    		params.add(fieldArrays.get(field));
