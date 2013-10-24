@@ -1,0 +1,7 @@
+
+
+int[5] x = {1,2};
+
+harness void main(){ 
+	assert x[3] == 0;
+}
