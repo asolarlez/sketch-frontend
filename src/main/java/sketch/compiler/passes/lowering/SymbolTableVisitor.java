@@ -32,6 +32,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtImplicitVarDecl;
+import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
@@ -237,6 +238,29 @@ public class SymbolTableVisitor extends FEReplacer
         Object result = super.visitStmtBlock(block);
         symtab = oldSymTab;
         return result;
+    }
+
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        ExprVar var = (ExprVar) stmt.getExpr().accept(this);
+
+        // visit each case body
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+        for (String caseExpr : stmt.getCaseConditions()) {
+
+            SymbolTable oldSymTab1 = symtab;
+            symtab = new SymbolTable(symtab);
+            symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+
+            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+            newStmt.addCaseBlock(caseExpr, body);
+            symtab = oldSymTab1;
+        }
+        symtab = oldSymTab;
+
+        return newStmt;
+
     }
 
     public Object visitStmtFor(StmtFor stmt) {

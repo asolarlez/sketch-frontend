@@ -519,6 +519,23 @@ public class PartialEvaluator extends SymbolTableVisitor {
         return e;
     }
 
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        Expression var = stmt.getExpr();
+        var.accept(this);
+
+        if (isReplacer)
+            var = exprRV;
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), (ExprVar) var);
+        for (String caseExpr : stmt.getCaseConditions()) {
+
+            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+            newStmt.addCaseBlock(caseExpr, body);
+
+        }
+        return newStmt;
+
+    }
+
     public Object visitExprFunCall(ExprFunCall exp)
     {
         String name = exp.getName();

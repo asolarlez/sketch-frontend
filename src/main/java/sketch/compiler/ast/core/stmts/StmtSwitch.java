@@ -5,64 +5,85 @@ import java.util.LinkedList;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.ExprVar;
 
 
 public class StmtSwitch extends Statement {
 
-	Expression cond;
-    Statement body;
+
+    ExprVar expr;
+
 	
-	LinkedList<Expression> cases;
-	HashMap<Expression, Statement> bodies; 
+    LinkedList<String> cases;
+    HashMap<String, Statement> bodies;
 	
-    public StmtSwitch(FENode node, Expression cond, Statement body) {
+    public StmtSwitch(FENode node, ExprVar expr) {
 		super(node);
 		
-		this.cond = cond;
-        this.body = body;
+        this.expr = expr;
 		
-		cases = new LinkedList<Expression>();
-		bodies = new HashMap<Expression, Statement>();
+        cases = new LinkedList<String>();
+        bodies = new HashMap<String, Statement>();
 	}
 	
-    public StmtSwitch(FEContext context, Expression x, Statement b) {
+    public StmtSwitch(FEContext context, ExprVar expr) {
         super(context);
-        this.cond = cond;
-        this.body = body;
+        this.expr = expr;
+        cases = new LinkedList<String>();
+        bodies = new HashMap<String, Statement>();
     }
 
-    public void addCaseBlock(Expression caseExpr, LinkedList<Statement> caseBody) {
-		assert caseExpr != null;
+    public void addCaseBlock(String caseName, LinkedList<Statement> caseBody) {
+        assert caseName != null;
 		assert caseBody != null;
 		
-		cases.addLast(caseExpr);
+        cases.addLast(caseName);
 		FENode dummy = null;
-		bodies.put(caseExpr, new StmtBlock(dummy, caseBody));
+        bodies.put(caseName, new StmtBlock(dummy, caseBody));
 	}
-	public void addCaseBlock(Expression caseExpr, Statement caseBody) {
-		assert caseExpr != null;
+
+    public void addCaseBlock(String caseName, Statement caseBody) {
+        assert caseName != null;
 		assert caseBody != null;
 		
-		cases.addLast(caseExpr);
-		bodies.put(caseExpr, caseBody);
+        cases.addLast(caseName);
+        bodies.put(caseName, caseBody);
 	}
+
+    public void updateCaseBody(String caseName, Statement caseBody) {
+        bodies.put(caseName, caseBody);
+    }
 	
 	@Override
 	public Object accept(FEVisitor v) {
 		return v.visitStmtSwitch(this);
 	}
 
-	public Expression getCond() {
-		return cond;
+    public ExprVar getExpr() {
+        return expr;
 	}
+
+    public void updateExpr(ExprVar exp) {
+        this.expr = exp;
+    }
 	
-	public Iterable<Expression> getCaseConditions() {
+    public LinkedList<String> getCaseConditions() {
 		return cases;
 	}
 	
-	public Statement getBody(Expression caseExpr) {
+    public Statement getBody(String caseExpr) {
 		return bodies.get(caseExpr);
 	}
+
+    public String toString() {
+        String result = "switch(";
+        result = result + expr.getName() + "):\n";
+        for (String c : cases) {
+            result = result + "case " + c + "{";
+            result = result + getBody(c) + "}";
+        }
+
+        return result;
+    }
 
 }

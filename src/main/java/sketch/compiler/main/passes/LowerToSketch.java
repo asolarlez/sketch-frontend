@@ -8,6 +8,7 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
+import sketch.compiler.passes.preprocessing.MergeADT;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
@@ -29,6 +30,9 @@ public class LowerToSketch extends MetaStage {
     public Program visitProgramInner(Program prog) {
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
+
+        // ADT
+        prog = (Program) prog.accept(new MergeADT());
 
         // FIXME xzl: use efs instead of es, can generate wrong program!
         // System.out.println("before efs:");
@@ -85,9 +89,6 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
 
-        // TODO xzl: temporarily remove EliminateStructs
-
-        
 
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(

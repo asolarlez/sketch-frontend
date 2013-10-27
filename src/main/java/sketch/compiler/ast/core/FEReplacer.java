@@ -868,9 +868,17 @@ public class FEReplacer implements FEVisitor
         return spmdnproc;
     }
 
-	public Object visitStmtSwitch(StmtSwitch sw) {
-		// TODO add visitSwmtSwitch
-		throw new RuntimeException("Not yet implemented");
+    // ADT
+
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        ExprVar var = (ExprVar) stmt.getExpr().accept(this);
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+
+        for (String caseExpr : stmt.getCaseConditions()) {
+            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+            newStmt.addCaseBlock(caseExpr, body);
+        }
+        return newStmt;
 	}
 
     /** generic tree replacement code */

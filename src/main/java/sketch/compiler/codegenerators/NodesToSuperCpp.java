@@ -880,6 +880,22 @@ public class NodesToSuperCpp extends NodesToJava {
         return result;
     }
 
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        String result = "";
+        result += "switch(";
+        ExprVar var = stmt.getExpr();
+        result += (String) var.accept(this);
+        result += "->type){\n";
+        for (String c : stmt.getCaseConditions()) {
+            result += indent + "case " + c.toUpperCase() + ":\n" + indent;
+            String body = (String) stmt.getBody(c).accept(this);
+            result += body + "\n";
+        }
+        result += "\n }";
+
+        return result;
+    }
+
     // JY: We need to print the bodies of for loops.
     public Object visitStmtFor(StmtFor stmt) {
         String result = "";

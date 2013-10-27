@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -86,6 +87,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         }
     }
 
+
+
     /**
      * Checks that no structures have duplicated field names. In particular, a field in a
      * structure or filter can't have the same name as another field in the same structure
@@ -114,6 +117,16 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         report(ts.getContext(),
                                 "Field can not have the same name as class: '" +
                                         entry.getKey() + "'");
+                    }
+                }
+            }
+            // ADT
+            // To check for parent structs.
+            for (StructDef ts : spec.getStructs()) {
+                if (ts.getParentName() != null) {
+                    if (!structNames.containsKey(ts.getParentName())) {
+                        report(ts.getContext(),
+                                "Parent struct must exist and be defined within the same package");
                     }
                 }
             }
@@ -370,6 +383,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     public Object visitProgram(Program prog) {
         checkDupFieldNames(prog);
         checkPackageNames(prog);
+
         return super.visitProgram(prog);
     }
 
@@ -822,6 +836,54 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         // should really also check whether any variables are modified in the loop body
 
         return stmt;
+    }
+
+    // ADT
+    private boolean isExhaustive(List<String> children, LinkedList<String> cases) {
+        if (children == null) {
+            return false;
+        }
+        boolean isExhaustive = true;
+        for (String child : children) {
+            if (!cases.contains(child)) {
+                if (!isExhaustive(nres.getStructChildren(child), cases)) {
+                    return false;
+                }
+            }
+        }
+
+        return isExhaustive;
+    }
+
+    // ADT
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        ExprVar var = (ExprVar) stmt.getExpr().accept(this);
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+        // Exhaustive cases
+        TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
+        List<String> children = nres.getStructChildren(tres.getName());
+        if (!isExhaustive(children, stmt.getCaseConditions())) {
+            report(stmt, "Switch cases must be exhaustive");
+        }
+
+        // visit each case body
+        for (String caseExpr : stmt.getCaseConditions()) {
+            if (!children.contains(caseExpr)) {
+                report(stmt, "Case must be a variant of the type " + tres);
+            }
+            SymbolTable oldSymTab1 = symtab;
+            symtab = new SymbolTable(symtab);
+            symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+
+            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+            newStmt.addCaseBlock(caseExpr, body);
+            symtab = oldSymTab1;
+        }
+        symtab = oldSymTab;
+        return newStmt;
+
     }
 
     public Object visitStmtFor(StmtFor stmt) {

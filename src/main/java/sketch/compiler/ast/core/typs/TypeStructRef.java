@@ -112,8 +112,17 @@ public class TypeStructRef extends Type
         if ((that instanceof TypeStructRef)) {
             TypeStructRef tsr = (TypeStructRef) that;
             String name1 = nres.getStructName(tsr.name);
-            String name2 = nres.getStructName(name);
-            return name1.equals(name2);
+            String name2 = name;
+            while (nres.getStructParentName(name2) != null) {
+                String name3 = nres.getStructName(name2);
+                if (name1.equals(name3)) {
+                    return true;
+                }
+                name2 = nres.getStructParentName(name2);
+
+            }
+            String name3 = nres.getStructName(name2);
+            return name1.equals(name3);
         } else {
             if (that instanceof TypeArray) {
                 return this.promotesTo(((TypeArray) that).getBase(), nres);

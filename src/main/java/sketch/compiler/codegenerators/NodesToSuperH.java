@@ -39,7 +39,11 @@ public class NodesToSuperH extends NodesToSuperCpp {
             preIncludes += a.contents() + "\n";
         }
 
-        result += indent + "class " + escapeCName(struct.getName()) + "{\n  public:\n";
+        result += indent + "class " + escapeCName(struct.getName());
+        if (nres.getStructParentName(struct.getName())!=null){
+            result += " : "+ nres.getStructParentName(struct.getName());
+        }
+        result += "{\n  public:\n";
         addIndent();
 
         for (Annotation a : struct.getAnnotation("Native")) {
@@ -50,6 +54,10 @@ public class NodesToSuperH extends NodesToSuperCpp {
         }
 
         List<Pair<String, TypeArray>> fl = new ArrayList<Pair<String, TypeArray>>();
+        if (!struct.isInstantiable()){
+            //ADT change as the name might already be taken
+            // add field for type
+        }
         for (String field : struct.getOrderedFields()) {
             Type ftype = struct.getType(field);
             if (ftype instanceof TypeArray) {

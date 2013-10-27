@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.stmts.StmtDoWhile;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtLoop;
+import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -66,6 +67,16 @@ public class FlattenStmtBlocks extends FEReplacer {
 		 isWithinBlock = oldIsWithinBlock;
 		 return o;
 	    }
+
+    // ADT
+    @Override
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        boolean oldIsWithinBlock = isWithinBlock;
+        isWithinBlock = false;
+        Object o = super.visitStmtSwitch(stmt);
+        isWithinBlock = oldIsWithinBlock;
+        return o;
+    }
 	 
 	 @Override
 	 public Object visitStmtDoWhile(StmtDoWhile stmt)

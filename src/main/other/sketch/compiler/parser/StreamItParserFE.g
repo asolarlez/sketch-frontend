@@ -269,6 +269,7 @@ statement returns [Statement s] { s = null; }
 	|	(expr_statement) => s=expr_statement SEMI!
 	|	tb:TK_break SEMI { s = new StmtBreak(getContext(tb)); }
 	|	tc:TK_continue SEMI { s = new StmtContinue(getContext(tc)); }
+	//ADT
 	|	s=switch_statement
 	|	s=if_else_statement
 	|	s=while_statement
@@ -581,10 +582,18 @@ assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar
 ;
 //ADT
 switch_statement returns [Statement s]
-{ s = null; Expression x; Statement b; }
-	:	u:TK_switch LPAREN x=right_expr RPAREN b=pseudo_block
-		{s= new StmtSwitch(getContext(u), x,b);}
+{ s = null; ExprVar  x;  Statement b =null; }
+	:	u:TK_switch LPAREN name:ID RPAREN LCURLY
+	 
+		{x = new ExprVar(getContext(name), name.getText()); s= new StmtSwitch(getContext(u), x); }
+		(TK_case caseName:ID COLON b= pseudo_block
+		{((StmtSwitch)s).addCaseBlock(caseName.getText(), b);}
+		)*
+		RCURLY
+		
 	;
+	 
+
 	
 if_else_statement returns [Statement s]
 { s = null; Expression x; Statement t, f = null; }
