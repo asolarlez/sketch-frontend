@@ -208,6 +208,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         this.name = name;
         this.pkg = pkg;
         this.fieldTypMap = map.immutable();
+        assert fieldOrder.size() == fieldTypMap.size();
         this.annotations = annotations;
     }
 

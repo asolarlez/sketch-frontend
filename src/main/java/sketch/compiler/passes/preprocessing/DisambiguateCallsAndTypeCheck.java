@@ -1164,6 +1164,17 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
          * i++) { if (elems.get(i) instanceof ExprArrayInit) { report(expr,
          * "non-uniform number of array " + "dimensions in array initializer"); } } } }
          */
+        List<Expression> elems = expr.getElements();
+        if (elems.size() > 0) {
+            Expression first = elems.get(0);
+            Type t = getType(first);
+            for (int i = 1; i < elems.size(); ++i) {
+                t = getType(elems.get(i)).leastCommonPromotion(t, nres);
+                if (t == null) {
+                    report(expr, "Inconsistent types in array initializer");
+                }
+            }
+        }
 
         return super.visitExprArrayInit(expr);
     }

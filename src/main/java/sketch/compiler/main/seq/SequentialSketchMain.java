@@ -532,7 +532,7 @@ public class SequentialSketchMain extends CommonSketchMain
         } catch (IllegalArgumentException ia) {
             throw ia;
         } catch (RuntimeException re) {
-            throw new ProgramParseException("Sketch failed to parse");
+            throw new ProgramParseException("Sketch failed to parse: " + re.getMessage());
         }
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
         prog = this.preprocAndSemanticCheck(prog);

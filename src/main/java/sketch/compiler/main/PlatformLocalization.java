@@ -78,7 +78,14 @@ public class PlatformLocalization {
         } catch (IOException e) {
             printError("error retriving localization properties");
         }
-        usersketchdir = md(path(System.getProperty("user.home"), ".sketch"));
+
+        String homedir = System.getProperty("user.home");
+        usersketchdir = md(path(homedir, ".sketch"));
+        if (homedir == null) {
+            System.out.println("Java claims your home directory is: " +
+                    homedir +
+                    "\n but I can't write to it. This may be related to this bug in java: http://bugs.sun.com/view_bug.do?bug_id=4787931");
+        }
         tmpdir = md(path(usersketchdir, "tmp"));
     }
 
