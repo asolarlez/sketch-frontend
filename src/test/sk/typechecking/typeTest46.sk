@@ -1,0 +1,27 @@
+//Could not parse the program - switch must be over a variable.
+//Tests for ADT
+struct Tree{}
+struct Leaf extends Tree{}    
+struct Branch extends Tree{}
+
+harness void test(){
+	Branch branch = new Branch();
+	int x =   sum(branch);
+}
+
+int sum(Tree t){
+		
+    switch(new Branch()){
+        case Leaf:           
+            {     
+            return 1;
+            }    
+        case Branch:
+			{           
+            return 2;
+			}	
+			
+    }
+    return 1;
+    
+}

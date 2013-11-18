@@ -195,7 +195,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     {
         return (new TStructCreator(ctx)).name(name).parentName(parentName).isInstantiable(
                 isInstantiable).fields(fields, ftypes).annotations(
-                annotations);
+annotations);
     }
 
     public TStructCreator creator() {
@@ -313,7 +313,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     }
 
     public Expression defaultValue () {
-    	return ExprNullPtr.nullPtr;
+        return ExprNullPtr.nullPtr;
     }
 
     /** Accept a front-end visitor. */
@@ -378,7 +378,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         public StructFieldEnt(String left, Type right) {
             super(left, right);
         }
-        
+
         public String getName() { return left; }
         public Type getType() { return right; }
     }

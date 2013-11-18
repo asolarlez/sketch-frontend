@@ -1,0 +1,47 @@
+//Type casting error
+struct Tree{ 
+	int x;
+	Tree left;
+	Tree right;
+}
+
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+
+
+harness void test(){	
+
+Branch branch = new Branch();
+Leaf leaf = new Leaf();
+branch.left = leaf;
+Branch b = (Branch) sum(branch);
+
+}
+
+Tree sum(Tree t){	
+    
+    switch(t){
+        case Leaf: 
+            /* t is now of type Leaf in this branch */
+            {
+                        return t;
+            }                     
+      
+            
+        case Branch:
+			{
+            /* t is of type Branch in this branch */
+            if(t.left!=null){
+            return t.left;
+            }else{
+            	return t;
+            }
+		}
+    }
+}

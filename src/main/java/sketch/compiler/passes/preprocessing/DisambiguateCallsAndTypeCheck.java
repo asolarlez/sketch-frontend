@@ -10,15 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import sketch.compiler.ast.core.FEContext;
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
@@ -92,7 +85,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     /**
      * Checks that no structures have duplicated field names. In particular, a field in a
      * structure or filter can't have the same name as another field in the same structure
-     * or filter.
+     * or parent structure or filter.
      * 
      * @param prog
      *            parsed program object to check
@@ -110,13 +103,24 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 checkADupFieldName(structNames, ts.getName(), ts.getContext(),
                         "Two structs in the same package can't share a name.");
                 Map<String, FEContext> fieldNames = new HashMap<String, FEContext>();
-                for (Entry<String, Type> entry : ts) {
-                    checkADupFieldName(fieldNames, entry.getKey(), ts.getContext(),
-                            "Two fields in the same struct can't share a name.");
-                    if (entry.getKey().equals(ts.getName())) {
-                        report(ts.getContext(),
-                                "Field can not have the same name as class: '" +
-                                        entry.getKey() + "'");
+                StructDef current = ts;
+
+                while (current != null) {
+                    for (Entry<String, Type> entry : current) {
+                        checkADupFieldName(fieldNames, entry.getKey(),
+                                current.getContext(),
+                                "Two fields in the same struct can't share a name.");
+                        if (entry.getKey().equals(current.getName())) {
+                            report(ts.getContext(),
+                                    "Field can not have the same name as class: '" +
+                                            entry.getKey() + "'");
+                        }
+                    }
+                    String parent = current.getParentName();
+                    if (parent != null) {
+                        current = nres.getStruct(parent);
+                    } else {
+                        current = null;
                     }
                 }
             }
@@ -295,6 +299,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     boolean inParamDecl = false;
 
+
     public Object visitExprBinary(ExprBinary expr) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprBinary");
 
@@ -381,6 +386,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     public Object visitProgram(Program prog) {
+        nres = new NameResolver(prog);
         checkDupFieldNames(prog);
         checkPackageNames(prog);
 
@@ -840,7 +846,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     // ADT
     private boolean isExhaustive(List<String> children, LinkedList<String> cases) {
-        if (children == null) {
+        if (children == null || children.isEmpty()) {
             return false;
         }
         boolean isExhaustive = true;
@@ -855,22 +861,51 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         return isExhaustive;
     }
 
+    private boolean checkCaseExpr(String caseExpr, List<String> children) {
+        if (children == null || children.isEmpty()) {
+            return false;
+        }
+
+        if (!children.contains(caseExpr)) {
+            for (String child : children) {
+                if (checkCaseExpr(caseExpr, nres.getStructChildren(child))) {
+                    return true;
+
+                }
+            }
+
+        } else {
+            return true;
+        }
+
+        return false;
+
+    }
+
     // ADT
     public Object visitStmtSwitch(StmtSwitch stmt) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
         ExprVar var = (ExprVar) stmt.getExpr().accept(this);
+
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
         // Exhaustive cases
+        if (!symtab.lookupVar(var).isStruct()) {
+            report(stmt, "ExprVar in switch statement must be of type struct");
+        }
         TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
+
         List<String> children = nres.getStructChildren(tres.getName());
+        if (children == null || children.isEmpty()) {
+            report(stmt, "Struct representing exprVar has no children");
+        }
         if (!isExhaustive(children, stmt.getCaseConditions())) {
             report(stmt, "Switch cases must be exhaustive");
         }
 
         // visit each case body
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (!children.contains(caseExpr)) {
+            if (!checkCaseExpr(caseExpr, children)) {
                 report(stmt, "Case must be a variant of the type " + tres);
             }
             SymbolTable oldSymTab1 = symtab;

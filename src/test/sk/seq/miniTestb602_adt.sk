@@ -1,0 +1,30 @@
+//Correct
+//Tests for ADT
+struct Tree{ 
+	int x;
+}
+
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+struct Point{
+	Tree tree;	
+}
+
+
+harness void test(){	
+
+Branch branch = new Branch();
+int x =   sum(branch);
+
+}
+
+int sum(Branch t){	
+    
+    return 1;
+}

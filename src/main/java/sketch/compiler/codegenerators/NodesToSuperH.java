@@ -1,8 +1,11 @@
 package sketch.compiler.codegenerators;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.Function;
@@ -12,6 +15,7 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.util.Pair;
 
 public class NodesToSuperH extends NodesToSuperCpp {
@@ -20,6 +24,8 @@ public class NodesToSuperH extends NodesToSuperCpp {
     private String filename;
     private String preIncludes;
     private String creators;
+
+    protected static Map<String, String> typeVars = new HashMap<String, String>();
 
     public NodesToSuperH(String filename) {
         super(null, filename);
@@ -54,9 +60,32 @@ public class NodesToSuperH extends NodesToSuperCpp {
         }
 
         List<Pair<String, TypeArray>> fl = new ArrayList<Pair<String, TypeArray>>();
-        if (!struct.isInstantiable()){
+        if (!struct.isInstantiable() &&
+                nres.getStructParentName(struct.getName()) == null)
+        {
             //ADT change as the name might already be taken
             // add field for type
+            String var = "type";
+            List varNames = new ArrayList();
+
+            String children = "";
+            LinkedList<String> list = new LinkedList<String>();
+            list.add(struct.getName());
+            while (!list.isEmpty()) {
+                String parent = list.removeFirst();
+                varNames.addAll(nres.getStruct(parent).getFields());
+                for (String child : nres.getStructChildren(parent)) {
+                    list.add(child);
+                    children += child.toUpperCase() + ", ";
+                }
+            }
+            children = children.substring(0, children.length() - 2);
+            while (varNames.contains(var)) {
+                var = "_" + var;
+            }
+            typeVars.put(struct.getName(), var);
+            result += indent + typeForDecl(TypePrimitive.int32type) + " " + var + ";\n";
+            result += indent + "typedef enum {" + children + "};\n";
         }
         for (String field : struct.getOrderedFields()) {
             Type ftype = struct.getType(field);
@@ -85,24 +114,39 @@ public class NodesToSuperH extends NodesToSuperCpp {
             result += indent + escapeCName(struct.getName()) + "(){}\n";
         }
 
+        if (struct.isInstantiable()) {
 
-
-        result += indent + "static " + escapeCName(struct.getName()) + "* create(";
-        boolean first = true;
-        for (String field : struct.getOrderedFields()) {
-            Type ftype = struct.getType(field);
-            if (first) {
-                first = false;
-            } else {
-                result += ", ";
+            result += indent + "static " + escapeCName(struct.getName()) + "* create(";
+            boolean first = true;
+            StructDef current = struct;
+            List fieldNames = new ArrayList();
+            while (current != null) {
+                for (String field : current.getOrderedFields()) {
+                    if (!fieldNames.contains(field)) {
+                        fieldNames.add(field);
+                        Type ftype = current.getType(field);
+                        if (first) {
+                            first = false;
+                        } else {
+                            result += ", ";
+                        }
+                        result += indent + typeForDecl(ftype) + " " + field + "_";
+                        symtab.registerVar(field + "_", (ftype), current,
+                                SymbolTable.KIND_LOCAL);
+                        if (ftype instanceof TypeArray) {
+                            result += ", int " + field + "_len";
+                        }
+                    }
+                }
+                String parent;
+                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                    current = nres.getStruct(parent);
+                } else {
+                    current = null;
+                }
             }
-            result += indent + typeForDecl(ftype) + " " + field + "_";
-            symtab.registerVar(field + "_", (ftype), struct, SymbolTable.KIND_LOCAL);
-            if (ftype instanceof TypeArray) {
-                result += ", int " + field + "_len";
-            }
+            result += ");\n";
         }
-        result += ");\n";
 
         result += indent + "~" + escapeCName(struct.getName()) + "(){\n";
         result += indent + "}\n";

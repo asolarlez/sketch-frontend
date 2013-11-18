@@ -170,11 +170,15 @@ public class NameResolver {
 
     // ADT
     public String getStructParentName(String name) {
-        return structParent.get(name);
+        if (structParent.containsKey(name.split("@")[0]))
+            return structParent.get(name.split("@")[0]);
+        else
+            return null;
     }
 
     // ADT
     public List<String> getStructChildren(String name) {
+        name = name.split("@")[0];
         if (structChildren.containsKey(name)) {
             return structChildren.get(name);
         } else {

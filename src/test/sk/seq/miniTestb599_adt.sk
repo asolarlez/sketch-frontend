@@ -1,0 +1,71 @@
+struct ASTNode{ int type; }
+struct Expression extends ASTNode{  }
+struct Statement extends ASTNode{  }
+struct Plus extends Expression{ Expression left; Expression right; }
+struct Times extends Expression{ Expression left; Expression right; }
+struct IfStmt extends Statement{ Expression cond; Statement tpart; Statement epart; }
+struct WhileStmt extends Statement{ Expression cond; Statement body;  } // nested adt
+//output consisting of combined structs as well.
+struct point{int x; int y;}
+
+struct Tree{ 
+	int x;
+}
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+
+harness void test(){
+	Plus plus = new Plus();
+	
+	Leaf leaf1 = new Leaf(value = 5);
+leaf1.x = 0;
+	
+Leaf leaf2 = new Leaf(value = 4);
+
+Branch branch = new Branch();
+branch.left = leaf1;
+branch.right = leaf2;
+
+int x =   sum(plus,branch);
+
+}
+
+int sum(Expression e, Tree t){
+	int sum = 0;
+		
+    switch(e){
+        case Plus:           
+            {
+                sum = sum+1;
+            }                     
+      
+            
+        case Times:
+			{           
+            sum = sum+ 2;
+		}
+    }
+    switch(t){
+        case Leaf: 
+            /* t is now of type Leaf in this branch */
+            {
+                        sum = sum+ t.value;
+            }                     
+      
+            
+        case Branch:
+			{
+            /* t is of type Branch in this branch */
+            sum =sum+5;
+		}
+    }
+    return sum;
+    /* Outside the switch, t goes back to being of type Tree*/
+    
+}

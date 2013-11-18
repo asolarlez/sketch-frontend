@@ -1,0 +1,7 @@
+//Semantic check failed - struct representing a parent cannot be instantiated.
+struct Tree{}
+struct Leaf extends Tree{}
+
+harness void test(){
+	Tree tree = new Tree();
+}

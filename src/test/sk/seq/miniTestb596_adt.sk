@@ -1,0 +1,38 @@
+//Correct
+struct ASTNode{ int type; }
+struct Expression extends ASTNode{  }
+struct Statement extends ASTNode{  }
+struct Plus extends Expression{ Expression left; Expression right; }
+struct Times extends Expression{ Expression left; Expression right; }
+struct IfStmt extends Statement{ Expression cond; Statement tpart; Statement epart; }
+struct WhileStmt extends Statement{ Expression cond; Statement body;  } // nested adt
+//output consisting of combined structs as well.
+struct point{int x; int y;}
+
+harness void test(){
+	Plus plus = new Plus();
+
+int x =   sum(plus);
+
+}
+
+int sum(ASTNode e){
+		
+    switch(e){
+        case Expression:           
+            {
+                return 1;
+            }                     
+      
+            
+        case IfStmt:
+			{           
+            return 2;
+		}
+		case WhileStmt:
+		{
+			return 2;
+		}
+    }
+    
+}

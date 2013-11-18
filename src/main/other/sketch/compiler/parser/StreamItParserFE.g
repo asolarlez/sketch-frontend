@@ -853,11 +853,11 @@ multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	;
 
 inc_dec_expr returns [Expression x] { x = null; }
-	:	(incOrDec) => x=incOrDec
-    |   (LPAREN primitive_type) => x=castExpr
+	:	(incOrDec) => x=incOrDec    
 	|	b:BANG x=value_expr { x = new ExprUnary(getContext(b),
 												ExprUnary.UNOP_NOT, x); }
-	|	x=value_expr
+	|	(value_expr) => x=value_expr
+	|   (castExpr) => x=castExpr
 	;
 
 incOrDec returns [Expression x] { x = null; Expression bound = null; Type t = null; }
@@ -875,8 +875,7 @@ incOrDec returns [Expression x] { x = null; Expression bound = null; Type t = nu
 	;
 
 castExpr returns [Expression x] { x = null; Type t = null; Expression bound = null; }
-    :   l:LPAREN t=primitive_type
-            (sq:LSQUARE  bound=right_expr { t = new TypeArray(t, bound); }  RSQUARE)*
+    :   l:LPAREN t=data_type
         RPAREN
         x=value_expr
             { x = new ExprTypeCast(getContext(l), t, x); }

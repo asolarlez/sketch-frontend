@@ -1,0 +1,4 @@
+//Semantic check failed error
+struct Leaf extends Tree{
+    int value;
+} //Parent struct must be defined

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -73,9 +74,19 @@ public class FlattenStmtBlocks extends FEReplacer {
     public Object visitStmtSwitch(StmtSwitch stmt) {
         boolean oldIsWithinBlock = isWithinBlock;
         isWithinBlock = false;
-        Object o = super.visitStmtSwitch(stmt);
+        ExprVar var = (ExprVar) stmt.getExpr().accept(this);
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+
+        for (String caseExpr : stmt.getCaseConditions()) {
+            boolean oldIsWithinBlock1 = isWithinBlock;
+            isWithinBlock = false;
+            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+            newStmt.addCaseBlock(caseExpr, body);
+            isWithinBlock = oldIsWithinBlock1;
+        }
+        
         isWithinBlock = oldIsWithinBlock;
-        return o;
+        return newStmt;
     }
 	 
 	 @Override

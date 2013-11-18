@@ -1,0 +1,22 @@
+//Error - case must be a variant of the type Tree.
+struct Tree{}
+struct Leaf extends Tree{ int value; }
+struct point{int value;}
+
+harness void test(){		
+  	sum(new Leaf());
+}
+
+int sum(Tree t){	
+    switch(t){
+        case point:  //Not a variant of Tree            
+            {            
+            return t.value;
+            }     
+        case Branch:
+   			{            
+            return sum(t.left) + sum(t.right);
+   			}
+    }
+    
+}

@@ -25,6 +25,7 @@ import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.Pair;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.wrapper.ScRichString;
@@ -60,18 +61,32 @@ public class NodesToSuperCpp extends NodesToJava {
 
         result += indent + className + "* " + className + "::create(";
         boolean first = true;
-        for (String field : struct.getOrderedFields()) {
-            Type ftype = struct.getType(field);
-            if (first) {
-                first = false;
-            } else {
-                result += ", ";
+        StructDef current = struct;
+        List fieldNames = new ArrayList();
+        while (current != null) {
+            for (String field : current.getOrderedFields()) {
+                if (!fieldNames.contains(field)) {
+                    fieldNames.add(field);
+                    Type ftype = current.getType(field);
+                    if (first) {
+                        first = false;
+                    } else {
+                        result += ", ";
+                    }
+                    result += indent + typeForDecl(ftype) + " " + field + "_";
+                    symtab.registerVar(field + "_", (ftype), current,
+                            SymbolTable.KIND_LOCAL);
+                    if (ftype instanceof TypeArray) {
+                        fl.add(new Pair<String, TypeArray>(field, (TypeArray) ftype));
+                        result += ", int " + field + "_len";
+                    }
+                }
             }
-            result += indent + typeForDecl(ftype) + " " + field + "_";
-            symtab.registerVar(field + "_", (ftype), struct, SymbolTable.KIND_LOCAL);
-            if (ftype instanceof TypeArray) {
-                fl.add(new Pair<String, TypeArray>(field, (TypeArray) ftype));
-                result += ", int " + field + "_len";
+            String parent;
+            if ((parent = nres.getStructParentName(current.getName())) != null) {
+                current = nres.getStruct(parent);
+            } else {
+                current = null;
             }
         }
         result += "){\n";
@@ -85,27 +100,42 @@ public class NodesToSuperCpp extends NodesToJava {
         int cnt = 0;
         int sz = fl.size();
         List<String> offsets = new ArrayList<String>(fl.size());
-        for (String field : struct.getOrderedFields()) {
-            Type ftype = struct.getType(field);
-            if (ftype instanceof TypeArray) {
-                ++cnt;
-                TypeArray ta = (TypeArray) ftype;
-                String lenString =
-                        (String) ((Expression) ta.getLength().accept(fer)).accept(this);
-                if (cnt < sz) {
-                    scalarOffset += "+ sizeof(" + typeForDecl(ftype) + ")";
+        current = struct;
+        fieldNames = new ArrayList();
+        while (current != null) {
+            for (String field : current.getOrderedFields()) {
+                if (!fieldNames.contains(field)) {
+                    fieldNames.add(field);
+                    Type ftype = current.getType(field);
+                    if (ftype instanceof TypeArray) {
+                        ++cnt;
+                        TypeArray ta = (TypeArray) ftype;
+                        String lenString =
+                                (String) ((Expression) ta.getLength().accept(fer)).accept(this);
+                        if (cnt < sz) {
+                            scalarOffset += "+ sizeof(" + typeForDecl(ftype) + ")";
+                        }
+                        offsets.add(msize);
+                        result +=
+                                indent + "int tlen_" + field + " = " + lenString + "; \n";
+                        lastSize =
+                                " + sizeof(" + typeForDecl(ta.getBase()) + ")*" +
+                                        "tlen_" + field;
+                        lastField = field;
+                        msize += lastSize;
+                        continue;
+                    } else {
+                        String t = " + sizeof(" + typeForDecl(ftype) + ")";
+                        scalarOffset += t;
+                        cinit += indent + "rv->" + field + " = " + " " + field + "_;\n";
+                    }
                 }
-                offsets.add(msize);
-                result += indent + "int tlen_" + field + " = " + lenString + "; \n";
-                lastSize =
-                        " + sizeof(" + typeForDecl(ta.getBase()) + ")*" + "tlen_" + field;
-                lastField = field;
-                msize += lastSize;
-                continue;
+            }
+            String parent;
+            if ((parent = nres.getStructParentName(current.getName())) != null) {
+                current = nres.getStruct(parent);
             } else {
-                String t = " + sizeof(" + typeForDecl(ftype) + ")";
-                scalarOffset += t;
-                cinit += indent + "rv->" + field + " = " + " " + field + "_;\n";
+                current = null;
             }
         }
 
@@ -131,6 +161,15 @@ public class NodesToSuperCpp extends NodesToJava {
                     indent + "CopyArr(rv->" + field + ", " + field + "_, tlen_" + field +
                             ", " + field + "_len ); \n";
 
+        }
+        String parent = nres.getStructParentName(struct.getName());
+        if (parent != null) {
+            while (nres.getStructParentName(parent) != null) {
+                parent = nres.getStructParentName(parent);
+            }
+            result +=
+                    indent + "rv->" + NodesToSuperH.typeVars.get(parent) + "= " +
+                            struct.getName().toUpperCase() + ";\n";
         }
         result += indent + "return rv;\n";
         unIndent();
@@ -324,7 +363,7 @@ public class NodesToSuperCpp extends NodesToJava {
         result +=
                 "; CopyArr<" + typename + ">(" + nvar + "," + ols + ", " + lenString +
                         "); \n";
-        
+
         addPreStmt(result);
         if (exp.getOp() == ExprBinary.BINOP_LSHIFT) {
             result = "shL(";
@@ -577,7 +616,7 @@ public class NodesToSuperCpp extends NodesToJava {
     public Object visitProgram(Program prog) {
         nres = new NameResolver(prog);
 
-        
+
         String ret = (String) super.visitProgram(prog);
         StringBuffer preamble = new StringBuffer();
         if (addIncludes) {
@@ -591,11 +630,16 @@ public class NodesToSuperCpp extends NodesToJava {
             preamble.append(".h\"\n");
         }
         preamble.append(ret);
+        System.out.println(preamble.toString());
         return preamble.toString();
     }
 
     public String outputStructure(StructDef struct) {
-        return this.outputCreator(struct);
+        if (struct.isInstantiable()) {
+            return this.outputCreator(struct);
+        } else {
+            return "";
+        }
     }
 
     public Object visitExprNew(ExprNew en) {
@@ -610,41 +654,55 @@ public class NodesToSuperCpp extends NodesToJava {
             pe.put(enp.getName(), enp.getExpr());
         }
         boolean first = true;
-        for (String field : struct.getOrderedFields()) {
-            Type ftype = struct.getType(field);
-            if (first) {
-                first = false;
-            } else {
-                res += ", ";
-            }
-            if (ftype instanceof TypeArray) {
-                if (pe.containsKey(field)) {
-                    Type tp = getType(pe.get(field));
-                    if (tp instanceof TypeArray) {
-                        TypeArray t = (TypeArray) tp;
-                        res +=
-                                pe.get(field).accept(this) + ", " +
-                                        t.getLength().accept(this);
-                    } else {
-                        TypeArray tarr = (TypeArray) ftype;
-                        String nvar = newTmp();
-                        String typename = typeForDecl(tarr.getBase());
-                        String result =
-                                indent + typename + " " + nvar + "= " +
-                                        pe.get(field).accept(this) + ";\n";
+        StructDef current = struct;
+        List fieldNames = new ArrayList();
+        while (current != null) {
+            for (String field : current.getOrderedFields()) {
+                if (!fieldNames.contains(field)) {
 
-                        addPreStmt(result);
-                        res += "&" + nvar + ", 1";
+                    fieldNames.add(field);
+                    Type ftype = current.getType(field);
+                    if (first) {
+                        first = false;
+                    } else {
+                        res += ", ";
                     }
-                } else {
-                    res += "NULL, 0";
+                    if (ftype instanceof TypeArray) {
+                        if (pe.containsKey(field)) {
+                            Type tp = getType(pe.get(field));
+                            if (tp instanceof TypeArray) {
+                                TypeArray t = (TypeArray) tp;
+                                res +=
+                                        pe.get(field).accept(this) + ", " +
+                                                t.getLength().accept(this);
+                            } else {
+                                TypeArray tarr = (TypeArray) ftype;
+                                String nvar = newTmp();
+                                String typename = typeForDecl(tarr.getBase());
+                                String result =
+                                        indent + typename + " " + nvar + "= " +
+                                                pe.get(field).accept(this) + ";\n";
+
+                                addPreStmt(result);
+                                res += "&" + nvar + ", 1";
+                            }
+                        } else {
+                            res += "NULL, 0";
+                        }
+                    } else {
+                        if (pe.containsKey(field)) {
+                            res += pe.get(field).accept(this);
+                        } else {
+                            res += ftype.defaultValue().accept(this);
+                        }
+                    }
                 }
+            }
+            String parent;
+            if ((parent = nres.getStructParentName(current.getName())) != null) {
+                current = nres.getStruct(parent);
             } else {
-                if (pe.containsKey(field)) {
-                    res += pe.get(field).accept(this);
-                } else {
-                    res += ftype.defaultValue().accept(this);
-                }
+                current = null;
             }
         }
         res += ")";
@@ -841,13 +899,13 @@ public class NodesToSuperCpp extends NodesToJava {
 
         Map<String, Expression> rmap = new HashMap<String, Expression>();
         VarSetReplacer vsr = new VarSetReplacer(rmap);
-        
+
         Function f = nres.getFun(funName);
         for (Parameter p : f.getParams()) {
             if (!first)
                 result += ", ";
             first = false;
-            
+
             Expression actual =  actuals.next();
             Type parType = (Type) p.getType().accept(vsr);
             parType = parType.addDefaultPkg(f.getPkg(), nres);
@@ -873,7 +931,7 @@ public class NodesToSuperCpp extends NodesToJava {
                 }
             }
             result += partxt;
-            
+
 
         }
         result += ")";
@@ -883,13 +941,32 @@ public class NodesToSuperCpp extends NodesToJava {
     public Object visitStmtSwitch(StmtSwitch stmt) {
         String result = "";
         result += "switch(";
-        ExprVar var = stmt.getExpr();
-        result += (String) var.accept(this);
-        result += "->type){\n";
+        String var = (String) stmt.getExpr().accept(this);
+        result += var;
+        String name = symtab.lookupVar(stmt.getExpr()).toString();
+        while (nres.getStructParentName(name) != null) {
+            name = nres.getStructParentName(name);
+        }
+        result += "->" + NodesToSuperH.typeVars.get(name) + "){\n";
         for (String c : stmt.getCaseConditions()) {
-            result += indent + "case " + c.toUpperCase() + ":\n" + indent;
-            String body = (String) stmt.getBody(c).accept(this);
-            result += body + "\n";
+            result += indent + "case " + c.toUpperCase() + ":\n" + indent + indent;
+            String newVar = "_" + var;
+            while (symtab.hasVar(newVar)) {
+                newVar = "_" + newVar;
+            }
+            result += c + "* " + newVar + " = (" + c + "*)  " + var + indent;
+            VarReplacer vr = new VarReplacer(var, newVar);
+            SymbolTable oldSymTab = symtab;
+            symtab = new SymbolTable(oldSymTab);
+            symtab.registerVar(newVar, new TypeStructRef(c, false));
+            Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
+            String body = (String) bodyStatement.accept(this);
+            int x = body.indexOf("{");
+            int y = body.lastIndexOf("}");
+
+            result += body.substring(x + 1, y);
+            result += indent + "break;\n";
+            symtab = oldSymTab;
         }
         result += "\n }";
 
@@ -1060,14 +1137,12 @@ public class NodesToSuperCpp extends NodesToJava {
                         TypeArray ratype = (TypeArray) rhsType;
                         result =
                                 "CopyArr<" + typename + ">(" + lhsStr + "," + rhsStr +
-                                        ", " +
-                                    latype.getLength().accept(this) + ", " +
+                                        ", " + latype.getLength().accept(this) + ", " +
                                         ratype.getLength().accept(this) + ")";
                     } else {
                         result =
                                 "CopyArr<" + typename + ">(" + lhsStr + "," + rhsStr +
-                                        ", " +
-                                        latype.getLength().accept(this) + ")";
+                                        ", " + latype.getLength().accept(this) + ")";
                     }
                     return result;
                 }

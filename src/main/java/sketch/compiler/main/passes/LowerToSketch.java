@@ -28,11 +28,12 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
+        // ADT
+        prog = (Program) prog.accept(new MergeADT());
+        // prog.debugDump("afterMergeADT");
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
 
-        // ADT
-        prog = (Program) prog.accept(new MergeADT());
 
         // FIXME xzl: use efs instead of es, can generate wrong program!
         // System.out.println("before efs:");
@@ -58,8 +59,10 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
         
         prog = (Program) prog.accept(new SeparateInitializers());
+        
         prog = (Program) prog.accept(new FlattenStmtBlocks());
         
+
         if (false) { // temporarily disabled in the main branch.
             SpmdTransform tf = new SpmdTransform(options, varGen);
             prog = (Program) prog.accept(tf);
@@ -129,6 +132,7 @@ public class LowerToSketch extends MetaStage {
         if (options.feOpts.truncVarArr) {
             prog = (Program) prog.accept(new TruncateVarArray(options, varGen));
         }
+        // prog.debugDump("aa");
         return prog;
     }
 }

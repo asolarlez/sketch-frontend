@@ -1,0 +1,19 @@
+//Semantic check failed
+//Tests for ADT
+struct Tree{}
+struct Leaf extends Tree{}    
+struct Branch extends Tree{}
+
+harness void test(){
+	Branch branch = new Branch();
+	int x =   sum(branch);
+}
+
+int sum(Branch t){
+		
+    switch(t){
+        
+    }
+    return 1;
+    
+}
