@@ -357,6 +357,65 @@ Notice that most operators support operands of different sizes; the smaller arra
 
 
 
+\subsection{Algebraic Datatypes}\seclabel{padding}
+Sketch also supports algebraic datatypes. Therefore, one can implement a Tree ADT with two types of Tree objects (Leaf and Branch) as follows:
+\begin{lstlisting}
+struct Tree{}
+
+struct Leaf extends Tree{
+	int value;
+}
+struct Branch extends Tree{
+	Tree left;
+	Tree right;
+}
+\end{lstlisting}
+This defines the ADT Tree with two cases, Leaf and Branch.
+
+In addition to defining the algebraic data type, the language also supports pattern matching i.e. one can switch over a variable corresponding to an ADT, and then have a case for each subtype. The variable would be automatically cast to the right type inside each case statement, so no additional casting would be necessary. This is illustrated by the function below:
+
+\begin{lstlisting}
+int sum(Tree t){
+	switch(t){
+		case Leaf:
+		{
+			/*t is now of type Leaf in this block */
+			return t.value;
+		}
+		case Branch:
+			/*t is now of type Branch is this block */
+			return sum(t.left)+sum(t.right);
+		}
+	}
+	/*Outside the switch, t goes back to being of type Tree*/
+}
+\end{lstlisting}
+
+Some of the rules to be noted are:
+\begin{itemize}
+\item The struct representing an ADT (like Tree in the example above) cannot be instantiated. However, one can instantiate Leaf and Branch in the above example.
+\item The language allows hierarchy of ADTs. For example:
+\begin{lstlisting}
+struct ASTNode{}
+struct Expression extends ASTNode{}
+struct Statement extends ASTNode{}
+struct Plus extends Expression{Expression left; Expression right;}
+struct Times extends Expression{Expression left; Expression right;}
+struct IfStmt extends Statement{Expression cond; Statement tpart; Statement epart;}
+struct WhileStmt extends Statement{Expression cond; Statement body;}
+
+So in this case, one can create instances of Plus, Times, IfStmt and WhileStmt, but not of ASTNode or of Expression and Statement.
+\end{lstlisting}
+
+\item Structs representing an ADT can have fields, and those fields will be inherited by all the variant types.
+\item Both and parent and variant struct cannot have same field.
+\item The type extended by a variant class should exist and be defined in the same package.
+\item The expression that is passed to switch(e) should always be a variable, and the labels for the cases should be variants of the type of that variable.
+\item Switch statements should cover all the cases.
+\item Implicit casting occurs from a subtype to a super type.
+\item Explicit casts can happen only from a supertype to a subtype.
+\end{itemize}
+
 
 
 \subsection{Automatic Padding and Typecasting}
@@ -871,3 +930,4 @@ When analyzing code, the annotations are invisible to the synthesizer, and it wi
 The \C{@Native} annotation allows the programmer to use simple models in place of very complex or low-level functions. It is the responsibility of the programmer to ensure that the model matches the relevant behavior of the code that is being generated. 
 
 More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure. 
+

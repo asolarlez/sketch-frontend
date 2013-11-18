@@ -491,6 +491,7 @@ public class SequentialSketchMain extends CommonSketchMain
 	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
         (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
 
+
         prog = preprocessProgram(prog, true); // perform prereq
 
         return nonnull(prog);

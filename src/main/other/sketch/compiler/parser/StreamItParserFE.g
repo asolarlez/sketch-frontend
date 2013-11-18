@@ -43,6 +43,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.util.datastructures.HashmapList;
 
 import sketch.compiler.ast.core.Package;
@@ -78,6 +79,8 @@ options {
     private Set<Directive> directives = new HashSet<Directive> ();
     private boolean preprocess;
     private List<String> cppDefs;
+     //ADT
+    private List<String> parentStructNames = new ArrayList<String>();
 
 	public StreamItParserFE(StreamItLex lexer, Set<String> includes,
                             boolean preprocess, List<String> cppDefs)
@@ -177,6 +180,7 @@ program	 returns [Program p]
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
+   
     String file = null;
     String pkgName = null;
     FEContext pkgCtxt = null;
@@ -198,11 +202,13 @@ program	 returns [Program p]
 				pkgName="ANONYMOUS";
 			}
 			for(StructDef struct : structs){
+				if(parentStructNames.contains(struct.getName())) struct.setIsInstantiable(false);
 				struct.setPkg(pkgName);	
 			}
 			for(Function fun : funcs){
 				fun.setPkg(pkgName);	
 			}
+			
 			 Package ss=new Package(pkgCtxt, 
  				pkgName,
  				structs, vars, funcs);
@@ -263,6 +269,8 @@ statement returns [Statement s] { s = null; }
 	|	(expr_statement) => s=expr_statement SEMI!
 	|	tb:TK_break SEMI { s = new StmtBreak(getContext(tb)); }
 	|	tc:TK_continue SEMI { s = new StmtContinue(getContext(tc)); }
+	//ADT
+	|	s=switch_statement
 	|	s=if_else_statement
 	|	s=while_statement
 	|	s=do_while_statement SEMI
@@ -572,6 +580,20 @@ assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar
 	}
 	s = StmtAssert.createAssertMax(cx, cond, msg, (defer!=null)); }	
 ;
+//ADT
+switch_statement returns [Statement s]
+{ s = null; ExprVar  x;  Statement b =null; }
+	:	u:TK_switch LPAREN name:ID RPAREN LCURLY
+	 
+		{x = new ExprVar(getContext(name), name.getText()); s= new StmtSwitch(getContext(u), x); }
+		(TK_case caseName:ID COLON b= pseudo_block
+		{((StmtSwitch)s).addCaseBlock(caseName.getText(), b);}
+		)*
+		RCURLY
+		
+	;
+	 
+
 	
 if_else_statement returns [Statement s]
 { s = null; Expression x; Statement t, f = null; }
@@ -831,11 +853,11 @@ multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	;
 
 inc_dec_expr returns [Expression x] { x = null; }
-	:	(incOrDec) => x=incOrDec
-    |   (LPAREN primitive_type) => x=castExpr
+	:	(incOrDec) => x=incOrDec    
 	|	b:BANG x=value_expr { x = new ExprUnary(getContext(b),
 												ExprUnary.UNOP_NOT, x); }
-	|	x=value_expr
+	|	(value_expr) => x=value_expr
+	|   (castExpr) => x=castExpr
 	;
 
 incOrDec returns [Expression x] { x = null; Expression bound = null; Type t = null; }
@@ -853,8 +875,7 @@ incOrDec returns [Expression x] { x = null; Expression bound = null; Type t = nu
 	;
 
 castExpr returns [Expression x] { x = null; Type t = null; Expression bound = null; }
-    :   l:LPAREN t=primitive_type
-            (sq:LSQUARE  bound=right_expr { t = new TypeArray(t, bound); }  RSQUARE)*
+    :   l:LPAREN t=data_type
         RPAREN
         x=value_expr
             { x = new ExprTypeCast(getContext(l), t, x); }
@@ -991,6 +1012,12 @@ struct_decl returns [StructDef ts]
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	t:TK_struct id:ID
+		//ADT
+		(TK_extends parent:ID 
+		{
+			parentStructNames.add(parent.getText());
+		}
+		)?
 		LCURLY
 		(p=param_decl SEMI
 			{ names.add(p.getName()); types.add(p.getType()); }
@@ -998,5 +1025,10 @@ struct_decl returns [StructDef ts]
 			an=annotation{ annotations.append(an.tag, an); }
 		)*
 		RCURLY
-		{ ts = StructDef.creator(getContext(t), id.getText(), names, types, annotations).create(); }
+		{ 
+			if(parent != null) {
+				ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, annotations).create();
+			}else{
+				ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, annotations).create();
+			} }
 	;

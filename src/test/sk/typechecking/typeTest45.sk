@@ -1,0 +1,30 @@
+//Semantic Check failed
+struct Tree{ 
+	int x;
+}
+
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+
+
+harness void test(){	
+
+Branch branch = new Branch();
+int x =   sum(branch);
+
+}
+
+int sum(Branch t){
+		// t is not a parent ADT
+		
+    switch(t){
+        
+    }
+    return 1;
+}

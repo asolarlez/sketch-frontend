@@ -1,0 +1,16 @@
+
+struct Tree{ }
+struct Leaf extends Tree{}
+
+struct Branch extends Tree{Tree left; Tree right;}
+
+harness void test(){	
+Tree tree1 = new Leaf();
+
+Tree tree2 = foo(tree1);
+}
+Tree foo(Tree t){
+	return t;
+}
+
+

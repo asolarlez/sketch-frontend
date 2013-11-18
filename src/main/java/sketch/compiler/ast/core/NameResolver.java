@@ -1,7 +1,9 @@
 package sketch.compiler.ast.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.typs.StructDef;
@@ -18,6 +20,10 @@ public class NameResolver {
     final Map<String, String> pkgForVar = new HashMap<String, String>();
 
     final Map<String, StructDef> structMap = new HashMap<String, StructDef>();
+    // ADT
+    final Map<String, String> structParent = new HashMap<String, String>();
+    final Map<String, List<String>> structChildren = new HashMap<String, List<String>>();
+
     final Map<String, Function> funMap = new HashMap<String, Function>();
     final Map<String, FieldDecl> varMap = new HashMap<String, FieldDecl>();
     Package pkg;
@@ -54,8 +60,24 @@ public class NameResolver {
         thingMap.put(compound(pkg.getName(), name), stuff);
     }
 
+    // ADT
+    public void registerStructParent(String structName, String parentName) {
+        structParent.put(structName, parentName);
+        if (parentName != null) {
+            if (structChildren.containsKey(parentName)) {
+                structChildren.get(parentName).add(structName);
+            } else {
+                structChildren.put(parentName, new ArrayList());
+                structChildren.get(parentName).add(structName);
+
+            }
+        }
+
+    }
+
     public void registerStruct(StructDef ts) {
         registerStuff(pkgForStruct, structMap, ts, ts.getName());
+        registerStructParent(ts.getName(), ts.getParentName());
     }
 
     public void registerFun(Function f) {
@@ -144,6 +166,24 @@ public class NameResolver {
 
     public String getStructName(String name) {
         return getStructName(name, this.pkg.getName());
+    }
+
+    // ADT
+    public String getStructParentName(String name) {
+        if (structParent.containsKey(name.split("@")[0]))
+            return structParent.get(name.split("@")[0]);
+        else
+            return null;
+    }
+
+    // ADT
+    public List<String> getStructChildren(String name) {
+        name = name.split("@")[0];
+        if (structChildren.containsKey(name)) {
+            return structChildren.get(name);
+        } else {
+            return new ArrayList<String>();
+        }
     }
 
     public String getFunName(String name, String defPkg) {

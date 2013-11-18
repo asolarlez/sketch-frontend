@@ -28,10 +28,10 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.exprs.regens.ExprParen;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
@@ -868,9 +868,17 @@ public class FEReplacer implements FEVisitor
         return spmdnproc;
     }
 
-	public Object visitStmtSwitch(StmtSwitch sw) {
-		// TODO add visitSwmtSwitch
-		throw new RuntimeException("Not yet implemented");
+    // ADT
+
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        ExprVar var = (ExprVar) stmt.getExpr().accept(this);
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+
+        for (String caseExpr : stmt.getCaseConditions()) {
+            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+            newStmt.addCaseBlock(caseExpr, body);
+        }
+        return newStmt;
 	}
 
     /** generic tree replacement code */

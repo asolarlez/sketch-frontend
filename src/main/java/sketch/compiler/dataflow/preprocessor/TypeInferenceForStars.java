@@ -402,9 +402,23 @@ rt.promotesTo(lt, nres),
             repl.put(en.getName(), actual);
         }
         for (ExprNamedParam en : expNew.getParams()) {
-            Type t = sd.getType(en.getName());
+            // ADT
+            StructDef current = sd;
+            Type t = null;
+            while (current != null) {
+                t = current.getType(en.getName());
+                if (t != null)
+                    break;
+                String parent;
+                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                    current = nres.getStruct(parent);
+                } else {
+                    current = null;
+                }
+            }
             Expression actual = en.getExpr();
             upgradeStarToInt(actual, (Type) t.accept(vr));
+
         }
         return expNew;
     }

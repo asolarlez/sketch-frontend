@@ -1,0 +1,32 @@
+//Correct
+struct Tree{ 
+	int x;
+}
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;   
+}
+struct combinedTree{}
+
+
+harness void test(){
+	Branch branch = new Branch();
+	int x =   sum(branch);
+	combinedTree tree = new combinedTree();
+	}
+
+int sum(Tree t){
+		
+    switch(t){
+        case Leaf:             
+            { return 1;}                     
+      
+            
+        case Branch:
+			{return 2;}
+    }   
+}

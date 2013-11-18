@@ -1,0 +1,51 @@
+//Correct
+struct Tree{ 
+	int x;
+	int[5] array; // array in parent
+}
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+
+
+harness void test(){
+	Leaf leaf1 = new Leaf(value = 5);
+leaf1.x = 0;
+//child initializing array in parent
+leaf1.array = {1,2,3,4,5};
+
+	
+Leaf leaf2 = new Leaf(value = 4);
+
+Branch branch = new Branch();
+branch.left = leaf1;
+branch.right = leaf2;
+
+
+int x =  leaf1.array[0]+ sum(branch);
+
+}
+
+int sum(Tree t){
+		
+    switch(t){
+        case Leaf: 
+            /* t is now of type Leaf in this branch */
+            {
+                        return t.value;
+            }                     
+      
+            
+        case Branch:
+			{
+            /* t is of type Branch in this branch */
+            return sum(t.left) + sum(t.right);
+		}
+    }
+    /* Outside the switch, t goes back to being of type Tree*/
+}

@@ -67,6 +67,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("minrepeat", this), new Integer(10));
 	literals.put(new ANTLRHashString("null", this), new Integer(12));
 	literals.put(new ANTLRHashString("into", this), new Integer(7));
+	literals.put(new ANTLRHashString("extends", this), new Integer(55));
 	literals.put(new ANTLRHashString("serial", this), new Integer(49));
 	literals.put(new ANTLRHashString("reorder", this), new Integer(13));
 	literals.put(new ANTLRHashString("insert", this), new Integer(6));

@@ -1,0 +1,27 @@
+//UNSATISFIABLE ASSERTION Struct type casting error
+
+struct Tree{ 
+	Tree left;
+	Tree right;
+}
+
+
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+
+
+harness void test(){
+	Leaf leaf = new Leaf();
+Branch b = (Branch) sum(leaf); //Wrong type casting
+
+}
+
+Tree sum(Tree t){  
+    return t;
+}

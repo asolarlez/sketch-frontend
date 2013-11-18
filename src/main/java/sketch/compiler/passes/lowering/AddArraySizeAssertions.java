@@ -15,9 +15,9 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -98,7 +98,19 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
             rmap.put(en.getName(), doExpression(en.getExpr()));
         }
         for (ExprNamedParam en : expNew.getParams()) {
-            Type t = ts.getType(en.getName());
+            StructDef current = ts;
+            Type t = null;
+            while (current != null) {
+                t = current.getType(en.getName());
+                if (t != null)
+                    break;
+                String parent;
+                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                    current = nres.getStruct(parent);
+                } else {
+                    current = null;
+                }
+            }
             addCheck((Type) t.accept(vsr), getType(en.getExpr()), false, expNew);
         }
 

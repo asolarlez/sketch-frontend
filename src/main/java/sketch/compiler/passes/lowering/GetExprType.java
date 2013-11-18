@@ -293,7 +293,15 @@ public class GetExprType extends FENullVisitor
                 return new ExprField(fexp.getLeft(), ev.getName());
             }
         };
-        Type ttt = ts.getType(exp.getName());
+        // ADT
+        StructDef current = ts;
+        while (current.getParentName() != null) {
+            if (current.hasField(exp.getName())) {
+                break;
+            }
+            current = nres.getStruct(current.getParentName());
+        }
+        Type ttt = current.getType(exp.getName());
         if (ttt != null) {
             return (Type) ttt.accept(repVars);
         } else {
