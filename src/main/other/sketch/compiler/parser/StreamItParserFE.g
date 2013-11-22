@@ -186,7 +186,7 @@ program	 returns [Program p]
     FEContext pkgCtxt = null;
 }
 	:	(  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
-                     TK_generator | /* TK_library | TK_printfcn |*/ TK_stencil | TK_model)*
+                     TK_generator |  TK_stencil | TK_model)*
                     return_type ID LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
@@ -254,15 +254,15 @@ field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 
 
 statement returns [Statement s] { s = null; }
-	:	s=loop_statement
+	:	s=loop_statement //1
 	|   s=minrepeat_statement
 	|   s=fork_statement
-        |   s=spmdfork_statement
-    |   s=parfor_statement
+    |   s=spmdfork_statement
+    |   s=parfor_statement // 5
 	|	s=insert_block
 	|	s=reorder_block
 	|	s=atomic_block
-	|	s=block
+	|	(block)=> s=block // 9
 	|(return_type ID LPAREN) =>s=fdecl_statement
 	|	(data_type ID) => s=variable_decl SEMI!
     // |   (ID DEF_ASSIGN) => s=implicit_type_variable_decl SEMI!
@@ -634,21 +634,25 @@ for_incr_statement returns [Statement s] { s = null; }
 	;
 
 expr_statement returns [Statement s] { s = null; Expression x; }
-	:	(incOrDec) => x=incOrDec { s = new StmtExpr(x); }
-	|	(left_expr (ASSIGN | PLUS_EQUALS | MINUS_EQUALS | STAR_EQUALS | DIV_EQUALS)) => s=assign_expr
-	|	(ID (AT ID)? LPAREN) => x=func_call { s = new StmtExpr(x); }
+	:	 s=assign_expr
+	//|	(ID (AT ID)? LPAREN) => x=func_call { s = new StmtExpr(x); }
 	;
 
 assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
-	:	l=left_expr
-		(	ASSIGN { o = 0; }
-		|	PLUS_EQUALS { o = ExprBinary.BINOP_ADD; }
-		|	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
-		|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
-		|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
+	:	l=prefix_expr
+		( (
+			(	ASSIGN { o = 0; }
+			|	PLUS_EQUALS { o = ExprBinary.BINOP_ADD; }
+			|	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
+			|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
+			|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
+			)
+			r=right_expr
+			{ s = new StmtAssign(l, r, o); s.resetOrigin(); }
+		  )
+			| 
+		{ s = new StmtExpr(l);  }	
 		)
-		r=right_expr
-		{ s = new StmtAssign(l, r, o); s.resetOrigin(); }
 	;
 
 func_call returns [Expression x] { x = null; List l; }
@@ -687,14 +691,6 @@ expr_named_param_only returns [ Expression x ] { x = null; Token t = null; }
     :   id:ID ASSIGN x=right_expr { x = new ExprNamedParam(getContext(id), id.getText(), x); }
     ;
 
-left_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
-	:	x=uminic_value_expr
-		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
-		|	l:LSQUARE
-					rl=array_range { x = new ExprArrayRange(x, x, rl); }
-			RSQUARE
-		)*
-	;
 
         
 right_expr_not_agmax returns [Expression x] { x = null; }
@@ -798,8 +794,8 @@ bitwiseAndExpr returns [Expression x] { x = null; Expression r; }
         )*
     ;
 
-equalExpr returns [Expression x] { x = null; Expression r; int o = 0; }
-	:	x=compareExpr
+equalExpr returns [Expression x] { x = null; Expression r; Expression last; int o = 0; }
+	:	x=compareExpr {last=x;}
 		(	( EQUAL     { o = ExprBinary.BINOP_EQ; }
 			| NOT_EQUAL { o = ExprBinary.BINOP_NEQ; }
 			)
@@ -842,56 +838,58 @@ addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
 	;
 
 multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
-	:	x=inc_dec_expr
+	:	x=prefix_expr
 		(	( STAR { o = ExprBinary.BINOP_MUL; }
 			| DIV  { o = ExprBinary.BINOP_DIV; }
 			| MOD  { o = ExprBinary.BINOP_MOD; }
 			)
-			r=inc_dec_expr
+			r=prefix_expr
 			{ x = new ExprBinary(o, x, r); }
 		)*
 	;
-
-inc_dec_expr returns [Expression x] { x = null; }
-	:	(incOrDec) => x=incOrDec    
-	|	b:BANG x=value_expr { x = new ExprUnary(getContext(b),
-												ExprUnary.UNOP_NOT, x); }
-	|	(value_expr) => x=value_expr
-	|   (castExpr) => x=castExpr
+	
+prefix_expr returns [Expression x] { x = null;  FEContext cx = null; int untype = -1;}
+	:
+	(castExpr) => x = castExpr
+	| x = postfix_expr
+	| (	  ii:INCREMENT
+			{ untype = ExprUnary.UNOP_PREINC; cx = getContext(ii); }
+		|  dd:DECREMENT
+			{ untype = ExprUnary.UNOP_PREDEC; cx = getContext(dd); }
+		|  b:BANG {untype = ExprUnary.UNOP_NOT; cx = getContext(b);} 
+	    |  m:MINUS {untype = ExprUnary.UNOP_NEG; cx = getContext(m);} 
+		) x = prefix_expr { if(untype != -1){ x = new ExprUnary(cx, untype, x); } }	
 	;
 
-incOrDec returns [Expression x] { x = null; Expression bound = null; Type t = null; }
-	:	x=left_expr
-		(	INCREMENT
-			{ x = new ExprUnary(x.getContext(), ExprUnary.UNOP_POSTINC, x); }
-		|	DECREMENT
-			{ x = new ExprUnary(x.getContext(), ExprUnary.UNOP_POSTDEC, x); }
-		)
-	|	i:INCREMENT x=left_expr
-			{ x = new ExprUnary(getContext(i), ExprUnary.UNOP_PREINC, x); }
-	|	d:DECREMENT x=left_expr
-			{ x = new ExprUnary(getContext(d), ExprUnary.UNOP_PREDEC, x); }
-            (LPAREN primitive_type) =>
+prefix_expr_nominus returns [Expression x] { x = null;  FEContext cx = null; int untype = -1;}
+	: 
+	(castExpr) => x = castExpr
+	|	x = postfix_expr
+	| (	  ii:INCREMENT
+			{ untype = ExprUnary.UNOP_PREINC; cx = getContext(ii); }
+		|  dd:DECREMENT
+			{ untype = ExprUnary.UNOP_PREDEC; cx = getContext(dd); }
+		|  b:BANG {untype = ExprUnary.UNOP_NOT; cx = getContext(b);}  
+		) x = prefix_expr { if(untype != -1){ x = new ExprUnary(cx, untype, x); } }	
 	;
-
+	
 castExpr returns [Expression x] { x = null; Type t = null; Expression bound = null; }
     :   l:LPAREN t=data_type
         RPAREN
-        x=value_expr
+        x=prefix_expr_nominus
             { x = new ExprTypeCast(getContext(l), t, x); }
     ;
 
-value_expr returns [Expression x] { x = null; boolean neg = false; }
-	:
-	(	(m:MINUS { neg = true; })?
-		(x=minic_value_expr)
-		{ if (neg) x = new ExprUnary(getContext(m), ExprUnary.UNOP_NEG, x); }
-		)
+postfix_expr returns [Expression x] { x = null;  int untype = -1;}
+	: x = primary_expr 
+	   (	  ii:INCREMENT
+			{ x = new ExprUnary(getContext(ii), ExprUnary.UNOP_POSTINC, x); }
+		|  dd:DECREMENT
+			{ x = new ExprUnary(getContext(dd), ExprUnary.UNOP_POSTDEC, x); })*
 	;
 
 
-
-minic_value_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
+primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
 	:	x=tminic_value_expr
 		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
 		|	l:LSQUARE
@@ -899,18 +897,6 @@ minic_value_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeL
 			RSQUARE
 		)*
 	;
-
-
-
-uminic_value_expr returns [Expression x] { x = null; }
-	:	LPAREN x=right_expr RPAREN
-//	|	(func_call) => x=func_call
-	| 	(constructor_expr) => x = constructor_expr
-	|	x=var_expr	
-    |   r:REGEN
-            { x = new ExprRegen (getContext (r), r.getText ()); }
-	;
-
 
 
 tminic_value_expr returns [Expression x] { x = null; }
@@ -991,7 +977,7 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
 			{ x = ExprNullPtr.nullPtr; }
     |   t1:NDVAL
             { x = new ExprStar(getContext(t1)); }
-    |   t2:NDVAL2 (LPAREN n1=value_expr (COMMA n2=value_expr)? RPAREN)?
+    |   t2:NDVAL2 (LPAREN n1=addExpr (COMMA n2=addExpr)? RPAREN)?
             {  if(n1 != null){
             	Integer in1 = n1.getIValue();
             	  if(n2 == null){            	  	

@@ -56,8 +56,8 @@ public class MergeADT extends SymbolTableVisitor {
         Type castingType = getType(castedExpr);
 
         if (castedType.isStruct()) {
-            int id =
-                    structs.get(((TypeStructRef) castedType).getName().split("@")[0]).getId();
+            StructDef sd = nres.getStruct(((TypeStructRef) castedType).getName());
+            int id = structs.get(sd.getFullName()).getId();
             Expression condition;
             ExprField condLeft = new ExprField(castedExpr, "type");
             ExprConstInt condRight = new ExprConstInt(expr.getContext(), id);
@@ -86,7 +86,8 @@ public class MergeADT extends SymbolTableVisitor {
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
         // change this
-        String oldName = t.getName().split("@")[0];
+        StructDef sd = nres.getStruct(t.getName());
+        String oldName = sd.getFullName();
         StructCombinedTracker tracker = structs.get(oldName);
         TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
         return newType;
@@ -96,6 +97,8 @@ public class MergeADT extends SymbolTableVisitor {
     @Override
     public Object visitExprNew(ExprNew exprNew) {
         String oldType = ((TypeStructRef) exprNew.getTypeToConstruct()).getName();
+        StructDef sd = nres.getStruct(oldType);
+        oldType = sd.getFullName();
         StructCombinedTracker tracker = structs.get(oldType);
         TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
         List newParams = new ArrayList();
@@ -127,7 +130,7 @@ public class MergeADT extends SymbolTableVisitor {
         StructDef t = this.getStructDef(getType(ef.getLeft()));
 
 
-        StructCombinedTracker structTracker = structs.get(t.getName());
+        StructCombinedTracker structTracker = structs.get(t.getFullName());
         String field = ef.getName();
 
         String newField = structTracker.getNewVariable(field);
@@ -199,7 +202,7 @@ public class MergeADT extends SymbolTableVisitor {
 
                 }
             }
-            pkg = (Package) super.visitStreamSpec(pkg);
+            pkg = (Package) super.visitPackage(pkg);
             pkg.getStructs().addAll(newStructs);
             newStreams.add(pkg);
         }
@@ -209,7 +212,7 @@ public class MergeADT extends SymbolTableVisitor {
     public void copyStruct(StructDef str) {
         StructCombinedTracker tracker =
                 new StructCombinedTracker(str.getName(), str.getName(), i++, false);
-        structs.put(str.getName(), tracker);
+        structs.put(str.getFullName(), tracker);
         for (String var : str.getFields()) {
             tracker.mapVariable(var, var);
         }
@@ -242,7 +245,7 @@ public class MergeADT extends SymbolTableVisitor {
             StructDef childStruct = nres.getStruct(name);
             StructCombinedTracker tracker =
                     new StructCombinedTracker(name, newName, i++, true);
-            structs.put(name, tracker);
+            structs.put(childStruct.getFullName(), tracker);
 
             for (Entry<String, Type> var : childStruct.getFieldTypMap().entrySet()) {
                 tracker.mapVariable(var.getKey(), name + "_" + var.getKey());
