@@ -1,0 +1,10 @@
+struct foo{
+	int x;
+	int y;
+	int x;
+}
+
+harness void main(){
+	foo f = new foo();
+
+}
