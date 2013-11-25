@@ -853,6 +853,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         return stmt;
     }
 
+    private List<String> getAllChildren(String p) {
+        List<String> children = new ArrayList<String>();
+        for (String child : nres.getStructChildren(p)) {
+            children.add(child);
+            children.addAll(getAllChildren(child));
+        }
+        return children;
+    }
+
     // ADT
     private boolean isExhaustive(List<String> children, LinkedList<String> cases) {
         if (children == null || children.isEmpty()) {
@@ -860,7 +869,17 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         }
         boolean isExhaustive = true;
         for (String child : children) {
-            if (!cases.contains(child)) {
+            if (cases.contains(child)) {
+                // check for mutually exclusive i.e. cases should not contain any children
+                // of child
+
+                for (String c : getAllChildren(child)) {
+                    if (cases.contains(c))
+                        return false;
+
+                }
+            }
+ else {
                 if (!isExhaustive(nres.getStructChildren(child), cases)) {
                     return false;
                 }
@@ -909,7 +928,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             report(stmt, "Struct representing exprVar has no children");
         }
         if (!isExhaustive(children, stmt.getCaseConditions())) {
-            report(stmt, "Switch cases must be exhaustive");
+            report(stmt, "Switch cases must be exclusive and exhaustive");
         }
 
         // visit each case body

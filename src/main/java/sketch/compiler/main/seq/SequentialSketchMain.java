@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.main.seq;
-
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;

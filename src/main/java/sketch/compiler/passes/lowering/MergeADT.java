@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
@@ -26,10 +25,12 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.HashmapList;
 
 
@@ -69,19 +70,7 @@ public class MergeADT extends SymbolTableVisitor {
         return (ExprTypeCast) super.visitExprTypeCast(expr);
     }
 
-    /*
-     * @Override public Object visitStmtAssign(StmtAssign stmt) { Expression newRHS =
-     * stmt.getRHS(); Type rt = getType(newRHS); // stmt = (StmtAssign)
-     * super.visitStmtAssign(stmt); Expression newLHS = stmt.getLHS(); Type lt =
-     * getType(newLHS); if (lt.isStruct()) { StructDef left = nres.getStruct(structs.get(
-     * ((TypeStructRef) lt).getName().split("@")[0]).getNewName()); int id =
-     * structs.get(((TypeStructRef) rt).getName().split("@")[0]).getId(); Expression
-     * condition; ExprField condLeft = new ExprField(newRHS, "type"); ExprConstInt
-     * condRight = new ExprConstInt(stmt.getContext(), id); condition = new
-     * ExprBinary(ExprBinary.BINOP_EQ, condLeft, condRight); Statement assertStmt = new
-     * StmtAssert(condition, "Struct type casting error", false); return new
-     * StmtBlock(assertStmt, stmt); } return stmt; }
-     */
+
 
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
@@ -112,7 +101,7 @@ public class MergeADT extends SymbolTableVisitor {
             if (newName == null) {
                 String name = nres.getStructParentName(oldType);
                 while (newName == null && name != null) {
-                    tracker = structs.get(name);
+                    tracker = structs.get(name+"@"+sd.getPkg());
                     newName = tracker.getNewVariable(param.getName());
                     name = nres.getStructParentName(name);
                 }
@@ -124,6 +113,8 @@ public class MergeADT extends SymbolTableVisitor {
         return new ExprNew(exprNew.getContext(), newType, newParams);
 
     }
+    
+
 
     @Override
     public Object visitExprField(ExprField ef) {
@@ -138,7 +129,7 @@ public class MergeADT extends SymbolTableVisitor {
         if (newField == null) {
             String name = nres.getStructParentName(t.getName());
             while (newField == null && name != null) {
-                structTracker = structs.get(name);
+                structTracker = structs.get(name + "@" + t.getPkg());
                 newField = structTracker.getNewVariable(field);
                 name = nres.getStructParentName(name);
             }
@@ -152,6 +143,7 @@ public class MergeADT extends SymbolTableVisitor {
         // change to if else statements
         stmt = (StmtSwitch) super.visitStmtSwitch(stmt);
         ExprVar var = stmt.getExpr();
+        String pkg = this.getStructDef(getType(var)).getPkg();
         ExprField left = new ExprField(var, "type");
         List stmtIfs = new ArrayList();
 
@@ -166,9 +158,11 @@ public class MergeADT extends SymbolTableVisitor {
         stmtIfs.add(assertStmt);
 
         for (String c : stmt.getCaseConditions()){
-            Expression condition;            
+            Expression condition;
+
             ExprConstInt right =
-                    new ExprConstInt(stmt.getContext(), structs.get(c).getId());
+                    new ExprConstInt(stmt.getContext(),
+                            structs.get(c + "@" + pkg).getId());
             condition = new ExprBinary(ExprBinary.BINOP_EQ, left, right);
             StmtIfThen st =
                     new StmtIfThen(stmt.getContext(), condition, stmt.getBody(c), null);
@@ -202,11 +196,16 @@ public class MergeADT extends SymbolTableVisitor {
 
                 }
             }
-            pkg = (Package) super.visitPackage(pkg);
-            pkg.getStructs().addAll(newStructs);
-            newStreams.add(pkg);
+            newStructs.addAll(pkg.getStructs());
+            Package newpkg =
+                    new Package(pkg, pkg.getName(), newStructs,
+                            pkg.getVars(),
+                            pkg.getFuncs());
+            // newpkg.getStructs().addAll(newStructs);
+            newStreams.add(newpkg);
         }
-        return p.creator().streams(newStreams).create();
+        Program newprog = p.creator().streams(newStreams).create();
+        return super.visitProgram(newprog);
     }
 
     public void copyStruct(StructDef str) {
@@ -219,9 +218,9 @@ public class MergeADT extends SymbolTableVisitor {
     }
 
     public StructDef combineStructs(NameResolver nres, StructDef str) {
-        String oldName = str.getName();
+        String oldName = str.getFullName();
 
-        String newName = "combined" + oldName;
+        String newName = "combined" + oldName.split("@")[0];
         List structsList = new ArrayList();
         for (String i : nres.structNamesList()) {
             structsList.add(i.split("@")[0]);
@@ -247,10 +246,22 @@ public class MergeADT extends SymbolTableVisitor {
                     new StructCombinedTracker(name, newName, i++, true);
             structs.put(childStruct.getFullName(), tracker);
 
-            for (Entry<String, Type> var : childStruct.getFieldTypMap().entrySet()) {
-                tracker.mapVariable(var.getKey(), name + "_" + var.getKey());
-                names.add(name + "_" + var.getKey());
-                Type newType = (Type) var.getValue().accept(this);
+            List<VarReplacer> vrs = new ArrayList<VarReplacer>();
+
+
+            for (StructFieldEnt var : childStruct.getFieldEntriesInOrder()) {
+                String newVarname = name.split("@")[0] + "_" + var.getName();
+                tracker.mapVariable(var.getName(), newVarname);
+                names.add(newVarname);
+                VarReplacer vr = new VarReplacer(var.getName(), newVarname);
+                vrs.add(vr);
+                Type newType = (Type) var.getType().accept(this);
+                if (newType.isArray()) {
+                    for (VarReplacer v : vrs) {
+                        newType = (Type) newType.accept(v);
+                    }
+                }
+                              
                 types.add(newType);
             }
             for (String child : nres.getStructChildren(name)) {

@@ -1,0 +1,12 @@
+package BOO;
+
+struct Tree{
+	
+}
+
+struct Branch extends Tree{
+	Tree left;
+	Tree right;
+}
+
+

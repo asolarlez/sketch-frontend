@@ -27,6 +27,7 @@ public class LowerToSketch extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
+
         // ADT
         prog = (Program) prog.accept(new MergeADT());
         // prog.debugDump("afterMergeADT");
@@ -92,7 +93,7 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
-        
+
 
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(

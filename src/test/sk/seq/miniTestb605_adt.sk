@@ -1,8 +1,11 @@
-//Tests for ADT
-struct Tree{ 
-	
-}
+//Correct
 
+include "miniTestb605a_adt.skh";
+
+package TTT;
+struct Tree{ 
+	int x;
+}
 
 struct Leaf extends Tree{
     int value;
@@ -10,21 +13,22 @@ struct Leaf extends Tree{
 struct Branch extends Tree{
     Tree left;
     Tree right;
+    int value;//same variable in both variants
 }
-
 
 
 harness void test(){
 	Leaf leaf1 = new Leaf(value = 5);
-
-	
-Leaf leaf2 = new Leaf(value = 4);
+	leaf1.x = 0;	
+	Leaf leaf2 = new Leaf(value = 4);
 
 Branch branch = new Branch();
 branch.left = leaf1;
 branch.right = leaf2;
+branch.value = 2;
 
-
+Branch@BOO b = new Branch@BOO();
+//int x = sum(b);
 int x =   sum(branch);
 
 }
