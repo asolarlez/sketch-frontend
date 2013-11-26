@@ -1,0 +1,230 @@
+int Oplus= 0;
+int Ominus=1;
+int Oneg = 2;
+int Oand = 3;
+int Oor = 4;
+int Onot = 5;
+int Ogt = 6;
+int Olt = 7;
+
+
+struct sourceAST {}
+
+struct SPrim1 extends sourceAST{
+	int op;
+	sourceAST a;
+}
+struct SPrim2 extends sourceAST{
+	int op;
+	sourceAST a;
+	sourceAST b;
+}
+struct SBetween extends sourceAST{
+	sourceAST a;
+	sourceAST b;
+	sourceAST c;
+}
+struct SIf extends sourceAST{
+	sourceAST a;
+	sourceAST b;
+	sourceAST c;
+}
+
+struct SStr extends sourceAST{
+	//type of str
+	int n;	
+	char[n] str;
+}
+struct SNum extends sourceAST{
+	int val;
+}
+struct STrue extends sourceAST{
+}
+struct SFalse extends sourceAST{
+}
+
+
+//CoreAST
+struct coreAST{}
+struct CVar extends coreAST{
+	//type of string
+	int n;
+	char[n] str;
+}
+struct CPrim1 extends coreAST{
+	int op;
+	coreAST a;
+	
+}
+struct CPrim2 extends coreAST{
+	int op;
+	coreAST a;
+	coreAST b;
+	
+}
+struct CLet extends coreAST{
+	int n;
+	char[n] str;
+	coreAST a;
+	coreAST b;
+}
+struct CIf extends coreAST{
+	coreAST a;
+	coreAST b;
+	coreAST c;
+}
+struct CNum extends coreAST{
+	int val;
+}
+struct CStr extends coreAST{
+	int n;
+	char[n] str;
+}
+struct CBool extends coreAST{
+	bit val;
+}
+
+
+coreAST desugar(sourceAST s){
+	if(s == null){ return null; }
+	/*
+	generator int genStyp(){ return {|  SPrim | SBetween | SIf | SStr | SNum | STrue | STrue |};  }
+	generator int genCtyp(){ return {|  CVar | CPrim1 | CPrim2 | CLet | CIf | CNum | CStr | CBool |};  }
+	generator sourceAST getPart(){ return {| s.a | s.b | s.c | null |}; }
+	generator int getConst(){ return {| s.type | s.op | s.val | s.str | ?? |}; }
+	generator int getOp(){ return {| s.op | Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
+	*/
+	
+	switch(s){
+		case SPrim1:
+		{
+			return new CPrim1(op = s.op, a = desugar(s.a));
+		}
+		case SPrim2:
+		{
+			return new CPrim2(op= s.op, a = desugar(s.a),b=  desugar(s.b));
+		}
+		case SBetween:
+		{
+			return new CLet(n= 4,str = "%x1", a=  desugar(s.a), b=
+         new CLet(n=4,str = "%x2",a = desugar(s.b),b =
+              new CLet(n=4,str = "%x3", a= desugar(s.c),b=
+                  new CPrim2(op= Oand, a= 
+                         new CPrim2(op = Olt,a = new CVar(n=4,str ="%x1"),b= new  CVar(n=4,str= "%x2")), b= 
+                          new CPrim2(op = Olt, a= new CVar(n=4,str = "%x2"), b = new  CVar(n=4,str ="%x3"))))));
+			
+		}
+		case SIf:
+		{
+			return new CIf(a = desugar(s.a),b=  desugar(s.b),c = desugar(s.c));
+			
+		}
+		case SStr:
+		{
+			return new CStr(n = s.n , str = s.str);
+		}
+		case SNum:
+		{
+			return new CNum(val = s.val);
+			
+		}
+		case STrue:
+		{
+			return new CBool(val = 1);
+		}
+		case SFalse:
+		{
+			return new CBool(val = 0);
+		}
+		
+	}
+	
+	/*
+	minrepeat{
+		if(s.type == genStyp()){
+			sourceAST sa = getPart();
+			sourceAST sb = getPart();
+			sourceAST sc = getPart();
+			return new coreAST(type = genCtyp() , op = getOp() , a =  desugar(sa) , b = desugar(sb) , c = desugar(sc), str = getConst(), val = getConst() );
+		}
+	}
+	*/
+	
+	//assert false;
+}
+
+sourceAST gIf(sourceAST cond, sourceAST th, sourceAST el){
+	return new SIf(a=cond, b=th, c=el);
+}
+sourceAST gOp([int n], int op, sourceAST[n] p){
+	if(n==1){
+		return new SPrim1( op= op, a = p[0]);
+	}else{
+		return new SPrim2(op=op, a=p[0], b=p[1]);
+	}
+} 
+
+sourceAST gN(int n){
+	return new SNum( val=n);
+}
+
+
+
+coreAST cIf(coreAST cond, coreAST th, coreAST el){
+	return new CIf( a=cond, b=th, c=el);
+}
+
+
+coreAST cOp([int n], int op, coreAST[n] p){
+	if(n==1){
+		return new CPrim1( op= op, a = p[0]);
+	}else{
+		return new CPrim2( op=op, a=p[0], b=p[1]);
+	}
+} 
+
+coreAST cN(int n){
+	return new CNum( val=n);
+}
+
+
+bit equals(coreAST c1 ,coreAST c2){
+	/*
+	if(c1.type != c2.type){
+		return false;
+	}
+	if(c1.type == CPrim1){
+		return c1.op == c2.op && equals(c1.a, c2.a);
+	}
+	if(c1.type==CPrim2){
+		return c1.op == c2.op && equals(c1.a, c2.a) && equals(c1.b, c2.b);
+	}
+	if(c1.type == CIf){
+		return equals(c1.a, c2.a) && equals(c1.b, c2.b) && equals(c1.c, c2.c);
+	} 
+	if(c1.type == CNum){
+		return c1.val == c2.val;
+	}	
+	*/
+	return false;
+}
+
+harness void main(){
+	/*
+		if(a < b){ a }else{ b }
+	*/
+	sourceAST s = gIf(gOp(Olt, {gN(111), gN(222)}), gN(111), gN(122));
+	coreAST ca = desugar(s);
+	//assert equals(ca, cIf(cOp(Olt, {cN(111), cN(222)}), cN(111), cN(122)));
+	//assert ca == cIf(cOp(Olt, {cN(111), cN(222)}), cN(111), cN(122));
+	
+	
+
+
+
+
+}
+
+
+	
+	
