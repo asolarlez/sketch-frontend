@@ -210,7 +210,8 @@ public class MergeADT extends SymbolTableVisitor {
 
     public void copyStruct(StructDef str) {
         StructCombinedTracker tracker =
-                new StructCombinedTracker(str.getName(), str.getName(), i++, false);
+                new StructCombinedTracker(str.getFullName(), str.getFullName(), i++,
+                        false);
         structs.put(str.getFullName(), tracker);
         for (String var : str.getFields()) {
             tracker.mapVariable(var, var);
