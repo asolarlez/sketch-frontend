@@ -113,7 +113,7 @@ public class MergeADT extends SymbolTableVisitor {
         return new ExprNew(exprNew.getContext(), newType, newParams);
 
     }
-    
+
 
 
     @Override
@@ -156,18 +156,30 @@ public class MergeADT extends SymbolTableVisitor {
                         false);
 
         stmtIfs.add(assertStmt);
+        boolean first = true;
+        Statement current = null;
+        Statement prev = null;
 
-        for (String c : stmt.getCaseConditions()){
-            Expression condition;
+        for (int i = stmt.getCaseConditions().size() - 1; i >= 0; i--) {
+            String c = stmt.getCaseConditions().get(i);
+            if (c != "default") {
+                Expression condition;
 
-            ExprConstInt right =
-                    new ExprConstInt(stmt.getContext(),
-                            structs.get(c + "@" + pkg).getId());
-            condition = new ExprBinary(ExprBinary.BINOP_EQ, left, right);
-            StmtIfThen st =
-                    new StmtIfThen(stmt.getContext(), condition, stmt.getBody(c), null);
-            stmtIfs.add(st);
+                ExprConstInt right =
+                        new ExprConstInt(stmt.getContext(),
+                                structs.get(c + "@" + pkg).getId());
+                condition = new ExprBinary(ExprBinary.BINOP_EQ, left, right);
+                current =
+                        new StmtIfThen(stmt.getContext(), condition, stmt.getBody(c),
+                                prev);
+                prev = current;
+            } else {
+                prev = stmt.getBody(c);
+                current = prev;
+            }
+
         }    
+        stmtIfs.add(current);
 
 
         return new StmtBlock(stmtIfs);
@@ -262,7 +274,7 @@ public class MergeADT extends SymbolTableVisitor {
                         newType = (Type) newType.accept(v);
                     }
                 }
-                              
+
                 types.add(newType);
             }
             for (String child : nres.getStructChildren(name)) {
