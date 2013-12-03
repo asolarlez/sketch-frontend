@@ -15,7 +15,6 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.util.Pair;
 
 public class NodesToSuperH extends NodesToSuperCpp {
@@ -47,7 +46,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         result += indent + "class " + escapeCName(struct.getName());
         if (nres.getStructParentName(struct.getName())!=null){
-            result += " : "+ nres.getStructParentName(struct.getName());
+            result += " : public " + nres.getStructParentName(struct.getName());
         }
         result += "{\n  public:\n";
         addIndent();
@@ -83,9 +82,14 @@ public class NodesToSuperH extends NodesToSuperCpp {
             while (varNames.contains(var)) {
                 var = "_" + var;
             }
+            String typeVar = "_kind";
+            while (varNames.contains(typeVar)) {
+                typeVar = "_" + typeVar;
+            }
             typeVars.put(struct.getName(), var);
-            result += indent + typeForDecl(TypePrimitive.int32type) + " " + var + ";\n";
-            result += indent + "typedef enum {" + children + "};\n";
+            result += indent + "typedef enum {" + children + "} " + typeVar + ";\n"; // add
+                                                                                     // _kind
+            result += indent + typeVar + " " + var + ";\n";
         }
         for (String field : struct.getOrderedFields()) {
             Type ftype = struct.getType(field);

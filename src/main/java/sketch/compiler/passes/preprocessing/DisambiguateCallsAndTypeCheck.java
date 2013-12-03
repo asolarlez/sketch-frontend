@@ -460,8 +460,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                                         exp,
                                         new ExprBinary(newParams.get(idx), "==", actLen),
                                         exp.getCx() +
-                                                ": Inconsistent array lengths for implicit parameter " +
-                                                len + ".", false));
+                                        ": Inconsistent array lengths for implicit parameter " +
+                                        len + ".", false));
                             }
                         }
                     }
@@ -651,8 +651,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         {
             report(func,
                     "The function " + func.getName() +
-                            " doesn't have any return statements. It should return an " +
-                            func.getReturnType());
+                    " doesn't have any return statements. It should return an " +
+                    func.getReturnType());
         }
         return tmp;
     }
@@ -747,7 +747,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 }
                 break;
 
-            // Bitwise and integer operations:
+                // Bitwise and integer operations:
             case ExprBinary.BINOP_BAND:
             case ExprBinary.BINOP_BOR:
             case ExprBinary.BINOP_BXOR:
@@ -760,14 +760,14 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     report(expr, "cannot perform % on " + ct);
                 break;
 
-            // Boolean operations:
+                // Boolean operations:
             case ExprBinary.BINOP_AND:
             case ExprBinary.BINOP_OR:
                 if (!ct.promotesTo(TypePrimitive.bittype, nres))
                     report(expr, "cannot perform boolean operations on " + ct);
                 break;
 
-            // Comparison operations:
+                // Comparison operations:
             case ExprBinary.BINOP_GE:
             case ExprBinary.BINOP_GT:
             case ExprBinary.BINOP_LE:
@@ -779,11 +779,11 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     report(expr, "Comparissons are not supported for array types" + expr);
                 break;
 
-            // Equality, can compare anything:
+                // Equality, can compare anything:
             case ExprBinary.BINOP_EQ:
             case ExprBinary.BINOP_NEQ:
                 break;
-            // TODO: Make correct rule for SELECT.
+                // TODO: Make correct rule for SELECT.
             case ExprBinary.BINOP_SELECT:
                 break;
 
@@ -792,7 +792,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 if (!isLeftArr && !isLeftConst)
                     report(expr, "Can only shift array types for now. " + ct);
                 break;
-            // And now we should have covered everything.
+                // And now we should have covered everything.
             default:
                 report(expr, "semantic checker missed a binop type");
                 break;
@@ -879,7 +879,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
                 }
             }
- else {
+            else {
                 if (!isExhaustive(nres.getStructChildren(child), cases)) {
                     return false;
                 }
@@ -927,22 +927,29 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (children == null || children.isEmpty()) {
             report(stmt, "Struct representing exprVar has no children");
         }
-        if (!isExhaustive(children, stmt.getCaseConditions())) {
-            report(stmt, "Switch cases must be exclusive and exhaustive");
+        if(!stmt.getCaseConditions().contains("default")){
+            if (!isExhaustive(children, stmt.getCaseConditions())) {
+                report(stmt, "Switch cases must be exclusive and exhaustive");
+            }
         }
 
         // visit each case body
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (!checkCaseExpr(caseExpr, children)) {
-                report(stmt, "Case must be a variant of the type " + tres);
-            }
-            SymbolTable oldSymTab1 = symtab;
-            symtab = new SymbolTable(symtab);
-            symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+            if (caseExpr != "default") {
+                if (!checkCaseExpr(caseExpr, children)) {
+                    report(stmt, "Case must be a variant of the type " + tres);
+                }
+                SymbolTable oldSymTab1 = symtab;
+                symtab = new SymbolTable(symtab);
+                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
 
-            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
-            newStmt.addCaseBlock(caseExpr, body);
-            symtab = oldSymTab1;
+                Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                newStmt.addCaseBlock(caseExpr, body);
+                symtab = oldSymTab1;
+            } else {
+                Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                newStmt.addCaseBlock(caseExpr, body);
+            }
         }
         symtab = oldSymTab;
         return newStmt;
@@ -1003,8 +1010,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 StmtExpr se = (StmtExpr) incr;
                 if (se.getExpression() instanceof ExprUnary &&
                         (((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_POSTINC ||
-                                ((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_PREINC ||
-                                ((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_PREDEC || ((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_POSTDEC))
+                        ((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_PREINC ||
+                        ((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_PREDEC || ((ExprUnary) se.getExpression()).getOp() == ExprUnary.UNOP_POSTDEC))
                 {
 
                 } else {
@@ -1137,7 +1144,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                                 "not selecting both '" + sc.getFirst() + "' and '" +
                                         sc.getNext() + " yields type '" + base + "'," +
                                         " which is incompatible with selecting " +
-                                        " either or both");
+                                " either or both");
                         throw new ControlFlowException("selcheck");
                     }
                 }

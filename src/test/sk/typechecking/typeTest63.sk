@@ -1,0 +1,48 @@
+//Tests for ADT
+struct Tree{ 
+	int x;
+}
+
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+
+
+harness void test(){
+	Leaf leaf1 = new Leaf(value = 5);
+leaf1.x = 0;
+	
+Leaf leaf2 = new Leaf(value = 4);
+
+Branch branch = new Branch();
+branch.left = leaf1;
+branch.right = leaf2;
+
+
+int x =   sum(branch);
+
+}
+
+int sum(Tree t){
+		
+    switch(t){
+        case Leaf: 
+            /* t is now of type Leaf in this branch */
+            {
+                        return t.value;
+            }                     
+      
+            
+        case Branch:
+			{
+            /* t is of type Branch in this branch */
+            return sum(t.left) + sum(t.right);
+		}
+    }
+    /* Outside the switch, t goes back to being of type Tree*/
+}

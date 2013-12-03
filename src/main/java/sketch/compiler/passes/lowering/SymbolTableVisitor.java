@@ -94,12 +94,11 @@ public class SymbolTableVisitor extends FEReplacer
      * @see         sketch.compiler.nodes.GetExprType
      */
     public Type getType(Expression expr) {
-    	return getType (expr, TypePrimitive.nulltype);
+        return getType(expr, TypePrimitive.nulltype);
     }
-    
-    
+
     public Type getTypeReal(Expression expr) {
-    	return getTypeReal (expr, TypePrimitive.nulltype);
+        return getTypeReal(expr, TypePrimitive.nulltype);
     }
 
     /**
@@ -114,10 +113,12 @@ public class SymbolTableVisitor extends FEReplacer
     {
         return getTypeReal(expr, nullType);
     }
-    
+
     public Type getTypeReal(Expression expr, Type nullType)
     {
-    	if(expr == null){ return TypePrimitive.voidtype; }
+        if (expr == null) {
+            return TypePrimitive.voidtype;
+        }
 
         // To think about: should we cache GetExprType objects?
         GetExprType get = new GetExprType(symtab, this.nres, nullType);
@@ -135,16 +136,18 @@ public class SymbolTableVisitor extends FEReplacer
 
 
     public boolean isGlobal(Expression exp){
-    	class checker extends FEReplacer{
-    		boolean isglobal = false;
-    		public Object visitExprVar(ExprVar ev){
-    			isglobal = isglobal || isGlobal(ev);
-    			return ev;
-    		}
-    	};
-    	checker c = new checker();
-    	exp.accept(c);
-    	return c.isglobal;
+        class checker extends FEReplacer {
+            boolean isglobal = false;
+
+            public Object visitExprVar(ExprVar ev) {
+                isglobal = isglobal || isGlobal(ev);
+                return ev;
+            }
+        }
+        ;
+        checker c = new checker();
+        exp.accept(c);
+        return c.isglobal;
     }
 
 
@@ -197,7 +200,7 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
 
-	@Override
+    @Override
     public Object visitParameter(Parameter par) {
         symtab.registerVar(par.getName(), par.getType(), par,
                 SymbolTable.KIND_FUNC_PARAM);
@@ -220,7 +223,7 @@ public class SymbolTableVisitor extends FEReplacer
         return result;
     }
 
-   
+
 
     public Object visitProgram(Program prog)
  {
@@ -248,14 +251,23 @@ public class SymbolTableVisitor extends FEReplacer
         // visit each case body
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
         for (String caseExpr : stmt.getCaseConditions()) {
+            if (caseExpr != "default") {
+                SymbolTable oldSymTab1 = symtab;
+                symtab = new SymbolTable(symtab);
+                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
 
-            SymbolTable oldSymTab1 = symtab;
-            symtab = new SymbolTable(symtab);
-            symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+                Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                newStmt.addCaseBlock(caseExpr, body);
+                symtab = oldSymTab1;
+            } else {
+                SymbolTable oldSymTab1 = symtab;
+                symtab = new SymbolTable(symtab);
 
-            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
-            newStmt.addCaseBlock(caseExpr, body);
-            symtab = oldSymTab1;
+                Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                newStmt.addCaseBlock(caseExpr, body);
+                symtab = oldSymTab1;
+
+            }
         }
         symtab = oldSymTab;
 
@@ -273,7 +285,7 @@ public class SymbolTableVisitor extends FEReplacer
 
     @Override
     public Object visitStmtFork(StmtFork ploop){
-    	SymbolTable oldSymTab = symtab;
+        SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab, true);
         Object result = super.visitStmtFork(ploop);
         symtab = oldSymTab;
@@ -284,8 +296,8 @@ public class SymbolTableVisitor extends FEReplacer
     {
         for (int i = 0; i < stmt.getNumVars(); i++)
             symtab.registerVar(stmt.getName(i), (stmt.getType(i)),
-                               stmt,
-                               SymbolTable.KIND_LOCAL);
+ stmt,
+                    SymbolTable.KIND_LOCAL);
         return super.visitStmtVarDecl(stmt);
     }
 
@@ -330,12 +342,12 @@ public class SymbolTableVisitor extends FEReplacer
         if (nres != null)
             nres.setPackage(spec);
 
-	// register functions
+        // register functions
         for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
-	    Function func = (Function)iter.next();
-	    symtab.registerFn(func);
-	}
+            Function func = (Function) iter.next();
+            symtab.registerFn(func);
+        }
         Object result = super.visitPackage(spec);
         symtab = oldSymTab;
         return result;
