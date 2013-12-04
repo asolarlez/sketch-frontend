@@ -1,0 +1,9 @@
+
+int foo(){
+
+}
+
+harness int foo(int w){
+	foo();
+
+}
