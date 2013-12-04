@@ -589,6 +589,9 @@ switch_statement returns [Statement s]
 		(TK_case caseName:ID COLON b= pseudo_block
 		{((StmtSwitch)s).addCaseBlock(caseName.getText(), b);}
 		)*
+		(TK_default COLON b = pseudo_block
+		{((StmtSwitch)s).addCaseBlock("default",b);}
+		)?
 		RCURLY
 		
 	;

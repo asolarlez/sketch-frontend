@@ -949,24 +949,44 @@ public class NodesToSuperCpp extends NodesToJava {
         }
         result += "->" + NodesToSuperH.typeVars.get(name) + "){\n";
         for (String c : stmt.getCaseConditions()) {
-            result += indent + "case " + c.toUpperCase() + ":\n" + indent + indent;
-            String newVar = "_" + var;
-            while (symtab.hasVar(newVar)) {
-                newVar = "_" + newVar;
-            }
-            result += c + "* " + newVar + " = (" + c + "*)  " + var + indent;
-            VarReplacer vr = new VarReplacer(var, newVar);
-            SymbolTable oldSymTab = symtab;
-            symtab = new SymbolTable(oldSymTab);
-            symtab.registerVar(newVar, new TypeStructRef(c, false));
-            Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
-            String body = (String) bodyStatement.accept(this);
-            int x = body.indexOf("{");
-            int y = body.lastIndexOf("}");
+            // brakects around cases and constants with type.
+            if (c != "default") {
+                result +=
+                        indent + "case " + name + "::" + c.toUpperCase() + ":\n" +
+                                indent + indent;
+                String newVar = "_" + var;
+                while (symtab.hasVar(newVar)) {
+                    newVar = "_" + newVar;
+                }
+                result += "{\n" + indent + indent;
+                result += c + "* " + newVar + " = (" + c + "*)  " + var + ";" + indent;// semicolon
+                VarReplacer vr = new VarReplacer(var, newVar);
+                SymbolTable oldSymTab = symtab;
+                symtab = new SymbolTable(oldSymTab);
+                symtab.registerVar(newVar, new TypeStructRef(c, false));
+                Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
+                String body = (String) bodyStatement.accept(this);
+                int x = body.indexOf("{");
+                int y = body.lastIndexOf("}");
 
-            result += body.substring(x + 1, y);
-            result += indent + "break;\n";
-            symtab = oldSymTab;
+                result += body.substring(x + 1, y);
+                result += indent + "break;\n";
+                result += indent + "}\n";
+                symtab = oldSymTab;
+            } else {
+                result += indent + c + ":\n" + indent + indent;
+
+                result += "{\n" + indent + indent;
+
+                String body = (String) stmt.getBody(c).accept(this);
+                int x = body.indexOf("{");
+                int y = body.lastIndexOf("}");
+
+                result += body.substring(x + 1, y);
+                result += indent + "break;\n";
+                result += indent + "}\n";
+            }
+
         }
         result += "\n }";
 
