@@ -357,8 +357,8 @@ Notice that most operators support operands of different sizes; the smaller arra
 
 
 
-\subsection{Algebraic Datatypes}\seclabel{padding}
-Sketch also supports algebraic datatypes. Therefore, one can implement a Tree ADT with two types of Tree objects (Leaf and Branch) as follows:
+\subsection{Algebraic Data types}\seclabel{adts}
+Sketch also supports algebraic data types, or case classes as they are known in Scala. To illustrate the use of algebraic data types (ADTs), consider the \C{Tree} ADT defined below. 
 \begin{lstlisting}
 struct Tree{}
 
@@ -370,31 +370,48 @@ struct Branch extends Tree{
 	Tree right;
 }
 \end{lstlisting}
-This defines the ADT Tree with two cases, Leaf and Branch.
+\C{Tree} is an ADT by virtue of having two variants that extend it: \C{Leaf} and \C{Branch}. Both \C{Leaf} and \C{Branch} can be instantiated just like any other kind of record, and they are both subtypes of \C{Tree}. For example, the code below instantiates a small tree.
 
-In addition to defining the algebraic data type, the language also supports pattern matching i.e. one can switch over a variable corresponding to an ADT, and then have a case for each subtype. The variable would be automatically cast to the right type inside each case statement, so no additional casting would be necessary. This is illustrated by the function below:
+\begin{lstlisting}
+Tree t1 = new Leaf(value=5);
+Tree t2 = new Leaf(value=6);
+Tree t3 = new Leaf(value=7);
+Tree t = new Branch(left=t1, right=new Branch(left=t2, right=t3));
+\end{lstlisting}
+The fact that Leaf and Branch extend \C{Tree} causes \C{Tree} to be abstract, so \C{Tree} itself cannot be instantiated. 
+
+Pattern matching in \Sk{} is done through the \C{switch} construct. The basic syntax is as follows:
+\begin{lstlisting}
+switch(var){
+   case C1: 
+   ...
+   case Cn:
+}
+\end{lstlisting}
+The argument \C{var} passed to switch must be a variable whose type is an ADT, and each case must be labeled with a different variant \C{Ci}. Within that case, the variable \C{var} will automatically acquire the type corresponding to the case. This is illustrated by the function below: 
+
+
 
 \begin{lstlisting}
 int sum(Tree t){
-	switch(t){
-		case Leaf:
-		{
-			/*t is now of type Leaf in this block */
-			return t.value;
-		}
-		case Branch:
-			/*t is now of type Branch is this block */
-			return sum(t.left)+sum(t.right);
-		}
-	}
-	/*Outside the switch, t goes back to being of type Tree*/
+   int v=0;
+   switch(t){
+      case Leaf:{
+        /*t is now of type Leaf in this block */
+        v = t.value;
+      }
+      case Branch:{
+        /*t is now of type Branch is this block */
+        v = sum(t.left)+sum(t.right);
+      }
+   }        
+   /*Outside the switch, t goes back to being of type Tree*/
+   return v;
 }
 \end{lstlisting}
+The \C{switch} construct looks a lot like the \C{switch} construct in C or Java, but its semantics are very different. First, the cases correspond to the possible types of \C{t}, as opposed to different values of an integer expression. Second, the argument to switch must be a variable, and the type of this variable will be different in each of the cases. And finally, the cases do not ``fall through'' the way they do in C; only one case can match, and only the block of code associated with the matching case will execute.
 
-Some of the rules to be noted are:
-\begin{itemize}
-\item The struct representing an ADT (like Tree in the example above) cannot be instantiated. However, one can instantiate Leaf and Branch in the above example.
-\item The language allows hierarchy of ADTs. For example:
+The language allows hierarchies of ADTs. For example:
 \begin{lstlisting}
 struct ASTNode{}
 struct Expression extends ASTNode{}
@@ -403,17 +420,18 @@ struct Plus extends Expression{Expression left; Expression right;}
 struct Times extends Expression{Expression left; Expression right;}
 struct IfStmt extends Statement{Expression cond; Statement tpart; Statement epart;}
 struct WhileStmt extends Statement{Expression cond; Statement body;}
-
-So in this case, one can create instances of Plus, Times, IfStmt and WhileStmt, but not of ASTNode or of Expression and Statement.
 \end{lstlisting}
+So in this case, one can create instances of \C{Plus}, \C{Times}, \C{IfStmt} and \C{WhileStmt}, but not of \C{ASTNode} or of \C{Expression} and \C{Statement}. When pattern matching, however , one can have cases for \C{Expression} or \C{Statement} and those cases will match on any variant that is a subtype of them. 
 
-\item Structs representing an ADT can have fields, and those fields will be inherited by all the variant types.
-\item Both and parent and variant struct cannot have same field.
-\item The type extended by a variant class should exist and be defined in the same package.
+The following are some additional rules associated with ADTs. 
+\begin{itemize}
+\item Records representing an ADT can have fields, and those fields will be inherited by all the variant types.
+\item A parent and a variant \C{struct} cannot both have a field with the same name. 
+\item The type extended by a variant class should exist and be defined in the same package, so ADT definitions cannot span multiple packages (see \secref{pkg} for more on packages).
 \item The expression that is passed to switch(e) should always be a variable, and the labels for the cases should be variants of the type of that variable.
 \item Switch statements should cover all the cases.
 \item Implicit casting occurs from a subtype to a super type.
-\item Explicit casts can happen only from a supertype to a subtype.
+\item Explicit casts can happen only from a supertype to a subtype. An incorrect cast will cause an assertion failure. 
 \end{itemize}
 
 
@@ -762,7 +780,7 @@ $ret\_type$ $name$($args$);
 An uninterpreted function is a function whose body is unknown, so from the point of view of the synthesis and verification engine; there is nothing known about this function other than the fact that it is a pure function, so when fed with the same inputs it will produce the same outputs. Importantly, if you are using an uninterpreted function to model some complex routine in the program, you need to make sure that routine behaves as a mathematical function; i.e. it should not access the heap or global variables. For this reason, we restrict uninterpreted functions so they can not involve structures.
 
 
-\subsection{Packages}
+\subsection{Packages}\seclabel{pkg}
 
 The \Sk{} language supports packages. A package is identified by the \C{package} statement at the beginning of a file.
 \begin{lstlisting}

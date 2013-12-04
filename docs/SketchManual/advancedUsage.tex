@@ -1,4 +1,4 @@
-\section{Advanced Usage and Diagnostics}
+
 
 
 \subsection{Custom Code Generators}
@@ -10,7 +10,7 @@ Custom code generators must implement the \C{FEVisitor} interface defined in the
 \flagdoc{--fe-custom-codegen}{Flag takes as an argument the name of a jar file and forces \Sk{} to use the first code generator it finds in that file.}
 
 
-To illustrate how to create a custom code generator, the \Sk{} distribution includes a folder called C{sketch-frontend/customcodegen} that contains a custom code generator called \C{SCP} that simply pretty-prints the program to the terminal. In order to get \Sk{} to use this class as a code generator, follow these simple steps:
+To illustrate how to create a custom code generator, the \Sk{} distribution includes a folder called \C{sketch-frontend/customcodegen} that contains a custom code generator called \C{SCP} that simply pretty-prints the program to the terminal. In order to get \Sk{} to use this class as a code generator, follow these simple steps:
 
 \begin{itemize}
 \item From the \C{sketch-frontend} directory, compile the code generator by running \newline
@@ -18,7 +18,7 @@ To illustrate how to create a custom code generator, the \Sk{} distribution incl
 \item Create a jar file by running \newline
 \C{> jar -cvf customcodegen.jar customcodegen/}
 \item Try out your new code generator by running \newline
-\C{> sketch --fe-custom-codegen customcodegen.jar test/seq/sk/miniTest1.sk}
+\C{> sketch --fe-custom-codegen customcodegen.jar test/sk/seq/miniTest1.sk}
 \end{itemize}
 
 When you run, you should see the following messages in the output:

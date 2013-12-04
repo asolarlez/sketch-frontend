@@ -1,4 +1,3 @@
-
 \section{Regression tests and Benchmark Suite}
 
 The sketch distribution includes a set of regression tests that exercise the different corner cases of the language and is important if you are making modifications to the compiler. The tests can be found in the directory \C{src/test/sk/seq} if you are using the mercurial distribution, or \C{test/sk/seq} if you are using the easy-to-install version. After having installed the synthesizer, you can run \C{make long} or \C{make} if you want the short version of the test. The main difference between the long and the short tests is that the long tests do code generation and test the generated code on random inputs, whereas the short test only checks that the synthesizer doesn't crash.
@@ -7,7 +6,9 @@ The distribution also includes a benchmark suite that you can use to evaluate ne
 
 \C{> cat OUTDIR/* | awk -f ../scripts/stats.awk}.
 
-\section{Extracting the intermediate representation}
+\section{Advanced Usage and Diagnostics}
+
+\subsection{Extracting the intermediate representation}
 If you have your own SMT solver with support for quantifiers and you want to compare your performance with Sketch, you can ask the solver for the intermediate representation of the synthesis problem after it is done optimizing and desugaring the high-level language features. 
 
 \flagdoc{debug-output-dag}{This flag outputs the intermediate representation in an easy to parse (although not necessarily easy to read) format suitable for mechanical conversion into other solver formats. The flag takes as a parameter the file name to which to write the output.}

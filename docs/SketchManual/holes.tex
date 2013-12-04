@@ -246,8 +246,9 @@ harness void sketch( int x, int y, int z ){
 \subsection{Regular Expression Generators}
 
 Sketch provides some shorthand to make it easy to express simple sets of expressions. This shorthand is based on regular expressions. Regular expression generators describe to the synthesizer a set of choices from which to choose in searching for a correct solution to the sketch. The basic syntax is
-
+\begin{lstlisting}
 {| regexp |}
+\end{lstlisting}
 
 Where the regexp can use the operator | to describe choices, and the operator ? to define optional subexpressions.
 
@@ -315,8 +316,6 @@ harness void sketch( int N, int[N] A, int x, int y ){
 }
 \end{lstlisting}
 
-
-\newpage
 High order generators can also be used to describe patterns in the expected structure of the desired code. For example, if we believe the resulting code will have a repeating structure, we can express this with the following high-order generator: 
 
 \begin{lstlisting}
