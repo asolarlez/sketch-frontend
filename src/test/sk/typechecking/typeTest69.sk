@@ -1,0 +1,7 @@
+
+
+harness bit bug2(int sz) {
+
+	int[12] x = 0;
+    return x > 0; // TypeError
+}

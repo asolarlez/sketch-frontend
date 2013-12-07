@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
@@ -66,8 +67,31 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
         }
     }
 
+    void addArrLenCheck(FENode cxn, TypeArray t) {
+        Expression len = t.getLength();
+        Integer ilen = len.getIValue();
+        if (ilen != null) {
+            if (ilen < 0) {
+                throw new ExceptionAtNode("Negative array lengths are not allowed: " +
+                        len + "  ", cxn);
+            }
+        } else {
+            Expression e = new ExprBinary(len, ">=", ExprConstInt.zero);
+            addStatement(new StmtAssert(e, "Negative array lengths not allowed " + len +
+                    "  " +
+                    cxn.getCx(), false));
+        }
+        if (t.getBase() instanceof TypeArray) {
+            addArrLenCheck(cxn, (TypeArray) t.getBase());
+        }
+    }
+
     public Object visitStmtVarDecl(StmtVarDecl svd) {
         for (int i = 0; i < svd.getNumVars(); ++i) {
+            if (svd.getType(i) instanceof TypeArray) {
+                addArrLenCheck(svd, (TypeArray) svd.getType(i));
+            }
+
             if (svd.getInit(i) != null) {
                 addCheck(svd.getType(i), getType(svd.getInit(i)), false, svd);
             }

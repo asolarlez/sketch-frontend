@@ -1,0 +1,30 @@
+
+
+
+
+
+harness void main(int i){
+	int moo(ref int a, ref int b){
+		a = a + 1;
+		b = b + 1;
+		return a + b;
+	}
+	int foo(int x){
+		if(x>0){
+			int t = x-2;
+			int u = 0;
+			int q = 0;
+			if(??)
+			  moo(t, u);
+			  
+			int v = foo(t) + u;
+			moo(v, u);
+			return v - 1;
+		}else{
+			return 1;
+		}
+	}
+
+	assert foo(10) > ??;
+
+}

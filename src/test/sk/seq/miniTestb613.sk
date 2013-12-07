@@ -1,0 +1,17 @@
+int foo([int n], int[n] tt){
+	if(n>0){ 
+		return tt[??];
+	}else{
+		return 0;
+	}	
+}
+
+harness void main(int p, int[p] x){
+	int moo([int n], int[n] tt, fun g){
+		return g(tt);
+	}
+	
+	if(p>0 && x[0] > 4){	
+		assert moo(x, foo)> 4;	
+	}
+}

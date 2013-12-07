@@ -1,0 +1,9 @@
+
+bit bug3([int n], int[n] list, fun f) {
+    return 0;
+}
+
+harness bit inv() {
+    int[5] list;
+    return bug3(list, bug3);
+}

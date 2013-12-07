@@ -823,13 +823,32 @@ public class RemoveFunctionParameters extends FEReplacer {
     Map<String, String> nfnMemoize = new HashMap<String, String>();
     String newFunName(ExprFunCall efc, Function orig) {
         String name = orig.getName();
+        Iterator<Parameter> fp = orig.getParams().iterator();
+
         if (efc.getParams().size() != orig.getParams().size()) {
-            throw new TypeErrorException("Incorrect number of parameters to function " +
+            // Give user the benefit of the doubt and assume the mismatch is purely due to
+            // implicit parameters.
+            int diff = orig.getParams().size() - efc.getParams().size();
+            if (diff < 0) {
+                throw new TypeErrorException(
+                        "Incorrect number of parameters to function " +
                     orig, efc);
+            }
+            for (int i = 0; i < diff; ++i) {
+                if (!fp.hasNext()) {
+                    throw new TypeErrorException(
+                            "Incorrect number of parameters to function " + orig, efc);
+                }
+                Parameter p = fp.next();
+                if (!p.isImplicit()) {
+                    throw new TypeErrorException(
+                            "Incorrect number of parameters to function " + orig, efc);
+                }
+            }
         }
-        Iterator<Expression> fp = efc.getParams().iterator();
-        for (Parameter p : orig.getParams()) {
-            Expression actual = fp.next();
+
+        for (Expression actual : efc.getParams()) {
+            Parameter p = fp.next();
             if (p.getType() instanceof TypeFunction) {
                 name += "_" + actual.toString();
             }
@@ -859,9 +878,16 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     ExprFunCall replaceCall(ExprFunCall efc, Function orig, String nfn) {
         List<Expression> params = new ArrayList<Expression>();
-        Iterator<Expression> fp = efc.getParams().iterator();
-        for (Parameter p : orig.getParams()) {
-            Expression actual = fp.next();
+        Iterator<Parameter> fp = orig.getParams().iterator();
+        if (orig.getParams().size() > efc.getParams().size()) {
+            int dif = orig.getParams().size() - efc.getParams().size();
+            for (int i = 0; i < dif; ++i) {
+                fp.next();
+            }
+        }
+
+        for (Expression actual : efc.getParams()) {
+            Parameter p = fp.next();
             if (!(p.getType() instanceof TypeFunction)) {
                 params.add(doExpression(actual));
             }
@@ -882,9 +908,21 @@ public class RemoveFunctionParameters extends FEReplacer {
                 List<Parameter> newParam = new ArrayList<Parameter>();
                 
                 boolean samePars = true;
-                Iterator<Expression> fp = efc.getParams().iterator();
-                for(Parameter par : func.getParams()){                    
-                    Expression actual = fp.next();
+
+                Iterator<Parameter> fp = func.getParams().iterator();
+                if (func.getParams().size() > efc.getParams().size()) {
+                    int dif = func.getParams().size() - efc.getParams().size();
+                    for (int i = 0; i < dif; ++i) {
+                        Parameter par = fp.next();
+                        Parameter newPar = (Parameter) par.accept(this);
+                        if (par != newPar)
+                            samePars = false;
+                        newParam.add(newPar);
+                    }
+                }
+
+                for (Expression actual : efc.getParams()) {
+                    Parameter par = fp.next();
                     Parameter newPar = (Parameter) par.accept(this) ;
                     if(!(par.getType() instanceof TypeFunction)){
                         if(par != newPar) samePars = false;

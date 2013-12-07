@@ -1,0 +1,16 @@
+
+pragma options "--bnd-inline-amnt 11";
+
+
+harness void main(int i){
+	int foo(int x){
+		if(x>0){
+			return foo(x-1) + 1;
+		}else{
+			return 1;
+		}
+	}
+
+	assert foo(10) > ??;
+
+}
