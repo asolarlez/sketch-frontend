@@ -1,0 +1,23 @@
+
+struct T {}
+struct A extends T {int x; int y;}
+struct B extends T {int a; int b;}
+
+harness void main(int i){
+
+	int[5] q = {i, 1, -2, 3};
+
+	T t;
+	if(??){
+		t = new A(x=i, y=i+1);
+	}else{
+		t = new B(a=i+1, b=i);
+	}
+	int v = 7;
+	switch(t){
+		case A: v = q[10];
+		case B: v = q[1];	
+	}
+	
+	assert v == ??;
+}
