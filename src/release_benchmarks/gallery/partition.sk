@@ -5,12 +5,12 @@ pragma options "--bnd-inline-amnt 3 --bnd-inbits 3 ";
 
 
 void partition(int p, int P, int N, ref int ibeg, ref int iend){
-    if(p< expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS}) ){
-        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
-        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+    if(p< expr({p, P, N, N/P, N%P}, {TIMES, PLUS}) ){
+        iend =  expr({p, P, N, N/P, N%P},  {TIMES, PLUS});  
+        ibeg =  expr({p, P, N, N/P, N%P},  {TIMES, PLUS});  
     }else{
-        iend =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
-        ibeg =  expr(5, {p, P, N, N/P, N%P}, 2, {TIMES, PLUS});  
+        iend =  expr({p, P, N, N/P, N%P}, {TIMES, PLUS});  
+        ibeg =  expr({p, P, N, N/P, N%P}, {TIMES, PLUS});  
     }
 }
 

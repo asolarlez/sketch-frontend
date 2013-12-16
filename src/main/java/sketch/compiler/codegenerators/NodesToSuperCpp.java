@@ -169,7 +169,7 @@ public class NodesToSuperCpp extends NodesToJava {
             }
             result +=
                     indent + "rv->" + NodesToSuperH.typeVars.get(parent) + "= " +
-                            struct.getName().toUpperCase() + ";\n";
+                            struct.getName().toUpperCase() + "_type;\n";
         }
         result += indent + "return rv;\n";
         unIndent();
@@ -630,7 +630,7 @@ public class NodesToSuperCpp extends NodesToJava {
             preamble.append(".h\"\n");
         }
         preamble.append(ret);
-        System.out.println(preamble.toString());
+        // System.out.println(preamble.toString());
         return preamble.toString();
     }
 
@@ -952,7 +952,7 @@ public class NodesToSuperCpp extends NodesToJava {
             // brakects around cases and constants with type.
             if (c != "default") {
                 result +=
-                        indent + "case " + name + "::" + c.toUpperCase() + ":\n" +
+                        indent + "case " + name + "::" + c.toUpperCase() + "_type:\n" +
                                 indent + indent;
                 String newVar = "_" + var;
                 while (symtab.hasVar(newVar)) {

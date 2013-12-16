@@ -16,9 +16,10 @@ public class IntAbsValue extends abstractValue {
 
 
 	
-	public boolean equals(Object obj){
-		if( !(obj instanceof IntAbsValue) ) return false;
-		IntAbsValue v2 = (IntAbsValue) obj;
+    public boolean equals(Object other) {
+        if (!(other instanceof IntAbsValue))
+            return false;
+        IntAbsValue v2 = (IntAbsValue) other;
 		switch(type){
 		case INT: 
 			if(v2.type != INT  ) return false;

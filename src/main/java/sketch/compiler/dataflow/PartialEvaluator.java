@@ -519,22 +519,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
         return e;
     }
 
-    public Object visitStmtSwitch(StmtSwitch stmt) {
-        Expression var = stmt.getExpr();
-        var.accept(this);
-
-        if (isReplacer)
-            var = exprRV;
-        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), (ExprVar) var);
-        for (String caseExpr : stmt.getCaseConditions()) {
-
-            Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
-            newStmt.addCaseBlock(caseExpr, body);
-
-        }
-        return newStmt;
-
-    }
 
     public Object visitExprFunCall(ExprFunCall exp)
     {
@@ -1186,6 +1170,60 @@ public class PartialEvaluator extends SymbolTableVisitor {
         }
         assert !isReplacer : "No replacement policy for this yet.";
         return stmt;
+    }
+
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+
+        Expression var = stmt.getExpr();
+        abstractValue vcond = (abstractValue) var.accept(this);
+        Expression ncond = isReplacer ? exprRV : var;
+
+        ChangeTracker ipms = null;
+
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), (ExprVar) ncond);
+        for (String caseExpr : stmt.getCaseConditions()) {
+            state.pushChangeTracker(vcond, false);
+            Statement body = null;
+            try {
+                body = (Statement) stmt.getBody(caseExpr).accept(this);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // IF the body throws this exception, it means that no matter what the
+                // input,
+                // if this branch runs, it will cause the exception, so we can just assert
+                // that this
+                // branch will never run.
+                // In order to improve the precision of the analysis, we pop the dirty
+                // change tracker,
+                // and push in a clean one, so the rest of the function thinks that
+                // nothing at all was written in this branch.
+                state.popChangeTracker();
+                body = new StmtAssert(stmt, ExprConstInt.zero, e.getMessage(), false);
+                state.pushChangeTracker(vcond, false);
+            } catch (ArithmeticException e) {
+                state.popChangeTracker();
+                body = new StmtAssert(stmt, ExprConstInt.zero, e.getMessage(), false);
+                state.pushChangeTracker(vcond, false);
+            } catch (RuntimeException e) {
+                state.popChangeTracker();
+                throw e;
+                // throw e;
+            }
+            if (body == null) {
+                body = new StmtBlock(new ArrayList<Statement>());
+            }
+            newStmt.addCaseBlock(caseExpr, body);
+            ChangeTracker epms = state.popChangeTracker();
+            if (ipms == null) {
+                ipms = epms;
+            } else {
+                state.procChangeTrackers(ipms, epms);
+                state.pushChangeTracker(vcond, false);
+                ipms = state.popChangeTracker();
+            }
+        }
+        state.procChangeTrackers(ipms);
+        return isReplacer ? newStmt : stmt;
+
     }
 
     public Object visitStmtIfThen(StmtIfThen stmt)

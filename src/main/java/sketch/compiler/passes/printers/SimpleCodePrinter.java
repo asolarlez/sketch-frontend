@@ -137,6 +137,19 @@ public class SimpleCodePrinter extends CodePrinter
 		return stmt;
 	}
 
+    @Override
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        printLine("switch(" + stmt.getExpr() + "){/*" + stmt.getCx() + "*/");
+        indent++;
+        for (String caseExpr : stmt.getCaseConditions()) {
+            printLine("case " + caseExpr + ":");
+            printIndentedStatement(stmt.getBody(caseExpr));
+        }
+        indent--;
+        printLine("}");
+        return stmt;
+    }
+
 	@Override
 	public Object visitStmtWhile(StmtWhile stmt)
 	{

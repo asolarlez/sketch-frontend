@@ -420,6 +420,9 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
+            if (vtrue.equals(vfalse)) {
+                return vtrue;
+            }
             return BOTTOM("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
                     vtrue.knownGeqZero() && vfalse.knownGeqZero());
 		}

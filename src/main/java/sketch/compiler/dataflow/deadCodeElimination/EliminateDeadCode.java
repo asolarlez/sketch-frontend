@@ -17,7 +17,15 @@ import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtEmpty;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtMinimize;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -42,10 +50,7 @@ public class EliminateDeadCode extends BackwardDataflow {
 		}
 		return obj;
 	}
-	//ADT
-    public Object visitStmtSwitch(StmtSwitch stmt) {
-	    return stmt;
-	}
+
 
     public Object visitExprTypeCast(ExprTypeCast exp) {
         abstractValue childExp = (abstractValue) exp.getExpr().accept(this);

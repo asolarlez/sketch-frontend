@@ -22,6 +22,23 @@ public class NtsbValue extends IntAbsValue {
 		return new NtsbValue(this);
 	}
 	
+    public boolean equals(Object other) {
+        if (!(other instanceof NtsbValue)) {
+            return false;
+        }
+        NtsbValue ot = (NtsbValue) other;
+        if (this.type != ot.type) {
+            return false;
+        }
+        switch (this.type) {
+            case BOTTOM:
+                return false;
+            default:
+                return super.equals(other);
+        }
+
+    }
+
 	public int getlhsIdx(){
 		assert lhsIdx != null : "This is not legal";
 		return lhsIdx.idx;

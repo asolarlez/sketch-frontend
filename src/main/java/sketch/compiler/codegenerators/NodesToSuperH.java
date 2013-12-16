@@ -75,7 +75,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
                 varNames.addAll(nres.getStruct(parent).getFields());
                 for (String child : nres.getStructChildren(parent)) {
                     list.add(child);
-                    children += child.toUpperCase() + ", ";
+                    children += child.toUpperCase() + "_type, ";
                 }
             }
             children = children.substring(0, children.length() - 2);

@@ -12,7 +12,7 @@ int MOD=4;
  * given.
  * 
  */
-generator int expr(int N, int[N] pars, int T, int[T] ops){
+generator int expr([int N, int T], int[N] pars, int[T] ops){
     bit isb; int choice;
     generator int tmp(ref int choice){
         choice = ??;
