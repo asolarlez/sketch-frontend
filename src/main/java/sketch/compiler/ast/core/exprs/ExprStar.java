@@ -34,6 +34,9 @@ import sketch.compiler.main.cmdline.SketchOptions;
  */
 public class ExprStar extends Expression
 {
+    public enum Kind {
+        NORMAL, ANGELIC, COUNTER
+    }
 	private int size;
     private int rangelow;
     private int rangehigh;
@@ -51,7 +54,7 @@ public class ExprStar extends Expression
 	private static String HOLE_BASE="H__";
     private static String ANGJ_BASE = "AH__";
 	
-    private boolean angelicMax = false;
+    private Kind kind = Kind.NORMAL;
 
     // private Expression exprMax = null;
 
@@ -71,7 +74,7 @@ public class ExprStar extends Expression
         rangehigh = old.rangehigh;
         hasrange = old.hasrange;
         this.starName = old.starName;
-        this.angelicMax = old.angelicMax;
+        this.kind = old.kind;
         // this.exprMax = old.exprMax;
         // TODO: add tests with repeat and generators
     }
@@ -79,24 +82,28 @@ public class ExprStar extends Expression
     /** Create a new ExprConstInt with a specified value. */
     public ExprStar(FENode context)
     {
-        this(context.getCx(), false);
+        this(context.getCx(), Kind.NORMAL);
     }
 
     public ExprStar(FEContext context) {
-        this(context, false);
+        this(context, Kind.NORMAL);
     }
 
     /** Create a new ExprConstInt with a specified value.
      * @deprecated
      */
-    public ExprStar(FEContext context, boolean isAngelicMax)
+    public ExprStar(FEContext context, Kind kind)
     {
         super(context);
         size = 1;
         isFixed = false;
-        this.angelicMax = isAngelicMax;
+        this.kind = kind;
         // this.exprMax = max;
-        this.starName = (isAngelicMax ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+        if (kind == Kind.COUNTER) {
+            this.starName = HOLE_BASE;
+        } else {
+        this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+        }
     }
 
     /**
@@ -124,7 +131,7 @@ public class ExprStar extends Expression
      * @deprecated
      */
     public ExprStar(FEContext context, int size) {
-        this(context, size, false);
+        this(context, size, Kind.NORMAL);
     }
 
     
@@ -132,14 +139,18 @@ public class ExprStar extends Expression
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size, boolean isAngelicMax)
+    public ExprStar(FEContext context, int size, Kind kind)
     {
         super(context);
         isFixed = true;
         this.size = size;
-        this.angelicMax = isAngelicMax;
+        this.kind = kind;
         // this.exprMax = max;
-        this.starName = (isAngelicMax ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+        if (kind == Kind.COUNTER) {
+            this.starName = HOLE_BASE;
+        } else {
+            this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+        }
     }
 
     /**
@@ -295,7 +306,11 @@ public class ExprStar extends Expression
         return this.hasrange;
     }
     public boolean isAngelicMax() {
-        return angelicMax;
+        return kind == Kind.ANGELIC;
+    }
+
+    public boolean isCounter() {
+        return kind == Kind.COUNTER;
     }
 
     public int lowerBound() {

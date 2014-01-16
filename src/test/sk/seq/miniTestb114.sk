@@ -10,14 +10,14 @@ struct Node{
 	Node next;	
 }
 
-generator Queue newQueue(){ /* automatically rewritten */
+Queue newQueue(){ /* automatically rewritten */
 	Queue q = new Queue();
 	q.head = null;
 	q.tail = null;
 	return q;	
 }
 
-generator Node newNode(int i){ /* automatically rewritten */
+Node newNode(int i){ /* automatically rewritten */
 	Node n = new Node();
 	n.val = i;
 	n.next = null;

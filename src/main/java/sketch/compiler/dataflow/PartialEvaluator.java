@@ -864,7 +864,13 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     if(lst != null && lst.size() > i){
                         state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), lst.get(i));
                     }else{
-                        state.setVarValue(lhsName, vtype.plus(lhsIdx, vtype.CONST(i) ), vtype.CONST(0));
+                        if (rhs.isBottom()) {
+                            state.setVarValue(lhsName,
+                                    vtype.plus(lhsIdx, vtype.CONST(i)), vtype.BOTTOM());
+                        } else {
+                            state.setVarValue(lhsName,
+                                    vtype.plus(lhsIdx, vtype.CONST(i)), vtype.CONST(0));
+                        }
                     }
                 }
             }

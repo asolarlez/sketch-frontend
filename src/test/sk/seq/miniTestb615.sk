@@ -15,7 +15,7 @@ harness void main(int i){
 	}
 	int v = 7;
 	switch(t){
-		case A:{ v = x + 2; x = 3; }
+		case A:{ v = x + 2; x = 3; } 
 		case B:{ v = v - 3; x = v-1; }	
 	}
 	

@@ -45,6 +45,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.util.datastructures.HashmapList;
+import sketch.compiler.ast.core.exprs.ExprStar.Kind;
 
 import sketch.compiler.ast.core.Package;
 
@@ -708,9 +709,9 @@ agmax_expr returns [Expression x] { x = null; }
  	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)?
     	{
     		if (n != null) {
-    			x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), true);
+    			x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), Kind.ANGELIC);
     		} else {
-    			x = new ExprStar(getContext(t), true);
+    			x = new ExprStar(getContext(t), Kind.ANGELIC);
     		}
     	} 
 	;

@@ -1,0 +1,23 @@
+void foo(int x, ref int a, ref int b){
+	a = x;
+	b = x+1;
+}
+
+
+void moo(int w, bit qq){
+	int t1=0, t2=0;
+	foo(w, t1, t2);
+	
+	int t3=0, t4=0;
+	foo(qq?w:0, t3, t4);
+	
+	assert t4 > t3;
+	
+	assert t2 > t1;
+}
+
+
+harness void main(int w){
+	moo(w, 1);
+
+}
