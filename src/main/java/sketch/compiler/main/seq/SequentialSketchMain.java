@@ -475,7 +475,7 @@ public class SequentialSketchMain extends CommonSketchMain
         // prog = (Program) prog.accept(new DisambiguateMethodCalls());
 
         prog = (Program) prog.accept(new ExpandRepeatCases());
-        prog.debugDump();
+        // prog.debugDump();
         prog = (Program) prog.accept(new EliminateMacros());
         // prog.debugDump("af");
         prog = (Program) prog.accept(new ConstantReplacer(null));
