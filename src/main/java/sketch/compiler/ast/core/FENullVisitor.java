@@ -23,10 +23,10 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.exprs.regens.ExprParen;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaBlockDim;
 import sketch.compiler.ast.cuda.exprs.CudaInstrumentCall;
@@ -160,6 +160,11 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprType(ExprType exprtyp) { return null; }
 
     public Object visitStmtAssume(StmtAssume stmtAssume) {
+        return null;
+    }
+
+    public Object visitExprFieldMacro(ExprFieldMacro exp) {
+
         return null;
     }
 }

@@ -110,7 +110,7 @@ public class MergeADT extends SymbolTableVisitor {
             newParams.add(new ExprNamedParam(param.getContext(), newName, newExpr));
         }
 
-        return new ExprNew(exprNew.getContext(), newType, newParams);
+        return new ExprNew(exprNew.getContext(), newType, newParams, false);
 
     }
 
@@ -129,7 +129,7 @@ public class MergeADT extends SymbolTableVisitor {
         if (newField == null) {
             String name = nres.getStructParentName(t.getName());
             while (newField == null && name != null) {
-                structTracker = structs.get(name + "@" + t.getPkg());
+                structTracker = structs.get(name);
                 newField = structTracker.getNewVariable(field);
                 name = nres.getStructParentName(name);
             }

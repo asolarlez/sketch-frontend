@@ -17,6 +17,7 @@
 package sketch.compiler.ast.core.exprs;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * A reference to a named field of a <code>TypeStruct</code> node. This is the expression
@@ -30,23 +31,48 @@ public class ExprField extends Expression
 {
     private Expression left;
     private String name;
+    private boolean hole;
+    private Type typeOfHole = null;
 
     /** Creates a new field-reference expression, referencing the
      * named field of the specified expression. */
-    public ExprField(FENode context, Expression left, String name)
+    public ExprField(FENode context, Expression left, String name, boolean hole)
     {
         super(context);
         this.left = left;
         this.name = name;
+        this.hole = hole;
+    }
+
+    public ExprField(FENode context, Expression left, String name) {
+        super(context);
+        this.left = left;
+        this.name = name;
+        this.hole = false;
     }
 
     /** Creates a new field-reference expression, referencing the
      * named field of the specified expression. */
-    public ExprField(Expression left, String name)
+    public ExprField(Expression left, String name, boolean hole)
     {
-    	this (left, left, name);
+        this(left, left, name, hole);
     }
 
+    public ExprField(Expression left, String name) {
+        this(left, left, name, false);
+    }
+
+    public boolean isHole() {
+        return hole;
+    }
+
+    public Type getTypeOfHole() {
+        return typeOfHole;
+    }
+
+    public void setTypeOfHole(Type t) {
+        typeOfHole = t;
+    }
     /** Returns the expression we're taking a field from. */
     public Expression getLeft() { return left; }
 

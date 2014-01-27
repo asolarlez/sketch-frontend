@@ -62,6 +62,10 @@ public class NameResolver {
 
     // ADT
     public void registerStructParent(String structName, String parentName) {
+        structName = compound(pkg.getName(), structName);
+        if (parentName != null) {
+            parentName = compound(pkg.getName(), parentName);
+        }
         structParent.put(structName, parentName);
         if (parentName != null) {
             if (structChildren.containsKey(parentName)) {
@@ -170,15 +174,16 @@ public class NameResolver {
 
     // ADT
     public String getStructParentName(String name) {
-        if (structParent.containsKey(name.split("@")[0]))
-            return structParent.get(name.split("@")[0]);
+        name = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
+        if (structParent.containsKey(name))
+            return structParent.get(name);
         else
             return null;
     }
 
     // ADT
     public List<String> getStructChildren(String name) {
-        name = name.split("@")[0];
+        name = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
         if (structChildren.containsKey(name)) {
             return structChildren.get(name);
         } else {

@@ -57,7 +57,7 @@ tokens {
 	"ref";
 
 	// Control flow:
-	"if"; "else"; "while"; "for"; "switch"; "case"; "default"; "break"; "do";
+	"if"; "else"; "while"; "for"; "switch"; "case"; "repeat_case"; "default"; "break"; "do";
 	"continue"; "return";
 
     // Intrinsic values:

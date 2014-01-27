@@ -46,7 +46,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         result += indent + "class " + escapeCName(struct.getName());
         if (nres.getStructParentName(struct.getName())!=null){
-            result += " : public " + nres.getStructParentName(struct.getName());
+            result +=
+                    " : public " +
+                            nres.getStructParentName(struct.getName()).split("@")[0];
         }
         result += "{\n  public:\n";
         addIndent();
@@ -75,7 +77,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
                 varNames.addAll(nres.getStruct(parent).getFields());
                 for (String child : nres.getStructChildren(parent)) {
                     list.add(child);
-                    children += child.toUpperCase() + "_type, ";
+                    children += child.split("@")[0].toUpperCase() + ", ";
                 }
             }
             children = children.substring(0, children.length() - 2);
@@ -86,7 +88,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
             while (varNames.contains(typeVar)) {
                 typeVar = "_" + typeVar;
             }
-            typeVars.put(struct.getName(), var);
+            typeVars.put(struct.getFullName(), var);
             result += indent + "typedef enum {" + children + "} " + typeVar + ";\n"; // add
                                                                                      // _kind
             result += indent + typeVar + " " + var + ";\n";

@@ -312,7 +312,7 @@ public class EliminateRegens extends SymbolTableVisitor {
                 for (List<String> s : sf) {
                     Expression e = obj;
                     for (String f : s)
-                        e = new ExprField (e, f);
+                        e = new ExprField(e, f);
                     exps.add (e);
                 }
             }

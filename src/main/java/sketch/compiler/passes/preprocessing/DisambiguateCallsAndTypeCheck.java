@@ -869,12 +869,12 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         }
         boolean isExhaustive = true;
         for (String child : children) {
-            if (cases.contains(child)) {
+            if (cases.contains(child.split("@")[0])) {
                 // check for mutually exclusive i.e. cases should not contain any children
                 // of child
 
                 for (String c : getAllChildren(child)) {
-                    if (cases.contains(c))
+                    if (cases.contains(c.split("@")[0]))
                         return false;
 
                 }
@@ -890,11 +890,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     private boolean checkCaseExpr(String caseExpr, List<String> children) {
-        if (children == null || children.isEmpty()) {
+        List<String> childrenWOpackage = new ArrayList();
+        for (String c : children) {
+            childrenWOpackage.add(c.split("@")[0]);
+        }
+        if (childrenWOpackage == null || childrenWOpackage.isEmpty()) {
             return false;
         }
 
-        if (!children.contains(caseExpr)) {
+        if (!childrenWOpackage.contains(caseExpr)) {
             for (String child : children) {
                 if (checkCaseExpr(caseExpr, nres.getStructChildren(child))) {
                     return true;
@@ -924,6 +928,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
 
         List<String> children = nres.getStructChildren(tres.getName());
+
         if (children == null || children.isEmpty()) {
             report(stmt, "Struct representing exprVar has no children");
         }
@@ -1198,40 +1203,44 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     public Object visitExprNew(ExprNew expNew) {
         expNew = (ExprNew) super.visitExprNew(expNew);
-        TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct().accept(this);
-        StructDef ts = nres.getStruct(nt.getName());
-        if (ts == null) {
-            report(expNew, "Trying to instantiate a struct that doesn't exist");
-        }
-        // ADT
-        if (!ts.isInstantiable()) {
-            report(expNew,
-                    "Struct representing an Algebraic Data Type cannot be instantiated");
-        }
-
-        for (ExprNamedParam en : expNew.getParams()) {
-            Expression rhs = doExpression(en.getExpr());
+        if (!expNew.isHole()) {
+            TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct().accept(this);
+            StructDef ts = nres.getStruct(nt.getName());
+            if (ts == null) {
+                report(expNew, "Trying to instantiate a struct that doesn't exist");
+            }
             // ADT
-            // Changed this to check if the parent has the field
-            StructDef current = ts;
-            boolean err = true;
-            while (current.getParentName() != null) {
-                if (current.hasField(en.getName())) {
-                    err = false;
-                    break;
-                } else {
-                    current = nres.getStruct(current.getParentName());
-                }
+            if (!ts.isInstantiable()) {
+                report(expNew,
+                        "Struct representing an Algebraic Data Type cannot be instantiated");
             }
 
-            if (err && !current.hasField(en.getName()))
-                report(expNew, "The struct does not have a field named " + en.getName());
 
-            Type rhsType = getType(rhs);
-            Type lhsType = current.getType(en.getName());
-            lhsType = lhsType.addDefaultPkg(ts.getPkg(), nres);
-            matchTypes(expNew, lhsType, rhsType);
+            for (ExprNamedParam en : expNew.getParams()) {
+                Expression rhs = doExpression(en.getExpr());
+                // ADT
+                // Changed this to check if the parent has the field
+                StructDef current = ts;
+                boolean err = true;
+                while (current.getParentName() != null) {
+                    if (current.hasField(en.getName())) {
+                        err = false;
+                        break;
+                    } else {
+                        current = nres.getStruct(current.getParentName());
+                    }
+                }
 
+                if (err && !current.hasField(en.getName()))
+                    report(expNew,
+                            "The struct does not have a field named " + en.getName());
+
+                Type rhsType = getType(rhs);
+                Type lhsType = current.getType(en.getName());
+                lhsType = lhsType.addDefaultPkg(ts.getPkg(), nres);
+                matchTypes(expNew, lhsType, rhsType);
+
+            }
         }
         // TODO Do more
         return expNew;
@@ -1249,28 +1258,30 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         } else if (lt instanceof TypeStructRef) {
             StructDef ts = getStructDef(lt);
             String rn = expr.getName();
-            boolean found = false;
-            // Changed for ADT
-            StructDef current = ts;
-            outerloop: while (current.getParentName() != null) {
+            if (!expr.isHole()) {
+                boolean found = false;
+                // Changed for ADT
+                StructDef current = ts;
+                outerloop: while (current.getParentName() != null) {
+                    for (Entry<String, Type> entry : current) {
+                        if (entry.getKey().equals(rn)) {
+                            found = true;
+                            break outerloop;
+                        }
+                    }
+                    current = nres.getStruct(current.getParentName());
+                }
                 for (Entry<String, Type> entry : current) {
                     if (entry.getKey().equals(rn)) {
                         found = true;
-                        break outerloop;
+                        break;
                     }
                 }
-                current = nres.getStruct(current.getParentName());
-            }
-            for (Entry<String, Type> entry : current) {
-                if (entry.getKey().equals(rn)) {
-                    found = true;
-                    break;
-                }
-            }
 
-            if (!found)
-                report(expr, "structure " + ts.getFullName() +
-                        " does not have a field named " + "'" + rn + "'");
+                if (!found)
+                    report(expr, "structure " + ts.getFullName() +
+                            " does not have a field named " + "'" + rn + "'");
+            }
         } else {
             report(expr, "field reference of a non-structure type");
         }

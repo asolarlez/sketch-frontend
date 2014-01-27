@@ -17,13 +17,20 @@ public class ExprNew extends Expression {
 	Type typeToConstruct;
 
     List<ExprNamedParam> params;
+    boolean hole;
 
-    public ExprNew(FENode context, Type typeToConstruct, List<ExprNamedParam> params) {
+    public ExprNew(FENode context, Type typeToConstruct, List<ExprNamedParam> params,
+            boolean hole)
+    {
 		super(context);
 		this.typeToConstruct = typeToConstruct;
-        assert typeToConstruct instanceof TypeStructRef;
+        this.hole = hole;
+        if (!hole) {
+            assert typeToConstruct instanceof TypeStructRef;
+        }
 		// TODO Auto-generated constructor stub
         this.params = params;
+
 	}
 
     public List<ExprNamedParam> getParams() {
@@ -36,16 +43,22 @@ public class ExprNew extends Expression {
 	 * @param typeToConstruct
 	 * @deprecated
 	 */
-    public ExprNew(FEContext context, Type typeToConstruct, List<ExprNamedParam> params) {
+    public ExprNew(FEContext context, Type typeToConstruct, List<ExprNamedParam> params,
+            boolean hole)
+    {
 		super(context);
 		this.typeToConstruct = typeToConstruct;
         this.params = params;
+        this.hole = hole;
 	}
 
 	public Type getTypeToConstruct () {
 		return typeToConstruct;
 	}
 
+    public boolean isHole() {
+        return hole;
+    }
 	@Override
 	public Object accept(FEVisitor v) {
 		return v.visitExprNew(this);

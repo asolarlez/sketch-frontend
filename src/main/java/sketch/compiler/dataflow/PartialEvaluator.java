@@ -1186,6 +1186,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
             Statement body = null;
             try {
                 body = (Statement) stmt.getBody(caseExpr).accept(this);
+                if (isReplacer) {
+                    body = (Statement) (new CloneHoles()).process(body).accept(this);
+
+                }
+
             } catch (ArrayIndexOutOfBoundsException e) {
                 // IF the body throws this exception, it means that no matter what the
                 // input,

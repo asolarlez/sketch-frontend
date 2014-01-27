@@ -8,6 +8,7 @@ import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.lowering.ProtectDangerousExprsAndShortCircuit.FailurePolicy;
+import sketch.compiler.passes.preprocessing.CombineFunctionCalls;
 import sketch.compiler.passes.spmd.GlobalToLocalCasts;
 import sketch.compiler.passes.spmd.ReplaceParamExprArrayRange;
 import sketch.compiler.passes.spmd.SpmdTransform;
@@ -28,9 +29,14 @@ public class LowerToSketch extends MetaStage {
     @Override
     public Program visitProgramInner(Program prog) {
 
+        // prog.debugDump("inLowering");
         // ADT
         prog = (Program) prog.accept(new MergeADT());
         // prog.debugDump("afterMergeADT");
+
+        // prog.debugDump("before combineFunc");
+
+        prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
 
@@ -135,6 +141,7 @@ public class LowerToSketch extends MetaStage {
             prog = (Program) prog.accept(new TruncateVarArray(options, varGen));
         }
         // prog.debugDump("aa");
+        // prog.debugDump("After combineFunc");
         return prog;
     }
 }

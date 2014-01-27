@@ -16,6 +16,7 @@ public class StmtSwitch extends Statement {
 	
     LinkedList<String> cases;
     HashMap<String, Statement> bodies;
+    boolean mustBeCloned = false;
 	
     public StmtSwitch(FENode node, ExprVar expr) {
 		super(node);
@@ -33,14 +34,7 @@ public class StmtSwitch extends Statement {
         bodies = new HashMap<String, Statement>();
     }
 
-    public void addCaseBlock(String caseName, LinkedList<Statement> caseBody) {
-        assert caseName != null;
-		assert caseBody != null;
-		
-        cases.addLast(caseName);
-		FENode dummy = null;
-        bodies.put(caseName, new StmtBlock(dummy, caseBody));
-	}
+
 
     public void addCaseBlock(String caseName, Statement caseBody) {
         assert caseName != null;
@@ -53,7 +47,14 @@ public class StmtSwitch extends Statement {
     public void updateCaseBody(String caseName, Statement caseBody) {
         bodies.put(caseName, caseBody);
     }
-	
+
+    public void setMustBeCloned() {
+        mustBeCloned = true;
+    }
+
+    public boolean mustBeCloned() {
+        return mustBeCloned;
+    }
 	@Override
 	public Object accept(FEVisitor v) {
 		return v.visitStmtSwitch(this);
