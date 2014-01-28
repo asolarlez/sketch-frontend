@@ -257,8 +257,9 @@ public class SimpleCodePrinter extends CodePrinter
         return stmt;
 	}
 
-    public Object visitStmtFunDef(StmtFunDecl stmt) {
+    public Object visitStmtFunDecl(StmtFunDecl stmt) {
         printLine(stmt.toString());
+        stmt.getDecl().getBody().accept(this);
         return stmt;
     }
 

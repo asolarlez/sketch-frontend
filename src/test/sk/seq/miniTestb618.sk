@@ -1,0 +1,30 @@
+
+
+
+harness void test(int a){
+
+	void what(){
+
+		int foo(int i){ return i+ 1; }
+		
+		
+		
+		int moo(int x, fun f){
+			int bar(){
+				int t = x + 1;
+				return f(t);
+			}
+			int jar(fun t){
+				return t(x);
+			}
+			return bar() + jar(f);	
+		}
+		
+		
+		assert moo(a, foo) == ??* a + ??;
+		assert moo(a, foo) == ??* a + ??;
+		assert moo(a, foo) == ??* a + ??;
+	}
+	what();
+	what();
+}

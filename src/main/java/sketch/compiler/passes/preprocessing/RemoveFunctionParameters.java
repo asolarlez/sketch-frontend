@@ -34,11 +34,109 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
+import sketch.util.Pair;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
+    private static final class FunctionParamRenamer extends FEReplacer {
+        private final String nfn;
+        private final ExprFunCall efc;
+        private final String cpkg;
+        private final Map<String, String> rmap = new HashMap<String, String>();
+
+        private FunctionParamRenamer(String nfn, ExprFunCall efc, String cpkg)
+        {
+            this.nfn = nfn;
+            this.efc = efc;
+            this.cpkg = cpkg;
+        }
+
+        public Object visitStmtFunDecl(StmtFunDecl sfd) {
+            Function f = sfd.getDecl();
+            Statement s = (Statement) f.getBody().accept(this);
+
+            return new StmtFunDecl(sfd, f.creator().body(s).create());
+        }
+
+        public Object visitFunction(Function func) {
+
+            List<Parameter> newParam = new ArrayList<Parameter>();
+
+            boolean samePars = true;
+
+            Iterator<Parameter> fp = func.getParams().iterator();
+            if (func.getParams().size() > this.efc.getParams().size()) {
+                int dif = func.getParams().size() - this.efc.getParams().size();
+                for (int i = 0; i < dif; ++i) {
+                    Parameter par = fp.next();
+                    Parameter newPar = (Parameter) par.accept(this);
+                    if (par != newPar)
+                        samePars = false;
+                    newParam.add(newPar);
+                }
+            }
+
+            for (Expression actual : this.efc.getParams()) {
+                Parameter par = fp.next();
+                Parameter newPar = (Parameter) par.accept(this);
+                if (!(par.getType() instanceof TypeFunction)) {
+                    if (par != newPar)
+                        samePars = false;
+                    newParam.add(newPar);
+                } else {
+                    samePars = false;
+                    this.rmap.put(par.getName(), actual.toString());
+                }
+            }
+
+            Type rtype = (Type) func.getReturnType().accept(this);
+
+            if (func.getBody() == null) {
+                assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
+                if (samePars && rtype == func.getReturnType())
+                    return func;
+                return func.creator().returnType(rtype).pkg(this.cpkg).params(newParam).create();
+            }
+            Statement newBody = (Statement) func.getBody().accept(this);
+            if (newBody == null)
+                newBody = new StmtEmpty(func);
+            if (newBody == func.getBody() && samePars && rtype == func.getReturnType())
+                return func;
+            return func.creator().returnType(rtype).params(newParam).body(newBody).name(
+                    this.nfn).pkg(this.cpkg).create();
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            boolean hasChanged = false;
+            List<Expression> newParams = new ArrayList<Expression>();
+            for (Expression param : efc.getParams()) {
+                Expression newParam = doExpression(param);
+                newParams.add(newParam);
+                if (param != newParam)
+                    hasChanged = true;
+            }
+            if (this.rmap.containsKey(efc.getName())) {
+                return new ExprFunCall(efc, this.rmap.get(efc.getName()), newParams);
+            } else {
+                if (hasChanged) {
+                    return new ExprFunCall(efc, efc.getName(), newParams);
+                } else {
+                    return efc;
+                }
+            }
+        }
+
+        public Object visitExprVar(ExprVar ev) {
+            if (this.rmap.containsKey(ev.getName())) {
+                return new ExprVar(ev, this.rmap.get(ev.getName()));
+            } else {
+                return ev;
+            }
+        }
+    }
+
     /**
      * this FEReplacer does a complex job: 1. flatten all functions so that there is no
      * inner functions 2. all inner functions are hoisted out, so we need to pass
@@ -301,6 +399,75 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
     } // end of ThreadClosure
+
+    class SpecializeInnerFunctions extends FEReplacer {
+
+
+        Stack<Map<String, Pair<Function, Pair<List<Statement>, Set<String>>>>> postponed =
+                new Stack<Map<String, Pair<Function, Pair<List<Statement>, Set<String>>>>>();
+
+        Pair<Function, Pair<List<Statement>, Set<String>>> isPostponed(String name) {
+            for (Map<String, Pair<Function, Pair<List<Statement>, Set<String>>>> m : postponed)
+            {
+                if (m.containsKey(name)) {
+                    return m.get(name);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Object visitStmtBlock(StmtBlock sb) {
+            postponed.push(new HashMap<String, Pair<Function, Pair<List<Statement>, Set<String>>>>());
+            Object o = super.visitStmtBlock(sb);
+            postponed.pop();
+            return o;
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            String name = efc.getName();
+            Pair<Function, Pair<List<Statement>, Set<String>>> pf = isPostponed(name);
+            if (pf == null) {
+                return super.visitExprFunCall(efc);
+            }
+            String nfn = newNameCore(efc, pf.getFirst());
+            Set<String> nset = pf.getSecond().getSecond();
+            if (nset.contains(nfn)) {
+
+            } else {
+                nset.add(nfn);
+                FunctionParamRenamer renamer =
+                        new FunctionParamRenamer(nfn, efc, nres.curPkg().getName());
+                Function newf = (Function) pf.getFirst().accept(renamer);
+                List<Statement> ls = pf.getSecond().getFirst();
+                ls.add(new StmtFunDecl(efc, newf));
+            }
+            return replaceCall(efc, pf.getFirst(), nfn);
+
+        }
+
+        @Override
+        public Object visitStmtFunDecl(StmtFunDecl sfd) {
+            Function f = sfd.getDecl();
+            boolean found = false;
+            for (Parameter p : f.getParams()) {
+                if (p.getType() instanceof TypeFunction) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found == true) {
+                postponed.peek().put(f.getName(),
+                        new Pair<Function, Pair<List<Statement>, Set<String>>>(f,
+                                new Pair<List<Statement>, Set<String>>(newStatements,
+                                        new HashSet<String>())));
+                return null;
+            } else {
+                return super.visitStmtFunDecl(sfd);
+            }
+        }
+
+    }
 
     /**
      * Hoist out inner functions, and extract the information about which inner function
@@ -749,6 +916,9 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
     
     public Object visitProgram(Program p) {
+
+        p = (Program) p.accept(new SpecializeInnerFunctions());
+        p.debugDump("After specializing inners");
         p = (Program) p.accept(new InnerFunReplacer());
         nres = new NameResolver(p);
 
@@ -821,7 +991,23 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     Map<String, String> nfnMemoize = new HashMap<String, String>();
+
     String newFunName(ExprFunCall efc, Function orig) {
+        String name = newNameCore(efc, orig);
+
+        String oldName = name;
+        String newName = name;
+        if (nfnMemoize.containsKey(oldName)) {
+            return nfnMemoize.get(oldName);
+        }
+        while (nres.getFun(newName) != null) {
+            newName = oldName + (++nfcnt);
+        }
+        nfnMemoize.put(oldName, newName);
+        return newName;
+    }
+
+    private String newNameCore(ExprFunCall efc, Function orig) {
         String name = orig.getName();
         Iterator<Parameter> fp = orig.getParams().iterator();
 
@@ -853,17 +1039,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 name += "_" + actual.toString();
             }
         }
-
-        String oldName = name;
-        String newName = name;
-        if (nfnMemoize.containsKey(oldName)) {
-            return nfnMemoize.get(oldName);
-        }
-        while (nres.getFun(newName) != null) {
-            newName = oldName + (++nfcnt);
-        }
-        nfnMemoize.put(oldName, newName);
-        return newName;
+        return name;
     }
 
     int nfcnt = 0;
@@ -896,86 +1072,10 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     Function createCall(final ExprFunCall efc, Function orig, final String nfn) {
-        final Map<String, String> rmap = new HashMap<String, String>();
+
         final String cpkg = nres.curPkg().getName();
 
-        FEReplacer renamer = new FEReplacer() {
-
-            public Object visitFunction(Function func)
-            {
-
-
-                List<Parameter> newParam = new ArrayList<Parameter>();
-                
-                boolean samePars = true;
-
-                Iterator<Parameter> fp = func.getParams().iterator();
-                if (func.getParams().size() > efc.getParams().size()) {
-                    int dif = func.getParams().size() - efc.getParams().size();
-                    for (int i = 0; i < dif; ++i) {
-                        Parameter par = fp.next();
-                        Parameter newPar = (Parameter) par.accept(this);
-                        if (par != newPar)
-                            samePars = false;
-                        newParam.add(newPar);
-                    }
-                }
-
-                for (Expression actual : efc.getParams()) {
-                    Parameter par = fp.next();
-                    Parameter newPar = (Parameter) par.accept(this) ;
-                    if(!(par.getType() instanceof TypeFunction)){
-                        if(par != newPar) samePars = false;
-                        newParam.add( newPar );
-                    }else{
-                        samePars = false;
-                        rmap.put(par.getName(), actual.toString());
-                    }
-                }
-
-                Type rtype = (Type)func.getReturnType().accept(this);
-
-                if( func.getBody() == null  ){
-                    assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
-                    if (samePars && rtype == func.getReturnType())
-                        return func;
-                    return func.creator().returnType(rtype).pkg(cpkg).params(newParam).create();
-                }
-                Statement newBody = (Statement)func.getBody().accept(this);        
-                if(newBody == null) newBody = new StmtEmpty(func);
-                if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
-                return func.creator().returnType(rtype).params(newParam).body(newBody).name(
-                        nfn).pkg(cpkg).create();
-            }
-
-            public Object visitExprFunCall(ExprFunCall efc) {
-                boolean hasChanged = false;
-                List<Expression> newParams = new ArrayList<Expression>();
-                for (Expression param : efc.getParams()) {
-                    Expression newParam = doExpression(param);
-                    newParams.add(newParam);
-                    if (param != newParam)
-                        hasChanged = true;
-                }
-                if (rmap.containsKey(efc.getName())) {
-                    return new ExprFunCall(efc, rmap.get(efc.getName()), newParams);
-                } else {
-                    if (hasChanged) {
-                        return new ExprFunCall(efc, efc.getName(), newParams);
-                    } else {
-                        return efc;
-                    }
-                }
-            }
-
-            public Object visitExprVar(ExprVar ev) {
-                if (rmap.containsKey(ev.getName())) {
-                    return new ExprVar(ev, rmap.get(ev.getName()));
-                } else {
-                    return ev;
-                }
-            }
-        };
+        FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg);
 
         return (Function) orig.accept(renamer);
     }

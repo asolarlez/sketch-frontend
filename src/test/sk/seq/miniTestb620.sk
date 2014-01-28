@@ -1,0 +1,20 @@
+pragma options "--bnd-inline-amnt 20";
+
+
+harness void test(int a){
+
+	int t = a;
+	
+	generator void moo(int i){
+		assert i > 0;
+		a++;
+		if(??){
+			moo(i-1);
+			moo(i-1);
+		}	
+	}
+	
+	
+	moo(3);
+	assert a == t + ??;
+}
