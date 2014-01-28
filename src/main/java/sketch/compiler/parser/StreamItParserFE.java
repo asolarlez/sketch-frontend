@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.util.datastructures.HashmapList;
+import sketch.compiler.ast.core.exprs.ExprStar.Kind;
 
 import sketch.compiler.ast.core.Package;
 
@@ -3730,9 +3731,9 @@ inputState.guessing--;
 			if ( inputState.guessing==0 ) {
 				
 						if (n != null) {
-							x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), true);
+							x = new ExprStar(getContext(t), Integer.parseInt(n.getText()), Kind.ANGELIC);
 						} else {
-							x = new ExprStar(getContext(t), true);
+							x = new ExprStar(getContext(t), Kind.ANGELIC);
 						}
 					
 			}
