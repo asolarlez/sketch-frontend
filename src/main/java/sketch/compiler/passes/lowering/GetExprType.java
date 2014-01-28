@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -58,6 +59,7 @@ public class GetExprType extends FENullVisitor
      * Before structs have been eliminated, nulls have type 'null'; afterwards,
      * they will usually get type 'int'. */
     private Type nullType;
+    int i = 0;
 
     public NameResolver getNres() {
         return nres;
@@ -294,6 +296,9 @@ public class GetExprType extends FENullVisitor
             }
         };
         // ADT
+        if (exp.isHole()) {
+            return new NotYetComputedType();
+        }
         StructDef current = ts;
         while (current.getParentName() != null) {
             if (current.hasField(exp.getName())) {
@@ -356,8 +361,10 @@ public class GetExprType extends FENullVisitor
     	return er.getExpr ().accept (this);
     }
 
+
     public Object visitExprTernary(ExprTernary exp)
     {
+        i++;
         // Do type unification on the two sides.
         // (Might not want to blindly assert ?:.)
         Type tb = (Type)exp.getB().accept(this);

@@ -36,6 +36,7 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 public class TypeInferenceForStars extends SymbolTableVisitor {
 
 
+
     class UpgradeStarToInt extends FEReplacer {
         private final SymbolTableVisitor stv;
         Type type;
@@ -46,6 +47,12 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             this.nres = nres;
         }
 
+        public Object visitExprField(ExprField exp) {
+            if (exp.isHole()) {
+                exp.setTypeOfHole(type);
+            }
+            return exp;
+        }
         public Object visitExprStar(ExprStar star) {
             if (!star.typeWasSetByScala) {
                 // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
@@ -185,7 +192,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 if (!changed) {
                     enl = expNew.getParams();
                 }
-                return new ExprNew(expNew, nt, enl);
+                return new ExprNew(expNew, nt, enl, false);
             } else {
                 return expNew;
             }

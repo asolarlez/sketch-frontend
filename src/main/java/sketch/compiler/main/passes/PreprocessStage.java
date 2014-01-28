@@ -10,6 +10,7 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
+import sketch.compiler.passes.preprocessing.ExpandADTHoles;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.types.CheckProperFinality;
 
@@ -41,6 +42,7 @@ public class PreprocessStage extends MetaStage {
     public Program visitProgramInner(Program prog) {
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
+
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
@@ -69,10 +71,14 @@ public class PreprocessStage extends MetaStage {
                         useInsertEncoding));
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+        
 
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 
+        // prog.debugDump("Before adt");
+        prog = (Program) prog.accept(new ExpandADTHoles());
+        // prog.debugDump("After adt");
 
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
@@ -80,9 +86,18 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
+        // prog = (Program) prog.accept(new EliminateFieldHoles());
+
+
+        // prog.debugDump("af");
+        // prog = (Program) prog.accept(new TypeInferenceForStars());
+        
         if (partialEval) {
             prog.accept(new PerformFlowChecks());
         }
+        // prog.debugDump("Before fun call");
+        // prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
+        // prog.debugDump("After fun call");
 
         prog = (Program) prog.accept(new EliminateUnboxedStructs(varGen));
 
@@ -93,12 +108,13 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
 
-
+        // prog.debugDump("Before Inlining Generators");
 
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
+            // prog.debugDump("");
         }
 
         return prog;

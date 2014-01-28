@@ -190,7 +190,10 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprNew(ExprNew expNew){
-    	Type nt = (Type)expNew.getTypeToConstruct().accept(this);
+        Type nt = null;
+        if (!expNew.isHole()) {
+            nt = (Type) expNew.getTypeToConstruct().accept(this);
+        }
         boolean changed = false;
         List<ExprNamedParam> enl =
                 new ArrayList<ExprNamedParam>(expNew.getParams().size());
@@ -209,17 +212,17 @@ public class FEReplacer implements FEVisitor
             if (!changed) {
                 enl = expNew.getParams();
             }
-            return new ExprNew(expNew, nt, enl);
-    	}else{
-    		return expNew;
-    	}
+            return new ExprNew(expNew, nt, enl, expNew.isHole());
+        } else {
+            return expNew;
+        }
     }
 
     public Object visitExprAlt (ExprAlt exp) {
-    	Expression ths = doExpression (exp.getThis ());
-    	Expression that = doExpression (exp.getThat ());
-    	return (ths == exp.getThis () && that == exp.getThat ()) ? exp
-    			: new ExprAlt (exp, ths, that);
+        Expression ths = doExpression(exp.getThis());
+        Expression that = doExpression(exp.getThat());
+        return (ths == exp.getThis() && that == exp.getThat()) ? exp : new ExprAlt(exp,
+                ths, that);
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp)
@@ -248,28 +251,28 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprChoiceBinary (ExprChoiceBinary exp) {
-    	Expression left = doExpression (exp.getLeft ());
-    	Expression right = doExpression (exp.getRight ());
-    	if (left == exp.getLeft () && right == exp.getRight ())
-    		return exp;
-    	else
-    		return new ExprChoiceBinary (exp, left, exp.getOps (), right);
+        Expression left = doExpression(exp.getLeft());
+        Expression right = doExpression(exp.getRight());
+        if (left == exp.getLeft() && right == exp.getRight())
+            return exp;
+        else
+            return new ExprChoiceBinary(exp, left, exp.getOps(), right);
     }
 
     public Object visitExprChoiceSelect (ExprChoiceSelect exp) {
-    	Expression obj = doExpression (exp.getObj ());
-    	if (obj == exp.getObj ())
-    		return exp;
-    	else
-    		return new ExprChoiceSelect (exp, obj, exp.getField ());
+        Expression obj = doExpression(exp.getObj());
+        if (obj == exp.getObj())
+            return exp;
+        else
+            return new ExprChoiceSelect(exp, obj, exp.getField());
     }
 
     public Object visitExprChoiceUnary (ExprChoiceUnary exp) {
-    	Expression expr = doExpression(exp.getExpr ());
-    	if (expr == exp.getExpr ())
-    		return exp;
-    	else
-    		return new ExprChoiceUnary (exp, exp.getOps (), expr);
+        Expression expr = doExpression(exp.getExpr());
+        if (expr == exp.getExpr())
+            return exp;
+        else
+            return new ExprChoiceUnary(exp, exp.getOps(), expr);
     }
 
     public Object visitExprConstChar(ExprConstChar exp) { return exp; }
@@ -277,6 +280,16 @@ public class FEReplacer implements FEVisitor
     public Object visitExprConstInt(ExprConstInt exp) { return exp; }
     public Object visitExprLiteral(ExprLiteral exp) { return exp; }
     public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
+
+    public Object visitExprFieldMacro(ExprFieldMacro exp) {
+        Expression left = doExpression(exp.getLeft());
+        if (left == exp.getLeft()) {
+            return exp;
+        } else {
+            return new ExprFieldMacro(exp, left, exp.getType());
+        }
+
+    }
 
     public Object visitExprField(ExprField exp)
     {
@@ -301,19 +314,19 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitExprParen (ExprParen exp) {
-    	Expression expr = doExpression (exp.getExpr ());
-    	if (expr == exp.getExpr ())
-    		return exp;
-    	else
-    		return new ExprParen (exp, expr);
+        Expression expr = doExpression(exp.getExpr());
+        if (expr == exp.getExpr())
+            return exp;
+        else
+            return new ExprParen(exp, expr);
     }
 
     public Object visitExprRegen (ExprRegen exp) {
-    	Expression expr = doExpression (exp.getExpr ());
-    	if (expr == exp.getExpr ())
-    		return exp;
-    	else
-    		return new ExprRegen (exp, expr);
+        Expression expr = doExpression(exp.getExpr());
+        if (expr == exp.getExpr())
+            return exp;
+        else
+            return new ExprRegen(exp, expr);
     }
 
     public Object visitExprTernary(ExprTernary exp)
@@ -361,31 +374,32 @@ public class FEReplacer implements FEVisitor
             newTypes.add((Type) field.getType(i).accept(this));
         }
         return new FieldDecl(field, newTypes,
-                             field.getNames(), newInits);
+ field.getNames(), newInits);
     }
 
     public Object visitFunction(Function func)
     {
 
 
-    	List<Parameter> newParam = new ArrayList<Parameter>();
-    	Iterator<Parameter> it = func.getParams().iterator();
-    	boolean samePars = true;
-    	while(it.hasNext()){
-    		Parameter par = it.next();
-    		Parameter newPar = (Parameter) par.accept(this) ;
-    		if(par != newPar) samePars = false;
-    		newParam.add( newPar );
-    	}
+        List<Parameter> newParam = new ArrayList<Parameter>();
+        Iterator<Parameter> it = func.getParams().iterator();
+        boolean samePars = true;
+        while (it.hasNext()) {
+            Parameter par = it.next();
+            Parameter newPar = (Parameter) par.accept(this);
+            if (par != newPar)
+                samePars = false;
+            newParam.add(newPar);
+        }
 
-    	Type rtype = (Type)func.getReturnType().accept(this);
+        Type rtype = (Type) func.getReturnType().accept(this);
 
-    	if( func.getBody() == null  ){
-    		assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
+        if (func.getBody() == null) {
+            assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
             if (samePars && rtype == func.getReturnType())
                 return func;
             return func.creator().returnType(rtype).params(newParam).create();
-    	}
+        }
         Statement newBody = (Statement)func.getBody().accept(this);        
         if(newBody == null) newBody = new StmtEmpty(func);
         if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
@@ -417,7 +431,7 @@ public class FEReplacer implements FEVisitor
         if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
             return stmt;
         return new StmtAssign(stmt, newLHS, newRHS,
-                              stmt.getOp());
+ stmt.getOp());
     }
 
     public Object visitStmtFunDecl(StmtFunDecl stmt) {
@@ -443,10 +457,10 @@ public class FEReplacer implements FEVisitor
             if (s == null)
                 continue;
             try{
-            	doStatement(s);
-            	if(!(newStatements.size() == i+1 && newStatements.get(i) == s)){
-            		changed = true;
-            	}
+                doStatement(s);
+                if (!(newStatements.size() == i + 1 && newStatements.get(i) == s)) {
+                    changed = true;
+                }
                 if (i < newStatements.size() &&
                         newStatements.get(i) instanceof StmtReturn)
                 {
@@ -455,18 +469,18 @@ public class FEReplacer implements FEVisitor
                         break;
                     }
                 }
-            	/*
-            	Statement tmpres = (Statement)s.accept(this);
-                if (tmpres != null)
-                    addStatement(tmpres);*/
+                /*
+                 * Statement tmpres = (Statement)s.accept(this); if (tmpres != null)
+                 * addStatement(tmpres);
+                 */
             }catch(RuntimeException e){
-            	newStatements = oldStatements;
-            	throw e;
+                newStatements = oldStatements;
+                throw e;
             }
         }
         if(!changed){
-        	newStatements = oldStatements;
-        	return stmt;
+            newStatements = oldStatements;
+            return stmt;
         }
         Statement result = new StmtBlock(stmt, newStatements);
         newStatements = oldStatements;
@@ -475,73 +489,61 @@ public class FEReplacer implements FEVisitor
 
 
     public Object visitStmtReorderBlock(StmtReorderBlock stmt) {
-    	Object o = stmt.getBlock ().accept (this);
-    	if (o == stmt.getBlock ())
-    		return stmt;
-    	else if (o == null)
-    		return null;
-    	else if (o instanceof StmtBlock)
-    		return new StmtReorderBlock (stmt, (StmtBlock) o);
-    	else
-    		return new StmtReorderBlock (stmt, Collections.singletonList ((Statement) o));
+        Object o = stmt.getBlock().accept(this);
+        if (o == stmt.getBlock())
+            return stmt;
+        else if (o == null)
+            return null;
+        else if (o instanceof StmtBlock)
+            return new StmtReorderBlock(stmt, (StmtBlock) o);
+        else
+            return new StmtReorderBlock(stmt, Collections.singletonList((Statement) o));
 
-    	/*
-    	List<Statement> oldStatements = newStatements;
-        newStatements = new ArrayList<Statement>();
-        for (Iterator iter = stmt.getStmts().iterator(); iter.hasNext(); )
-        {
-            Statement s = (Statement)iter.next();
-            // completely ignore null statements, causing them to
-            // be dropped in the output
-            if (s == null)
-            	continue;
-            try{
-            	doStatement(s);
-            }catch(RuntimeException e){
-            	newStatements = oldStatements;
-            	throw e;
-            }
-        }
-        Statement result = new StmtReorderBlock(stmt, newStatements);
-        newStatements = oldStatements;
-        return result;
-		*/
+        /*
+         * List<Statement> oldStatements = newStatements; newStatements = new
+         * ArrayList<Statement>(); for (Iterator iter = stmt.getStmts().iterator();
+         * iter.hasNext(); ) { Statement s = (Statement)iter.next(); // completely ignore
+         * null statements, causing them to // be dropped in the output if (s == null)
+         * continue; try{ doStatement(s); }catch(RuntimeException e){ newStatements =
+         * oldStatements; throw e; } } Statement result = new StmtReorderBlock(stmt,
+         * newStatements); newStatements = oldStatements; return result;
+         */
     }
 
     public Object visitStmtInsertBlock(StmtInsertBlock stmt)
     {
-    	Statement newIns = (Statement) stmt.getInsertStmt ().accept (this);
-    	Statement newInto = (Statement) stmt.getIntoBlock ().accept (this);
+        Statement newIns = (Statement) stmt.getInsertStmt().accept(this);
+        Statement newInto = (Statement) stmt.getIntoBlock().accept(this);
 
-    	if (newIns == stmt.getInsertStmt () && newInto == stmt.getIntoBlock ())
-    		return stmt;
-    	else if (null == newIns || null == newInto)
-    		return null;
-    	else {
-    		if (!(newInto.isBlock ()))
-    			newInto = new StmtBlock (newInto);
-    		return new StmtInsertBlock (stmt, newIns, (StmtBlock) newInto);
-    	}
+        if (newIns == stmt.getInsertStmt() && newInto == stmt.getIntoBlock())
+            return stmt;
+        else if (null == newIns || null == newInto)
+            return null;
+        else {
+            if (!(newInto.isBlock()))
+                newInto = new StmtBlock(newInto);
+            return new StmtInsertBlock(stmt, newIns, (StmtBlock) newInto);
+        }
     }
 
     public Object visitStmtAtomicBlock (StmtAtomicBlock ab) {
-    	Statement tmp = ab.getBlock().doStatement(this);
-    	Expression exp = ab.getCond();
-    	if(ab.isCond()){
-    		exp = exp.doExpr(this);
-    	}
-    	if (tmp == null){
-    		return null;
-    	}else if (tmp != ab.getBlock() || exp != ab.getCond()){
-    		if(tmp instanceof StmtBlock){
-    			StmtBlock sb = (StmtBlock) tmp;
-    			return new StmtAtomicBlock (ab, sb, exp);
-    		}else{
-    			return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp);
-    		}
-    	}else{
-    		return ab;
-    	}
+        Statement tmp = ab.getBlock().doStatement(this);
+        Expression exp = ab.getCond();
+        if (ab.isCond()) {
+            exp = exp.doExpr(this);
+        }
+        if (tmp == null) {
+            return null;
+        } else if (tmp != ab.getBlock() || exp != ab.getCond()) {
+            if (tmp instanceof StmtBlock) {
+                StmtBlock sb = (StmtBlock) tmp;
+                return new StmtAtomicBlock(ab, sb, exp);
+            } else {
+                return new StmtAtomicBlock(ab, Collections.singletonList(tmp), exp);
+            }
+        } else {
+            return ab;
+        }
     }
 
 
@@ -581,21 +583,21 @@ public class FEReplacer implements FEVisitor
 
         Statement newInit = null;
         if(stmt.getInit() != null){
-        	newInit = (Statement)stmt.getInit().accept(this);
+            newInit = (Statement) stmt.getInit().accept(this);
         }
         Expression newCond = doExpression(stmt.getCond());
         Statement newIncr = null;
         if(stmt.getIncr() != null){
-        	newIncr = (Statement)stmt.getIncr().accept(this);
+            newIncr = (Statement) stmt.getIncr().accept(this);
         }
         Statement tmp = stmt.getBody();
         Statement newBody = StmtEmpty.EMPTY; 
         if(tmp != null){ 
-        	newBody  = (Statement)tmp.accept(this);
+            newBody = (Statement) tmp.accept(this);
         }
-        
+
         if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
-            newIncr == stmt.getIncr() && newBody == stmt.getBody())
+                newIncr == stmt.getIncr() && newBody == stmt.getBody())
             return stmt;
         return new StmtFor(stmt, newInit, newCond, newIncr,
  newBody, stmt.isCanonical());
@@ -609,10 +611,10 @@ public class FEReplacer implements FEVisitor
         Statement newAlt = stmt.getAlt() == null ? null :
             (Statement)stmt.getAlt().accept(this);
         if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
-            newAlt == stmt.getAlt())
+                newAlt == stmt.getAlt())
             return stmt;
         if(newCons == null && newAlt == null){
-        	return new StmtExpr(stmt, newCond);
+            return new StmtExpr(stmt, newCond);
         }
 
         return new StmtIfThen(stmt, newCond, newCons, newAlt);
@@ -670,14 +672,14 @@ public class FEReplacer implements FEVisitor
             Type ot = stmt.getType(i);
             Type t = (Type) ot.accept(this);
             if(ot != t || oinit != init){
-            	changed = true;
+                changed = true;
             }
             newInits.add(init);
             newTypes.add(t);
         }
         if(!changed){ return stmt; }
         return new StmtVarDecl(stmt, newTypes,
-                               stmt.getNames(), newInits);
+ stmt.getNames(), newInits);
     }
 
     public Object visitStmtWhile(StmtWhile stmt)
@@ -734,12 +736,12 @@ public class FEReplacer implements FEVisitor
             Function oldFunc = (Function)iter.next();
             Function newFunc = (Function)oldFunc.accept(this);
             if (oldFunc != newFunc) changed = true;
-//            if(oldFunc != null)++nonNull;
+            // if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
         }
 
         if(newFuncs.size() != nonNull){
-        	changed = true;
+            changed = true;
         }
 
 
@@ -755,46 +757,49 @@ public class FEReplacer implements FEVisitor
 
     public Object visitOther(FENode node) { return node; }
 
-	public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprStar star) {
         if (star.getType() != null) {
-	        Type t = (Type) star.getType().accept(this);
-	        if(t != star.getType()){
-	            ExprStar s = new ExprStar(star);
-	            s.setType(t);	           
-	        }
+            Type t = (Type) star.getType().accept(this);
+            if (t != star.getType()) {
+                ExprStar s = new ExprStar(star);
+                s.setType(t);
+            }
         }
-		return star;
-	}
+        return star;
+    }
 
-	public Object visitExprArrayRange(ExprArrayRange exp) {
-		
-		final Expression newBase=doExpression(exp.getBase());
-		
-		RangeLen range = exp.getSelection();
-		Expression newStart=doExpression(range.start());
-		Expression newLen = null;
-		if(range.hasLen()){
-		    newLen = doExpression(range.getLenExpression());
-		}
-		if(newBase!=exp.getBase() || newStart != range.start() || (newLen != null && newLen != range.getLenExpression())){
-		    return new ExprArrayRange(exp, newBase, new RangeLen(newStart, newLen));
-		}
-		return exp;		
-	}
+    public Object visitExprArrayRange(ExprArrayRange exp) {
 
-	public Object visitType(Type t) {
-		return t;
-	}
+        final Expression newBase = doExpression(exp.getBase());
+
+        RangeLen range = exp.getSelection();
+        Expression newStart = doExpression(range.start());
+        Expression newLen = null;
+        if (range.hasLen()) {
+            newLen = doExpression(range.getLenExpression());
+        }
+        if (newBase != exp.getBase() || newStart != range.start() ||
+                (newLen != null && newLen != range.getLenExpression()))
+        {
+            return new ExprArrayRange(exp, newBase, new RangeLen(newStart, newLen));
+        }
+        return exp;
+    }
+
+    public Object visitType(Type t) {
+        return t;
+    }
     public Object visitTypePrimitive(TypePrimitive t) {
-    	return t;
+        return t;
     }
     public Object visitTypeArray(TypeArray t) {
-    	Type nbase = (Type)t.getBase().accept(this);
+        Type nbase = (Type) t.getBase().accept(this);
         Expression nlen = null;
         if (t.getLength() != null) {
             nlen = (Expression) t.getLength().accept(this);
         }
-    	if(nbase == t.getBase() &&  t.getLength() == nlen ) return t;
+        if (nbase == t.getBase() && t.getLength() == nlen)
+            return t;
         TypeArray newtype =
                 new TypeArray(t.getCudaMemType(), nbase, nlen, t.getMaxlength());
         return newtype;
@@ -821,45 +826,47 @@ public class FEReplacer implements FEVisitor
     }
 
     public Object visitTypeStructRef (TypeStructRef tsr) {
-    	return tsr;
+        return tsr;
     }
 
     public Object visitParameter(Parameter par){
-    	Type t = (Type) par.getType().accept(this);
-    	if( t == par.getType()){
-    		return par;
-    	}else{
+        Type t = (Type) par.getType().accept(this);
+        if (t == par.getType()) {
+            return par;
+        } else {
             return new Parameter(par, t, par.getName(), par.getPtype());
-    	}
+        }
     }
 
     public Object visitStmtFork(StmtFork loop){
-    	StmtVarDecl decl = (StmtVarDecl)loop.getLoopVarDecl().accept(this);
-    	Expression niter = (Expression) loop.getIter().accept(this);
-    	Statement body = (Statement) loop.getBody().accept(this);
-    	if(decl == loop.getLoopVarDecl() && niter == loop.getIter() && body == loop.getBody()  ){
-    		return loop;
-    	}
-    	return new StmtFork(loop, decl, niter, body);
+        StmtVarDecl decl = (StmtVarDecl) loop.getLoopVarDecl().accept(this);
+        Expression niter = (Expression) loop.getIter().accept(this);
+        Statement body = (Statement) loop.getBody().accept(this);
+        if (decl == loop.getLoopVarDecl() && niter == loop.getIter() &&
+                body == loop.getBody())
+        {
+            return loop;
+        }
+        return new StmtFork(loop, decl, niter, body);
     }
 
     public Object visitStmtSpmdfork(StmtSpmdfork loop){
         //System.out.println(loop.toString());
-	//StmtVarDecl oldDecl = loop.getLoopVarDecl();
-    	//StmtVarDecl decl = oldDecl==null ? null : (StmtVarDecl)oldDecl.accept(this);
-    	Expression nproc = (Expression) loop.getNProc().accept(this);
-    	Statement body = (Statement) loop.getBody().accept(this);
-    	if(nproc == loop.getNProc() && body == loop.getBody()  ){
-    		return loop;
-    	}
+        // StmtVarDecl oldDecl = loop.getLoopVarDecl();
+        // StmtVarDecl decl = oldDecl==null ? null : (StmtVarDecl)oldDecl.accept(this);
+        Expression nproc = (Expression) loop.getNProc().accept(this);
+        Statement body = (Statement) loop.getBody().accept(this);
+        if (nproc == loop.getNProc() && body == loop.getBody()) {
+            return loop;
+        }
         //if (decl == null) { System.out.println("null!"); throw new RuntimeException("change decl to null! " + nproc + " " + body); }
-    	return new StmtSpmdfork(loop.getCx(), null, nproc, body);
+        return new StmtSpmdfork(loop.getCx(), null, nproc, body);
     }
 
     public Object visitSpmdBarrier(SpmdBarrier stmt) {
         return stmt;
     }  
-    
+
     public Object visitSpmdPid(SpmdPid stmt) {
         return stmt;
     }  
@@ -879,7 +886,7 @@ public class FEReplacer implements FEVisitor
             newStmt.addCaseBlock(caseExpr, body);
         }
         return newStmt;
-	}
+    }
 
     /** generic tree replacement code */
     public Object visitStmtMinimize(StmtMinimize stmtMinimize) {
@@ -913,11 +920,11 @@ public class FEReplacer implements FEVisitor
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
         return cudaThreadIdx;
     }
-    
+
     public Object visitCudaBlockDim(CudaBlockDim cudaBlockDim) {
         return cudaBlockDim;
     }
-    
+
     public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
         ExprVar expr2 = instrumentCall.getToImplement().acceptAndCast(this);
         ExprVar expr3 = instrumentCall.getImplVariable().acceptAndCast(this);

@@ -339,4 +339,9 @@ public class FETypedVisitor<T> implements FEVisitor {
     public Object visitExprType(ExprType exprtyp) {
         throw new FEVisitorException(this, exprtyp);
     }
+
+    public Object visitExprFieldMacro(ExprFieldMacro exp) {
+        // TODO Auto-generated method stub
+        throw new FEVisitorException(this, exp);
+    }
 }

@@ -83,6 +83,7 @@ public class SATBackend {
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
         
         prog.accept(partialEval);
+        // prog.debugDump("");
         pstream.flush();
         log("After prog.accept(partialEval)");
     }

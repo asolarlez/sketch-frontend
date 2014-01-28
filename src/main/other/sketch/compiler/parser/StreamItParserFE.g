@@ -587,12 +587,15 @@ switch_statement returns [Statement s]
 	:	u:TK_switch LPAREN name:ID RPAREN LCURLY
 	 
 		{x = new ExprVar(getContext(name), name.getText()); s= new StmtSwitch(getContext(u), x); }
-		(TK_case caseName:ID COLON b= pseudo_block
+		((TK_case caseName:ID COLON b= pseudo_block
 		{((StmtSwitch)s).addCaseBlock(caseName.getText(), b);}
 		)*
 		(TK_default COLON b = pseudo_block
 		{((StmtSwitch)s).addCaseBlock("default",b);}
 		)?
+		|
+		TK_repeat_case COLON b = pseudo_block
+		{((StmtSwitch)s).addCaseBlock("repeat", b);})
 		RCURLY
 		
 	;
@@ -893,9 +896,9 @@ postfix_expr returns [Expression x] { x = null;  int untype = -1;}
 	;
 
 
-primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl; }
+primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl;Type t = null; }
 	:	x=tminic_value_expr
-		(	DOT field:ID 			{ x = new ExprField(x, x, field.getText()); }
+		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | LCURLY t = data_type  {x = new ExprFieldMacro(x, x, t);} RCURLY)
 		|	l:LSQUARE
 					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
@@ -915,13 +918,13 @@ tminic_value_expr returns [Expression x] { x = null; }
 	;
 
 
-constructor_expr returns [Expression x] { x = null; Type t=null; List l;}
+constructor_expr returns [Expression x] { x = null; Type t=null; List l; boolean hole = false;}
 	: n:TK_new
-	(prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); }
-	l=constr_params {  x = new ExprNew( getContext(n), t, l);     }
+	(prefix:ID AT)? (id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); } | NDVAL2{hole = true;})
+	l=constr_params {  x = new ExprNew( getContext(n), t, l,hole);     }
 	| BITWISE_OR 
     (prefix2:ID AT)? id2:ID { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); }
-      BITWISE_OR l=constr_params {  x = new ExprNew( getContext(id2), t, l);     }
+      BITWISE_OR l=constr_params {  x = new ExprNew( getContext(id2), t, l, hole);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }

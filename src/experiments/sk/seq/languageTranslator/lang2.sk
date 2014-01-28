@@ -1,0 +1,360 @@
+
+int Oplus= 0;
+int Ominus=1;
+int Oneg = 2;
+int Oand = 3;
+int Oor = 4;
+int Onot = 5;
+int Ogt = 6;
+int Olt = 7;
+
+
+struct sourceAST {}
+
+struct SPrim1 extends sourceAST{
+	int op;
+	sourceAST a;
+}
+struct SPrim2 extends sourceAST{
+	int op;
+	sourceAST a;
+	sourceAST b;
+}
+struct SBetween extends sourceAST{
+	sourceAST a;
+	sourceAST b;
+	sourceAST c;
+}
+struct SIf extends sourceAST{
+	sourceAST a;
+	sourceAST b;
+	sourceAST c;
+}
+
+struct SStr extends sourceAST{
+	//type of str
+	int str;	
+	
+}
+struct SNum extends sourceAST{
+	int val;
+}
+struct STrue extends sourceAST{
+}
+struct SFalse extends sourceAST{
+}
+
+
+//CoreAST
+struct coreAST{}
+struct CVar extends coreAST{
+	//type of string
+	int str;
+}
+struct CPrim1 extends coreAST{
+	int op;
+	coreAST a;
+	
+}
+struct CPrim2 extends coreAST{
+	int op;
+	coreAST a;
+	coreAST b;
+	
+}
+struct CLet extends coreAST{
+	int str;
+	coreAST a;
+	coreAST b;
+}
+struct CIf extends coreAST{
+	coreAST a;
+	coreAST b;
+	coreAST c;
+}
+struct CNum extends coreAST{
+	int val;
+}
+struct CStr extends coreAST{
+	int str;
+}
+struct CBool extends coreAST{
+	bit val;
+}
+
+
+
+
+coreAST desugar(sourceAST s){
+	if(s == null){ return null; }
+		
+	generator int getOp(int op){ return {| op |Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
+	generator int getStr(){ return {| 1|2|3 |}; }
+	generator int getConst(int c){return {| c|??|};}
+	
+	//generator for coreAST
+	generator coreAST getPart(coreAST c1, coreAST c2, coreAST c3, int bnd) {
+		assert bnd > 0;
+		if(??){
+			return {| c1|c2|c3|null |};
+		}if(??){
+			 return new CVar(str = getStr());
+		}else{
+			if(bnd > 1){
+				coreAST a = getPart(c1,c2,c3, bnd-1);
+				coreAST b = getPart(c1,c2,c3, bnd-1);
+				if(??){
+					return 	new CPrim2(op=getOp(1), a = a, b =b);
+				}else
+				{
+					return new CLet(str= getStr(), a = a, b= b);	
+				}
+			}
+		}
+		return null;
+		
+	}
+	generator coreAST[3] run([int n], fun f, sourceAST[n] fields){
+		coreAST[3] out;
+		int i=0;
+		repeat(n){
+			out[i] = f(fields[i]); ++i;
+		}
+		return out;
+	} 
+	switch(s){
+		repeat_case:
+		{
+			coreAST[3] v = run(desugar, s.{sourceAST} );
+			 int[1] op = s.{int};
+			return new ??(op=getOp(op[0]), a = getPart(v[0], v[1], v[2], 1), b = getPart(v[0], v[1], v[2], 1), c =getPart(v[0], v[1], v[2], 1), str = getStr(), val = getConst(op[0]));	
+			
+		}
+		
+				
+	}
+}
+sourceAST gBetween(sourceAST a, sourceAST b, sourceAST c){
+	return new SBetween(a =a, b=b, c= c);
+}
+sourceAST gIf(sourceAST cond, sourceAST th, sourceAST el){
+	return new SIf(a=cond, b=th, c=el);
+}
+sourceAST gOp([int n], int op, sourceAST[n] p){
+	if(n==1){
+		return new SPrim1( op= op, a = p[0]);
+	}else{
+		return new SPrim2(op=op, a=p[0], b=p[1]);
+	}
+} 
+
+sourceAST gN(int n){
+	return new SNum( val=n);
+}
+
+sourceAST gTrue(){
+	return new STrue();
+}
+sourceAST gFalse(){
+	return new SFalse();
+}
+
+coreAST cIf(coreAST cond, coreAST th, coreAST el){
+	return new CIf( a=cond, b=th, c=el);
+}
+
+
+coreAST cOp([int n], int op, coreAST[n] p){
+	if(n==1){
+		return new CPrim1( op= op, a = p[0]);
+	}else{
+		return new CPrim2( op=op, a=p[0], b=p[1]);
+	}
+} 
+
+coreAST cN(int n){
+	return new CNum( val=n);
+}
+coreAST cLet(int str, coreAST a, coreAST b){
+	return new CLet(str= str, a= a, b= b);
+}
+coreAST cVar(int str){
+	return new CVar(str= str);
+}
+coreAST cStr(int str){
+	return new CStr(str= str);
+}
+coreAST cBool(bit val){
+	return new CBool(val = val);
+}
+
+bit equals(coreAST c1 ,coreAST c2){
+	
+	switch(c1){
+		case CPrim1:
+		{
+			switch(c2){
+				case CPrim1:
+				{
+					return c1.op == c2.op && equals(c1.a, c2.a);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CPrim2:
+		{
+			switch(c2){
+				case CPrim2:
+				{
+					return c1.op == c2.op && equals(c1.a, c2.a) && equals(c1.b, c2.b) ;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CIf:
+		{
+			switch(c2){
+				case CIf:
+				{
+					return equals(c1.a, c2.a)&& equals(c1.b, c2.b) &&equals(c1.c, c2.c);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CNum:
+		{
+			switch(c2){
+				case CNum:
+				{
+					return c1.val == c2.val;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CLet:
+		{
+			switch(c2){
+				case CLet:
+				{
+					return c1.str==c2.str &&(equals(c1.a, c2.a))&&equals(c1.b,c2.b);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CVar:
+		{
+			switch(c2){
+				case CVar:
+				{
+					return c1.str == c2.str;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CNum:
+		{
+			switch(c2){
+				case CNum:
+				{
+					return c1.val == c2.val;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CStr:
+		{
+			switch(c2){
+				case CStr:
+				{
+					return c1.str == c2.str;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CBool:
+		{
+			switch(c2){
+				case CBool:
+				{
+					return c1.val == c2.val;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+	}
+}
+
+harness void main(){
+	/*
+	sourceAST s4 = gOp(Olt, {gN(111), gN(222)});
+	coreAST ca4 = desugar(s4);
+	 assert equals(ca4, cOp(Olt, {cN(111), cN(222)}));
+	
+	sourceAST s = gIf(gOp(Olt, {gN(111), gN(222)}), gN(111), gN(122));
+	coreAST ca = desugar(s);
+	assert equals(ca, cIf(cOp(Olt, {cN(111), cN(222)}), cN(111), cN(122)));
+	
+	sourceAST s1 = gBetween(gN(111), gN(222), gN(333));
+	coreAST ca1 = desugar(s1);
+	assert equals(ca1, cLet(1, cN(111),
+         cLet(2,cN(222),
+              cLet(3, cN(333),
+                  cOp(Oand,{ 
+                         cOp( Olt,{ cVar(1), cVar(2)}),  
+                         cOp( Olt,{ cVar(2), cVar(3)})})))));
+                         */
+                         
+      sourceAST s2 = gIf(gBetween(gOp(Ominus, {gN(2), gOp(Oneg, {gN(1)})}), gN(3), gOp(Oplus, {gN(3), gN(4)})),
+      gOp(Onot, {gFalse()}),
+      gIf(gTrue(), gTrue(), gOp(Onot, {gOp(Onot, {gFalse()})})));
+      
+      coreAST ca2= desugar(s2);
+      
+      
+      coreAST destAST = cIf(cLet(1, cOp(Ominus,{cN(2), cOp(Oneg,{cN(1)})}),
+         cLet(2,cN(3),
+              cLet(3, cOp(Oplus, {cN(3), cN(4)}),
+                  cOp(Oand,{ 
+                         cOp( Olt,{ cVar(1), cVar(2)}),  
+                         cOp( Olt,{ cVar(2), cVar(3)})})))),
+          cOp(Onot, {cBool(0)}),
+          cIf(cBool(1), cBool(1), cOp(Onot, {cOp(Onot, {cBool(0)})})));
+      
+      
+      assert equals(destAST, ca2);
+                         
+	
+	
+
+}
+
+
+	
+	

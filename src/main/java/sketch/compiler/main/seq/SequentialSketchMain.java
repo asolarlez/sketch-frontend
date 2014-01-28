@@ -64,6 +64,8 @@ import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
 import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
+import sketch.compiler.passes.preprocessing.EliminateMacros;
+import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
 import sketch.compiler.passes.preprocessing.MethodRename;
 import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
 import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
@@ -281,6 +283,7 @@ public class SequentialSketchMain extends CommonSketchMain
     
     public SynthesisResult partialEvalAndSolve(Program prog) {
         SketchLoweringResult sketchProg = lowerToSketch(prog);
+        // sketchProg.result.debugDump("");
         if (prog.hasFunctions()) {
 
             SATBackend solver = new SATBackend(options, internalRControl(), varGen);
@@ -290,6 +293,7 @@ public class SequentialSketchMain extends CommonSketchMain
             }
             backendParameters();
             solver.partialEvalAndSolve(sketchProg.result);
+
 
             return new SynthesisResult(sketchProg, solver.getOracle(),
                     solver.getLastSolutionStats());
@@ -470,14 +474,17 @@ public class SequentialSketchMain extends CommonSketchMain
 
         // prog = (Program) prog.accept(new DisambiguateMethodCalls());
 
-
+        prog = (Program) prog.accept(new ExpandRepeatCases());
+        // prog.debugDump();
+        prog = (Program) prog.accept(new EliminateMacros());
+        // prog.debugDump("af");
         prog = (Program) prog.accept(new ConstantReplacer(null));
         prog = (Program) prog.accept(new MinimizeFcnCall());
         prog = (Program) prog.accept(new SpmdbarrierCall());
         prog = (Program) prog.accept(new PidReplacer());
 
+
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
-        prog.debugDump("After rfp");
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
 
@@ -544,7 +551,7 @@ public class SequentialSketchMain extends CommonSketchMain
         SynthesisResult synthResult = this.partialEvalAndSolve(prog);
         prog = synthResult.lowered.result;
 
-
+        // prog.debugDump("");
         Program finalCleaned = synthResult.lowered.highLevelC;
         // (Program) (new
         // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
@@ -560,7 +567,7 @@ public class SequentialSketchMain extends CommonSketchMain
             substituted = finalCleaned;
         }
 
-
+        // substituted.debugDump("after substitution");
 
         Program substitutedCleaned =
                 (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);

@@ -72,6 +72,10 @@ public abstract class Type
      */
     public boolean promotesTo(Type that, NameResolver nres)
     {
+        if ((this instanceof NotYetComputedType) || (that instanceof NotYetComputedType))
+        {
+            return true;
+        }
         if (this.equals(that))
             return true;
         return false;
