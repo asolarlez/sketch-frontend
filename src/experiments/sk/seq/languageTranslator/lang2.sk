@@ -100,7 +100,6 @@ coreAST desugar(sourceAST s){
 		}if(??){
 			 return new CVar(str = getStr());
 		}else{
-			if(bnd > 1){
 				coreAST a = getPart(c1,c2,c3, bnd-1);
 				coreAST b = getPart(c1,c2,c3, bnd-1);
 				if(??){
@@ -109,7 +108,6 @@ coreAST desugar(sourceAST s){
 				{
 					return new CLet(str= getStr(), a = a, b= b);	
 				}
-			}
 		}
 		return null;
 		
@@ -335,10 +333,11 @@ harness void main(){
       gOp(Onot, {gFalse()}),
       gIf(gTrue(), gTrue(), gOp(Onot, {gOp(Onot, {gFalse()})})));
       
-      coreAST ca2= desugar(s2);
+     
       
       
-      coreAST destAST = cIf(cLet(1, cOp(Ominus,{cN(2), cOp(Oneg,{cN(1)})}),
+       coreAST ca2= desugar(s2);
+             coreAST destAST = cIf(cLet(1, cOp(Ominus,{cN(2), cOp(Oneg,{cN(1)})}),
          cLet(2,cN(3),
               cLet(3, cOp(Oplus, {cN(3), cN(4)}),
                   cOp(Oand,{ 
@@ -346,8 +345,6 @@ harness void main(){
                          cOp( Olt,{ cVar(2), cVar(3)})})))),
           cOp(Onot, {cBool(0)}),
           cIf(cBool(1), cBool(1), cOp(Onot, {cOp(Onot, {cBool(0)})})));
-      
-      
       assert equals(destAST, ca2);
                          
 	

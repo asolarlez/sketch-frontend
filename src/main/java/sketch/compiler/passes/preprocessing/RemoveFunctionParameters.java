@@ -971,6 +971,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     pkg.getVars(), nflistMap.get(pkg.getName())));
         }
         Program np = p.creator().streams(newPkges).create();
+
         return np.accept(new ThreadClosure());
 
     }

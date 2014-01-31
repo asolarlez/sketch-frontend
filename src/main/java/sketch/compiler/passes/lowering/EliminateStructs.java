@@ -98,6 +98,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	
     Map<String, Set<String>> usedStructNames;
     Map<String, Set<String>> createdStructNames;
+    Map<String, Set<String>> modifiedStructNames;
 	
 	/**
 	 * Add variable declarations to the body of 'func', and rewrite its body.
@@ -154,12 +155,15 @@ public class EliminateStructs extends SymbolTableVisitor {
 	        List<Parameter> newParams = new ArrayList<Parameter>();
             Set<String> createdSN = createdStructNames.get(funName);
             List<Statement> newBodyStmts = new LinkedList<Statement>();
+
+            Set<String> modified = modifiedStructNames.get(funName);
+
             for (String name : usedStructNames.get(funName)) {
                 StructTracker tracker =
                         new StructTracker(nres.getStruct(name), func, varGen, maxArrSize,
                                 createdSN.contains(name));
                 tracker.registerAsParameters(symtab);
-                tracker.addParams(func, newParams);
+                tracker.addParams(func, newParams, modified.contains(name));
                 structs.put(name, tracker);
             }
 
@@ -333,6 +337,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         gus.visitProgram(p);
         usedStructNames = gus.get();
         createdStructNames = gus.getCreated();
+        modifiedStructNames = gus.getModified();
 
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
@@ -483,7 +488,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    }
 
 
-        public void addParams(FENode ctx, List<Parameter> newParams) {
+        public void addParams(FENode ctx, List<Parameter> newParams, boolean modify) {
 
             if (includeNIcounter) {
                 newParams.add(new Parameter(ctx, sref, nextInstancePointer.getName(),
@@ -492,7 +497,7 @@ public class EliminateStructs extends SymbolTableVisitor {
             // newParams.add(new Parameter(TypePrimitive.inttype, heapsize));
 	    	for (String field : fieldArrays.keySet ()) {
                 newParams.add(new Parameter(ctx, typeofFieldArr(field), fieldArrays.get(
-                        field).getName(), Parameter.REF));
+                        field).getName(), modify ? Parameter.REF : Parameter.IN));
 	    	}
 	    }
 

@@ -51,7 +51,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             if (exp.isHole()) {
                 exp.setTypeOfHole(type);
             }
-            return exp;
+            return super.visitExprField(exp);
         }
         public Object visitExprStar(ExprStar star) {
             if (!star.typeWasSetByScala) {

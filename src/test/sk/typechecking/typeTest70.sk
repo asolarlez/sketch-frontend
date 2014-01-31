@@ -1,0 +1,34 @@
+
+struct T {}
+struct A extends T {int x; int y;}
+struct B extends T {int a; int b;}
+
+harness void main(int i){
+
+	int[5] q = {i, 1, -2, 3};
+
+	T t;
+	if(??){
+		t = new A(x=i, y=i+1);
+	}else{
+		t = new B(a=i+1, b=i);
+	}
+	int v = 7;
+	switch(t){
+		repeat_case: v = q[??];
+		
+	}
+	
+	assert v == ??;
+	
+	if(i==7){
+		t = new A(x=i);
+	}else{
+		t = new B(a=i);
+	}
+	switch(t){
+		repeat_case: v = q.{int}[??]; // TypeError
+	}
+	assert v == i;
+	
+}

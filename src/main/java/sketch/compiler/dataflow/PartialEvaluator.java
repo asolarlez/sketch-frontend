@@ -83,6 +83,29 @@ public class PartialEvaluator extends SymbolTableVisitor {
     protected boolean isReplacer;
     protected boolean uncheckedArrays = true;
     public boolean isPrecise = true;
+    protected int throwAssertionsFalse = 0;
+    protected int throwAssertionsTrue = 0;
+
+    protected void pushTrue() {
+        throwAssertionsTrue++;
+    }
+
+    protected void popTA() {
+        if (throwAssertionsTrue > 0) {
+            throwAssertionsTrue--;
+        } else {
+            throwAssertionsFalse--;
+        }
+    }
+
+    protected boolean checkTA() {
+        return throwAssertionsTrue > 0;
+    }
+
+    protected void makeTrueFalse() {
+        throwAssertionsFalse += throwAssertionsTrue;
+        throwAssertionsTrue = 0;
+    }
 
     protected List<Function> funcsToAnalyze = null;
     private Set<String> funcsAnalyzed = null;
@@ -1192,10 +1215,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
             Statement body = null;
             try {
                 body = (Statement) stmt.getBody(caseExpr).accept(this);
-                if (isReplacer) {
-                    body = (Statement) (new CloneHoles()).process(body).accept(this);
-
-                }
+                /*
+                 * if (isReplacer) { if (body != null) { Statement ts = (new
+                 * CloneHoles()).process(body); body = (Statement) ts.accept(this); } }
+                 */
 
             } catch (ArrayIndexOutOfBoundsException e) {
                 // IF the body throws this exception, it means that no matter what the
@@ -1296,9 +1319,15 @@ public class PartialEvaluator extends SymbolTableVisitor {
         state.pushChangeTracker (vcond, false);
         Statement nvtrue = null;
         Statement nvfalse = null;
+        boolean oldTA = false;
         if( rcontrol.testBlock(cons) ){
             try{
-                nvtrue  = (Statement) cons.accept(this);
+                try {
+                    pushTrue();
+                    nvtrue = (Statement) cons.accept(this);
+                } finally {
+                    popTA();
+                }
             }catch(ArrayIndexOutOfBoundsException e){
                 //IF the body throws this exception, it means that no matter what the input,
                 //if this branch runs, it will cause the exception, so we can just assert that this
@@ -1343,8 +1372,14 @@ public class PartialEvaluator extends SymbolTableVisitor {
             /* Attach inverse conditional to change tracker. */
             state.pushChangeTracker (vcond, true);
             if( rcontrol.testBlock(alt) ){
+
                 try{
-                    nvfalse = (Statement) alt.accept(this);
+                    try {
+                        pushTrue();
+                        nvfalse = (Statement) alt.accept(this);
+                    } finally {
+                        popTA();
+                    }
                 }catch(ArrayIndexOutOfBoundsException e){
                     state.popChangeTracker();
                     addStatement((Statement) (new StmtAssert(stmt, ncond, false)).accept(this));
@@ -1558,6 +1593,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitStmtReturn(StmtReturn stmt)
     {
+        makeTrueFalse();
         // state.testReturn();
         state.freturn();
         return super.visitStmtReturn(stmt);

@@ -6,6 +6,7 @@ package sketch.compiler.passes.lowering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,10 +15,14 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNew;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -32,11 +37,13 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 public class GetUsedStructs extends FEReplacer {
     private final Map<String, Set<String>> usedStructs;
     private final Map<String, Set<String>> createdStructs;
+    private final Map<String, Set<String>> modifiedStructs;
 
     public GetUsedStructs(NameResolver nres) {
         setNres(nres);
         usedStructs = new HashMap<String, Set<String>>();
         createdStructs = new HashMap<String, Set<String>>();
+        modifiedStructs = new HashMap<String, Set<String>>();
     }
 
     public Map<String, Set<String>> get() {
@@ -47,11 +54,16 @@ public class GetUsedStructs extends FEReplacer {
         return createdStructs;
     }
 
+    public Map<String, Set<String>> getModified() {
+        return modifiedStructs;
+    }
+
     class Transitivity extends FEReplacer {
 
         public boolean changed = false;
         Set<String> currentUsedStructs;
         Set<String> currentCreatedStructs;
+        Set<String> currentModifiedStructs;
 
         Transitivity(NameResolver nres) {
             setNres(nres);
@@ -86,6 +98,15 @@ public class GetUsedStructs extends FEReplacer {
                     }
                 }
             }
+            {
+                Set<String> callee = modifiedStructs.get(name);
+                for (String cs : callee) {
+                    if (!currentModifiedStructs.contains(cs)) {
+                        currentModifiedStructs.add(cs);
+                        changed = true;
+                    }
+                }
+            }
             return efc;
         }
 
@@ -93,9 +114,11 @@ public class GetUsedStructs extends FEReplacer {
             String name = nres.getFunName(func.getName());
             currentUsedStructs = usedStructs.get(name);
             currentCreatedStructs = createdStructs.get(name);
+            currentModifiedStructs = modifiedStructs.get(name);
             super.visitFunction(func);
             currentUsedStructs = null;
             currentCreatedStructs = null;
+            currentModifiedStructs = null;
             return func;
         }
 
@@ -124,6 +147,7 @@ public class GetUsedStructs extends FEReplacer {
         String name = nres.getFunName(func.getName());
         Set<String> set;
         Set<String> createdset;
+        Set<String> modifiedSet;
         if (usedStructs.containsKey(name)) {
             set = usedStructs.get(name);
         } else {
@@ -138,7 +162,14 @@ public class GetUsedStructs extends FEReplacer {
             createdStructs.put(name, createdset);
         }
 
-        CollectStructs collector = new CollectStructs(set, createdset, nres);
+        if (modifiedStructs.containsKey(name)) {
+            modifiedSet = modifiedStructs.get(name);
+        } else {
+            modifiedSet = new HashSet<String>();
+            modifiedStructs.put(name, modifiedSet);
+        }
+
+        CollectStructs collector = new CollectStructs(set, createdset, modifiedSet, nres);
         collector.visitFunction(func);
 
         return func;
@@ -147,13 +178,46 @@ public class GetUsedStructs extends FEReplacer {
     private static class CollectStructs extends SymbolTableVisitor {
         private Set<String> currentSet;
         private Set<String> createdSet;
+        private Set<String> modifiedSet;
 
-        public CollectStructs(Set<String> set, Set<String> createdSet, NameResolver nres)
+        public CollectStructs(Set<String> set, Set<String> createdSet,
+                Set<String> modifiedSet, NameResolver nres)
         {
             super(null);
             currentSet = set;
             this.createdSet = createdSet;
+            this.modifiedSet = modifiedSet;
             setNres(nres);
+        }
+
+        public void registerLHS(Expression exp) {
+            if (exp instanceof ExprField) {
+                ExprField ef = (ExprField) exp;
+                TypeStructRef nt = (TypeStructRef) getType(ef.getLeft());
+                StructDef ts = nres.getStruct(nt.toString());
+                modifiedSet.add(ts.getFullName());
+            }
+            if (exp instanceof ExprArrayRange) {
+                ExprArrayRange ear = (ExprArrayRange) exp;
+                registerLHS(ear.getBase());
+            }
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            Function f = nres.getFun(efc.getName());
+            Iterator<Expression> it = efc.getParams().iterator();
+            for (Parameter p : f.getParams()) {
+                Expression e = it.next();
+                if (p.isParameterOutput()) {
+                    registerLHS(e);
+                }
+            }
+            return super.visitExprFunCall(efc);
+        }
+
+        public Object visitStmtAssign(StmtAssign sa) {
+            registerLHS(sa.getLHS());
+            return super.visitStmtAssign(sa);
         }
 
         public Object visitExprField(ExprField ef) {
@@ -166,6 +230,7 @@ public class GetUsedStructs extends FEReplacer {
             Type nt = en.getTypeToConstruct();
             StructDef ts = nres.getStruct(nt.toString());
             createdSet.add(ts.getFullName());
+            modifiedSet.add(ts.getFullName());
             return super.visitExprNew(en);
         }
 

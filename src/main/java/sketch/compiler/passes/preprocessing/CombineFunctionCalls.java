@@ -26,7 +26,10 @@ public class CombineFunctionCalls extends FEReplacer {
 
     @Override
     public Object visitFunction(Function fn) {
-        Statement newBody = (Statement) fn.getBody().accept(this);
+        if (fn.getBody() == null) {
+            return fn;
+        }
+        Statement newBody; // = (Statement) fn.getBody().accept(this);
         BreakIfThenStatements bif = new BreakIfThenStatements(nres, varGen, fn.getName());
         newBody = (Statement) fn.getBody().accept(bif);
         if (newBody != fn.getBody()) {
