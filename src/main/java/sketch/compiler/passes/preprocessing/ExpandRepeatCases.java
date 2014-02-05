@@ -2,6 +2,7 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
@@ -50,21 +51,30 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
     public Object visitStmtSwitch(StmtSwitch stmt){
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), stmt.getExpr());
         TypeStructRef tres = (TypeStructRef) getType(stmt.getExpr());
-
-        List<String> children = nres.getStructChildren(tres.getName());
+        LinkedList<String> queue = new LinkedList<String>();
+        queue.add(tres.getName());
+        // List<String> children = nres.getStructChildren(tres.getName());
         String c = stmt.getCaseConditions().get(0);
-            if (c == "repeat"){
-                for (String child : children) {
-                Statement body = (Statement) stmt.getBody(c).accept(this);
-                body = (Statement) (new CloneHoles()).process(body).accept(this);
-                newStmt.addCaseBlock(child.split("@")[0], body);
+        if (c == "repeat") {
+
+            while (!queue.isEmpty()) {
+
+                String parent = queue.removeFirst();
+                List<String> children = nres.getStructChildren(parent);
+                if (children.isEmpty()) {
+                    Statement body = (Statement) stmt.getBody(c).accept(this);
+                    body = (Statement) (new CloneHoles()).process(body).accept(this);
+                    newStmt.addCaseBlock(parent.split("@")[0], body);
+                } else {
+                    queue.addAll(children);
+
                 }
-            newStmt.setMustBeCloned();
-            return newStmt;
-            } else {
-            return stmt;
             }
-        
+
+            return newStmt;
+        } else {
+            return stmt;
+        }
 
     }
 

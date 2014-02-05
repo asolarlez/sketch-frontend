@@ -9,11 +9,14 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
@@ -61,6 +64,27 @@ public class CombineFunctionCalls extends FEReplacer {
                 return null;
             }
 
+            @Override
+            public Object visitStmtIfThen(StmtIfThen stmt) {
+                Expression newCond = doExpression(stmt.getCond());
+                Statement newCons =
+                        stmt.getCons() == null ? null
+                                : (Statement) stmt.getCons().accept(this);
+                Statement newAlt =
+                        stmt.getAlt() == null ? null : (Statement) stmt.getAlt().accept(
+                                this);
+                if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
+                        newAlt == stmt.getAlt())
+                    return stmt;
+                if (newCons == null && newAlt == null) {
+                    return new StmtExpr(stmt, newCond);
+                }
+                stmt = new StmtIfThen(stmt, newCond, newCons, newAlt);
+                stmt.isAtomic();
+                return stmt;
+
+            }
+
             public List varDeclStmts() {
                 return stmts;
             }
@@ -88,6 +112,9 @@ public class CombineFunctionCalls extends FEReplacer {
 
             @Override
             public Object visitStmtIfThen(StmtIfThen stmt) {
+                if (stmt.isAtomic()) {
+                    stmt.getCons().accept(this);
+                }
                 return stmt;
             }
 
@@ -156,159 +183,228 @@ public class CombineFunctionCalls extends FEReplacer {
 
         }
 
-
-        private int[] maximumMatching(List list1, List list2) {
-            int l1 = list1.size();
-            int l2 = list2.size();
-            int[] matching = new int[l1];
-            for (int i = 0; i < l1; i++) {
-                if (i < l2) {
-                    matching[i] = i;
-                } else {
-                    matching[i] = -1;
-                }
-            }
-            return matching;
-        }
-
+        /*
+         * private int[] maximumMatching(List list1, List list2) { int l1 = list1.size();
+         * int l2 = list2.size(); int[] matching = new int[l1]; for (int i = 0; i < l1;
+         * i++) { if (i < l2) { matching[i] = i; } else { matching[i] = -1; } } return
+         * matching; }
+         */
         @Override
         public Object visitStmtIfThen(StmtIfThen stmt) {
-            if (stmt.getAlt() == null || stmt.getCons() == null) {
-                return stmt;
-            }
+
             List Statements = new ArrayList();
 
+            List consBlocks = new ArrayList(), consFunCallStatements = new ArrayList(), consFunCalls =
+                    new ArrayList();
+            if (stmt.getCons() != null) {
+                Statement cons = (Statement) stmt.getCons().accept(this);
+                GlobalizeVar g = new GlobalizeVar();
+                cons = (Statement) cons.accept(g);
+                Statements.addAll(g.varDeclStmts());
 
-            Statement cons = (Statement) stmt.getCons().accept(this);
-            GlobalizeVar g = new GlobalizeVar();
-            cons = (Statement) cons.accept(g);
-            Statements.addAll(g.varDeclStmts());
-
-            List[] consParts = divideBlock(cons);
-            List consBlocks = consParts[0];
-            List consFunCallStatements = consParts[1];
-            List consFunCalls = consParts[2];
-
-            Statement alt = (Statement) stmt.getAlt().accept(this);
-            g = new GlobalizeVar();
-            alt = (Statement) alt.accept(g);
-            Statements.addAll(g.varDeclStmts());
-            List[] altParts = divideBlock(alt);
-            List altBlocks = altParts[0];
-            List altFunCallStatements = altParts[1];
-            List altFunCalls = altParts[2];
-
-            if (consFunCalls.isEmpty() || altFunCalls.isEmpty()) {
-                Statements.add(stmt);
-                return new StmtBlock(Statements);
+                List[] consParts = divideBlock(cons);
+                consBlocks = consParts[0];
+                consFunCallStatements = consParts[1];
+                consFunCalls = consParts[2];
             }
+            List altBlocks = new ArrayList(), altFunCallStatements = new ArrayList(), altFunCalls =
+                    new ArrayList();
+            if (stmt.getAlt() != null) {
+                Statement alt = (Statement) stmt.getAlt().accept(this);
+                GlobalizeVar g = new GlobalizeVar();
+                alt = (Statement) alt.accept(g);
+                Statements.addAll(g.varDeclStmts());
+                List[] altParts = divideBlock(alt);
+                altBlocks = altParts[0];
+                altFunCallStatements = altParts[1];
+                altFunCalls = altParts[2];
+            }
+
+            // if (consFunCalls.isEmpty() || altFunCalls.isEmpty()) {
+            // Statements.add(stmt);
+            // return new StmtBlock(Statements);
+            // }
 
             List newCons = new ArrayList();
             List newAlt = new ArrayList();
-            int[] matching = maximumMatching(consFunCalls, altFunCalls);
-            int prevAlt = -1;
+            // int[] matching = maximumMatching(consFunCalls, altFunCalls);
+            // int prevAlt = -1;
             Statement prevConFunStatement = null;
             Statement prevAltFunStatement = null;
-            newCons.add(consBlocks.get(0));
-            for (int i = 0; i < consFunCalls.size(); i++) {
-                if (matching[i] == -1) {
-                    if (prevConFunStatement != null) {
-                        newCons.add(prevConFunStatement);
-                        prevConFunStatement = null;
-                    }
-                    newCons.add(consFunCallStatements.get(i));
-                    newCons.add(consBlocks.get(i + 1));
-                } else {
-
-                    int a = matching[i];
-                    newAlt = new ArrayList();
-                    if (prevAltFunStatement != null) {
-                        newAlt.add(prevAltFunStatement);
-                        prevAltFunStatement = null;
-                    }
-                    newAlt.add(altBlocks.get(prevAlt + 1));
-                    for (int j = prevAlt + 1; j < a; j++) {
-                        newAlt.add(altFunCallStatements.get(j));
-                        newAlt.add(altBlocks.get(j + 1));
-                    }
-                    prevAlt = a;
-
-
-                    // Map<String, List<String>> mapFunToName =
-                    // new HashMap<String, List<String>>();
-                    // Map<String, List<String>> mapFunToParams =
-                    // new HashMap<String, List<String>>();
-                    List<String> paramVars = new ArrayList<String>();
-                    List<Type> paramTypes = new ArrayList<Type>();
-                    List paramInits = new ArrayList();
-                    Statement finalFunCall = null;
+            // newCons.add(consBlocks.get(0));
+            int conSize = consFunCalls.size();
+            int altSize = altFunCalls.size();
+            int max = Math.max(conSize, altSize);
+            int con = 0, alt = 0;
+            for (int i = 0; i < max; i++) {
+                newCons = new ArrayList();
+                if (prevConFunStatement != null) {
+                    newCons.add(prevConFunStatement);
                     prevConFunStatement = null;
+                }
+                if (i < conSize) {
+
+                    // newCons.add(consFunCallStatements.get(i));
+                    if (consFunCallStatements.get(i).getClass() == StmtIfThen.class) {
+                        con = 2;
+                    } else {
+                        con = 1;
+                    }
+                    newCons.add(consBlocks.get(i));
+                } else
+                    con = 0;
+                newAlt = new ArrayList();
+                if (prevAltFunStatement != null) {
+                    newAlt.add(prevAltFunStatement);
                     prevAltFunStatement = null;
+                }
+                if (i < altSize) {
 
-                    ExprFunCall consFunction = (ExprFunCall) consFunCalls.get(i);
-                    ExprFunCall altFunction = (ExprFunCall) altFunCalls.get(a);
+                    // int a = matching[i];
 
-                    List<Expression> conParamExps = consFunction.getParams();
-                    List<Expression> altParamExps = altFunction.getParams();
-                    String name = consFunction.getName();
-                    List<Parameter> params = nres.getFun(name).getParams();
-                    List<Expression> paramExprs = new ArrayList<Expression>();
-                    for (int l = 0; l < params.size(); l++) {
-                        Parameter pm = params.get(l);
-                        // generate new variable
-                        String newParamVar = varGen.nextVar(pm.getName());
-                        paramVars.add(newParamVar);
-                        paramTypes.add(pm.getType());
-                        paramInits.add(null);
-                        ExprVar left = new ExprVar(stmt.getContext(), newParamVar);
+                    if (altFunCallStatements.get(i).getClass() == StmtIfThen.class) {
+                        alt = 2;
+                    } else {
+                        alt = 1;
+                    }
+                    newAlt.add(altBlocks.get(i));
+                    // for (int j = prevAlt + 1; j < a; j++) {
+                    // newAlt.add(altFunCallStatements.get(j));
+                    // newAlt.add(altBlocks.get(j + 1));
+                    // }
+                    // prevAlt = a;
+                } else
+                    alt = 0;
+
+                // Map<String, List<String>> mapFunToName =
+                // new HashMap<String, List<String>>();
+                // Map<String, List<String>> mapFunToParams =
+                // new HashMap<String, List<String>>();
+                List<String> paramVars = new ArrayList<String>();
+                List<Type> paramTypes = new ArrayList<Type>();
+                List paramInits = new ArrayList();
+                Statement finalFunCall = null;
+                prevConFunStatement = null;
+                prevAltFunStatement = null;
+
+                ExprFunCall consFunction = null;
+                List<Expression> conParamExps = null;
+                if (con > 0) {
+                    consFunction = (ExprFunCall) consFunCalls.get(i);
+                    conParamExps = consFunction.getParams();
+                }
+
+                ExprFunCall altFunction = null;
+                List<Expression> altParamExps = null;
+                if (alt > 0) {
+                    altFunction = (ExprFunCall) altFunCalls.get(i);
+                    altParamExps = altFunction.getParams();
+                }
+                // String name = consFunction.getName();
+                List<Parameter> params = nres.getFun(funName).getParams();
+                List<Expression> paramExprs = new ArrayList<Expression>();
+                for (int l = 0; l < params.size(); l++) {
+                    Parameter pm = params.get(l);
+                    // generate new variable
+                    String newParamVar = varGen.nextVar(pm.getName());
+                    paramVars.add(newParamVar);
+                    paramTypes.add(pm.getType());
+                    paramInits.add(null);
+                    ExprVar left = new ExprVar(stmt.getContext(), newParamVar);
 
 
-                        paramExprs.add(left);
-                        if (l == params.size() - 1) {
-                            prevConFunStatement =
-                                    new StmtAssign(conParamExps.get(l), new ExprVar(
-                                            pm.getContext(), newParamVar));
-                            prevAltFunStatement =
-                                    new StmtAssign(altParamExps.get(l), new ExprVar(
-                                            pm.getContext(), newParamVar));
-                        } else {
+                    paramExprs.add(left);
+                    if (l == params.size() - 1) {
+
+                        prevConFunStatement =
+                                (con > 0) ? new StmtAssign(conParamExps.get(l),
+                                        new ExprVar(pm.getContext(), newParamVar)) : null;
+                        prevAltFunStatement =
+                                (alt > 0) ? new StmtAssign(altParamExps.get(l),
+                                        new ExprVar(pm.getContext(), newParamVar)) : null;
+                    } else {
+                        if (con > 0)
                             newCons.add(new StmtAssign(left, conParamExps.get(l)));
+                        if (alt > 0)
                             newAlt.add(new StmtAssign(left, altParamExps.get(l)));
-                        }
-
-
                     }
 
-
-                    finalFunCall =
-                            new StmtExpr(new ExprFunCall(
-                                    ((ExprFunCall) (consFunction)).getContext(), name,
-                                    paramExprs));
-
-                    Statements.add(new StmtVarDecl(stmt.getContext(), paramTypes,
-                            paramVars, paramInits));
-
-                    StmtIfThen s =
-                            new StmtIfThen(stmt.getContext(), stmt.getCond(),
-                                    new StmtBlock(newCons), new StmtBlock(newAlt));
-                    Statements.add(s);
-                    Statements.add(finalFunCall);
-
-
-                    newCons = new ArrayList();
 
                 }
+
+                if (con == 1 && alt == 1) {
+                    finalFunCall =
+                            new StmtExpr(new ExprFunCall(
+                                    ((ExprFunCall) (consFunction)).getContext(), funName,
+                                    paramExprs));
+                } else if (con == 1 || alt == 1) {
+                    String checkVar = varGen.nextVar("");
+                    ExprVar left = new ExprVar(stmt.getContext(), checkVar);
+                    Statements.add(new StmtVarDecl(stmt.getContext(),
+                            TypePrimitive.bittype, checkVar, ExprConstInt.zero));
+                    if (con == 1)
+                        newCons.add(new StmtAssign(left, ExprConstInt.one));
+                    if (alt == 1)
+                        newAlt.add(new StmtAssign(left, ExprConstInt.zero));
+                    Expression cond = ExprConstInt.zero;
+                    if (con == 2) {
+                        cond = ((StmtIfThen) consFunCallStatements.get(i)).getCond();
+                    }
+                    if (alt == 2) {
+                        cond = ((StmtIfThen) altFunCallStatements.get(i)).getCond();
+                    }
+                    cond = new ExprBinary(ExprBinary.BINOP_OR, cond, left);
+                    Statement f =
+                            new StmtExpr(new ExprFunCall(stmt.getContext(), funName,
+                                    paramExprs));
+                    finalFunCall = new StmtIfThen(stmt.getContext(), cond, f, null);
+                    ((StmtIfThen) finalFunCall).setAtomic();
+
+                } else {
+                    Expression cond1 = ExprConstInt.zero;
+                    Expression cond2 = ExprConstInt.zero;
+                    if (con == 2) {
+                        cond1 = ((StmtIfThen) consFunCallStatements.get(i)).getCond();
+                    }
+                    if (alt == 2) {
+                        cond2 = ((StmtIfThen) altFunCallStatements.get(i)).getCond();
+                    }
+                    cond1 = new ExprBinary(ExprBinary.BINOP_OR, cond1, cond2);
+                    Statement f =
+                            new StmtExpr(new ExprFunCall(stmt.getContext(), funName,
+                                    paramExprs));
+                    finalFunCall = new StmtIfThen(stmt.getContext(), cond1, f, null);
+                    ((StmtIfThen) finalFunCall).setAtomic();
+
+                }
+
+                Statements.add(new StmtVarDecl(stmt.getContext(), paramTypes, paramVars,
+                        paramInits));
+
+                StmtIfThen s =
+                        new StmtIfThen(stmt.getContext(), stmt.getCond(), new StmtBlock(
+                                newCons), new StmtBlock(newAlt));
+                Statements.add(s);
+                Statements.add(finalFunCall);
+
+
+                newCons = new ArrayList();
+
+
             }
             if (prevConFunStatement != null) {
                 newCons.add(prevConFunStatement);
                 prevConFunStatement = null;
             }
+            if (consBlocks.size() > 0) {
             newCons.add(consBlocks.get(consBlocks.size() - 1));
+            }
             newAlt = new ArrayList();
             if (prevAltFunStatement != null) {
                 newAlt.add(prevAltFunStatement);
                 prevAltFunStatement = null;
             }
+            if (altBlocks.size() > 0)
             newAlt.add(altBlocks.get(altBlocks.size() - 1));
             StmtIfThen s =
                     new StmtIfThen(stmt.getContext(), stmt.getCond(), new StmtBlock(

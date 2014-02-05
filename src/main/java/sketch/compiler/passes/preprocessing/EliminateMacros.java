@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.exceptions.ExceptionAtNode;
 
 public class EliminateMacros extends SymbolTableVisitor{
     
@@ -19,9 +20,13 @@ public class EliminateMacros extends SymbolTableVisitor{
         super(null);
     }
 
+
     @Override
     public Object visitExprFieldMacro(ExprFieldMacro exp){
         Type t = exp.getType();
+        if (getType(exp.getLeft()).isStruct()) {
+            // report(exp, "ExprVar must be of type struct");
+        
         StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
         List<Expression> matchedFields = new ArrayList<Expression>();
         for (StructFieldEnt e : ts.getFieldEntries()) {
@@ -31,6 +36,10 @@ public class EliminateMacros extends SymbolTableVisitor{
             }
         }
         return new ExprArrayInit(exp.getContext(), matchedFields);
+        }else{
+            throw new ExceptionAtNode("ExprLeft must be of type struct", exp);
+
+        }
         
     }
 
