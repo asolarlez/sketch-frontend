@@ -4,6 +4,7 @@ package sketch.compiler.passes.preprocessing;
 import java.util.*;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
@@ -40,11 +41,14 @@ import sketch.util.exceptions.TypeErrorException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
+    Map<String, SymbolTable> tempSymtables = new HashMap<String, SymbolTable>();
+
     private static final class FunctionParamRenamer extends FEReplacer {
         private final String nfn;
         private final ExprFunCall efc;
         private final String cpkg;
         private final Map<String, String> rmap = new HashMap<String, String>();
+
 
         private FunctionParamRenamer(String nfn, ExprFunCall efc, String cpkg)
         {
@@ -250,9 +254,27 @@ public class RemoveFunctionParameters extends FEReplacer {
      */
     class ThreadClosure extends FEReplacer {
         // funName => (varName => varInfo)
-        Map<String, HashMap<String, ParamInfo>> funsToVisit =
-                new HashMap<String, HashMap<String, ParamInfo>>();
+        Map<String, Map<String, ParamInfo>> funsToVisit =
+                new HashMap<String, Map<String, ParamInfo>>();
         Map<String, List<Parameter>> addedParams = new HashMap<String, List<Parameter>>();
+
+        Map<String, ParamInfo> mergePI(Map<String, ParamInfo> lhs,
+                Map<String, ParamInfo> rhs)
+        {
+            for (Map.Entry<String, ParamInfo> e : rhs.entrySet()) {
+                String var = e.getKey();
+                ParamInfo info = e.getValue();
+                ParamInfo merger = lhs.get(var);
+                if (merger == null) {
+                    lhs.put(var, info.clone());
+                } else {
+                    assert info.pt.equals(merger.pt);
+                    merger.changed |= info.changed;
+                    merger.dependence.addAll(info.dependence);
+                }
+            }
+            return lhs;
+        }
 
         public Object visitProgram(Program prog){
             CallGraph cg = new CallGraph(prog);
@@ -265,11 +287,21 @@ public class RemoveFunctionParameters extends FEReplacer {
                 if(equivalences.containsKey(key)){
                     for(String fn : equivalences.get(key)){
                         toVisit.push(fn);
-                        funsToVisit.put(fn, nfi.cloneParamsToAdd());
+                        if (funsToVisit.containsKey(fn)) {
+                            funsToVisit.put(fn,
+                                    mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(fn)));
+                        } else {
+                            funsToVisit.put(fn, nfi.cloneParamsToAdd());
+                        }
                     }
                 }else{
                     toVisit.push(key);
-                    funsToVisit.put(key, nfi.cloneParamsToAdd());
+                    if (funsToVisit.containsKey(key)) {
+                        funsToVisit.put(key,
+                                mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(key)));
+                    } else {
+                        funsToVisit.put(key, nfi.cloneParamsToAdd());
+                    }
                 }
                 while(!toVisit.isEmpty()){
                     String cur = toVisit.pop();
@@ -285,12 +317,12 @@ public class RemoveFunctionParameters extends FEReplacer {
                         if (reverseEquiv.containsKey(callerName)) {
                             callerOriName = reverseEquiv.get(callerName);
                         }
-                        if (!callerOriName.equals(nfi.containingFunction)) {
+                        if (!callerName.equals(nfi.containingFunction)) {
                             toVisit.push(callerName);
                             if (funsToVisit.containsKey(callerName)) {
                                 // funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
                                 // should merge correctly
-                                HashMap<String, ParamInfo> c =
+                                Map<String, ParamInfo> c =
                                         funsToVisit.get(callerName);
                                 for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd.entrySet())
                                 {
@@ -319,7 +351,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         private List<Parameter> getAddedParams(String funName, boolean isGenerator) {
             List<Parameter> result = addedParams.get(funName);
             if (result == null) {
-                HashMap<String, ParamInfo> params = funsToVisit.get(funName);
+                Map<String, ParamInfo> params = funsToVisit.get(funName);
                 HashMap<String, Integer> indeg = new HashMap<String, Integer>();
                 HashMap<String, List<String>> outedge =
                         new HashMap<String, List<String>>();
@@ -480,11 +512,30 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         boolean isGenerator = false;
 
+        final boolean recursive;
+        boolean topLevel = true;
+
         int nfcnt = 0;
         FunReplMap frmap = new FunReplMap(null);
 
-        InnerFunReplacer() {
+
+        public void registerGlobals(Program p) {
+
+            for (Package pkg : p.getPackages()) {
+
+                SymbolTable st = new SymbolTable(null);
+                symtab = st;
+                for (FieldDecl fd : pkg.getVars()) {
+                    fd.accept(this);
+                }
+                tempSymtables.put("pkg:" + pkg.getName(), st);
+            }
+            symtab = null;
+        }
+
+        InnerFunReplacer(boolean recursive) {
             super(null);
+            this.recursive = recursive;
         }
 
         /**
@@ -574,6 +625,11 @@ public class RemoveFunctionParameters extends FEReplacer {
 
             for (int i = 0; i < svd.getNumVars(); i++) {
 
+                if (symtab.hasVar(svd.getName(i))) {
+                    throw new ExceptionAtNode("Shadowing of variables is not allowed.",
+                            svd);
+                }
+
                 Type ot = svd.getType(i);
                 Type t = (Type) ot.accept(remREGinDecl);
                 if (ot != t) {
@@ -617,6 +673,11 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitStmtFunDecl(StmtFunDecl sfd) {
+
+            if (!topLevel && !recursive) {
+                return super.visitStmtFunDecl(sfd);
+            }
+
             String pkg = nres.curPkg().getName();
             String oldName = sfd.getDecl().getName();
             String newName = oldName + (++nfcnt);
@@ -643,8 +704,18 @@ public class RemoveFunctionParameters extends FEReplacer {
 
             Function newFun = f.creator().name(newName).pkg(pkg).create();
             nres.registerFun(newFun);
-            newFun = (Function) newFun.accept(this);
-            newFuncs.add(newFun);
+
+            boolean oldTL = topLevel;
+            topLevel = false;
+                newFun = (Function) newFun.accept(this);
+            topLevel = oldTL;
+            if (recursive) {
+                newFuncs.add(newFun);
+            }
+                // newFunctions.put(newName, newFun);
+                // funsToVisit.push(newName);
+
+
 
             // NOTE xzl: overwrite the incorrect newFun with the correct newFun with
             // processed body. This is needed for later funInfo(fun) to work properly if
@@ -655,10 +726,15 @@ public class RemoveFunctionParameters extends FEReplacer {
             // again.
             nres.reRegisterFun(newFun);
 
+            checkFunParameters(newFun);
+
+            tempSymtables.put(nres.getFunName(newFun), this.symtab);
+
             NewFunInfo nfi = funInfo(newFun);
             extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
+
 
         NewFunInfo funInfo(Function f) {
             // get the new function info
@@ -675,6 +751,16 @@ public class RemoveFunctionParameters extends FEReplacer {
                 public Object visitStmtFunDecl(StmtFunDecl decl) {
                     // just ignore the inner function declaration
                     // because it will not affect the used/modified set
+                    symtab.registerVar(decl.getDecl().getName(), TypeFunction.singleton,
+                            decl, SymbolTable.KIND_LOCAL);
+                    SymbolTable oldSymTab = symtab;
+                    symtab = new SymbolTable(symtab);
+                    for (Parameter p : decl.getDecl().getParams()) {
+                        p.accept(this);
+                    }
+
+                    decl.getDecl().getBody().accept(this);
+                    symtab = oldSymTab;
                     return decl;
                 }
 
@@ -701,27 +787,18 @@ public class RemoveFunctionParameters extends FEReplacer {
                         // cannot know that, for twice(g, x) to modify x, twice's
                         // signature must have a "ref" for x, so just by looking at the
                         // call to "twice" we know that "x" is modified
-                        Function hoistedFun = nres.getFun(name);
-                        if (hoistedFun != null) {
-                            String fullName = nres.getFunName(name);
-                            if (fullName.equals(theNewFunName)) {
-                                // We are processing theNewFunName to get its NewFunInfo,
-                                // so we don't need to inline itself. It is not in the
-                                // symtab chain, so we must return early otherwise the
-                                // lookup will throw exception.
-                                return exp;
-                            }
-                            if (extractedInnerFuns.containsKey(fullName)) {
-                                hoistedFun.accept(this);
-                                return exp;
-                            }
-                        }
+                        /*
+                         * Function hoistedFun = nres.getFun(name); if (hoistedFun !=
+                         * null) { String fullName = nres.getFunName(name); if
+                         * (fullName.equals(theNewFunName)) { // We are processing
+                         * theNewFunName to get its NewFunInfo, // so we don't need to
+                         * inline itself. It is not in the // symtab chain, so we must
+                         * return early otherwise the // lookup will throw exception.
+                         * return exp; } if (extractedInnerFuns.containsKey(fullName)) {
+                         * // hoistedFun.accept(this); return exp; } return exp; }
+                         */
                         Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
-                        if (pt instanceof TypeFunction) {
-                            throw new TypeErrorException(
-                                    "An inner function can not use a function parameter passed to its parent function",
-                                    exp);
-                        }
+
                         int kind =
                                 InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
                                         exp);
@@ -844,7 +921,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         // it always start from extractedInner[h].nfi
                         // but not extractedInner[h].nfi JOIN extractedInner[g].nfi
                         // and this requires g() already inlined inside h()
-                        fun.accept(this);
+                        // fun.accept(this);
                     }
                     // return super.visitExprFunCall(efc);
                     if (fun == null) {
@@ -884,7 +961,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                         Parameter p = params.get(i);
                         isAssignee = p.isParameterOutput();
                         // NOTE xzl: if this arg is a function, it will be inlined.
-                        existingArgs.get(i - starti).accept(this);
+                        if (!(p.getType() instanceof TypeFunction)) {
+                            existingArgs.get(i - starti).accept(this);
+                        }
                         isAssignee = oldIsA;
                     }
                     return efc;
@@ -915,13 +994,16 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
     }
     
+    InnerFunReplacer hoister = new InnerFunReplacer(false);
+
     public Object visitProgram(Program p) {
 
-        p = (Program) p.accept(new SpecializeInnerFunctions());
-        p.debugDump("After specializing inners");
-        p = (Program) p.accept(new InnerFunReplacer());
+        // p = (Program) p.accept(new SpecializeInnerFunctions());
+        // p.debugDump("After specializing inners");
+        // p = (Program) p.accept(new InnerFunReplacer());
         nres = new NameResolver(p);
-
+        hoister.setNres(nres);
+        hoister.registerGlobals(p);
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             Set<String> nameChk = new HashSet<String>();
@@ -959,7 +1041,19 @@ public class RemoveFunctionParameters extends FEReplacer {
             String pkgName = getPkgName(fname);
             nres.setPackage(pkges.get(pkgName));
             Function next = nres.getFun(fname);
+
             if (!visited.contains(fname)) {
+                String chkname = fname;
+                if (this.reverseEquiv.containsKey(fname)) {
+                    chkname = reverseEquiv.get(fname);
+                }
+                if (tempSymtables.containsKey(chkname)) {
+                    hoister.setSymtab(tempSymtables.get(chkname));
+                } else {
+                    hoister.setSymtab(tempSymtables.get("pkg:" + next.getPkg()));
+                }
+
+                next = (Function) next.accept(hoister);
                 Function nf = (Function) next.accept(this);
                 visited.add(fname);
                 nflistMap.get(pkgName).add(nf);

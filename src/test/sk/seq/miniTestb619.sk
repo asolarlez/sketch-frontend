@@ -1,6 +1,6 @@
 
 
-generator void moo(int x, ref int a, fun f){			
+generator int moo(int x, ref int a, fun f){			
 	generator int bar(){			
 		a += 1;	
 		return f(x, a, f);

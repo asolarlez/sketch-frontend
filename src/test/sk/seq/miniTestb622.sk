@@ -1,0 +1,22 @@
+
+
+
+
+harness void main(int x){
+	int foo(int t, fun f){
+		int baz(){
+			if(t>0){
+				return f(t-1, f) + 1;
+			}else{
+				return 0;
+			}
+		}
+		return baz();
+	}
+
+
+	if(x< 5){
+		assert foo(x, foo) == x + ??;
+	}
+
+}
