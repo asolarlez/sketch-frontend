@@ -76,9 +76,9 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 
-        prog.debugDump("Before adt");
+
         prog = (Program) prog.accept(new ExpandADTHoles());
-        prog.debugDump("After adt");
+
 
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
