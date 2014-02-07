@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.util.datastructures.HashmapList;
+import sketch.compiler.ast.core.exprs.ExprStar.Kind;
 
 import sketch.compiler.ast.core.Package;
 

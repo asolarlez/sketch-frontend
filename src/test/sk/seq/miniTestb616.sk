@@ -1,0 +1,28 @@
+pragma options "-P lowering";
+
+void foo(int n, ref int[n] x){
+  for(int i=0; i<n; ++i){
+    x[i] = 1;
+  }
+}
+
+harness void main(int i){
+
+  int[5] u = {0,0,0,0,0};
+  foo(5, u[0::5]);
+  if(i>1){
+  assert u[3] == 1;
+ }
+
+}
+
+
+harness void main2(int i){
+
+  int[5] u = {0,0,0,0,0};  
+  if(i==5){
+    int[i] v = {1,1,1,1,1};
+    u[0::5] = v;
+    assert u[3] == 1;
+  }
+}

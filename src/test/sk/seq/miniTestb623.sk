@@ -1,0 +1,24 @@
+
+
+
+harness void main(int j){
+	void foo(fun f){
+		void bar(){
+			f();
+		}
+		bar();
+	}
+
+
+	{
+		int x=0; 
+		void moo(){
+			x = 5;
+		}
+		
+		foo(moo);
+		assert x == ??;
+	}
+	
+
+}

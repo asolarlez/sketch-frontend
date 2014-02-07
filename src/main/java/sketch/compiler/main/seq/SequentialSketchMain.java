@@ -485,7 +485,6 @@ public class SequentialSketchMain extends CommonSketchMain
 
     public Program preprocAndSemanticCheck(Program prog) {
 
-        // prog = (Program) prog.accept(new DisambiguateMethodCalls());
 
         prog = (Program) prog.accept(new ExpandRepeatCases());
         // prog.debugDump();
@@ -498,7 +497,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
-
+        // prog.debugDump("After");
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
 

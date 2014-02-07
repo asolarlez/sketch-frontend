@@ -53,7 +53,7 @@ public class MergeADT extends SymbolTableVisitor {
     @Override
     public Object visitExprTypeCast(ExprTypeCast expr) {
         Type castedType = expr.getType();
-        Expression castedExpr = expr.getExpr();
+        Expression castedExpr = (Expression) expr.getExpr().accept(this);
         Type castingType = getType(castedExpr);
 
         if (castedType.isStruct()) {
@@ -64,7 +64,8 @@ public class MergeADT extends SymbolTableVisitor {
             ExprConstInt condRight = new ExprConstInt(expr.getContext(), id);
             condition = new ExprBinary(ExprBinary.BINOP_EQ, condLeft, condRight);
             Statement assertStmt =
-                    new StmtAssert(condition, "Struct type casting error", false);
+                    new StmtAssert(condition, "Struct type casting error: " +
+                            expr.getCx(), false);
             addStatement(assertStmt);
         }
         return (ExprTypeCast) super.visitExprTypeCast(expr);

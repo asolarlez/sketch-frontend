@@ -1,0 +1,16 @@
+struct A{}
+struct B extends A{ int[5] x; A a; }
+struct C extends A{ int x; }
+
+harness void main(int x){
+	B b = new B();	
+	C c = new C(x= x);
+	if(??){
+		b.a = b;
+	}else{
+		b.a = c;
+	}
+	
+	C cc = (C) b.a;
+	assert cc.x == x;
+}

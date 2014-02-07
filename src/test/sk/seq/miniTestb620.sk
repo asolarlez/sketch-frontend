@@ -1,0 +1,45 @@
+pragma options "--bnd-inline-amnt 20";
+
+
+
+void foo(int a, int b){
+
+	if(a == 8){
+		return;
+	}
+	
+	assert 5 < 3;
+	
+	if(b==7){
+		assert 2 > 5;
+		foo(a, b);	
+	}
+}
+
+
+harness void test(int a, int b){
+	if(a==8){ 
+		foo(a, b);
+		return; 
+	}
+
+	int t = a;
+	
+	
+	
+	
+	
+	
+	generator void moo(int i){
+		assert i > 0;
+		a++;
+		if(??){
+			moo(i-1);
+			moo(i-1);
+		}	
+	}
+	
+	
+	moo(3);
+	assert a == t + ??;
+}

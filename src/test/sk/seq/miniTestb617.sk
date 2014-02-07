@@ -1,0 +1,17 @@
+
+
+
+harness void test(int a){
+
+	int foo(int i){ return i+ 1; }
+	
+	int moo(int x, fun f){
+		int bar(){
+			int t = x + 1;
+			return f(t);
+		}
+		return bar();	
+	}
+	
+	assert moo(a, foo) == a + ??;
+}

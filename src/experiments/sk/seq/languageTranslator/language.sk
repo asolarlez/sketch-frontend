@@ -84,6 +84,7 @@ struct CBool extends coreAST{
 
 
 coreAST desugar(sourceAST s){
+	count++;
 	if(s == null){ return null; }
 	//generator int genStyp(){ return {|  SPrim | SBetween | SIf | SStr | SNum | STrue | STrue |};  }
 	//generator int genCtyp(){ return {|  CVar | CPrim1 | CPrim2 | CLet | CIf | CNum | CStr | CBool |};  }
@@ -91,13 +92,17 @@ coreAST desugar(sourceAST s){
 	//generator int getConst(){ return {| s.type | s.op | s.val | s.str | ?? |}; }
 	//generator int getOp(){ return {| s.op | Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
 	sourceAST t1=null, t2=null, t3=null;
+	bit ind1=0, ind2=0, ind3=0;
 	switch(s){
 		case SPrim1:
 		{
+			ind1=1;
 			t1 = (s.a);	
 		}
 		case SPrim2:
 		{
+			ind1=1;
+			ind2=1;
 			t1 = s.a;
 			t2 = s.b;	
 		}
@@ -134,13 +139,13 @@ coreAST desugar(sourceAST s){
 		
 	}
 	coreAST c1=null, c2=null, c3=null;
-	if(t1 != null){
+	if(ind1){
 		c1 = desugar(t1);	
 	}
-	if(t2 != null){
+	if(ind2){
 		c2 = desugar(t2);	
 	}
-	if(t3 != null){
+	if(ind3){
 		c3 = desugar(t3);	
 	}
 	generator int getOp(){ return {| op |Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  

@@ -694,6 +694,10 @@ public class FEReplacer implements FEVisitor
 
     protected List<Function> newFuncs;
 
+    public void setNewFuncs(List<Function> newFuncs) {
+        this.newFuncs = newFuncs;
+    }
+
     /**
      * StreamSpec represents a namespace. spec.getVars() will get you all the global
      * variable declarations. spec.getStructs() gets you the structure declarations.

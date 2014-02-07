@@ -66,6 +66,9 @@ public class SymbolTableVisitor extends FEReplacer
 
 
 
+    public void setSymtab(SymbolTable symtab) {
+        this.symtab = symtab;
+    }
 
 
     /**

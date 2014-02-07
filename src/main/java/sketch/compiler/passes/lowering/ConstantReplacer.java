@@ -356,7 +356,7 @@ public class ConstantReplacer extends FEReplacer {
                 }
             }
             if (pit != null && (pit.size() - ipcnt) != efc.getParams().size()) {
-                throw new ExceptionAtNode("Wrong number of parameters", efc);
+                throw new ExceptionAtNode("Wrong number of parameters: " + efc, efc);
             }
 
             {

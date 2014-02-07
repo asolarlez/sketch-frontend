@@ -80,10 +80,15 @@ public class NtsbVtype extends IntVtype {
                 }
 
                 String head = star.isAngelicMax() ? "<**" : "<";
-                if(star.getSize() > 1)
-                    rval += head + cvar + "  " + star.getSize() + isFixed + "> ";
+
+                if (star.getSize() > 1 && !star.isCounter())
+                    rval += head + cvar + "  " + star.getSize() + isFixed;
                 else
-                    rval = head + cvar + "> ";
+                    rval = head + cvar;
+                if (star.isCounter()) {
+                    rval += " %";
+                }
+                rval += "> ";
                 nv = new NtsbValue(rval, true);
                 if(avlist != null) avlist.add(nv);
             }

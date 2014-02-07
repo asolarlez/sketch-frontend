@@ -5,7 +5,7 @@ struct B extends T {int a; int b;}
 
 harness void main(int i){
 
-	int x=0;
+	int[5] q = {i, 1, -2, 3};
 
 	T t;
 	if(??){
@@ -15,14 +15,20 @@ harness void main(int i){
 	}
 	int v = 7;
 	switch(t){
-		case A:{ v = x + 2; x = 3; } 
-		case B:{ v = v - 3; x = v-1; }	
+		repeat_case: v = q[??];
+		
 	}
 	
 	assert v == ??;
-	check(x);
-}
-
-void check(int x){
-	assert x == ??;
+	
+	if(i==7){
+		t = new A(x=i);
+	}else{
+		t = new B(a=i);
+	}
+	switch(t){
+		repeat_case: v = t.{int}[??];
+	}
+	assert v == i;
+	
 }

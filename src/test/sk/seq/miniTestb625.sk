@@ -1,0 +1,29 @@
+
+
+int y(){
+	return x;
+}
+
+
+harness void main(){
+	int y = 0;
+	void moo(fun f){
+		void boo(){
+			f();
+		}	
+		boo();
+		y = y + 1;
+	}
+	
+	int x = 0;
+	void tt(){
+		x = x + 1;
+	}
+	moo(tt);
+	assert x == 1;
+	assert y == 1;
+	
+
+
+
+}

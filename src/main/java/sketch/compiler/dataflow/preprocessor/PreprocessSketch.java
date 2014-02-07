@@ -102,7 +102,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             abstractValue vcond  = (abstractValue) assertCond.accept (this);
         if (vcond.hasIntVal() && vcond.getIntVal() == 0) {
             abstractValue vcrv = state.getRvflag().state(vtype);
-            if (vcrv.hasIntVal() && vcrv.getIntVal() == 0) {
+            if (this.checkTA() || (vcrv.hasIntVal() && vcrv.getIntVal() == 0)) {
                 throw new ArrayIndexOutOfBoundsException(
                         "ASSERTION CAN NOT BE SATISFIED: " +
                     stmt.getCx() + " " + stmt.getMsg());

@@ -1,0 +1,19 @@
+
+
+generator int moo(int x, ref int a, fun f){			
+	generator int bar(){			
+		a += 1;	
+		return f(x, a, f);
+	}
+	if(??){
+		return bar();
+	}	
+}
+
+harness void test(int a){
+
+	int t = a;
+	
+	moo(3, a, moo);
+	assert a == t + ??;
+}
