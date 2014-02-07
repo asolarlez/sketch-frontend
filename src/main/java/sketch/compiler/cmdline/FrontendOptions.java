@@ -74,4 +74,7 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Eliminate final structs and structs with no alias")
     public boolean elimFinalStructs;
+
+    @CliParameter(help = "the file name to which to output the values of 'Hole Functions', which are single line functions to give unique names to holes")
+    public String outputHoleFunc;
 }
