@@ -1,0 +1,41 @@
+
+bit foo(int x);
+
+bit baz(int x){
+	return foo(x);
+}
+
+bit moo(int x){
+	return foo(x);
+}
+
+bit bar(int x){		
+	return moo(x);
+}
+
+bit one(){ return 1; }
+bit bee(int x){ return one(); }
+
+void moo1(bit x){ bar(x); }
+
+harness void main(int x){
+	int t = x + 5;
+	bit qq = 1;
+	if(bee(x)){
+	bit u = baz(x);	
+	if(u || x > 3){
+		u = baz(x);
+		if(u){
+		   qq = foo(x);
+		}	
+	}
+	
+	bar(x);
+		if(??){
+			assert u;
+		}
+	}
+	if(??){
+		moo1(qq);
+	}
+}
