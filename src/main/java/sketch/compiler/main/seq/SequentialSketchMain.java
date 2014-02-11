@@ -34,6 +34,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.codegenerators.OutputHoleFunc;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -389,6 +390,15 @@ public class SequentialSketchMain extends CommonSketchMain
 
         (new OutputCCode(varGen, options)).visitProgram(prog);
 	}
+
+    public void outputHoleFunc(String outputHoleFunc, Program prog) {
+        if (prog == null) {
+            printError("Final code generation encountered error, skipping output");
+            return;
+        }
+
+        (new OutputHoleFunc(outputHoleFunc)).visitProgram(prog);
+    }
 	
 	public String benchmarkName(){
 		String rv = "";
@@ -421,6 +431,9 @@ public class SequentialSketchMain extends CommonSketchMain
         rm.put("main", "_main");
         prog = (Program) prog.accept(new MethodRename(rm));
         prog = (Program) prog.accept(new EliminateAliasesInRefParams(varGen));
+        if (options.feOpts.outputHoleFunc != null) {
+            outputHoleFunc(options.feOpts.outputHoleFunc, prog);
+        }
         if (options.feOpts.customCodegen == null) {
             outputCCode(prog);
         } else {
