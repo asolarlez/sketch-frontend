@@ -943,16 +943,19 @@ public class NodesToSuperCpp extends NodesToJava {
         result += "switch(";
         String var = (String) stmt.getExpr().accept(this);
         result += var;
-        String name = symtab.lookupVar(stmt.getExpr()).toString();
+        String name = ((TypeStructRef) getType(stmt.getExpr())).getName();
+        name = nres.getStructName(name);
         while (nres.getStructParentName(name) != null) {
             name = nres.getStructParentName(name);
         }
         result += "->" + NodesToSuperH.typeVars.get(name) + "){\n";
+        name = name.split("@")[0];
         for (String c : stmt.getCaseConditions()) {
             // brakects around cases and constants with type.
             if (c != "default") {
                 result +=
-                        indent + "case " + name + "::" + c.toUpperCase() + "_type:\n" +
+                        indent + "case " + name + "::" + c.toUpperCase() + "_type" +
+                                ":\n" +
                                 indent + indent;
                 String newVar = "_" + var;
                 while (symtab.hasVar(newVar)) {

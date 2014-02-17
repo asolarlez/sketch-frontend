@@ -616,8 +616,10 @@ public class FEReplacer implements FEVisitor
         if(newCons == null && newAlt == null){
             return new StmtExpr(stmt, newCond);
         }
-
-        return new StmtIfThen(stmt, newCond, newCons, newAlt);
+        StmtIfThen newStmt = new StmtIfThen(stmt, newCond, newCons, newAlt);
+        if (stmt.isAtomic())
+            newStmt.setAtomic();
+        return newStmt;
     }
 
     public Object visitStmtJoin(StmtJoin stmt)
@@ -693,10 +695,6 @@ public class FEReplacer implements FEVisitor
 
 
     protected List<Function> newFuncs;
-
-    public void setNewFuncs(List<Function> newFuncs) {
-        this.newFuncs = newFuncs;
-    }
 
     /**
      * StreamSpec represents a namespace. spec.getVars() will get you all the global

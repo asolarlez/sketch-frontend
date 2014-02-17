@@ -33,7 +33,7 @@ public class StmtIfThen extends Statement
 {
     private Expression cond;
     private Statement cons, alt;
-
+    private boolean isAtomic = false;
     /** Create a new conditional statement, with the specified
      * condition, consequent, and alternative.  The two statements
      * may be null if omitted. */
@@ -86,6 +86,13 @@ public class StmtIfThen extends Statement
         return v.visitStmtIfThen(this);
     }
 
+    public boolean isAtomic() {
+        return isAtomic;
+    }
+
+    public void setAtomic() {
+        isAtomic = true;
+    }
     public String toString(){
     	String result = "if(" + this.cond + "){\n";
     	result += this.cons;

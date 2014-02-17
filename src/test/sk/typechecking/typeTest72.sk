@@ -1,0 +1,11 @@
+//Doesn't work
+//right-hand side of assignment must be promotable to left-hand side's type
+struct A{
+	int x;
+}
+
+
+harness void main(){
+	A a = new A();
+	bit[3] arr = a.{int};
+}

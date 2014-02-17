@@ -19,15 +19,16 @@ import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.exceptions.ExceptionAtNode;
 
 
 public class ExpandADTHoles extends SymbolTableVisitor {
     TypeStructRef ts = null;
 
     private class ReplaceExprNew extends SymbolTableVisitor {
-        TypeStructRef ts;
+        Type ts;
 
-        public ReplaceExprNew(TypeStructRef ts, NameResolver nr, SymbolTable symtab) {
+        public ReplaceExprNew(Type ts, NameResolver nr, SymbolTable symtab) {
             super(symtab);
             this.ts = ts;
             nres = nr;
@@ -37,9 +38,12 @@ public class ExpandADTHoles extends SymbolTableVisitor {
         public Object visitExprNew(ExprNew exp){
 
             if (exp.isHole()){
+                if(ts.isStruct()){
+                   TypeStructRef t = (TypeStructRef) ts;
                 List<ExprNamedParam> newParams = new ArrayList<ExprNamedParam>();
+               
 
-                StructDef str = nres.getStruct(ts.getName());
+                StructDef str = nres.getStruct(t.getName());
                 Map<String, Integer> map = new HashMap<String, Integer>();
                 for (ExprNamedParam p : exp.getParams()) {
                     if (!map.containsKey(p.getName()) &&
@@ -54,8 +58,13 @@ public class ExpandADTHoles extends SymbolTableVisitor {
                 }
                 ExprNew newExp = new ExprNew(exp.getContext(), ts, newParams, false);
                 return newExp;
+                }else{
+                    //throw error
+                    throw new ExceptionAtNode("Type must be of type struct", exp);
+                }
+                }
 
-            }
+
             return exp;
 
         }
@@ -98,8 +107,13 @@ public class ExpandADTHoles extends SymbolTableVisitor {
             }
 
             return prev;
+        } else {
+            ReplaceExprNew r = new ReplaceExprNew(t, nres, symtab);
+            StmtAssign newS = (StmtAssign) s.accept(r);
+            return newS;
+
         }
-        return s;
+
 
     }
 

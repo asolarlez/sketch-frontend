@@ -1,0 +1,37 @@
+//works
+struct A{
+	
+}
+struct B extends A{
+	
+}
+struct C extends A{
+	
+}
+struct D extends C{
+}
+struct E extends C{
+}
+
+
+int get(A a ){
+	switch(a){
+		repeat_case:
+		{
+			return ??;
+		}
+		
+			
+		
+	}	
+}
+
+harness void main(){
+	B b = new B();
+	D d = new D();	
+	E e = new E();
+	assert(get(b) ==1);
+	assert(get(d)==2);
+	assert(get(e)==3);
+	
+}

@@ -1,0 +1,10 @@
+//works
+struct A{
+	int[3] x;
+}
+
+
+harness void main(){
+	A a = new A();
+	int[3][3] arr = a.{int[3]}; 
+}

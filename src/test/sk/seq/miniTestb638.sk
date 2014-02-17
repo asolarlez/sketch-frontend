@@ -1,0 +1,22 @@
+// works
+struct A{
+	
+}
+struct B extends A{
+	bit x;
+}
+struct C extends A{
+	int x;
+}
+
+A get(A a ){
+	int c =2;
+	bit b =1;
+	return new ??(x = c, x= b);	//a is not a field of any struct extending A
+}
+
+harness void main(){
+	B b = new B();
+	get(b);
+	
+}

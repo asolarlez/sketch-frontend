@@ -20,14 +20,14 @@ public class EliminateMacros extends SymbolTableVisitor{
         super(null);
     }
 
+
     @Override
     public Object visitExprFieldMacro(ExprFieldMacro exp){
         Type t = exp.getType();
-        Type ltype = getType(exp.getLeft());
-        if (!(ltype instanceof TypeStructRef)) {
-            throw new ExceptionAtNode("Left hand side is not a struct type", exp);
-        }
-        StructDef ts = getStructDef((TypeStructRef) ltype);
+        if (getType(exp.getLeft()).isStruct()) {
+            // report(exp, "ExprVar must be of type struct");
+        
+        StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
         List<Expression> matchedFields = new ArrayList<Expression>();
         for (StructFieldEnt e : ts.getFieldEntries()) {
             if (e.getType().promotesTo(t, nres)) {
@@ -36,6 +36,10 @@ public class EliminateMacros extends SymbolTableVisitor{
             }
         }
         return new ExprArrayInit(exp.getContext(), matchedFields);
+        }else{
+            throw new ExceptionAtNode("ExprLeft must be of type struct", exp);
+
+        }
         
     }
 
