@@ -1,0 +1,10 @@
+//works
+struct A{
+	bit x;
+}
+
+
+harness void main(){
+	A a = new A();
+	int[3] arr = a.{bit};
+}

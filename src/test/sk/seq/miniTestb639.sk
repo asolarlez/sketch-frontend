@@ -1,0 +1,33 @@
+//works but doesn't scale without combineFunCalls optimization
+int sketch(int x){
+	if(??){
+		x = x-10;
+	}
+	if(??){
+		x = x-20;	
+	}
+	if(x<0){
+		return 0;
+	}else
+	if(x<10){
+		x =x-1;
+		return sketch(x-1)+sketch(x-2);
+	}else
+	if(x<20){
+		x = x-1;
+		return sketch(x-1)+sketch(x-2)+sketch(x-3);
+	}else
+	if(x<30){
+		x=x-1;
+		return sketch(x-1)+sketch(x-2)+sketch(x-3);
+	}else{
+		x = x-1;
+		return sketch(x-1)+sketch(x-2)+sketch(x-3);
+	}
+		
+}
+
+harness void test(){
+	
+assert(sketch(40)==0);	
+}

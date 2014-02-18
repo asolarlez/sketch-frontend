@@ -101,7 +101,9 @@ public class ExprArrayRange extends Expression
         } else {
             this.base = new ExprArrayRange(node, base, rl.subList(0, rl.size() - 1));
         }
-        this.index = rl.get(0);
+
+        // is there a mistake here
+        this.index = rl.get(rl.size() - 1);
         setUnchecked(unchecked);
 	}
 

@@ -1,0 +1,8 @@
+struct A{
+}
+
+
+harness void main(){
+	A a = new A();
+	int[3] arr = a.{int};
+}

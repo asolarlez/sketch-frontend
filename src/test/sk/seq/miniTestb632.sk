@@ -1,0 +1,13 @@
+//works
+struct A{
+	
+}
+struct B extends A{
+	B b;
+}
+
+
+harness void main(){
+	 B b = new B();
+	A[3] arr = b.{A}; 
+}

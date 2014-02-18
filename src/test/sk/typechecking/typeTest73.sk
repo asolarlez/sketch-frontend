@@ -1,0 +1,24 @@
+//doesn't works
+struct A{
+	
+}
+
+
+
+A get(A a ){
+	switch(a){
+		repeat_case:
+		{
+			return A;
+		}
+		
+			
+		
+	}	
+}
+
+harness void main(){
+	A a = new A();
+	get(a);
+	
+}

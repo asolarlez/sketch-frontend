@@ -491,13 +491,16 @@ public class SequentialSketchMain extends CommonSketchMain
         prog = (Program) prog.accept(new EliminateMacros());
         // prog.debugDump("af");
         prog = (Program) prog.accept(new ConstantReplacer(null));
+        
         prog = (Program) prog.accept(new MinimizeFcnCall());
+        
         prog = (Program) prog.accept(new SpmdbarrierCall());
+        
         prog = (Program) prog.accept(new PidReplacer());
 
-
-        prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
         // prog.debugDump("After");
+        prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
 

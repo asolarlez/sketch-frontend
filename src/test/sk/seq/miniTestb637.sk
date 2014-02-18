@@ -1,0 +1,31 @@
+//works
+struct A{
+	
+}
+struct B extends A{
+	
+	int x;
+	
+}
+struct C extends A{
+	
+}
+
+
+int[2] get(A a ){
+	switch(a){
+		repeat_case:
+		{
+			return a.{int};
+		}
+		
+			
+		
+	}	
+}
+
+harness void main(){
+	B b = new B();
+	get(b);
+	
+}

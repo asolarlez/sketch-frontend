@@ -1,0 +1,25 @@
+//doesnt works
+struct A{
+	
+}
+struct B extends A{
+	
+}
+struct C extends A{
+	
+}
+struct D extends C{
+}
+struct E extends C{
+}
+
+
+int get(A a ){
+	return new ??();	
+}
+
+harness void main(){
+	B b = new B();
+	get(b);
+	
+}
