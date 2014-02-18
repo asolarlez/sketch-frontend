@@ -1,0 +1,15 @@
+struct A {
+  int x;
+}
+
+
+int foo (A a, B b) { // TypeError
+//  return a.x + b.y;
+  return a.x;
+}
+
+harness void main() {
+  A x = new A(x = 1);
+
+  assert foo(x, null) == 1;
+}
