@@ -1,0 +1,30 @@
+
+
+struct base{
+
+}
+
+struct A extends base{ base x; base y; }
+struct B extends base{ base a; base b; }
+struct D extends base{ base a; base b; }
+struct C extends base{}
+
+
+base ma(base x, base y){ return new A(x=x, y=y); }
+base mb(base x, base y){ return new B(a=x, b=y); }
+base mc(){ return new C(); }
+
+
+int visit(base b){
+	switch(b){
+		case A: return visit(b.x) + visit(b.y);
+		case B: return visit(b.a) - visit(b.b);
+		case D: return visit(b.a) - visit(b.b) / (visit(b.a) * visit(b.b)) ;
+		case C: return 1;
+	}
+}
+
+harness void main(){
+	assert visit( ma(ma(ma(mb(mc(), mc()), mc()),mc()), ma(mc(),mb(mc(), mc()))  )  ) == ??;
+	
+}

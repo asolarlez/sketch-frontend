@@ -391,6 +391,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         "Structures with variable length arrays can not be temporary structures.");
             }
         }
+        StructDef sd = nres.getStruct(tr.getName());
+        if (sd == null) {
+            report(curcx, "The structure " + tr.getName() + " is undefined or ambiguous");
+        }
         return tr;
     }
 
