@@ -1,4 +1,4 @@
-//Correct
+
 struct Tree{ 
 	int x;
 }
@@ -29,7 +29,7 @@ int x =   sum(branch);
 }
 
 int sum(Tree t){
-		
+	Leaf l = (Leaf) t;	// TypeError this should fail when t is not a leaf.
     switch(t){
         case Leaf: 
             /* t is now of type Leaf in this branch */
@@ -45,4 +45,5 @@ int sum(Tree t){
 		}
     }
     /* Outside the switch, t goes back to being of type Tree*/
+    
 }

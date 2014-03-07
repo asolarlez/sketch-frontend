@@ -24,7 +24,7 @@ int x =   sum(branch);
 
 int sum(Tree t){
 		
-    switch(t){
+    switch(t){ //TypeError
         case Leaf: 
             /* t is now of type Leaf in this branch */
             {

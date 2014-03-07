@@ -136,6 +136,12 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateNestedArrAcc(false));
         
+        if (false) {
+        prog =
+                (Program) prog.accept(new MakeLoopsRecursive(varGen,
+                        options.bndOpts.unrollAmnt));
+        prog.debugDump("After making loops recursive");
+        }
 
 
         if (options.feOpts.truncVarArr) {

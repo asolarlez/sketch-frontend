@@ -104,7 +104,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         "Two structs in the same package can't share a name.");
                 Map<String, FEContext> fieldNames = new HashMap<String, FEContext>();
                 StructDef current = ts;
-
+                Set<String> checkRepeats = new HashSet<String>();
                 while (current != null) {
                     for (Entry<String, Type> entry : current) {
                         checkADupFieldName(fieldNames, entry.getKey(),
@@ -116,6 +116,13 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                                             entry.getKey() + "'");
                         }
                     }
+                    String cn = current.getFullName();
+                    if (checkRepeats.contains(cn)) {
+                        throw new ExceptionAtNode(
+                                "Cycle in subtyping relation involving struct type " + cn,
+                                current);
+                    }
+                    checkRepeats.add(cn);
                     String parent = current.getParentName();
                     if (parent != null) {
                         current = nres.getStruct(parent);
@@ -934,7 +941,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         List<String> children = nres.getStructChildren(tres.getName());
 
         if (children == null || children.isEmpty()) {
-            report(stmt, "Struct representing exprVar has no children");
+            report(stmt, "Pattern matching on variable " + var + " of type " + tres +
+                    " but that type has no variants");
         }
         if(!stmt.getCaseConditions().contains("default")){
             if (!isExhaustive(children, stmt.getCaseConditions())) {
@@ -1266,6 +1274,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 boolean found = false;
                 // Changed for ADT
                 StructDef current = ts;
+                if (current == null) {
+                    return expr;
+                }
                 outerloop: while (current.getParentName() != null) {
                     for (Entry<String, Type> entry : current) {
                         if (entry.getKey().equals(rn)) {

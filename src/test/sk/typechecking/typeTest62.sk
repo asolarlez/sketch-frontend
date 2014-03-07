@@ -18,7 +18,7 @@ int x =   sum(plus);
 
 int sum(ASTNode e){
 		
-    switch(e){
+    switch(e){ // TypeError Statement shadows IfStmt and WhileStmt
         case Expression:           
             {
                 return 1;

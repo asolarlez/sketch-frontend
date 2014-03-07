@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.dataflow.nodesToSB.NtsbVtype;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printFailure;
@@ -525,9 +526,12 @@ public class MethodState {
             val = vtype.not(assertHelper(changeTracker, false, includeReturnCond));
         } else {
             if (includeReturnCond) {
-            val = vtype.not(getRvflag().state(vtype));
+                val = vtype.not(getRvflag().state(vtype));
             } else {
                 val = vtype.CONST(0);
+            }
+            if (vtype instanceof NtsbVtype) {
+                val = vtype.and(val, vtype.BOTTOM("<#PC >"));
             }
         }
         return val;
@@ -567,8 +571,15 @@ public class MethodState {
         }
         if(tmpTracker.kid == null){
             if (includeReturnCond) {
-                return vtype.or(nestCond, getRvflag().state(vtype));
+                nestCond = vtype.or(nestCond, getRvflag().state(vtype));
+                if (vtype instanceof NtsbVtype) {
+                    nestCond = vtype.or(nestCond, vtype.not(vtype.BOTTOM("<#PC >")));
+                }
+                return nestCond;
             } else {
+                if (vtype instanceof NtsbVtype) {
+                    nestCond = vtype.or(nestCond, vtype.not(vtype.BOTTOM("<#PC >")));
+                }
                 return nestCond;
             }
         }else{
@@ -587,26 +598,34 @@ public class MethodState {
                             assertHelper(changeTracker, isSuper == StmtAssert.SUPER, true));
         }else{
             if(isSuper != StmtAssert.UBER){
+                if (vtype instanceof NtsbVtype) {
+                    val = vtype.or(val, vtype.not(vtype.BOTTOM("<#PC >")));
+                }
                 val = vtype.or(val, getRvflag().state(vtype) );
             }
         }
 
         /*
-         * The recursive procedure makes it easier to find common subexpressions. 
-         * The hope is that that will make the problem easier for the SAT solver to solve.
-        for (ChangeTracker tmpTracker = changeTracker;
-                tmpTracker != null; tmpTracker = tmpTracker.kid )
-        {
-            if (! tmpTracker.hasCondVal ())
-                continue;
-            abstractValue nestCond = vtype.not(tmpTracker.getCondVal ());
-            val = vtype.or(val, nestCond );
-        }
-        */
+         * The recursive procedure makes it easier to find common subexpressions. The hope
+         * is that that will make the problem easier for the SAT solver to solve. for
+         * (ChangeTracker tmpTracker = changeTracker; tmpTracker != null; tmpTracker =
+         * tmpTracker.kid ) { if (! tmpTracker.hasCondVal ()) continue; abstractValue
+         * nestCond = vtype.not(tmpTracker.getCondVal ()); val = vtype.or(val, nestCond );
+         * }
+         */
         vtype.Assert(val, stmt);
     }
 
     public void Assume(abstractValue val, StmtAssume stmt) {
+        if (changeTracker != null) {
+            val = vtype.or(val, assertHelper(changeTracker, false, true));
+        } else {
+            /*There should be no assumes in nested calls, so the caller path condition is irrelevant.
+            if (vtype instanceof NtsbVtype) {
+                val = vtype.or(val, vtype.not(vtype.BOTTOM("<#PC >")));
+            }*/
+            val = vtype.or(val, getRvflag().state(vtype));
+        }
         vtype.Assume(val, stmt);
     }
 

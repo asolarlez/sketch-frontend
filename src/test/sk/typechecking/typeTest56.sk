@@ -8,7 +8,7 @@ harness void test(){
 }
 
 int sum(Tree t){	
-    switch(t){
+    switch(t){ // TypeError
         case point:  //Not a variant of Tree            
             {            
             return t.value;

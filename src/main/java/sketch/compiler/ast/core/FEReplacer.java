@@ -648,7 +648,13 @@ public class FEReplacer implements FEVisitor
     {
         Expression newValue = stmt.getCond() == null ? null :
             doExpression(stmt.getCond());
-        if (newValue == stmt.getCond()) return stmt;
+        Integer ev = newValue.getIValue();
+        if (ev != null && ev == 1) {
+            return null;
+        }
+        if (newValue == stmt.getCond()) {
+            return stmt;
+        }
         return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper());
     }
 

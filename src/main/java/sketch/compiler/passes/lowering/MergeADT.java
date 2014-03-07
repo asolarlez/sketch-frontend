@@ -153,7 +153,8 @@ public class MergeADT extends SymbolTableVisitor {
         Expression condRight = new ExprNullPtr();
         condition1 = new ExprBinary(ExprBinary.BINOP_NEQ, condLeft, condRight);
         Statement assertStmt =
-                new StmtAssert(condition1, "Expression to pattern match can't be null",
+                new StmtAssert(condition1, "Expression to pattern match can't be null: " +
+                        stmt.getCx(),
                         false);
 
         stmtIfs.add(assertStmt);

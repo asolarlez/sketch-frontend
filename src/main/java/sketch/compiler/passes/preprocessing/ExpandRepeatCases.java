@@ -54,6 +54,9 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
         LinkedList<String> queue = new LinkedList<String>();
         queue.add(tres.getName());
         // List<String> children = nres.getStructChildren(tres.getName());
+        if (stmt.getCaseConditions().size() == 0) {
+            return stmt;
+        }
         String c = stmt.getCaseConditions().get(0);
         if (c == "repeat") {
 

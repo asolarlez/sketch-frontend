@@ -11,7 +11,7 @@ harness void test(){
 
 int sum(Tree t){
 		
-    switch(new Branch()){
+    switch(new Branch()){ // TypeError this should be a variable.
         case Leaf:           
             {     
             return 1;

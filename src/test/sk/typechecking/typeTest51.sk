@@ -11,14 +11,13 @@ struct Leaf extends Tree{
     int value;
 }
 struct Branch extends Tree{
-    Tree left;
-    Tree right;
+    
 }
 
 
 harness void test(){
 	Leaf leaf = new Leaf();
-Branch b = (Branch) sum(leaf); //Wrong type casting
+Branch b = (Branch) sum(leaf); // TypeError Wrong type casting
 
 }
 

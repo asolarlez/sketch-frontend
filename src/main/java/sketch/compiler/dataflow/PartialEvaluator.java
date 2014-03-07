@@ -600,11 +600,16 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     abstractValue fav = null;
                     if(av.isVect()){
                         List<abstractValue> lv = av.getVectValue();
-                        Integer tal = ta.getLength().getIValue();
-                        if (tal != null && lv.size() == tal) {
-                            fav=(av);
+                        Expression lexp = ta.getLength();
+                        if (lexp == null) {
+                            fav = (av);
                         }else{
-                            fav=(vtype.cast(av, ta));
+                            Integer tal = lexp.getIValue();
+                            if (tal != null && lv.size() == tal) {
+                                fav = (av);
+                            } else {
+                                fav = (vtype.cast(av, ta));
+                            }
                         }
                     } else {                        
                         fav = av;

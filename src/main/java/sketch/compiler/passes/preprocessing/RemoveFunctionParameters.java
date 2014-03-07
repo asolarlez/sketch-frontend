@@ -797,8 +797,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                          * return exp; } if (extractedInnerFuns.containsKey(fullName)) {
                          * // hoistedFun.accept(this); return exp; } return exp; }
                          */
-                        Type pt = InnerFunReplacer.this.symtab.lookupVar(exp);
-
+                        Type pt = InnerFunReplacer.this.symtab.lookupVarNocheck(exp);
+                        if (pt == null) {
+                            return exp;
+                        }
                         int kind =
                                 InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
                                         exp);
@@ -936,7 +938,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                         final boolean oldIsA = isAssignee;
                         for (Expression e : existingArgs) {
                             isAssignee = true;
-                            e.accept(this);
+                            // if (!(e instanceof ExprVar)) {
+                                e.accept(this);
+                            // }
                             isAssignee = oldIsA;
                         }
                         return efc;
@@ -1169,6 +1173,18 @@ public class RemoveFunctionParameters extends FEReplacer {
     Function createCall(final ExprFunCall efc, Function orig, final String nfn) {
 
         final String cpkg = nres.curPkg().getName();
+        Iterator<Parameter> it = orig.getParams().iterator();
+        for (Expression actual : efc.getParams()) {
+            Parameter formal = it.next();
+            if (formal.getType() instanceof TypeFunction) {
+                Function f = nres.getFun(actual.toString());
+                if (f == null) {
+                    throw new ExceptionAtNode("Function " + actual + " does not exist",
+                            efc);
+                }
+            }
+
+        }
 
         FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg);
 

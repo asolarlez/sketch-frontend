@@ -10,14 +10,13 @@ struct Leaf extends Tree{
     int value;
 }
 struct Branch extends Tree{
-    Tree left;
-    Tree right;
+    
 }
 
 
 harness void test(){
 	Branch branch = new Branch();
-Branch b = sum(branch); //No exlicit type casting
+Branch b = sum(branch); //TypeError Missing explicit type casting
 
 }
 

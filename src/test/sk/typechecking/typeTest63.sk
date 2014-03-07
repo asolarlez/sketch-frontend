@@ -21,7 +21,7 @@ Leaf leaf2 = new Leaf(value = 4);
 
 Branch branch = new Branch();
 branch.left = leaf1;
-branch.right = leaf2;
+branch.right = null;
 
 
 int x =   sum(branch);
@@ -30,7 +30,7 @@ int x =   sum(branch);
 
 int sum(Tree t){
 		
-    switch(t){
+    switch(t){ // TypeError null expression
         case Leaf: 
             /* t is now of type Leaf in this branch */
             {

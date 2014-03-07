@@ -105,7 +105,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         int sz = fl.size();
         for (Pair<String, TypeArray> af : fl) {
             ++cnt;
-            if (cnt == sz) {
+            if (cnt == sz && struct.isInstantiable()) {
                 result +=
                         indent + typeForDecl(af.getSecond().getBase()) + " " +
                                 af.getFirst() + "[];\n";

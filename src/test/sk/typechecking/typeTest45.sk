@@ -23,7 +23,7 @@ int x =   sum(branch);
 int sum(Branch t){
 		// t is not a parent ADT
 		
-    switch(t){
+    switch(t){ // TypeError
         
     }
     return 1;

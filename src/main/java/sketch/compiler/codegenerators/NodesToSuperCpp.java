@@ -58,7 +58,7 @@ public class NodesToSuperCpp extends NodesToJava {
         String className = escapeCName(struct.getName());
 
         String result = "";
-
+        int arrayAbove = 0;
         result += indent + className + "* " + className + "::create(";
         boolean first = true;
         StructDef current = struct;
@@ -77,6 +77,9 @@ public class NodesToSuperCpp extends NodesToJava {
                     symtab.registerVar(field + "_", (ftype), current,
                             SymbolTable.KIND_LOCAL);
                     if (ftype instanceof TypeArray) {
+                        if (current.isInstantiable()) {
+                            arrayAbove++;
+                        }
                         fl.add(new Pair<String, TypeArray>(field, (TypeArray) ftype));
                         result += ", int " + field + "_len";
                     }
@@ -151,7 +154,7 @@ public class NodesToSuperCpp extends NodesToJava {
         for (Pair<String, TypeArray> af : fl) {
             String field = af.getFirst();
             ++cnt;
-            if (cnt != sz) {
+            if (cnt != arrayAbove) {
                 result +=
                         indent + "rv->" + field + "= (" + typeForDecl(af.getSecond()) +
                                 ") (((char*)&(rv->" + lastField + "))  " + lastSize +

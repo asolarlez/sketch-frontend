@@ -19,7 +19,7 @@ harness void test(){
 
 Branch branch = new Branch();
 branch.left = new Leaf();
-Branch b = (Branch) sum(branch);
+Branch b = (Branch) sum(branch); // TypeError
 
 }
 

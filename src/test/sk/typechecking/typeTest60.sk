@@ -2,7 +2,7 @@
 struct ASTNode{ int type; }
 struct Expression extends ASTNode{  }
 struct Statement extends ASTNode{  }
-struct Plus extends Expression{ int type; Expression left; Expression right; }
+struct Plus extends Expression{ int type; Expression left; Expression right; } // TypeError duplicate filed type
 struct Times extends Expression{ Expression left; Expression right; }
 struct IfStmt extends Statement{ Expression cond; Statement tpart; Statement epart; }
 struct WhileStmt extends Statement{ Expression cond; Statement body;  } // nested adt

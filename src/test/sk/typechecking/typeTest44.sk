@@ -31,8 +31,8 @@ int sum(Tree t){
 	
     switch(t){
     	//statements other than cases cannot be in switch block
-    	int x;
-        case Leaf: 
+    	int x; // TypeError
+        case Leaf: // TypeError
             /* t is now of type Leaf in this branch */
             {
                         return t.value;

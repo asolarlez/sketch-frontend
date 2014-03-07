@@ -1,11 +1,11 @@
 int foo([int n], int[n] arr){
 	
 	if(n>5){
-		return foo(n-1, arr[0::n]);
+		return foo(n-1, arr[0::n-??]);
 			
 	}else
 	if(n>0){
-		return foo(n-2, arr[0::n-1]);
+		return foo(n-2, arr[0::n-??]);
 		
 	}else{
 		return 1; 

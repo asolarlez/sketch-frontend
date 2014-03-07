@@ -3,5 +3,5 @@ struct Tree{
 	int value;
 }
 struct Leaf extends Tree{
-	int value;
+	int value; // TypeError
 }

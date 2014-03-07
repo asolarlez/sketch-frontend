@@ -32,12 +32,12 @@ int sum(Tree t){
 		
     switch(t){
                    
-        default:
+        default: 
 			{
             
             return t.x;
 		}
-		default:
+		default: // TypeError double default
 		{
 		}
     }

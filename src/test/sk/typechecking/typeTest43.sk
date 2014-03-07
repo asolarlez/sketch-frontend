@@ -10,6 +10,6 @@ struct WhileStmt extends Statement{ Expression cond; Statement body;  } // neste
 
 
 harness void test(){
-	Expression expr = new Expression();
+	Expression expr = new Expression(); // TypeError
 
 }

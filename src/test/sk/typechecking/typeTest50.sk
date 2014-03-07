@@ -11,7 +11,7 @@ harness void test(){
 
 int sum(Branch t){
 		
-    switch(t){
+    switch(t){ // TypeError
         
     }
     return 1;

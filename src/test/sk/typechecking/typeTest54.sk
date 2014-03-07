@@ -9,9 +9,9 @@ struct Tree{
 struct Leaf extends Tree{
     int value;
 }
-struct Branch extends Tree{
-    Tree left;
-    Tree right;
+struct Branch extends Tree{ //TypeError duplicate declarations
+    Tree left; 
+    Tree right; 
 }
 
 
