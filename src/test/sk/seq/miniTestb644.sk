@@ -1,0 +1,38 @@
+bit inv(int x, int n) 
+{
+ 	//if (({| 0 | 1 | -1 |} * x + {| 0 | 1 | -1 |} * n <= ??) == 1)
+ 	if (( x - n <= ??) == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+harness void main(int x, int n, int b)
+{
+	//assume x <= 100;
+	//assume n <= 100;
+	
+	if(b == 0)
+	{
+		assume n >= 0;	
+		x = 0;
+		assert inv(x,n) == 1;
+	}
+	else if (b == 1)
+	{
+		assume inv(x,n) == 1;
+		assume x < n;
+		x = x + 1;
+		assert inv(x,n) == 1;
+	}
+	else
+	{
+		assume inv(x,n) == 1;
+		assume x >= n;
+		assert x == n;
+	}
+}

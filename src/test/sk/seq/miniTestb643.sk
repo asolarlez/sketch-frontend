@@ -1,0 +1,33 @@
+
+
+harness void main(int x){
+	int foo(){
+		int moo(fun f, int u){
+			return f(u);
+		}
+		if(x>0){
+			int bar(int t){
+				x = t;
+				return foo();
+			}
+			int rrr(){
+				return x-1;
+			}
+			int app(fun f){
+				int baba(fun g){
+					return g();
+				}
+				int mqq(){
+					return baba(f);
+				}
+				return mqq();
+			}
+			return moo(bar, app(rrr));
+		}else{
+			return 0;
+		}
+	}
+	if(x < 5){
+		foo();
+	}
+}
