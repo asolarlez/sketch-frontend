@@ -136,7 +136,7 @@ light-distr:
 	make assemble-noarch
 	cp $$(ls -d target/sketch-$(VERSION)-noarch-launchers*)/*.jar ../sketch-distr/.
 	cp -r scripts ../sketch-distr
-	rm customcodegen/*.class
+	rm -f customcodegen/*.class
 	cp -r customcodegen ../sketch-distr/.
 	cp docs/SketchManual/manual.pdf ../sketch-distr/LanguageReference.pdf
 	cp scripts/windows/final/sketch ../sketch-distr/.
