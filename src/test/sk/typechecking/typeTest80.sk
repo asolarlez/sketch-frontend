@@ -1,0 +1,15 @@
+
+struct A{}
+struct B extends A{}
+struct C extends A{}
+
+
+harness void main(int x){
+	A xa = new B();
+	
+	switch(xa){
+		case B: assert xa != null;
+		case C: assert xa != null;
+		case B: assert xa != null; // TypeError no duplicate cases.
+	}
+}

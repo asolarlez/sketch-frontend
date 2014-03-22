@@ -1,0 +1,277 @@
+
+int Oplus= 0;
+int Ominus=1;
+int Oneg = 2;
+int Oand = 3;
+int Oor = 4;
+int Onot = 5;
+int Ogt = 6;
+int Olt = 7;
+
+
+struct sourceAST {}
+
+struct SPrim1 extends sourceAST{int op;	sourceAST a;}
+struct SPrim2 extends sourceAST{int op;	sourceAST a; sourceAST b;}
+struct SBetween extends sourceAST{ sourceAST a;	sourceAST b; sourceAST c;}
+struct SIf extends sourceAST{sourceAST a;sourceAST b; sourceAST c;}
+
+struct SStr extends sourceAST{ int str; }
+struct SNum extends sourceAST{int val;}
+struct STrue extends sourceAST{}
+struct SFalse extends sourceAST{}
+
+
+//CoreAST
+struct coreAST{}
+struct CVar extends coreAST{ int str;}
+struct CPrim1 extends coreAST{int op; coreAST a;}
+struct CPrim2 extends coreAST{ int op;	coreAST a;	coreAST b;}
+struct CLet extends coreAST{int str; coreAST a;	coreAST b;}
+struct CIf extends coreAST{	coreAST a;coreAST b; coreAST c;}
+struct CNum extends coreAST{int val;}
+struct CStr extends coreAST{int str;}
+struct CBool extends coreAST{bit bval;}
+
+
+
+
+coreAST desugar(sourceAST s, int bnd){
+	if(s == null){ return null; }
+	if(bnd <= 0){ return null; }
+		
+	generator int getOp(int op){ return {| op |Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
+	generator int getStr(){ return {| 1|2|3 |}; }
+	generator int getConst(int c){return {| c|??|};}
+	
+	//generator for coreAST
+	generator coreAST getPart(coreAST c1, coreAST c2, coreAST c3, int bnd) {
+		assert bnd > 0;
+		if(??){
+			return {| c1|c2|c3|null |};
+		}if(??){
+			 return new CVar(str = getStr());
+		}else{
+				coreAST a = getPart(c1,c2,c3, bnd-1);
+				coreAST b = getPart(c1,c2,c3, bnd-1);
+				if(??){
+					return 	new CPrim2(op=getOp(1), a = a, b =b);
+				}else
+				{
+					return new CLet(str= getStr(), a = a, b= b);	
+				}
+		}
+		return null;
+		
+	}
+	generator coreAST[3] run([int n], sourceAST[n] fields){
+		coreAST[3] out;
+		int i=0;
+		repeat(n){
+			out[i] = desugar(fields[i], bnd-1); ++i;
+		}
+		return out;
+	} 
+	switch(s){
+		repeat_case:
+		{
+			coreAST[3] v = run( s.{sourceAST} );
+			 int[1] op = s.{int};
+			return new ??(op=getOp(op[0]), a = getPart(v[0], v[1], v[2], 2), b = getPart(v[0], v[1], v[2], 2), c =getPart(v[0], v[1], v[2], 2), str = getStr(), bval = ??, val = getConst(op[0]));	
+			
+		}
+		
+				
+	}
+}
+sourceAST gBetween(sourceAST a, sourceAST b, sourceAST c){
+	return new SBetween(a =a, b=b, c= c);
+}
+sourceAST gIf(sourceAST cond, sourceAST th, sourceAST el){
+	return new SIf(a=cond, b=th, c=el);
+}
+sourceAST gOp([int n], int op, sourceAST[n] p){
+	if(n==1){
+		return new SPrim1( op= op, a = p[0]);
+	}else{
+		return new SPrim2(op=op, a=p[0], b=p[1]);
+	}
+} 
+
+sourceAST gN(int n){
+	return new SNum( val=n);
+}
+
+sourceAST gTrue(){
+	return new STrue();
+}
+sourceAST gFalse(){
+	return new SFalse();
+}
+
+coreAST cIf(coreAST cond, coreAST th, coreAST el){
+	return new CIf( a=cond, b=th, c=el);
+}
+
+
+coreAST cOp([int n], int op, coreAST[n] p){
+	if(n==1){
+		return new CPrim1( op= op, a = p[0]);
+	}else{
+		return new CPrim2( op=op, a=p[0], b=p[1]);
+	}
+} 
+
+coreAST cN(int n){
+	return new CNum( val=n);
+}
+coreAST cLet(int str, coreAST a, coreAST b){
+	return new CLet(str= str, a= a, b= b);
+}
+coreAST cVar(int str){
+	return new CVar(str= str);
+}
+coreAST cStr(int str){
+	return new CStr(str= str);
+}
+coreAST cBool(bit val){
+	return new CBool(bval = val);
+}
+
+bit equals(coreAST c1 ,coreAST c2, int bnd){	
+	if(bnd <= 0){ return false; }
+	switch(c1){
+		case CPrim1:
+		{
+			switch(c2){
+				case CPrim1:
+				{
+					return c1.op == c2.op && equals(c1.a, c2.a, bnd-1);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CPrim2:
+		{
+			switch(c2){
+				case CPrim2:
+				{
+					return c1.op == c2.op && equals(c1.a, c2.a, bnd-1) && equals(c1.b, c2.b, bnd-1) ;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CIf:
+		{
+			switch(c2){
+				case CIf:
+				{
+					return equals(c1.a, c2.a, bnd-1)&& equals(c1.b, c2.b, bnd-1) &&equals(c1.c, c2.c, bnd-1);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CNum:
+		{
+			switch(c2){
+				case CNum:
+				{
+					return c1.val == c2.val;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CLet:
+		{
+			switch(c2){
+				case CLet:
+				{
+					return c1.str==c2.str &&(equals(c1.a, c2.a, bnd-1))&&equals(c1.b,c2.b, bnd-1);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CVar:
+		{
+			switch(c2){
+				case CVar:
+				{
+					return c1.str == c2.str;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}		
+		case CStr:
+		{
+			switch(c2){
+				case CStr:
+				{
+					return c1.str == c2.str;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case CBool:
+		{
+			switch(c2){
+				case CBool:
+				{
+					return c1.bval == c2.bval;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+	}
+}
+
+
+harness void main2(int x, int y, int z){
+	
+	  sourceAST s1 = gBetween(gN(x), gN(y), gN(z));
+	  coreAST t1 = desugar(s1, 3);
+	  coreAST c1 = cOp(Oand, {cOp(Olt,{cN(x), cN(y)}), cOp(Olt,{cN(y), cN(z)}) });
+      assert equals (c1, t1, 3);
+
+}
+
+
+harness void main1(int op, bit bsz, int x, int y){
+	int sz = bsz? 1 : 2;
+	sourceAST s1 = gOp(sz, op, {gN(x), gN(y)}[0::sz]);
+	coreAST t1 = desugar(s1, 3);	
+	assert equals(t1, cOp(sz, op, {cN(x), cN(y)}[0::sz] ), 3);
+
+}
+
+harness void main3(bit b1, int x, int y){
+
+	sourceAST s1 = gIf( b1? gTrue() : gFalse(), gN(x), gN(y));
+	coreAST t1 = desugar(s1, 3);	
+	assert equals(t1, cIf( cBool(b1), cN(x), cN(y) ), 3);
+}
+	
+	

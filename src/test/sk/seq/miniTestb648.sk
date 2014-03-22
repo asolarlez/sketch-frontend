@@ -1,0 +1,19 @@
+
+
+pragma options "--bnd-unroll-amnt 100";
+
+
+void foo(ref int[100] q){
+	q[77] = 25;
+}
+
+
+
+harness void main(int n, int[n] a){
+	int[100] m = a;
+	
+	foo(m);
+
+
+	assert m[77] == 25;
+}

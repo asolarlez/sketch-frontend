@@ -143,6 +143,7 @@ public class LowerToSketch extends MetaStage {
         prog.debugDump("After making loops recursive");
         }
 
+        prog = (Program) prog.accept(new EliminateHugeArrays());
 
         if (options.feOpts.truncVarArr) {
             prog = (Program) prog.accept(new TruncateVarArray(options, varGen));

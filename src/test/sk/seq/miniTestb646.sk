@@ -1,0 +1,31 @@
+
+
+struct A{}
+struct B extends A{ A x;}
+struct C extends A{ A y;}
+struct D extends A{ A x; A z;}
+
+
+void checkEq(A a, A b){
+	switch(a){
+		case B :{ B bb = (B) b; checkEq(a.x, bb.x); }
+		case C :{ C bb = (C) b; checkEq(a.y, bb.y); }
+		case D :{ D bb = (D) b; checkEq(a.z, bb.z); }
+	}
+}
+
+
+harness void main(){
+
+	generator A newGen(int bnd){
+		if(bnd <= 0){ return null; }
+		return new ??(x = newGen(bnd-1), y = newGen(bnd -1), z = newGen(bnd -1));
+	}
+
+	A a = newGen(2);
+	A b = newGen(2);
+	
+	checkEq(a, b);
+	
+
+}
