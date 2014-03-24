@@ -1,0 +1,822 @@
+int Oplus= 0;
+int Ominus=1;
+int Oneg = 2;
+int Oand = 3;
+int Oor = 4;
+int Onot = 5;
+int Ogt = 6;
+int Olt = 7;
+
+int count = 0; // for LVars
+struct E{}
+struct LVar extends E { int name;}
+struct LAbs extends E { LVar var; E a;}
+struct LApp extends E { E a; E b;}
+struct LNum extends E { int val;}
+struct LPrim2 extends E { int op; E a; E b;}
+
+
+struct source{}
+struct SVar extends source { int name;}
+struct SAbs extends source { SVar var; source a;}
+struct SApp extends source { source a; source b;}
+struct SNum extends source { int val;}
+struct SPrim2 extends source { int op; source a; source b;}
+
+
+
+struct SNil extends source {}
+struct SCons extends source { source a; source b;}
+struct SFirst extends source{source a;}
+struct SRest extends source{source a;}
+
+E desugar(source s, int bnd){
+	if(s == null){ return null; }
+	if(bnd <= 0){ return null; }
+		
+	generator int getOp(int op){ return {| op |Oplus | Ominus |}; }  
+	generator int getOp1(int op){ return {| op |Oplus | Ominus|Oneg|Onot|Oand|Oor |}; }  
+	generator int getConst(int c){return {| c|0-c|??|};}
+	
+	//generator for E in lambda calculus
+	generator E getPart(E c1, E c2, int bnd, ref int depth) {
+		assert bnd > 0;
+		depth++;
+		
+		LVar x  = new LVar(name = 0);
+		LVar y = new LVar(name = 1);
+		//LVar z = new LVar(name =2);
+		if (count < 2) count =2;
+		E _x = x;
+		int c = ??;
+		if ( c >= count) count = c+1;
+		LVar z = new LVar(name = c);
+		E _z = new LVar(name = c);
+		//define true
+		E True = new LAbs(var = x, a = new LAbs(var =y, a = x));
+		
+		//define false;
+		E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
+		//E combined = new LApp(a = new LApp(a = x, b = c2), b = c1);
+		if(??){
+			return {| c1|c2|True|False|_z|};
+		}else{
+			
+			if(bnd > 1){
+				E a = getPart(c1,c2,bnd-1,depth);
+				E b = getPart(c1,c2, bnd-1,depth);
+				int t = ??;
+				LVar v  = new LVar(name = t);
+				if ( t >= count) count = t+1;
+				
+				return 	new ??(op=getOp(1), a = a, b =b, name = getConst(1), val = getConst(1),var = v);
+				
+			}
+		}
+		return null;
+	}
+	generator E[2] run([int n], fun f, source[n] fields){
+		E[2] out;
+		int i=0;
+		repeat(n){
+			out[i] = f(fields[i],bnd-1); ++i;
+		}
+		return out;
+	} 
+	switch(s){
+		repeat_case:
+		{
+			
+			E[2] v = run(desugar, s.{source} );
+			int[1] op = s.{int};
+			
+			int d,d1,d2;
+			E a = getPart(v[0], v[1], 3,d1);
+			E b = getPart(v[0], v[1], 1,d2);
+			d = d1+d2;
+			//minimize(d);
+			
+			int val = op[0];
+			SVar[1] _var = s.{SVar};
+			if(_var[0] !=null) val = _var[0].name;
+			LVar var  = new LVar();
+			int t = getConst(val);
+			var.name = t;
+			if ( t >= count) count = t+1;
+			if(??) return {|a|b|};
+			else
+			return 	new ??(op = getConst(op[0]), a = a, b =b, name = getConst(op[0]),var = var, val = getConst(op[0]));
+			
+			
+			
+		}
+	}
+}
+
+source substituteS(SVar x, source E_a, source E_b, int bnd){
+	if (bnd <1 || E_a ==null || E_b == null || x ==null) return null;
+	
+	switch(E_a){
+		
+		case SApp:
+		{
+			return new SApp(a = substituteS(x, E_a.a, E_b, bnd -1), b = substituteS(x, E_a.b, E_b,bnd -1));  
+		}
+		case SAbs:
+		{
+			
+			SVar v = E_a.var;
+			if(v.name == x.name) {return E_a;}
+			else {
+			//E_a = Lambda y. E1
+				//create a new var z
+				SVar z = new SVar(name = count++);
+				//substitute y in E1 with z
+				
+				source e1 = substituteS(v,E_a.a, z, bnd-1);
+				
+				//Then substitute x with E_b
+				source e2 = substituteS(x, e1, E_b,bnd-1);
+				
+				return new SAbs(var = z, a = e2);
+				
+			}
+		}
+		case SVar:
+		{	
+			
+			if (E_a.name == x.name) {return E_b;}
+			else {return E_a;}
+		}
+		
+		case SNum:
+		{
+			return E_a;
+		}
+		case SCons:
+		{
+			return new SCons(a = (SVar)substituteS(x, E_a.a, E_b, bnd-1), b = substituteS(x, E_a.b, E_b, bnd-1));
+		}
+		case SFirst:
+		{
+			return new SFirst(a = substituteS(x, E_a.a, E_b, bnd-1));
+		}
+		case SRest:
+		{
+			return new SRest(a= substituteS(x, E_a.a, E_b, bnd -1));
+		}
+		
+		case SPrim2:
+		{
+			return new SPrim2(op = E_a.op, a = substituteS(x,E_a.a,E_b, bnd-1), b = substituteS(x, E_a.b, E_b, bnd-1));
+		}
+		default: return E_a;
+	}
+
+
+}
+
+
+//interpret source
+source interpretSource(source s, int bnd){
+	if(bnd <1 || s==null) return null;
+	
+	switch(s){
+	
+			
+		case SFirst:
+		{
+			source list = interpretSource(s.a, bnd-1);
+			if(list == null) return null;
+			switch(list){
+				case SNil: return list;
+				case SCons: return list.a;
+				default: return null;
+			}
+		}
+		case SRest:
+		{
+			source list = interpretSource(s.a,bnd-1);
+			if(list == null) return null;
+			switch(list){
+				case SNil: return list;
+				case SCons: return list.b;
+				default: return null;
+			}
+		}
+		case SCons:
+		{
+			source s_a = interpretSource(s.a, bnd-1);
+			if(s_a ==null) return null;
+			bit valid = true;
+			switch(s_a){
+				case SNum: {}
+				default: valid = false;
+			}
+			source s_b = interpretSource(s.b, bnd-1);
+			if(s_b == null )return null;
+			switch(s_b){
+				case SCons: {}
+				case SNil: {}
+				default: valid = false;
+			}
+			if(valid) return new SCons(a = s_a, b = s_b);
+			else return null;
+			
+		}
+		
+		case SApp:
+		{
+			source s_a = interpretSource(s.a, bnd-1);
+			source s_b = s.b;
+			if(s_a ==null) return null;
+			if(s_b == null) return null;
+			switch(s_a){
+				case SAbs:{
+					source s_new = substituteS(s_a.var, s_a.a, s_b, bnd-1);
+					if (s_new == null) return null;
+					return interpretSource(s_new, bnd-1);
+					
+				}
+				case SApp:{
+					return new SApp(a = s_a, b = s_b);
+				}
+				case SVar:{
+					return new SApp(a = s_a, b= s_b);
+				}
+				
+				default: 
+				{
+					return null;
+				}
+			}
+		}
+		case SPrim2:
+		{
+			if(s.op == Oplus){
+				int a, b;
+				bit simplified = true;
+				source s_a = interpretSource(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: {a = s_a.val;}
+					case SVar: simplified = false;
+					default: return null;
+				}
+				source s_b = interpretSource(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case SNum: {b = s_b.val;}
+					case SVar: simplified = false;
+					default: return null;
+				}
+				if(simplified) return new SNum(val = a+b);
+				else return new SPrim2(op = s.op, a = s_a, b = s_b);
+			}else
+			if(s.op == Ominus){
+				int a, b;
+				bit simplified = true;
+				source s_a = interpretSource(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: {a = s_a.val;}
+					case SVar: simplified = false;
+					default: return null;
+				}
+				source s_b = interpretSource(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case SNum: {b = s_b.val;}
+					case SVar: simplified = false;
+					default: return null;
+				}
+				if(simplified) return new SNum(val = a-b);
+				else return new SPrim2(op = s.op, a = s_a, b = s_b);
+			}else
+			{
+				return null;	
+			}				
+		}
+		
+			
+		
+		default: return s;
+		
+		
+		
+	}
+	
+	
+}
+
+E substitute(LVar x, E E_a, E E_b, int bnd){ // E_a[E_b/var]
+	assert(bnd >= 0);
+	if (bnd <0 || E_a ==null || E_b == null || x ==null) return null;
+	
+	switch(E_a){
+		
+		case LApp:
+		{
+			if(bnd <1) return null;
+			else
+			return new LApp(a = substitute(x, E_a.a, E_b, bnd -1), b = substitute(x, E_a.b, E_b, bnd -1));  
+		}
+		case LAbs:
+		{
+			LVar v = E_a.var;
+			if(v.name == x.name) {return E_a;}
+			else {
+			
+			if(bnd <1) return null;
+			else{
+			//E_a = Lambda y. E1
+				//create a new var z
+				LVar z = new LVar(name = count++);
+				//substitute y in E1 with z
+				E e1 = substitute(v,E_a.a, z, bnd -1);
+				assert(e1!=null);
+				//Then substitute x with E_b
+				E e2 = substitute(x, e1, E_b, bnd -1);
+				
+				return new LAbs(var = z, a = e2);
+				
+			}
+			}
+		}
+		case LVar:
+		{	
+			
+			if (E_a.name == x.name) { return E_b;}
+			else {return E_a;}
+		}
+		
+		case LNum:
+		{
+			return E_a;
+		}
+		case LPrim2:
+		{
+			if(bnd <1) return null;
+			else
+			return new LPrim2(op = E_a.op, a = substitute(x,E_a.a,E_b, bnd -1), b = substitute(x, E_a.b, E_b, bnd -1));
+		}
+		
+	}
+	return null;
+
+}
+
+//interpret core lambda calculus
+E interpretLambda(E s, int bnd, ref int sbnd){
+	
+	if(bnd<0 || s== null) return null;
+	
+	switch(s){
+	
+		case LApp:
+		{
+			if(bnd<1) return null;
+			else{
+			E s_a = interpretLambda(s.a, bnd-1,sbnd);
+			E s_b = s.b;
+			if(s_a==null||s_b == null) return null;
+ 			switch(s_a){
+				case LAbs:{
+					if ( sbnd <=0 ) return null;
+					else{
+					sbnd--;
+					
+					E s_new =  substitute(s_a.var, s_a.a, s_b, bnd);
+					if(s_new == null) return null;
+					
+					return interpretLambda(s_new, bnd-1,sbnd);
+					}
+					
+				}
+				case LApp:{
+					return new LApp(a = s_a, b = s_b);
+				}
+				case LVar: {
+					return new LApp(a = s_a, b= s_b);
+				}
+				
+				default: 
+				{
+					return null;
+				}
+			}
+			}
+		}
+		
+		
+		case LPrim2:
+		{
+			if(bnd<1) return null;
+			else{
+			if(s.op == Oplus){
+				int a, b;
+				E s_a = interpretLambda(s.a,bnd-1,sbnd);
+				bit simplified = true;
+				if(s_a==null) return null;
+				switch(s_a){
+					case LNum: {a = s_a.val;}
+					case LAbs: return null;
+					case LApp: return null;
+					default: simplified  = false;
+				}
+				E s_b = interpretLambda(s.b,bnd-1,sbnd);
+				if(s_b==null) return null;
+				switch(s_b){
+					case LNum: {b = s_b.val;}
+					case LAbs: return null;
+					case LApp: return null;
+					default: simplified  =false;
+				}
+				if (simplified) return new LNum(val = a+b);
+				else return new LPrim2(op = s.op, a=  s_a, b = s_b);
+			}else
+			if(s.op == Ominus){
+				int a, b;
+				bit simplified = true;
+				E s_a = interpretLambda(s.a,bnd-1,sbnd);
+				if(s_a==null) return null;
+				switch(s_a){
+					case LNum: {a = s_a.val;}
+					case LAbs: return null;
+					case LApp: return null;
+					default: simplified = false;
+				}
+				E s_b = interpretLambda(s.b,bnd-1,sbnd);
+				if(s_b==null) return null;
+				switch(s_b){
+					case LNum: {b = s_b.val;}
+					case LAbs: return null;
+					case LApp: return null;
+					default: simplified =  false;
+				}
+				if(simplified) return new LNum(val = a-b);
+				else return new LPrim2( op = s.op, a= s_a, b = s_b);
+			}else
+			{
+				return null;	
+			}		
+			}		
+		}
+	
+		default: return s;
+		
+		
+		
+	}
+	return null;
+	
+	
+}
+SVar sVar(int name){
+	return new SVar(name = name);
+}
+SAbs sAbs(SVar var, source a){
+	return new SAbs(var = var ,a =a);
+}
+SApp sApp(source a , source b){
+	return new SApp(a = a, b = b);
+}
+
+//produce symbolic source ASTs
+source produce(int[30] encoding, ref int idx, int bnd){
+	
+	if(bnd <=0 ){ 
+	
+       if(encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
+        
+      	if(encoding[idx] ==1){
+        	if (encoding[idx] > count) count = encoding[idx]+1;  
+       		return new SVar(name = encoding[idx++]); 
+        } 
+        
+        else{ ++idx; return new SNil(); }    
+     }
+  if(encoding[idx]==0){
+        ++idx;
+        return sApp(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); 
+    }else
+    if(encoding[idx]==1){
+        ++idx;
+       if (encoding[idx] > count) count = encoding[idx]+1;
+          SVar v = new SVar(name = encoding[idx++]);
+        return sAbs(v, produce(encoding, idx, bnd-1)); 
+    }else
+    
+    if(encoding[idx]==2){ ++idx; return new SNum(val=encoding[idx++]); }
+    else
+    if(encoding[idx]==3){
+    	++idx;
+        return new SPrim2(op= encoding[idx++],a = produce(encoding, idx, bnd-1), b = produce(encoding, idx, bnd-1)); 
+    }else
+    if(encoding[idx] ==4){
+    	++idx;
+    	 
+    	return new SCons(a = produce(encoding, idx, bnd-1), b = produce(encoding, idx, bnd-1));
+    }else
+    if(encoding[idx] ==5){
+    	++idx;
+    	return new SFirst(a = produce(encoding,idx,bnd-1));
+    }else
+    if(encoding[idx] ==6){
+    	++idx;
+    	return new SRest(a = produce(encoding,idx,bnd-1));
+    }else
+    if(encoding[idx] ==7)
+    { ++idx; if (encoding[idx] > count) count = encoding[idx]+1; 
+     return new SVar(name = encoding[idx++]); 
+    }
+    else{ ++idx; return new SNil(); }    
+}
+
+
+LVar lVar(int name){
+	return new LVar(name = name);
+}
+LAbs lAbs(LVar var, E a ){
+	return new LAbs(var = var ,a =a);
+}
+LApp lApp(E a , E b){
+	return new LApp(a = a, b = b);
+}
+
+bit equalsDef(E c1, E c2, int bnd){
+	assert(bnd >=0);
+	if(bnd < 0 ) return false;
+	assert(c1!=null);
+	if(c2==null) return false;
+	switch(c1){
+		
+		case LPrim2:
+		{
+			switch(c2){
+				case LPrim2:
+				{
+					if(bnd <1) return false;
+					else
+					return c1.op == c2.op && equalsDef(c1.a, c2.a, bnd-1) && equalsDef(c1.b, c2.b, bnd-1) ;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case LApp:
+		{
+			switch(c2){
+				case LApp:
+				{
+					if(bnd<1) return false;
+					else
+					return equalsDef(c1.a, c2.a,bnd-1)&& equalsDef(c1.b, c2.b,bnd-1) ;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case LNum:
+		{
+			switch(c2){
+				case LNum:
+				{
+					return c1.val == c2.val;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case LAbs:
+		{
+			switch(c2){
+				case LAbs:
+				{
+					
+					if(bnd<1) return false;
+					else
+					return equalsDef(c1.a , substitute(c2.var, c2.a, c1.var,bnd-1),bnd-1);
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		case LVar:
+		{
+			switch(c2){
+				case LVar:
+				{
+					return c1.name == c2.name;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+		
+		
+				
+	}
+
+
+
+}
+
+
+bit equals(source c1 ,E c2, int bnd){
+	LVar x  = new LVar(name = 0);
+	LVar y = new LVar(name = 1);
+	if(count <2) count  =2;
+	
+	LAbs False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
+	assert(bnd >=0 );
+	if(bnd <0 ) return false;
+	if(c1==null) return true;
+	if(c2 == null) return false;
+	switch(c1){
+	
+		case SNum:
+		{
+			
+			switch(c2){
+				case LNum: return c1.val == c2.val;
+				default: return false;
+			}
+		}
+		
+		case SVar:
+		{
+			
+			switch(c2){
+				case LVar:return c1.name == c2.name;
+				default: return false;
+			}
+		}
+		case SApp:
+		{
+			
+			switch(c2){
+				
+				case LApp: {if (bnd <1) return false; else return equals(c1.a, c2.a, bnd -1)  &&  equals(c1.b, c2.b, bnd-1);}
+				default: return false;
+			}
+		}
+		case SAbs:
+		{
+			
+			switch(c2){
+			
+				case LAbs: {
+				SVar sv = c1.var;
+				LVar v = new LVar(name = sv.name);
+				source e = c1.a;
+				if(bnd <1) return false;
+				else{
+					switch(e){
+					
+					case SNil: {return equals(c1.a, c2.a, bnd-1);}
+
+					default : return equals(c1.a , substitute(c2.var, c2.a, v,2), bnd-1);
+					}
+				}
+				}
+				default: return false;
+			}
+		}
+		case SNil:
+		{
+			return equalsDef(False, c2,2);
+		}
+		
+		
+		
+		
+		default: return true;
+	}
+	
+}
+
+harness void main3(int x , int y){
+	int idx =0;
+	source s = new SFirst( a= new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil()))));
+	source c1 = new SNum(val = y);
+	if(c1!=null){
+		E c2  = desugar(s,5);
+		
+		E c3 = interpretLambda(c2,6,6);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+
+
+}
+
+harness void main2(int x , int y){
+	int idx =0;
+	source s =  new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil())));
+	//source c1 = new SNum(val = y);
+	SVar v = new SVar(name = count++);
+	SNum a = new SNum(val = y);
+	
+	source c1 = new SAbs(var =  v, a =new SApp(a =new SApp(a =v,b = a),b=new SNil()));
+	
+	if(c1!=null){
+		E c2  = desugar(s,4);
+		
+		E c3 = interpretLambda(c2,3,3);
+		assert(c3!=null);
+		assert(equals(c1,c3,3));
+	}
+
+
+}
+/*
+harness void main21(int x, int y){
+	int idx =0;
+	source s =  new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil())));
+	//source c1 = new SNum(val = y);
+	//SVar v = new SVar(name = count++);
+	//SNum a = new SNum(val = y);
+	
+	//source c1 = new SAbs(var =  v, a =new SApp(a =new SApp(a =v,b = a),b=new SNil()));
+	
+	source c1 = new SNil();
+	if(c1!=null){
+		E c2  = desugar(s,4);
+		
+		E c3 = interpretLambda(c2,3,3);
+		assert(c3!=null);
+		assert(!equals(c1,c3,1));
+	}
+
+}
+
+harness void main20(int x){
+	int idx =0;
+	source s = new SRest( a = new SCons(a = new SNum(val = x), b = new SNil()));
+	source c1 = new SNil();
+	if(c1!=null){
+		E c2  = desugar(s,3);
+		int sbnd = 3;
+		E c3 = interpretLambda(c2,3,3);
+		assert(c3!=null);
+		
+		assert(equals(c1,c3,1));
+	}
+
+}*/
+
+harness void main1(int x ){
+	int idx =0;
+	source s = new SFirst( a = new SCons(a = new SNum(val = x), b = new SNil()));
+	source c1 = new SNum(val = x);
+	if(c1!=null){
+		E c2  = desugar(s,3);
+		int sbnd = 3;
+		E c3 = interpretLambda(c2,3,3);
+		assert(c3!=null);
+		
+		assert(equals(c1,c3,1));
+	}
+
+
+}
+
+harness void main0(int x){
+	int idx =0;
+	source s = new SCons(a = new SNum(val = x), b = new SNil());
+	
+	
+		E c2  = desugar(s,2);
+		
+		E c3 = interpretLambda(c2,0,0);
+		assert(c3!=null);
+		SVar v = new SVar(name = count++);
+	SNum a = new SNum(val = x);
+	source c1 = new SAbs(var =  v, a = new SApp(a= new SApp(a = v,b = a),b = new SNil()));
+		assert(equals(c1,c3,3));
+	
+
+}
+harness void main( int[30] arr){
+	int idx =0;
+	source s = produce( arr, idx, 1);
+	source c1 = interpretSource(s,1);
+	if(c1!=null){
+		E c2  = desugar(s,2);
+		int sbnd = 1;
+		E c3 = interpretLambda(c2,1,sbnd);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+}
