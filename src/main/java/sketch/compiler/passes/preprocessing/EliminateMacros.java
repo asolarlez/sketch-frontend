@@ -29,7 +29,8 @@ public class EliminateMacros extends SymbolTableVisitor{
         
         StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
         List<Expression> matchedFields = new ArrayList<Expression>();
-        for (StructFieldEnt e : ts.getFieldEntries()) {
+      
+            for (StructFieldEnt e : ts.getFieldEntriesInOrder()) {
             if (e.getType().promotesTo(t, nres)) {
                 matchedFields.add(new ExprField(exp.getLeft(), exp.getLeft(),
                         e.getName(), false));

@@ -471,7 +471,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                     if (con == 1)
                         newCons.add(new StmtAssign(left, ExprConstInt.one));
                     if (alt == 1)
-                        newAlt.add(new StmtAssign(left, ExprConstInt.zero));
+                        newAlt.add(new StmtAssign(left, ExprConstInt.one));
                     Expression cond = ExprConstInt.zero;
                     if (con == 2) {
                         cond = ((StmtIfThen) consFunCallStatements.get(i)).getCond();
