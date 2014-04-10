@@ -86,6 +86,7 @@ public class GetExprType extends FENullVisitor
     	return ret;
     }
 
+
     public Object visitExprArrayRange(ExprArrayRange exp) {    	
     	Type base = (Type)exp.getBase().accept(this);
     	
@@ -272,7 +273,17 @@ public class GetExprType extends FENullVisitor
 	}
     }
 
+    public Object visitExprTupleAccess(ExprTupleAccess exp) {
+        // Make it more robust
+        Type base = (Type) exp.getBase().accept(this);
 
+        if (!(base instanceof TypeStructRef))
+            return null;
+        StructDef ts = nres.getStruct(((TypeStructRef) base).getName());
+        assert ts != null : "Missing struct information" + base;
+        int index = exp.getIndex();
+        return ts.getType(ts.getOrderedFields().get(index));
+    }
     public Object visitExprField(ExprField exp)
     {
         final ExprField fexp = exp;

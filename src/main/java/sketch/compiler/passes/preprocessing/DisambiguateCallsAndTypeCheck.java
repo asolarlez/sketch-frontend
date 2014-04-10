@@ -80,6 +80,31 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         }
     }
 
+    private void propogateImmutabilityToChildren(String name) {
+        List<String> children = nres.getStructChildren(name);
+        for (String child : children) {
+            StructDef ts = nres.getStruct(child);
+            if (!ts.immutable()) {
+                ts.setImmutable();
+
+            }
+            propogateImmutabilityToChildren(child);
+        }
+
+    }
+
+    public void checkImmutability(Program prog) {
+
+        for (Package spec : prog.getPackages()) {
+            for (StructDef ts : spec.getStructs()) {
+                if (ts.immutable()) {
+                    propogateImmutabilityToChildren(ts.getFullName());
+                }
+
+            }
+        }
+
+    }
 
 
     /**
@@ -107,6 +132,13 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 Set<String> checkRepeats = new HashSet<String>();
                 while (current != null) {
                     for (Entry<String, Type> entry : current) {
+                        if (ts.immutable()) {
+                            //disallow arrays in immutable structs
+                            if(entry.getValue().isArray()){
+                                report(ts.getContext(),
+                                        "Arrays are not allowed in immutable structs");
+                            }
+                        }
                         checkADupFieldName(fieldNames, entry.getKey(),
                                 current.getContext(),
                                 "Two fields in the same struct can't share a name.");
@@ -407,8 +439,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     public Object visitProgram(Program prog) {
         nres = new NameResolver(prog);
+        checkImmutability(prog);
         checkDupFieldNames(prog);
         checkPackageNames(prog);
+
 
         return super.visitProgram(prog);
     }
@@ -1269,6 +1303,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             // pass
         } else if (lt instanceof TypeStructRef) {
             StructDef ts = getStructDef(lt);
+            if (ts.immutable())
+                expr.setIsLValue(false);
             String rn = expr.getName();
             if (!expr.isHole()) {
                 boolean found = false;

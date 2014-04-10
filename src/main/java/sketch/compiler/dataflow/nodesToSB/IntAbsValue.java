@@ -10,6 +10,7 @@ public class IntAbsValue extends abstractValue {
 	public static final int BOTTOM = 0;
 	public static final int INT = 1;
 	public static final int LIST = 2;
+
 	protected int type;
 	protected Object obj;
     protected boolean knownGeqZero;
@@ -34,6 +35,7 @@ public class IntAbsValue extends abstractValue {
 			}
 			return true;
 		}
+
 		case BOTTOM:{ 
 			return (v2.type == BOTTOM );
 		}
@@ -65,7 +67,15 @@ public class IntAbsValue extends abstractValue {
 		this.type = BOTTOM;
         this.knownGeqZero = false;
 	}
-	
+
+    public IntAbsValue(List<abstractValue> obj, boolean isTuple) {
+        this.obj = obj;
+        if (isTuple)
+            this.type = BOTTOM;
+        else
+            this.type = LIST;
+        this.knownGeqZero = false;
+    }
 	public IntAbsValue(List<abstractValue> obj){
 		this.obj = obj;
 		this.type = LIST;
@@ -85,11 +95,11 @@ public class IntAbsValue extends abstractValue {
 	}
 	
 	public boolean hasValue() {
-		return type != BOTTOM;
+        return type != BOTTOM;
 	}
 
 	public boolean isVect() {
-		return type == LIST;
+        return type == LIST;
 	}
 
 	public int getIntVal() {
@@ -99,7 +109,7 @@ public class IntAbsValue extends abstractValue {
 
 	@SuppressWarnings("unchecked")
 	public List<abstractValue> getVectValue() {
-		assert type == LIST : "Incorrect value type";
+        assert type == LIST : "Incorrect value type";
 		return (List<abstractValue>)obj;
 	}
 
@@ -147,6 +157,7 @@ public class IntAbsValue extends abstractValue {
 			rval += "$";
 			return rval;
 		}
+
 		case BOTTOM:{ 
 			if( obj != null ){
 				if(obj.toString().length() > 10){

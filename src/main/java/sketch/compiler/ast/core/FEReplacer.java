@@ -225,6 +225,20 @@ public class FEReplacer implements FEVisitor
                 ths, that);
     }
 
+    public Object visitExprTuple(ExprTuple exp) {
+        boolean hasChanged = false;
+        List<Expression> newElements = new ArrayList<Expression>();
+        for (Iterator iter = exp.getElements().iterator(); iter.hasNext();) {
+            Expression element = (Expression) iter.next();
+            Expression newElement = doExpression(element);
+            newElements.add(newElement);
+            if (element != newElement)
+                hasChanged = true;
+        }
+        if (!hasChanged)
+            return exp;
+        return new ExprTuple(exp, newElements);
+    }
     public Object visitExprArrayInit(ExprArrayInit exp)
     {
         boolean hasChanged = false;
@@ -776,6 +790,14 @@ public class FEReplacer implements FEVisitor
         return star;
     }
 
+    public Object visitExprTupleAccess(ExprTupleAccess exp) {
+        final Expression newBase = doExpression(exp.getBase());
+
+        if (newBase != exp.getBase()) {
+            return new ExprTupleAccess(exp, newBase, exp.getIndex());
+        }
+        return exp;
+    }
     public Object visitExprArrayRange(ExprArrayRange exp) {
 
         final Expression newBase = doExpression(exp.getBase());

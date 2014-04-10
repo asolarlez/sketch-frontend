@@ -33,6 +33,7 @@ public class ExprField extends Expression
     private String name;
     private boolean hole;
     private Type typeOfHole = null;
+    private boolean isLValue = true;
 
     /** Creates a new field-reference expression, referencing the
      * named field of the specified expression. */
@@ -86,14 +87,18 @@ public class ExprField extends Expression
     }
 
     /**
-     * Determine if this expression can be assigned to.  Fields can
-     * always be assigned to.
-     *
+     * Determine if this expression can be assigned to. Fields can always be assigned to.
+     * Not if the struct is immutable
+     * 
      * @return always true
      */
     public boolean isLValue()
     {
-        return true;
+        return isLValue;
+    }
+
+    public void setIsLValue(boolean val) {
+        isLValue = val;
     }
 
     public String toString()

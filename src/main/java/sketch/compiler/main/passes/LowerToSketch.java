@@ -100,15 +100,17 @@ public class LowerToSketch extends MetaStage {
 
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
+        // pass to eliminate immutable structs
+        // prog.debugDump("Before EIS");
+        prog = (Program) prog.accept(new EliminateImmutableStructs());
 
-
-
+        // prog.debugDump("After EIS");
         prog =
                 (Program) prog.accept(new EliminateStructs(varGen, new ExprConstInt(
                         options.bndOpts.arrSize)));
 
-        // dump (prog, "After Stencilification.");
-
+        // dump(prog, "After Stencilification.");
+        // prog.debugDump("After es");
 
         prog = (Program) prog.accept(new ExtractRightShifts(varGen));
 

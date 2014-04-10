@@ -19,6 +19,25 @@ public class LiveVariableVType extends abstractValueType {
 	static public LiveVariableVType vtype = new LiveVariableVType();
 	
 	@Override
+    public abstractValue TUPLE(List<abstractValue> vals) {
+        LVSet lv = new LVSet();
+        Iterator<abstractValue> it = vals.iterator();
+        while (it.hasNext()) {
+            abstractValue av = it.next();
+            if (av instanceof LVSet) {
+                lv.set.addAll(((LVSet) av).set);
+                continue;
+            }
+            if (av instanceof LiveVariableAV) {
+                lv.set.add((LiveVariableAV) av);
+                continue;
+            }
+            assert false;
+        }
+        return lv;
+    }
+
+    @Override
 	public abstractValue ARR(List<abstractValue> vals) {
 		LVSet lv = new LVSet();
 		Iterator<abstractValue> it = vals.iterator();
@@ -111,8 +130,25 @@ public class LiveVariableVType extends abstractValueType {
 		}
 		return lv;
 	}
-
 	@Override
+    public abstractValue tupleacc(abstractValue arr, abstractValue idx) {
+        LVSet lv = new LVSet();
+        if (arr instanceof LVSet) {
+            lv.set.addAll(((LVSet) arr).set);
+        }
+        if (arr instanceof LiveVariableAV) {
+            lv.set.add((LiveVariableAV) arr);
+        }
+        if (idx instanceof LVSet) {
+            lv.set.addAll(((LVSet) idx).set);
+        }
+        if (idx instanceof LiveVariableAV) {
+            lv.set.add((LiveVariableAV) idx);
+        }
+        return lv;
+    }
+
+    @Override
 	public abstractValue arracc(abstractValue arr, abstractValue idx) {
 		LVSet lv = new LVSet();
 		if( arr instanceof LVSet){

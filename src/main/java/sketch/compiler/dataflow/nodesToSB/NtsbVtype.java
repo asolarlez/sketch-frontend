@@ -131,6 +131,9 @@ public class NtsbVtype extends IntVtype {
         return new NtsbValue(v); 
     }
     
+    public abstractValue TUPLE(List<abstractValue> vals) {
+        return new NtsbValue(vals, true);
+    }
     public abstractValue ARR(List<abstractValue> vals){
         return new NtsbValue(vals);     
     }

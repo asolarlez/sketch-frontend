@@ -61,6 +61,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     // For sake of ADT
     private final String parentName;
     private boolean isInstantiable;
+    private boolean immutable = false;
     private final List<String> fieldOrder;
     private HashmapList<String, Annotation> annotations =
             new HashmapList<String, Annotation>();
@@ -77,6 +78,9 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         return annotations.getOrEmpty(tag);
     }
 
+    public HashmapList<String, Annotation> getAllAnnotations() {
+        return annotations;
+    }
 
     public static class TStructCreator {
         private String name;
@@ -158,13 +162,13 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
         public StructDef create() {
             if (base == null || base instanceof FEContext) {
-                // changed for ADT
+
                 return new StructDef((FEContext) base, name, pkg, parentName,
                         isInstantiable, fieldTypMap,
                         fieldOrder,
                         annotations);
             } else {
-                // changed for ADT
+
                 return new StructDef(((StructDef) base).getContext(), name,
  pkg,
                         parentName, isInstantiable,
@@ -184,7 +188,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         this.pkg = pkg;
     }
 
-    // For ADT - check
+
     public void setIsInstantiable(boolean isInstantiable) {
         this.isInstantiable = isInstantiable;
     }
@@ -232,6 +236,8 @@ annotations);
             types.put(fields.get(i), ftypes.get(i));
         this.fieldTypMap = types.immutable();
         this.annotations = annotations;
+        if (this.hasAnnotation("Immutable"))
+            this.immutable = true;
     }
 
     public StructDef(FEContext context, String name, String pkg, String parentName,
@@ -248,6 +254,8 @@ annotations);
         this.fieldTypMap = map.immutable();
         assert fieldOrder.size() == fieldTypMap.size();
         this.annotations = annotations;
+        if (this.hasAnnotation("Immutable"))
+            this.immutable = true;
     }
 
 
@@ -277,6 +285,14 @@ annotations);
 
     public boolean isInstantiable() {
         return isInstantiable;
+    }
+
+    public boolean immutable() {
+        return immutable;
+    }
+
+    public void setImmutable() {
+        immutable = true;
     }
     /**
      * Returns the number of fields.

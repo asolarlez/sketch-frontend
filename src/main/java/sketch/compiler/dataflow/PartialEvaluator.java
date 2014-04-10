@@ -45,31 +45,30 @@ import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.SketchException;
 
 class CloneHoles extends FEReplacer{
-    
+
     // TODO xzl: what's this?
     public Object visitExprStar(ExprStar es){
         ExprStar newStar = new ExprStar(es);
         es.renewName();
         return newStar;
     }
-    
+
     public Statement process(Statement s){
         return (Statement) s.accept(this);
     }
-    
+
     public Object visitExprFunCall(ExprFunCall exp){
-            List<Expression> newParams = new ArrayList<Expression>();
-            for (Iterator iter = exp.getParams().iterator(); iter.hasNext(); )
-            {
-                Expression param = (Expression)iter.next();
-                Expression newParam = doExpression(param);
-                newParams.add(newParam);
-            }
-            ExprFunCall rv = new ExprFunCall(exp, exp.getName(), newParams);
-            rv.resetCallid();
-            return rv;
+        List<Expression> newParams = new ArrayList<Expression>();
+        for (Iterator iter = exp.getParams().iterator(); iter.hasNext();) {
+            Expression param = (Expression) iter.next();
+            Expression newParam = doExpression(param);
+            newParams.add(newParam);
+        }
+        ExprFunCall rv = new ExprFunCall(exp, exp.getName(), newParams);
+        rv.resetCallid();
+        return rv;
     }
-    
+
 }
 
 public class PartialEvaluator extends SymbolTableVisitor {
@@ -150,6 +149,25 @@ public class PartialEvaluator extends SymbolTableVisitor {
         }
     }
 
+    public Object visitExprTuple(ExprTuple exp) {
+        List<Expression> elems = exp.getElements();
+        List<abstractValue> newElementValues = new ArrayList<abstractValue>(elems.size());
+        List<Expression> newElements = new ArrayList<Expression>(elems.size());
+
+        for (Expression elt : elems) {
+            abstractValue newElement = (abstractValue) elt.accept(this);
+            newElementValues.add(newElement);
+            if (isReplacer) {
+                newElements.add(exprRV);
+            }
+        }
+
+        if (isReplacer) {
+            exprRV = new ExprTuple(exp, newElements);
+        }
+        return vtype.TUPLE(newElementValues);
+    }
+
     public Object visitExprArrayInit(ExprArrayInit exp) {
         List<Expression> elems = exp.getElements();
         List<abstractValue> newElementValues = new ArrayList<abstractValue>(elems.size());
@@ -169,20 +187,43 @@ public class PartialEvaluator extends SymbolTableVisitor {
         return vtype.ARR(newElementValues);
     }
 
+    public Object visitExprTupleAccess(ExprTupleAccess exp) {
+        int index = exp.getIndex();
+        Expression nstart = exprRV;
+        abstractValue newBase = (abstractValue) exp.getBase().accept(this);
+        Expression nbase = exprRV;
+        if (isReplacer) {
+
+            if (nbase instanceof ExprTuple) {
+
+                exprRV = new ExprTupleAccess(exp, nbase, index);
+
+            } else {
+                exprRV = new ExprTupleAccess(exp, nbase, index);
+            }
+        }
+
+        try {
+            return vtype.tupleacc(newBase, vtype.CONST(index));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new ArrayIndexOutOfBoundsException(exp.getCx() + ":" + e.getMessage() +
+                    ":" + exp);
+        }
+    }
     public Object visitExprArrayRange(ExprArrayRange exp) {        
         RangeLen rl = exp.getSelection();
         abstractValue newStart = (abstractValue) rl.start().accept(this);
         Expression nstart = exprRV;
         abstractValue newBase = (abstractValue) exp.getBase().accept(this);
         Expression nbase = exprRV;
-        
+
         abstractValue newLen = null;
         Expression nlen = null;
         if(rl.hasLen()){
-             newLen = (abstractValue) rl.getLenExpression().accept(this);
-             nlen = exprRV;
+            newLen = (abstractValue) rl.getLenExpression().accept(this);
+            nlen = exprRV;
         }
-        
+
         if(isReplacer ){
 
             if(nbase instanceof ExprArrayInit && newStart.hasIntVal()){
@@ -231,7 +272,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         return vtype.NULL();
     }
 
-    
+
     @Override
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
         if (isReplacer) {
@@ -282,9 +323,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitExprField(ExprField exp) {
         exp.getLeft().accept(this);
-         Expression left = exprRV;
-         if(isReplacer) exprRV = new ExprField(exp, left, exp.getName());
-         return vtype.BOTTOM();
+        Expression left = exprRV;
+        if (isReplacer)
+            exprRV = new ExprField(exp, left, exp.getName());
+        return vtype.BOTTOM();
     }
 
     public Object visitExprTernary(ExprTernary exp) {
@@ -305,18 +347,19 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         switch (exp.getOp())
         {
-        case ExprTernary.TEROP_COND:
-            if(isReplacer) {
-                if (cond.hasIntVal ())
-                    exprRV = (cond.getIntVal () == 0) ? nvfalse : nvtrue;
-                else
-                    exprRV = new ExprTernary(exp, exp.getOp(), ncond, nvtrue, nvfalse);
-            }
-            return vtype.ternary(cond, vtrue, vfalse);
+            case ExprTernary.TEROP_COND:
+                if (isReplacer) {
+                    if (cond.hasIntVal())
+                        exprRV = (cond.getIntVal() == 0) ? nvfalse : nvtrue;
+                    else
+                        exprRV =
+                                new ExprTernary(exp, exp.getOp(), ncond, nvtrue, nvfalse);
+                }
+                return vtype.ternary(cond, vtrue, vfalse);
 
-        default:
-            exp.assertTrue (false, "unknown ternary operator");
-            return null;
+            default:
+                exp.assertTrue(false, "unknown ternary operator");
+                return null;
         }
     }
 
@@ -437,7 +480,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             case ExprBinary.BINOP_AND:
             case ExprBinary.BINOP_BAND:{
                 if(left.hasIntVal() && left.getIntVal() == 0){
-                        rv = vtype.CONST(0);
+                    rv = vtype.CONST(0);
                 }else{
                     right = (abstractValue) exp.getRight().accept(this);
                     nright =   exprRV;
@@ -537,7 +580,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         exprRV = star;
         return vtype.STAR(star);
     }
-    
+
     protected Expression interpretActualParam(Expression e) {
         return e;
     }
@@ -596,7 +639,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 }
                 if(paramType instanceof TypeArray ){
                     TypeArray ta = (TypeArray) paramType;
-                    
+
                     abstractValue fav = null;
                     if(av.isVect()){
                         List<abstractValue> lv = av.getVectValue();
@@ -628,7 +671,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         } catch (SketchException se) {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }
-        
+
         assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
 
         Iterator<lhsVisitor> lhsIt = tempLHSVs.iterator();
@@ -654,7 +697,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 isReplacer = tmpir;
             }
         }
-        
+
 
         //assert !isReplacer : "A replacer should really do something different with function calls.";
         exprRV = isReplacer ?  new ExprFunCall(exp, name, nparams)  : exp ;
@@ -662,7 +705,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
 
-    
+
     @Override
     public Object visitCudaInstrumentCall(CudaInstrumentCall instrumentCall) {
         if (isReplacer) {
@@ -729,7 +772,27 @@ public class PartialEvaluator extends SymbolTableVisitor {
             //return super.visitExprField(exp);
         }
 
+        public Object visitExprTupleAccess(ExprTupleAccess exp){
+            Expression base = exp.getBase();
+            Expression nbase = (Expression) base.accept(this);
+            int index = exp.getIndex();
+            if (t instanceof TypeStructRef) {
+                TypeStructRef ta = (TypeStructRef) t;
+                StructDef str = nres.getStruct(ta.getName());
+                int size = str.getNumFields();
+                if (index < 0 || index >= size) {
+                    throw new ArrayIndexOutOfBoundsException(exp.getCx() +
+                            " ARRAY OUT OF BOUNDS !(0<=" + index + " < " + size + ")");
+                }
+            }
 
+            if (isReplacer) {
+                return new ExprTupleAccess(exp, nbase, index);
+            } else {
+                return exp;
+            }
+
+        }
         public Object visitExprArrayRange(ExprArrayRange ear){
             Expression base = ear.getBase();
             Expression nbase = (Expression) base.accept(this);
@@ -837,22 +900,22 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         switch(stmt.getOp())
         {
-        case ExprBinary.BINOP_ADD:
+            case ExprBinary.BINOP_ADD:
                 assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
                 rhs = vtype.plus((abstractValue) lhs.accept(this), rhs);
-            break;
-        case ExprBinary.BINOP_SUB:
+                break;
+            case ExprBinary.BINOP_SUB:
                 assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
                 rhs = vtype.minus((abstractValue) lhs.accept(this), rhs);
-            break;
-        case ExprBinary.BINOP_MUL:
+                break;
+            case ExprBinary.BINOP_MUL:
                 assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
                 rhs = vtype.times((abstractValue) lhs.accept(this), rhs);
-            break;
-        case ExprBinary.BINOP_DIV:
+                break;
+            case ExprBinary.BINOP_DIV:
                 assert rlen <= 1 : "Operand not supported for this operator: " + stmt;
                 rhs = vtype.over((abstractValue) lhs.accept(this), rhs);
-            break;
+                break;
             case 0:
                 break;
             default:
@@ -913,10 +976,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
 
-    
+
     public Object visitStmtBlock(StmtBlock stmt)
     {
-        
+
         // Put context label at the start of the block, too.
         Statement s = null;
         int level = state.getLevel();
@@ -934,27 +997,27 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 s = stmt;
             }
             state.popLevel(lvl);
-//            if (level != state.getLevel()) {
-//                printFailure("Somewhere we lost a level!!");
-//                printFailure("Expected", prevLS);
-//                printFailure("Actual", state.getLevelStack());
-//                printFailure("Before popping", beforePop);
-//                printFailure("Approximate source location", stmt.getCx());
-//                printFailure("Block", stmt);
-//                printFailure("related exception", e);
-//                assertFalse();
-//            }
+            // if (level != state.getLevel()) {
+            // printFailure("Somewhere we lost a level!!");
+            // printFailure("Expected", prevLS);
+            // printFailure("Actual", state.getLevelStack());
+            // printFailure("Before popping", beforePop);
+            // printFailure("Approximate source location", stmt.getCx());
+            // printFailure("Block", stmt);
+            // printFailure("related exception", e);
+            // assertFalse();
+            // }
             assert level == state.getLevel() : "PartialEvaluator visitStmtBlock: Somewhere we lost a level!!";
             assert ctlevel == state.getCTlevel() : "PartialEvaluator visitStmtBlock: Somewhere we lost a ctlevel!!";
         }
         return s;
     }
-    
+
     protected static class BlockLevel extends Level {
         public BlockLevel(String msg) {
             super(msg);
         }
-        
+
         @Override
         public String toString() {
             return "BlockLevel[" + msg + ", isDead=" + isDead + "]";
@@ -980,9 +1043,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitFunction(Function func)
     {
-        
+
         Level lvl = state.beginFunction(func.getName());
-        
+
         List<Parameter> params = func.getParams();
         List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
         for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
@@ -997,7 +1060,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         try {
 
             newBody = (Statement) func.getBody().accept(this);
-        
+
         } catch (ArrayIndexOutOfBoundsException e) {
             newBody =
                     new StmtBlock(new StmtAssert(func.getBody(), ExprConstInt.zero,
@@ -1126,7 +1189,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
 
             if (vcond.isBottom() || vcond.getIntVal() > 0) {
-                    int remIters = unrollamnt - iters;
+                int remIters = unrollamnt - iters;
                 if(remIters > 0){
                     if (stmt.isCanonical()) {
                         Statement nbody =
@@ -1138,13 +1201,14 @@ public class PartialEvaluator extends SymbolTableVisitor {
                             }
                         }
                         Statement cur =
-                            new StmtAssert(
-                                    stmt,
-                                    new ExprUnary("!", stmt.getCond()),
-                                    stmt.getCx() + ": This loop was unrolled " +
-                                            MAX_UNROLL +
-                                            " times, but apparently that was not enough. Use the --bnd-unroll-amnt flag for better results.",
-                                    false);
+                                new StmtAssert(
+                                        stmt,
+                                        new ExprUnary("!", stmt.getCond()),
+                                        stmt.getCx() +
+                                                ": This loop was unrolled " +
+                                                MAX_UNROLL +
+                                                " times, but apparently that was not enough. Use the --bnd-unroll-amnt flag for better results.",
+                                        false);
                         cur.accept(this);
                     } else {
                         Statement body = stmt.getBody();
@@ -1171,27 +1235,20 @@ public class PartialEvaluator extends SymbolTableVisitor {
                         cur.accept(this);
                     }
                     /*
-                    
-                    String doneNm = this.varGen.nextVar("done");
-                    ExprVar doneVar = new ExprVar(stmt, doneNm);
-                    StmtVarDecl svd = new StmtVarDecl(stmt, TypePrimitive.bittype, doneNm, ExprConstInt.zero);
-                    Expression cond = new ExprBinary(stmt.getCond(), "&&", new ExprUnary("!", doneVar));
-                    Statement setDone = new StmtAssign(doneVar, ExprConstInt.one);
-
-                    Statement body = stmt.getBody();
-                    if (stmt.getIncr() != null){
-                        body = new StmtBlock(body, stmt.getIncr());
-                    }
-
-                    Statement condIter = new StmtIfThen(stmt, cond, body, setDone);
-                    svd.accept(this);
-
-                    for(int i=0; i<remIters; ++i){
-                        condIter.accept(this);
-                    }
-                    StmtAssert as = new StmtAssert(stmt,new ExprBinary(new ExprUnary("!", stmt.getCond()), "||", doneVar) , "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.");
-                    as.accept(this);
-                    */
+                     * String doneNm = this.varGen.nextVar("done"); ExprVar doneVar = new
+                     * ExprVar(stmt, doneNm); StmtVarDecl svd = new StmtVarDecl(stmt,
+                     * TypePrimitive.bittype, doneNm, ExprConstInt.zero); Expression cond
+                     * = new ExprBinary(stmt.getCond(), "&&", new ExprUnary("!",
+                     * doneVar)); Statement setDone = new StmtAssign(doneVar,
+                     * ExprConstInt.one); Statement body = stmt.getBody(); if
+                     * (stmt.getIncr() != null){ body = new StmtBlock(body,
+                     * stmt.getIncr()); } Statement condIter = new StmtIfThen(stmt, cond,
+                     * body, setDone); svd.accept(this); for(int i=0; i<remIters; ++i){
+                     * condIter.accept(this); } StmtAssert as = new StmtAssert(stmt,new
+                     * ExprBinary(new ExprUnary("!", stmt.getCond()), "||", doneVar) ,
+                     * "This loop was unrolled " + MAX_UNROLL
+                     * +" times, but apparently that was not enough."); as.accept(this);
+                     */
                 }else{
                     StmtAssert as = new StmtAssert(stmt, new ExprUnary("!", stmt.getCond()), "This loop was unrolled " + MAX_UNROLL +" times, but apparently that was not enough.", false);
                     as.accept(this);
@@ -1482,25 +1539,20 @@ public class PartialEvaluator extends SymbolTableVisitor {
         FENode nvarContext = stmt;
         String nvar = varGen.nextVar ();
         StmtVarDecl nvarDecl =
-            new StmtVarDecl (nvarContext,
-                             TypePrimitive.inttype,
-                             nvar,
-                             stmt.getIter ());
+                new StmtVarDecl(nvarContext, TypePrimitive.inttype, nvar, stmt.getIter());
         Statement tmpstmt = (Statement) nvarDecl.accept (this);
         if(isReplacer) slist.add(tmpstmt);
 
         /* Generate and visit an expression consisting of the new variable. */
         ExprVar nvarExp =
-            new ExprVar (nvarContext,
-                         nvar);
+ new ExprVar(nvarContext, nvar);
         abstractValue vcond  = (abstractValue)nvarExp.accept (this);
 
         /* If no known value, perform conditional unrolling of the loop. */
         if (!vcond.hasIntVal()) {
             /* Assert loop expression does not exceed max unrolling constant. */
             StmtAssert nvarAssert =
-                new StmtAssert (nvarContext,
-                                new ExprBinary (
+                    new StmtAssert(nvarContext, new ExprBinary(
                                     nvarContext,
                                     ExprBinary.BINOP_LE,
                                     new ExprVar (nvarContext, nvar),
@@ -1513,10 +1565,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
             for (iters=0; iters < MAX_UNROLL; ++iters) {
                 /* Generate context condition to go with change tracker. */
                 Expression guard =
-                    new ExprBinary (nvarContext,
-                                    ExprBinary.BINOP_GT,
-                                    new ExprVar (nvarContext, nvar),
-                                    new ExprConstInt (nvarContext, iters));
+                        new ExprBinary(nvarContext, ExprBinary.BINOP_GT, new ExprVar(
+                                nvarContext, nvar), new ExprConstInt(nvarContext, iters));
                 abstractValue vguard = (abstractValue) guard.accept (this);
                 Expression nguard = isReplacer ? exprRV : guard;
 
@@ -1525,8 +1575,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 Statement nbody = null;
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try{
-                    
-                    
+
                     nbody = (Statement)(new CloneHoles()).process(stmt.getBody()).accept(this);
                 }catch(ArrayIndexOutOfBoundsException er){
                     //If this happens, it means that we statically determined that unrolling by (iters+1) leads to an out
@@ -1694,7 +1743,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     }
                 }
             }
-            
+
             /* else{
                 state.setVarValue(nm, this.vtype.BOTTOM("UNINITIALIZED"));
             } */
@@ -1745,7 +1794,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         return isReplacer? tmp : stmt;
     }
 
-    
+
 
 
     public Object visitFieldDecl(FieldDecl field)
@@ -1954,35 +2003,41 @@ public class PartialEvaluator extends SymbolTableVisitor {
             String formalParamName = formalParam.getName();
 
             Type type = (Type) formalParam.getType().accept(this);
-            
+
 
             switch(formalParam.getPtype()){
                 case Parameter.REF:{
-                        state.outVarDeclare(formalParamName, type);
-                        state.setVarValue(formalParamName, actualParamValue);
-                        Statement varDecl=new StmtVarDecl(cx,type,transName(formalParam.getName()),actualParam);
-                        addStatement((Statement)varDecl);
-                        break;
-                    }
-                    
+                    state.outVarDeclare(formalParamName, type);
+                    state.setVarValue(formalParamName, actualParamValue);
+                    Statement varDecl =
+                            new StmtVarDecl(cx, type, transName(formalParam.getName()),
+                                    actualParam);
+                    addStatement((Statement) varDecl);
+                    break;
+                }
+
                 case Parameter.IN:{
-                        state.varDeclare(formalParamName, type);
-                        state.setVarValue(formalParamName, actualParamValue);
-                        Statement varDecl=new StmtVarDecl(cx,type,transName(formalParam.getName()),actualParam);
-                        addStatement((Statement)varDecl);
-                        break;
-                    }
+                    state.varDeclare(formalParamName, type);
+                    state.setVarValue(formalParamName, actualParamValue);
+                    Statement varDecl =
+                            new StmtVarDecl(cx, type, transName(formalParam.getName()),
+                                    actualParam);
+                    addStatement((Statement) varDecl);
+                    break;
+                }
                 case Parameter.OUT:{
-                        state.outVarDeclare(formalParamName, type);
-                        Expression initVal = type.defaultValue();                        
-                        Statement varDecl=new StmtVarDecl(cx,type,transName(formalParam.getName()), initVal);
-                        addStatement((Statement)varDecl);
-                        break;
-                    }
+                    state.outVarDeclare(formalParamName, type);
+                    Expression initVal = type.defaultValue();
+                    Statement varDecl =
+                            new StmtVarDecl(cx, type, transName(formalParam.getName()),
+                                    initVal);
+                    addStatement((Statement) varDecl);
+                    break;
+                }
             }
 
         }
-        
+
         return lvl;
     }
 

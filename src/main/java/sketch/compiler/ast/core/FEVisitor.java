@@ -56,7 +56,11 @@ import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 public interface FEVisitor
 {
 	public Object visitExprAlt(ExprAlt exp);
+
+    public Object visitExprTuple(ExprTuple exp);
     public Object visitExprArrayInit(ExprArrayInit exp);
+
+    public Object visitExprTupleAccess(ExprTupleAccess exp);
     public Object visitExprArrayRange(ExprArrayRange exp);
     public Object visitExprBinary(ExprBinary exp);
     public Object visitExprChoiceBinary(ExprChoiceBinary exp);

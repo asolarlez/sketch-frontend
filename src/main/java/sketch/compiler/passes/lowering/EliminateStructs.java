@@ -129,8 +129,10 @@ public class EliminateStructs extends SymbolTableVisitor {
 				StructTracker tracker =
                         new StructTracker(nres.getStruct(name), func, varGen, maxArrSize,
                                 createdSN.contains(name));
+                if (tracker.mutable) {
 				tracker.registerVariables (symtab);
 				newBodyStmts.add (tracker.getVarDecls ());
+                }
 				structs.put (name, tracker);
 			}
 
@@ -162,8 +164,10 @@ public class EliminateStructs extends SymbolTableVisitor {
                 StructTracker tracker =
                         new StructTracker(nres.getStruct(name), func, varGen, maxArrSize,
                                 createdSN.contains(name));
+                if (tracker.mutable) {
                 tracker.registerAsParameters(symtab);
                 tracker.addParams(func, newParams, modified.contains(name));
+                }
                 structs.put(name, tracker);
             }
 
@@ -214,7 +218,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         Set<String> names = usedStructNames.get(newName);
         Set<String> created = createdStructNames.get(newName);
         for (String name : names) {
-
+            if (structs.get(name).mutable)
             structs.get(name).addActualParams(newplist, created.contains(name));
         }
 
@@ -249,6 +253,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 
         StructTracker struct =
                 structs.get(nres.getStructName(((StructDef) t).getName()));
+        if (!struct.mutable)
+            return ef;
 		String field = ef.getName ();
 
         Expression basePtr = (Expression) ef.getLeft().accept(this);
@@ -269,7 +275,8 @@ public class EliminateStructs extends SymbolTableVisitor {
 
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
         StructTracker struct = structs.get(nres.getStructName(name));
-
+        if (!struct.mutable)
+            return expNew;
         Map<String, Expression> fieldExprs = new HashMap<String, Expression>();
         VarSetReplacer vsr = new VarSetReplacer(fieldExprs);
 
@@ -393,6 +400,7 @@ public class EliminateStructs extends SymbolTableVisitor {
         // private final ExprVar heapSzVar;
         private final ExprVar nextInstancePointer;
         private final Map<String, ExprVar> fieldArrays;
+        private boolean mutable;
 
         private class FieldInfo {
             final boolean isArray;
@@ -443,8 +451,7 @@ public class EliminateStructs extends SymbolTableVisitor {
 	    	struct = struct_;
             sref = new TypeStructRef(struct.getName(), false);
 	    	cx = cx_;
-
-            // heapSzVar = new ExprVar(cx, heapsize);
+            mutable = !struct_.immutable(); // heapSzVar = new ExprVar(cx, heapsize);
 
 	    	nextInstancePointer =
                     new ExprVar(cx, varGen.nextVar("#" + struct.getName() + "_" +

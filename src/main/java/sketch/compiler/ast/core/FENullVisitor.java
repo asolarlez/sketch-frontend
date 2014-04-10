@@ -55,6 +55,14 @@ import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 public class FENullVisitor implements FEVisitor
 {
 	public Object visitExprAlt(ExprAlt exp) { return null; }
+
+    public Object visitExprTuple(ExprTuple exp) {
+        return null;
+    }
+
+    public Object visitExprTupleAccess(ExprTupleAccess exp) {
+        return null;
+    }
     public Object visitExprArrayInit(ExprArrayInit exp) { return null; }
     public Object visitExprBinary(ExprBinary exp) { return null; }
     public Object visitExprChoiceBinary(ExprChoiceBinary exp) { return null; }

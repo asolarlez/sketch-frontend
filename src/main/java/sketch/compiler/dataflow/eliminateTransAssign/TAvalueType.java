@@ -24,6 +24,11 @@ public class TAvalueType extends abstractValueType {
 		return bottom;
 	}
 
+    @Override
+    public abstractValue TUPLE(List<abstractValue> vals) {
+        return bottom;
+    }
+
 	@Override
     public void Assert(abstractValue val, StmtAssert stmt) {
 	}
@@ -64,8 +69,12 @@ public class TAvalueType extends abstractValueType {
 	public abstractValue and(abstractValue v1, abstractValue v2) {
 		return bottom;
 	}
-
 	@Override
+    public abstractValue tupleacc(abstractValue arr, abstractValue idx) {
+        return bottom;
+    }
+
+    @Override
 	public abstractValue arracc(abstractValue arr, abstractValue idx) { 
 		return bottom;
 	}

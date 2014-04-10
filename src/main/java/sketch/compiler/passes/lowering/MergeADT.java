@@ -102,8 +102,9 @@ public class MergeADT extends SymbolTableVisitor {
             if (newName == null) {
                 String name = nres.getStructParentName(oldType);
                 while (newName == null && name != null) {
-                    tracker = structs.get(name+"@"+sd.getPkg());
-                    newName = tracker.getNewVariable(param.getName());
+                    // check later
+                    StructCombinedTracker parentTracker = structs.get(name);
+                    newName = parentTracker.getNewVariable(param.getName());
                     name = nres.getStructParentName(name);
                 }
             }
@@ -135,8 +136,9 @@ public class MergeADT extends SymbolTableVisitor {
                 name = nres.getStructParentName(name);
             }
         }
+        Expression basePtr = (Expression) ef.getLeft().accept(this);
 
-        return new ExprField(ef.getLeft(), newField);
+        return new ExprField(basePtr, newField);
     }
 
     @Override
@@ -251,6 +253,12 @@ public class MergeADT extends SymbolTableVisitor {
                 new HashmapList<String, Annotation>();
         LinkedList<String> list = new LinkedList<String>();
         list.add(oldName);
+        // Add annotation for immutability
+        // Type checker makes sure that children are also immutable
+        if (str.immutable()) {
+            annotations.append("Immutable", new Annotation(str.getContext(), "Immutable",
+                    ""));
+        }
         String type = "type";
         names.add("type");
         types.add(TypePrimitive.int32type);

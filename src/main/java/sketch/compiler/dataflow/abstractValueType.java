@@ -32,6 +32,8 @@ public abstract class abstractValueType{
 
     abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);
+
+    abstract public abstractValue TUPLE(List<abstractValue> vals);
 	abstract public abstractValue NULL();
 	
 	abstract public abstractValue plus(abstractValue v1, abstractValue v2);
@@ -54,7 +56,7 @@ public abstract class abstractValueType{
 	abstract public abstractValue le(abstractValue v1, abstractValue v2);
 	abstract public abstractValue eq(abstractValue v1, abstractValue v2);
 	
-	
+    abstract public abstractValue tupleacc(abstractValue tuple, abstractValue idx);
 	abstract public abstractValue arracc(abstractValue arr, abstractValue idx);
 	abstract public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked);
 	

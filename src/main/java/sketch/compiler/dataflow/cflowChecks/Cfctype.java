@@ -34,6 +34,9 @@ public class Cfctype extends abstractValueType {
         return null;
     }
 
+    public abstractValue TUPLE(List<abstractValue> vals) {
+        return allinit;
+    }
 
     public abstractValue ARR(List<abstractValue> vals){
         return allinit;
@@ -142,6 +145,9 @@ public class Cfctype extends abstractValueType {
         return mix(v1, v2);
     }
 
+    public abstractValue tupleacc(abstractValue tuple, abstractValue idx) {
+        return mix(tuple, idx);
+    }
     public abstractValue arracc(abstractValue arr, abstractValue idx) {
         return mix(arr, idx);
     }
