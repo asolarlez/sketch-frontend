@@ -209,19 +209,21 @@ public class MergeADT extends SymbolTableVisitor {
                 }
  else if (str.getParentName() == null) {
                     copyStruct(str);
+                    newStructs.add(str);
 
                 }
             }
-            newStructs.addAll(pkg.getStructs());
-            Package newpkg =
-                    new Package(pkg, pkg.getName(), newStructs,
-                            pkg.getVars(),
-                            pkg.getFuncs());
+            // newStructs.addAll(pkg.getStructs());
+            Package newpkg = (Package) super.visitPackage(pkg);
+            newpkg =
+                    new Package(newpkg, newpkg.getName(), newStructs, newpkg.getVars(),
+                            newpkg.getFuncs());
             // newpkg.getStructs().addAll(newStructs);
             newStreams.add(newpkg);
         }
         Program newprog = p.creator().streams(newStreams).create();
-        return super.visitProgram(newprog);
+        return newprog;
+        // return super.visitProgram(newprog);
     }
 
     public void copyStruct(StructDef str) {

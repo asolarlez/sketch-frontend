@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.varState;
@@ -380,6 +381,11 @@ public class NtsbVtype extends IntVtype {
     int gbgid = 0; //This is a big hack!!
     
     String printType(Type t){
+        if (t instanceof TypeStructRef) {
+            TypeStructRef ts = (TypeStructRef) t;
+
+            return ((TypeStructRef) t).getName().split("@")[0].toUpperCase();
+        } else
         if(t.equals(TypePrimitive.bittype)){
             return "bit";
         }else{

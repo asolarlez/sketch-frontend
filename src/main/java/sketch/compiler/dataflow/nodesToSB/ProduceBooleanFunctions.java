@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
@@ -19,6 +21,7 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -77,7 +80,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         this.maxArrSize = maxArrSize;
         state.useRetTracker();
     }
-    
+
     private String convertType(Type type) {
         // This is So Wrong in the greater scheme of things.
         if (type instanceof TypeArray)
@@ -89,31 +92,34 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
  else if (type instanceof TypeStructRef)
         {
-        return ((TypeStructRef)type).getName();
+            return ((TypeStructRef) type).getName();
         }
         else if (type instanceof TypePrimitive)
         {
             switch (((TypePrimitive)type).getType())
             {
-            case TypePrimitive.TYPE_BIT: return "bit";
-            case TypePrimitive.TYPE_INT: return "int";
-            case TypePrimitive.TYPE_FLOAT: return "float";
-            case TypePrimitive.TYPE_DOUBLE: return "double";
-            case TypePrimitive.TYPE_VOID: return "void";
+                case TypePrimitive.TYPE_BIT:
+                    return "bit";
+                case TypePrimitive.TYPE_INT:
+                    return "int";
+                case TypePrimitive.TYPE_FLOAT:
+                    return "float";
+                case TypePrimitive.TYPE_DOUBLE:
+                    return "double";
+                case TypePrimitive.TYPE_VOID:
+                    return "void";
             }
         }
         return null;
     }
-    
-    
+
     List<String> opnames;
     List<Integer> opsizes;
-    
+
     private boolean visitingALen=false;
 
-    
 
-    
+
     public Object visitTypeArray(TypeArray t) {
         String extra = " here base " + t.getBase() + " len " + t.getLength();
         Type nbase = (Type)t.getBase().accept(this);
@@ -122,8 +128,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         Expression nlen;
         try{
             if (t.getLength() != null) {
-            avlen = (abstractValue) t.getLength().accept(this);
-            nlen = this.exprRV;
+                avlen = (abstractValue) t.getLength().accept(this);
+                nlen = this.exprRV;
             } else {
                 avlen = vtype.BOTTOM("FARRAY");
                 nlen = null;
@@ -142,21 +148,22 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         // if(nbase == t.getBase() && t.getLength() == nlen ) return t;
         // return new TypeArray(nbase, nlen) ;
     }
-        // if (formal.getType().isArray()) {
-        // int maxlength = ((TypeArray) formal.getType()).getMaxlength();
-        // if (maxlength > 0) {
-        // return new ExprConstInt(maxlength);
-        // }
-        // }
+
+    // if (formal.getType().isArray()) {
+    // int maxlength = ((TypeArray) formal.getType()).getMaxlength();
+    // if (maxlength > 0) {
+    // return new ExprConstInt(maxlength);
+    // }
+    // }
 
     /*
      * protected Expression interpretActualParam(Expression e){ return maxArrSize; }
      */
-    
+
     public void doParams(List<Parameter> params, List<String> addInitStmts) {
         PrintStream out = ((NtsbVtype)this.vtype).out;
         boolean first = true;
-        
+
         out.print("(");
 
         for(Iterator<Parameter> iter = params.iterator(); iter.hasNext(); ){
@@ -167,7 +174,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             if(param.isParameterOutput()) out.print("! ");
             out.print(printType(ptype) + " ");
             String lhs = param.getName();
-            
+
             if(param.isParameterOutput()){
                 state.outVarDeclare(lhs , ptype);
             }else{
@@ -175,7 +182,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
             IntAbsValue inval = (IntAbsValue) state.varValue(lhs);
             String invalName = inval.toString();
-            
+
             if( ptype instanceof TypeArray ){
                 TypeArray ta = (TypeArray) ptype;
                 if (inval.isVect()) {
@@ -224,7 +231,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     out.print(invalName + " ");
                 }
             }
-            
+
             if (param.isParameterOutput()) {
                 if (param.isParameterInput()) {
                     out.print(", ");
@@ -266,12 +273,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     }
                 }
             }
-            
-            
+
         }
         out.print(")");     
     }
-    
+
     static String filterPound(String s) {
         if (s.length() > 0 && s.charAt(0) == '#') {
             return s.substring(1);
@@ -297,7 +303,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 return base + "[" + iv + "]";
             }
         }
-        
+        if (type instanceof TypeStructRef) {
+            TypeStructRef ts = (TypeStructRef) type;
+            StructDef struct = nres.getStruct(ts.getName());
+            return struct.getName().toUpperCase();
+        }
+
         if(type.equals(TypePrimitive.bittype)){
             return "bit";
         }else{
@@ -310,7 +321,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
         }
     }
-    
+
     public void doOutParams(List<Parameter> params) {
         PrintStream out = ((NtsbVtype)this.vtype).out;
         boolean first = true;
@@ -338,8 +349,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
         }
     }
-    
-    
+
     public Object visitStmtReturn(StmtReturn sr) {
         state.testReturn();
         return sr;
@@ -349,7 +359,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     {
         if(tracing)
             System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
-        
+
         if (func.isModel()) {
             ((NtsbVtype) this.vtype).out.print("mdl_def " + func.getName());
         } else {
@@ -359,175 +369,211 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if( func.getSpecification() != null ){
             assertions.add(new SpecSketch(func.getSpecification(), func.getName() ));
         }
-        
+
         List<Integer> tmpopsz = opsizes;
         List<String> tmpopnm = opnames;
-        
+
         opsizes = new ArrayList<Integer>();
         opnames = new ArrayList<String>();
-        
+
         Level lvl = state.beginFunction(func.getName());
         List<String> initStmts = new ArrayList<String>();
         doParams(func.getParams(), initStmts);
 
         PrintStream out = ((NtsbVtype) this.vtype).out;
         out.println("{");
-        
+
         for (String s : initStmts) {
             out.println(s);
         }
         dischargeTodo();
         Statement newBody = (Statement)func.getBody().accept(this);
-        
-        
+
         state.handleReturnTrackers();
         doOutParams(func.getParams());
-        
+
         state.endFunction(lvl);
         out.println("}");
-        
+
         opsizes = tmpopsz;
         opnames = tmpopnm;
-        
+
         if (tracing)
             System.out.println("Analyzed " + func.getName() + " " + new java.util.Date());
-        
+
         return func;
     }
-    
+
+    /*
+     * private void addStructToUsedStructs(StructDef struct, Map<StructDef,
+     * Integer>structs) { if (!structs.containsKey(struct)) { structs.put(struct, 1); for
+     * (StructFieldEnt e : struct.getFieldEntriesInOrder()) { if (e.getType().isStruct())
+     * { TypeStructRef ts = (TypeStructRef) e.getType(); StructDef st =
+     * nres.getStruct(ts.getName()); if(st.immutable()){ addStructToUsedStructs(st,
+     * structs); } } } } } private Set<StructDef> getRequiredStructs(Program p) {
+     * Map<StructDef, Integer> structs = new HashMap<StructDef, Integer>(); nres = new
+     * NameResolver(p); for (Package pkg : p.getPackages()) { nres.setPackage(pkg); for
+     * (Function f : pkg.getFuncs()) { for (Parameter param : f.getParams()) { if
+     * (param.getType().isStruct()) { TypeStructRef ts = (TypeStructRef) param.getType();
+     * StructDef struct = nres.getStruct(ts.getName()); if (struct.immutable()) {
+     * addStructToUsedStructs(struct, structs); } } } } } return structs.keySet(); }
+     */
     public Object visitProgram(Program p) {
+        PrintStream out = ((NtsbVtype) this.vtype).out;
+        out.println("typedef{");
+        nres = new NameResolver(p);
+        for (Package pkg : p.getPackages()) {
+            nres.setPackage(pkg);
+            for (StructDef t : pkg.getStructs()) {
+                if (t.immutable()) {
+                    out.print(t.getName().toUpperCase() + " ( ");
+                    for (StructFieldEnt e : t.getFieldEntriesInOrder()) {
+                        out.print(printType(e.getType()) + " ");
+                    }
+                    out.println(")");
+                }
+            }
+        }
+        out.println("}");
+
         Object o = super.visitProgram(p);
-        for(SpecSketch s : assertions){
-            ((NtsbVtype)this.vtype).out.println("assert " + s + ";");   
+        for (SpecSketch s : assertions) {
+            ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
         }
         return o;
     }
-    
-    
-    public Object visitExprFunCall(ExprFunCall exp)
-    {       
+
+    public Object visitExprFunCall(ExprFunCall exp) {
         String name = exp.getName();
         // Local function?
         Function fun = nres.getFun(name);
         String funPkg = fun.getPkg();
-        if(fun.getSpecification()!= null){
+        if (fun.getSpecification() != null) {
             assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
         }
-        if (fun != null) {   
-            if( fun.isUninterp()  ){          
+        if (fun != null) {
+            if (fun.isUninterp()) {
                 Object o = super.visitExprFunCall(exp);
                 dischargeTodo();
-                return  o; 
-            }else{
+                return o;
+            } else {
                 if (rcontrol.testCall(exp)) {
                     /* Increment inline counter. */
-                    rcontrol.pushFunCall(exp, fun);  
-                
-                    List<Statement>  oldNewStatements = newStatements;
-                    newStatements = new ArrayList<Statement> ();                    
+                    rcontrol.pushFunCall(exp, fun);
+
+                    List<Statement> oldNewStatements = newStatements;
+                    newStatements = new ArrayList<Statement>();
                     Level lvl2 = state.pushFunCall(exp.getName());
-                    try{
+                    try {
                         Level lvl;
                         {
-                            Iterator<Expression> actualParams = exp.getParams().iterator();                                     
+                            Iterator<Expression> actualParams =
+                                    exp.getParams().iterator();
                             Iterator<Parameter> formalParams = fun.getParams().iterator();
-                            lvl = inParameterSetter(exp ,formalParams, actualParams, false);
+                            lvl =
+                                    inParameterSetter(exp, formalParams, actualParams,
+                                            false);
                         }
                         Statement body = null;
-                        try{
-                            
+                        try {
+
                             body = (Statement) fun.getBody().accept(this);
-                        }catch(RuntimeException ex){
-                            state.popLevel(lvl); // This is to compensate for a pushLevel in inParamSetter. 
-                            // Under normal circumstances, this gets offset by a popLevel in outParamSetter, but not in the pressence of exceptions.
+                        } catch (RuntimeException ex) {
+                            state.popLevel(lvl); // This is to compensate for a pushLevel
+                            // in inParamSetter.
+                            // Under normal circumstances, this gets offset by a popLevel
+                            // in outParamSetter, but not in the pressence of exceptions.
                             throw ex;
                         }
                         addStatement(body);
                         {
-                            Iterator<Expression> actualParams = exp.getParams().iterator();                                     
+                            Iterator<Expression> actualParams =
+                                    exp.getParams().iterator();
                             Iterator<Parameter> formalParams = fun.getParams().iterator();
                             outParameterSetter(formalParams, actualParams, false, lvl);
-                        }                       
-                    }finally{
+                        }
+                    } finally {
                         state.popFunCall(lvl2);
                         newStatements = oldNewStatements;
                     }
                     rcontrol.popFunCall(exp);
-                }else{
-                    if(rcontrol.leaveCallsBehind()){
-//                        System.out.println("        Stopped recursion:  " + fun.getName());
+                } else {
+                    if (rcontrol.leaveCallsBehind()) {
+                        // System.out.println("        Stopped recursion:  " +
+                        // fun.getName());
                         funcsToAnalyze.add(fun);
                         Object o = super.visitExprFunCall(exp);
                         dischargeTodo();
-                        return  o;
-                    }else{
+                        return o;
+                    } else {
                         StmtAssert sas = new StmtAssert(exp, ExprConstInt.zero, false);
-                        sas.setMsg( (exp!=null?exp.getCx().toString() : "" ) + exp.getName()  );
+                        sas.setMsg((exp != null ? exp.getCx().toString() : "") +
+                                exp.getName());
                         sas.accept(this);
-                    }                    
+                    }
                 }
                 exprRV = exp;
                 return vtype.BOTTOM();
             }
         }
         exprRV = null;
-        return vtype.BOTTOM();      
+        return vtype.BOTTOM();
     }
-    
-    private Object tmp=null;
+
+    private Object tmp = null;
+
     @Override
-    
-    
-    public Object visitStmtIfThen(StmtIfThen s){
-        if(tracing){
-            //if(s.getCx() != tmp && s.getCx() != null){
+
+    public Object visitStmtIfThen(StmtIfThen s) {
+        if (tracing) {
+            // if(s.getCx() != tmp && s.getCx() != null){
             abstractValue av = (abstractValue) s.getCond().accept(this);
-                System.out.println(s.getCx()+ " : \t cond(" + s.getCond() + ")   " + av);
-                tmp = s.getCx();
-            //}
+            System.out.println(s.getCx() + " : \t cond(" + s.getCond() + ")   " + av);
+            tmp = s.getCx();
+            // }
         }
         return super.visitStmtIfThen(s);
     }
-    
-    public Object visitStmtVarDecl(StmtVarDecl s){
-        if(tracing){
-            //if(s.getCx() != tmp && s.getCx() != null){
-                
-                tmp = s.getCx();
-                if(s.getNumVars() == 1 && s.getInit(0) != null){
-                    abstractValue av = (abstractValue) s.getInit(0).accept(this);
-                    System.out.println(s.getCx()+ " : \t" + s + "\t rhs=" + av);
-                }else{
-                    System.out.println(s.getCx()+ " : \t" + s);
-                }
-            //}
+
+    public Object visitStmtVarDecl(StmtVarDecl s) {
+        if (tracing) {
+            // if(s.getCx() != tmp && s.getCx() != null){
+
+            tmp = s.getCx();
+            if (s.getNumVars() == 1 && s.getInit(0) != null) {
+                abstractValue av = (abstractValue) s.getInit(0).accept(this);
+                System.out.println(s.getCx() + " : \t" + s + "\t rhs=" + av);
+            } else {
+                System.out.println(s.getCx() + " : \t" + s);
+            }
+            // }
         }
         Object o = super.visitStmtVarDecl(s);
         dischargeTodo();
         return o;
     }
-    
-    public Object visitStmtAssert(StmtAssert sa){       
+
+    public Object visitStmtAssert(StmtAssert sa) {
         return super.visitStmtAssert(sa);
     }
-    
+
     public Object visitStructDef(StructDef ts) {
         return ts;
     }
 
-    public Object visitStmtAssign(StmtAssign s){
-        if(tracing){
-            //if(s.getCx() != tmp && s.getCx() != null){
-               abstractValue av = (abstractValue) s.getRHS().accept(this);
-                System.out.println(s.getCx()+ " : \t" + s + "\t rhs=" + av);
-                tmp = s.getCx();
-            //}
+    public Object visitStmtAssign(StmtAssign s) {
+        if (tracing) {
+            // if(s.getCx() != tmp && s.getCx() != null){
+            abstractValue av = (abstractValue) s.getRHS().accept(this);
+            System.out.println(s.getCx() + " : \t" + s + "\t rhs=" + av);
+            tmp = s.getCx();
+            // }
         }
-        String str = s.getLHS().toString();     
+        String str = s.getLHS().toString();
         return super.visitStmtAssign(s);
-        
+
     }
-    
+
 
     @Override
     public Object visitCudaThreadIdx(CudaThreadIdx cudaThreadIdx) {
