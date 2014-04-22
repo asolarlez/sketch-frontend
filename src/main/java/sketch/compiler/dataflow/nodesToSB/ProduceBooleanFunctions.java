@@ -306,7 +306,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         if (type instanceof TypeStructRef) {
             TypeStructRef ts = (TypeStructRef) type;
             StructDef struct = nres.getStruct(ts.getName());
-            return struct.getName().toUpperCase();
+            if(struct.immutable()){
+                return struct.getName().toUpperCase();
+            }
         }
 
         if(type.equals(TypePrimitive.bittype)){

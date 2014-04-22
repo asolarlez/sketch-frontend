@@ -123,6 +123,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         this.varGen = varGen;
         this.vtype = vtype;
         vtype.setPeval(this);
+
         this.state = new MethodState(vtype);
         this.isReplacer =  isReplacer;
     }
@@ -163,9 +164,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
         }
 
         if (isReplacer) {
-            exprRV = new ExprTuple(exp, newElements);
+            exprRV = new ExprTuple(exp, newElements, exp.getName());
         }
-        return vtype.TUPLE(newElementValues);
+        return vtype.TUPLE(newElementValues, exp.getName());
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp) {
@@ -188,19 +189,17 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
+
         int index = exp.getIndex();
+        if (index == 1) {
+            System.out.println("dad");
+
+        }
         Expression nstart = exprRV;
         abstractValue newBase = (abstractValue) exp.getBase().accept(this);
         Expression nbase = exprRV;
         if (isReplacer) {
-
-            if (nbase instanceof ExprTuple) {
-
-                exprRV = new ExprTupleAccess(exp, nbase, index);
-
-            } else {
-                exprRV = new ExprTupleAccess(exp, nbase, index);
-            }
+            exprRV = new ExprTupleAccess(exp, nbase, index);
         }
 
         try {
@@ -1553,10 +1552,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
             /* Assert loop expression does not exceed max unrolling constant. */
             StmtAssert nvarAssert =
                     new StmtAssert(nvarContext, new ExprBinary(
-                                    nvarContext,
-                                    ExprBinary.BINOP_LE,
-                                    new ExprVar (nvarContext, nvar),
-                                    new ExprConstInt (nvarContext, MAX_UNROLL)), StmtAssert.UBER);
+nvarContext,
+                            ExprBinary.BINOP_LE, new ExprVar(nvarContext, nvar),
+                            new ExprConstInt(nvarContext, MAX_UNROLL)), StmtAssert.UBER);
             tmpstmt = (Statement)nvarAssert.accept (this);
             if(isReplacer) slist.add(tmpstmt);
             List<Expression> condlist = isReplacer ? new ArrayList<Expression>() : null;
@@ -1864,6 +1862,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitProgram(Program p) {
         // List<StreamSpec> nstr = new ArrayList<StreamSpec>();
         nres = new NameResolver(p);
+        vtype.setNres(nres);
         rcontrol.setNameRes(nres);
         funcsToAnalyze = new ArrayList<Function>();
         Map<String, Package> pkgs = new HashMap<String, Package>();

@@ -191,12 +191,14 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
         for(String field: str.getOrderedFields()){
             if (fieldExprs.containsKey(field))
                 exprs.add(fieldExprs.get(field));
-            else
-                exprs.add(new ExprNullPtr());
+            else {
+
+                exprs.add(str.getType(field).defaultValue());
+            }
         }
 
         // this.addStatement (struct.makeAllocationGuard (expNew));
-        return new ExprTuple(expNew, exprs);
+        return new ExprTuple(expNew, exprs, str.getFullName());
         
     }
 

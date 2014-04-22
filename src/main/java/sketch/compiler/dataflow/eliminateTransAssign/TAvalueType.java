@@ -25,7 +25,7 @@ public class TAvalueType extends abstractValueType {
 	}
 
     @Override
-    public abstractValue TUPLE(List<abstractValue> vals) {
+    public abstractValue TUPLE(List<abstractValue> vals, String name) {
         return bottom;
     }
 

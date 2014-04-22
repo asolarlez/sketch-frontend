@@ -11,19 +11,21 @@ public class ExprTuple extends Expression
 {
     /** list of Expressions that are the initial elements of the tuple */
     private List<Expression> elements;
-
+    private String name;
   
 
-    public ExprTuple(FENode node, Expression singleElem) {
+    public ExprTuple(FENode node, Expression singleElem, String name) {
         super(node);
         this.elements = new ArrayList<Expression>(1);
         elements.add(singleElem);
+        this.name = name;
     }
 
-    public ExprTuple(FENode node, List<Expression> elements)
+    public ExprTuple(FENode node, List<Expression> elements, String name)
     {
         super(node);
         this.elements = elements;
+        this.name = name;
     
     }
 
@@ -32,11 +34,16 @@ public class ExprTuple extends Expression
      * 
      * @deprecated
      */
-    public ExprTuple(FEContext context, List<Expression> elements)
+    public ExprTuple(FEContext context, List<Expression> elements, String name)
     {
         super(context);
         this.elements = elements;
+        this.name = name;
    
+    }
+
+    public String getName() {
+        return name;
     }
 
     /** Returns the components of this.  The returned list is a list

@@ -39,7 +39,7 @@ public class IntVtype extends abstractValueType {
 		return null;
 	}
 
-    public abstractValue TUPLE(List<abstractValue> vals) {
+    public abstractValue TUPLE(List<abstractValue> vals, String name) {
         return new IntAbsValue(vals, true);
     }
 	public abstractValue ARR(List<abstractValue> vals){

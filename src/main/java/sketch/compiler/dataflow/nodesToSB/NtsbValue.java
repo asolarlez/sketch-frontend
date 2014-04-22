@@ -82,13 +82,11 @@ public class NtsbValue extends IntAbsValue {
         this.name = null;
     }
 
-    public NtsbValue(List<abstractValue> obj, boolean isTuple) {
+    public NtsbValue(List<abstractValue> obj, String name) {
+        // called by only tuples
         this.obj = obj;
-        if (isTuple)
-            this.type = BOTTOM;
-        else
-            this.type = LIST;
-        this.name = null;
+        this.type = BOTTOM;
+        this.name = name;
 
     }
 
@@ -133,7 +131,7 @@ public class NtsbValue extends IntAbsValue {
                     if (obj != null) {
                         if (obj instanceof List<?>) {
                             StringBuffer rval = new StringBuffer();
-                            rval.append("{< ");
+                            rval.append("[" + name.split("@")[0].toUpperCase() + "]{< ");
 
                             for (Iterator<abstractValue> it =
                                     ((List<abstractValue>) obj).iterator(); it.hasNext();)

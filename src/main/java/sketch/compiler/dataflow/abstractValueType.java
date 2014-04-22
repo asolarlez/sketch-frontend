@@ -4,6 +4,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.typs.Type;
@@ -11,10 +12,15 @@ import sketch.compiler.ast.core.typs.Type;
 
 public abstract class abstractValueType{
 	public PartialEvaluator eval;
+    public NameResolver nres;
 	
 	public void setPeval(PartialEvaluator eval){
 		this.eval = eval;
 	}
+
+    public void setNres(NameResolver nres) {
+        this.nres = nres;
+    }
 	
 	abstract public abstractValue STAR(FENode star);
 	abstract public abstractValue BOTTOM(); // == BOTTOM(TypePrimitive);
@@ -33,7 +39,7 @@ public abstract class abstractValueType{
     abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);
 
-    abstract public abstractValue TUPLE(List<abstractValue> vals);
+    abstract public abstractValue TUPLE(List<abstractValue> vals, String name);
 	abstract public abstractValue NULL();
 	
 	abstract public abstractValue plus(abstractValue v1, abstractValue v2);

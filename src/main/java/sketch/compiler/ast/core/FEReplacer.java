@@ -237,7 +237,7 @@ public class FEReplacer implements FEVisitor
         }
         if (!hasChanged)
             return exp;
-        return new ExprTuple(exp, newElements);
+        return new ExprTuple(exp, newElements, exp.getName());
     }
     public Object visitExprArrayInit(ExprArrayInit exp)
     {

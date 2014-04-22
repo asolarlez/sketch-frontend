@@ -19,7 +19,7 @@ public class LiveVariableVType extends abstractValueType {
 	static public LiveVariableVType vtype = new LiveVariableVType();
 	
 	@Override
-    public abstractValue TUPLE(List<abstractValue> vals) {
+    public abstractValue TUPLE(List<abstractValue> vals, String name) {
         LVSet lv = new LVSet();
         Iterator<abstractValue> it = vals.iterator();
         while (it.hasNext()) {

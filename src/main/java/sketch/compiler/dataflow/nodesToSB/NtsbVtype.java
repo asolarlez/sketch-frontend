@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -132,8 +133,8 @@ public class NtsbVtype extends IntVtype {
         return new NtsbValue(v); 
     }
     
-    public abstractValue TUPLE(List<abstractValue> vals) {
-        return new NtsbValue(vals, true);
+    public abstractValue TUPLE(List<abstractValue> vals, String name) {
+        return new NtsbValue(vals, name);
     }
     public abstractValue ARR(List<abstractValue> vals){
         return new NtsbValue(vals);     
@@ -264,6 +265,7 @@ public class NtsbVtype extends IntVtype {
     int funid = 0;
     public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond){
         ++funid;
+       
         Iterator<abstractValue> actualParams = avlist.iterator();
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
@@ -383,9 +385,11 @@ public class NtsbVtype extends IntVtype {
     String printType(Type t){
         if (t instanceof TypeStructRef) {
             TypeStructRef ts = (TypeStructRef) t;
-
-            return ((TypeStructRef) t).getName().split("@")[0].toUpperCase();
-        } else
+            StructDef struct = nres.getStruct(ts.getName());
+            if (struct.immutable()) {
+                return struct.getName().toUpperCase();
+            }
+        }
         if(t.equals(TypePrimitive.bittype)){
             return "bit";
         }else{
