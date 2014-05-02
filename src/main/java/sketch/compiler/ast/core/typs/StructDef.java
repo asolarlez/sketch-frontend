@@ -291,6 +291,10 @@ annotations);
         return immutable;
     }
 
+    public void resetImmutable() {
+        immutable = false;
+    }
+
     public void setImmutable() {
         immutable = true;
     }

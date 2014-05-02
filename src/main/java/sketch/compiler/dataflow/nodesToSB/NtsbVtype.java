@@ -387,7 +387,7 @@ public class NtsbVtype extends IntVtype {
             TypeStructRef ts = (TypeStructRef) t;
             StructDef struct = nres.getStruct(ts.getName());
             if (struct.immutable()) {
-                return struct.getName().toUpperCase();
+                return "*" + struct.getName().toUpperCase();
             }
         }
         if(t.equals(TypePrimitive.bittype)){

@@ -1,8 +1,11 @@
 package sketch.compiler.passes.preprocessing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
@@ -52,7 +55,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
         if (newBody == null)
             return fn;
         BreakIfThenStatements bif =
-                new BreakIfThenStatements(nres, varGen, fn.getName(), symtab);
+                new BreakIfThenStatements(nres, varGen, fn.getName(), symtab, true);
 
         newBody = (Statement) fn.getBody().accept(bif);
         if (newBody != fn.getBody()) {
@@ -65,16 +68,19 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
     private class BreakIfThenStatements extends SymbolTableVisitor {
         TempVarGen varGen;
         String funName;
-
+        boolean isOuter;
+        Map<String, Type> typeMap = new HashMap<String, Type>();
         // SymbolTable symtab;
 
         public BreakIfThenStatements(NameResolver nr, TempVarGen vg, String name,
-                SymbolTable st)
+                SymbolTable st, boolean isOuter)
         {
             super(st);
             nres = nr;
             varGen = vg;
             funName = name;
+            this.isOuter = isOuter;
+
             // symtab =st;
         }
 
@@ -247,8 +253,14 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                     condVar, stmt.getCond()));
             List consBlocks = new ArrayList(), consFunCallStatements = new ArrayList(), consFunCalls =
                     new ArrayList();
+
+            if (stmt.getAlt() != null)
+                isOuter = false;
             if (stmt.getCons() != null) {
                 Statement cons = (Statement) stmt.getCons().accept(this);
+                if (isOuter) {
+                    return new StmtIfThen(stmt, stmt.getCond(), cons, null);
+                }
                 GlobalizeVar g = new GlobalizeVar(symtab);
                 cons = (Statement) cons.accept(g);
                 Statements.addAll(g.varDeclStmts());
@@ -257,6 +269,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                 consBlocks = consParts[0];
                 consFunCallStatements = consParts[1];
                 consFunCalls = consParts[2];
+
             }
             List altBlocks = new ArrayList(), altFunCallStatements = new ArrayList(), altFunCalls =
                     new ArrayList();
@@ -338,7 +351,10 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                     altFunction = (ExprFunCall) altFunCalls.get(i);
                     altParamExps = altFunction.getParams();
                 }
-
+                // find a better way for doing this
+                for (Entry<String, Type> entry : typeMap.entrySet()) {
+                    symtab.registerVar(entry.getKey(), entry.getValue());
+                }
                 List<Parameter> params = nres.getFun(funName).getParams();
                 List<Expression> paramExprs = new ArrayList<Expression>();
                 for (int l = 0; l < params.size(); l++) {
@@ -504,8 +520,11 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
 
                 }
                 for (int a = 0; a < paramTypes.size(); a++) {
-                    Statements.add(new StmtVarDecl(stmt.getContext(), paramTypes.get(a),
-                            paramVars.get(a), null));
+                    StmtVarDecl st = new StmtVarDecl(stmt.getContext(), paramTypes.get(a),
+                            paramVars.get(a), null);
+                    Statements.add(st);
+                    typeMap.put(paramVars.get(a), paramTypes.get(a));
+                    symtab.registerVar(paramVars.get(a), paramTypes.get(a));
                 }
 
                 StmtIfThen s =

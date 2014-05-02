@@ -209,21 +209,21 @@ public class MergeADT extends SymbolTableVisitor {
                 }
  else if (str.getParentName() == null) {
                     copyStruct(str);
-                    newStructs.add(str);
+                    // newStructs.add(str);
 
                 }
             }
-            // newStructs.addAll(pkg.getStructs());
-            Package newpkg = (Package) super.visitPackage(pkg);
-            newpkg =
-                    new Package(newpkg, newpkg.getName(), newStructs, newpkg.getVars(),
-                            newpkg.getFuncs());
+            newStructs.addAll(pkg.getStructs());
+            // Package newpkg = (Package) super.visitPackage(pkg);
+            Package newpkg =
+                    new Package(pkg, pkg.getName(), newStructs, pkg.getVars(),
+                            pkg.getFuncs());
             // newpkg.getStructs().addAll(newStructs);
             newStreams.add(newpkg);
         }
         Program newprog = p.creator().streams(newStreams).create();
-        return newprog;
-        // return super.visitProgram(newprog);
+        // return newprog;
+        return super.visitProgram(newprog);
     }
 
     public void copyStruct(StructDef str) {
@@ -238,6 +238,7 @@ public class MergeADT extends SymbolTableVisitor {
 
     public StructDef combineStructs(NameResolver nres, StructDef str) {
         String oldName = str.getFullName();
+
 
         String newName = "combined" + oldName.split("@")[0];
         List structsList = new ArrayList();
@@ -261,12 +262,14 @@ public class MergeADT extends SymbolTableVisitor {
             annotations.append("Immutable", new Annotation(str.getContext(), "Immutable",
                     ""));
         }
+        str.resetImmutable();
         String type = "type";
         names.add("type");
         types.add(TypePrimitive.int32type);
         while (!list.isEmpty()) {
             String name = list.removeFirst();
             StructDef childStruct = nres.getStruct(name);
+            childStruct.resetImmutable();
             StructCombinedTracker tracker =
                     new StructCombinedTracker(name, newName, i++, true);
             structs.put(childStruct.getFullName(), tracker);

@@ -191,10 +191,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
 
         int index = exp.getIndex();
-        if (index == 1) {
-            System.out.println("dad");
 
-        }
         Expression nstart = exprRV;
         abstractValue newBase = (abstractValue) exp.getBase().accept(this);
         Expression nbase = exprRV;
