@@ -1,0 +1,24 @@
+struct C{@Immutable("")}
+struct B{@Immutable("")
+	C a;
+	C b;
+}
+struct D{@Immutable("")
+	B a;
+	B b;	
+}	
+struct A{@Immutable("")
+	int x;
+	int y;
+	
+}
+
+
+harness void main(){
+	A a = new A(x =2, y = ??);
+	D d = new D();
+	B c = d.a;
+	assert(c.a == null);
+	assert(a.x + a.y == 4);
+	
+}

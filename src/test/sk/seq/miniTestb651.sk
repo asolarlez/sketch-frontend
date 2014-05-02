@@ -1,0 +1,20 @@
+
+//double read
+struct parent{@Immutable("")}
+struct A extends parent{
+	int x;	
+	A nxt;
+}
+
+struct B extends parent{
+	int x;	
+}
+
+harness void main(int x){
+	A a = new A(x = 2);
+	A b = new A(x =3, nxt = a);
+	B b1 = new B(x = 2); 
+	A c = b.nxt;
+	assert (c.x == b1.x);
+	
+}

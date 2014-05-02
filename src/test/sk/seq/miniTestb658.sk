@@ -1,0 +1,16 @@
+
+struct A{@Immutable("")
+	int x;
+	A nxt;
+}
+
+
+
+harness void main(){
+	
+	A a = new A();
+	A b= a.nxt;
+	assert(b.x !=1); 
+	
+	
+}

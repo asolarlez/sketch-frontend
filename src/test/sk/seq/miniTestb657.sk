@@ -1,0 +1,24 @@
+//crazy combination of regexes with structs
+
+struct A{@Immutable("")
+	int x;
+	A nxt;
+}
+
+
+
+harness void main(){
+	
+	A a1 = new A(x = 1);
+	A a2 = new A(x = 2);
+	A a3 = new A(x = 1, nxt = a1);
+	A b = new A(x =2, nxt = {|a1|a2|a3|});
+	A c = new A(x=3, nxt ={|a1| b|a2|a3|});
+	
+	A x = c.nxt;
+	A y = x.nxt;
+	A z = y.nxt;
+	assert(z.x ==1); 
+	
+	
+}

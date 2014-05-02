@@ -1,0 +1,16 @@
+//array of tuples
+struct A{@Immutable("")
+	int x;
+}
+
+harness void main(){
+	A[5] arrOfTuples;
+	for(int i =0; i< 5;i++){
+		A a = new A(x = i);
+		arrOfTuples[i] = a;
+			
+	}
+	for(int i = 0; i <5; i++){
+	assert(arrOfTuples[i].x ==i);
+	}
+	

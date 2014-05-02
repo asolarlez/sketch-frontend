@@ -1,0 +1,15 @@
+//frontend test
+//should pass typechecking
+struct A{
+@Immutable("")
+	
+	int x;	
+}
+struct B extends A{
+	int y;	
+}
+
+harness void main(int x){
+	B b = new B(y = 2);
+	
+}

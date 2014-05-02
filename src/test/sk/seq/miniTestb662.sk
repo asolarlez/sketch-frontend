@@ -1,0 +1,40 @@
+
+
+struct Queue{ @Immutable("")
+	Node head;
+	Node tail;	
+}
+
+struct Node{@Immutable("")
+	int val;
+	Node next;	
+}
+
+generator Node select(Queue q){ /* automatically rewritten */
+	int t = ??;
+	if(t == 0){
+		return q.tail;	
+	}	
+	if(t == 1){
+		return q.head;	
+	}
+	if(t == 2){
+		Node n = select(q);
+		assert n != null;
+		return n.next;
+	}	
+	return null;
+}
+
+bit one(bit x){
+	return 1;
+}
+
+bit test(bit x) implements one{
+	Node a = new Node();
+	Node b = new Node(next= a);
+	Node c = new Node(next = b);
+	Queue q = new Queue(head = a, tail = a);
+	
+	return q.head.next == select(q); 
+}

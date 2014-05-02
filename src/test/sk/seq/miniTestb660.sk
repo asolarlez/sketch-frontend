@@ -1,0 +1,28 @@
+//different structures in arracc
+//loops b/n check and find phase
+
+struct C{@Immutable("")}
+struct B{@Immutable("")
+	C a;
+	C b;
+}
+struct D{@Immutable("")
+	B a;
+	B b;	
+}
+
+struct A{@Immutable("")
+	int x;
+	int y;
+	
+}
+
+harness void main(bit t){
+	A a = new A(x =3, y = 1);
+	A b = null;
+	A e = t? a: b;
+	if(e!= null){
+	assert( e.x +e.y == 4);
+	}
+	
+}

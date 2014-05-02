@@ -1,0 +1,28 @@
+//struct in function parameter
+struct A{@Immutable("")
+	int x;
+	B b;
+}
+struct B{@Immutable("")
+	int x;	
+}
+
+int foo(A a){
+	return a.x;
+}
+A produce(int x, bit t){
+	if(t){
+		B b = new B(x =2);
+	return new A(x=x, b= b);	
+	}
+	else return null;
+}
+bit check(A a){
+	B b = a.b;
+	return a.x == 2 && b.x ==2;	
+}
+harness void main(){
+	A a = produce(??,1);
+	assert(check(a));
+	
+}

@@ -1,0 +1,29 @@
+//checking for DAG CSE working
+struct parent{@Immutable("")
+	int x;
+}
+struct A extends parent{
+	
+	parent nxt;
+}
+
+struct B extends parent{
+		
+}
+
+
+harness void main(int x, bit cond){
+	
+	B b = new B(x = 1);
+	B b_cpy = new B(x=1);
+	A a = new A(x=2, nxt = b);
+	A a_cpy = new A(x=3, nxt = b_cpy);
+	parent p;
+	if(cond){
+		p = a.nxt;
+	}else{
+		p = a_cpy.nxt;
+	}
+	assert(p.x==1);
+	
+}

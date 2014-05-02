@@ -1,0 +1,28 @@
+//DAGCSE
+struct parent{@Immutable("")
+	int x;
+}
+struct A extends parent{
+	parent nxt;
+}
+struct B extends parent{
+		
+}
+
+
+harness void main(int x, bit cond){
+	
+	B b = new B(x = 1);
+	B b_cpy = new B(x=1);
+	A a = new A(x=2, nxt = b);
+	A a_cpy = new A(x=3, nxt = b_cpy);
+	A a_final;
+	if(cond){
+		a_final = a;
+	}else{
+		a_final = a_cpy;
+	}
+	parent p = a_final.nxt;
+	assert(p.x==1);
+	
+}

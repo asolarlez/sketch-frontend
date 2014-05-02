@@ -1,0 +1,15 @@
+//array of tuples
+struct A{@Immutable("")
+	int x;
+}
+
+harness void main(bit t){
+	A a1 = new A(x =??);
+	A a2 = new A(x =2);
+	A[2] arr;
+	int x = t ? 0: 1;
+	arr[x] = a1;
+	arr[1-x] = a2;
+	assert(arr[0].x ==2);
+	
+}
