@@ -534,6 +534,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             for (Expression param : exp.getParams()) {
                 Parameter formal = (Parameter) form.next();
                 Expression newParam = doExpression(param);
+                if (formal.isParameterReference() && newParam instanceof ExprField) {
+                    TypeStructRef parent =
+                            (TypeStructRef) getType(((ExprField) newParam).getLeft());
+                    if (nres.getStruct(parent.getName()).immutable()) {
+                        report(exp,
+                                "Bad parameter: Field of an immutable struct cannot be a ref parameter");
+                    }
+                }
+
                 Type lt = getType(newParam);
                 Type formalType = formal.getType();
                 formalType = formalType.addDefaultPkg(f.getPkg(), nres);
