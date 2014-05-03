@@ -1,24 +1,23 @@
-struct C{@Immutable("")}
-struct B{@Immutable("")
-	C a;
-	C b;
-}
-struct D{@Immutable("")
-	B a;
-	B b;	
-}	
+//check finds 0 for hole as cex but find chooses 0 again
 struct A{@Immutable("")
 	int x;
-	int y;
-	
+	A nxt;
 }
+
 
 
 harness void main(){
-	A a = new A(x =2, y = ??);
-	D d = new D();
-	B c = d.a;
-	assert(c.a == null);
-	assert(a.x + a.y == 4);
+	
+	A a1 = new A(x = 1);
+	//A a2 = new A(x = 2);
+	A a3 = new A(x = 1, nxt = a1);
+	A b = new A(x =2, nxt = a3);
+	A c = new A(x=3, nxt ={|a1| b|});
+	
+	A x = c.nxt;
+	A y = x.nxt;
+	A z = y.nxt;
+	assert(z.x ==1); 
+	
 	
 }

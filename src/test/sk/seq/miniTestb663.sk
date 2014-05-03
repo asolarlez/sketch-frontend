@@ -1,0 +1,14 @@
+struct A{
+	int x;	
+	
+}
+
+harness void main(){
+	A a = new A();
+	A[2] arr = {};
+	if(arr[0] != null){
+		A b = arr[0];
+		int x = b.x; // getting replaced to 0.x after partial evaluator pass
+	}
+	
+}
