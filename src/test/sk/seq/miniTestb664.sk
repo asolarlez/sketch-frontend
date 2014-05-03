@@ -12,7 +12,7 @@ int Ogt = 6;
 int Olt = 7;
 
 int size = 5;
-struct sourceAST {}
+struct sourceAST {@Immutable("")}
 struct SNum extends sourceAST{int val;}
 struct SVar extends sourceAST{ int str;}
 struct STrue extends sourceAST{}
@@ -30,7 +30,7 @@ struct SIf extends sourceAST{sourceAST a; sourceAST b; sourceAST c;}
 
 //CoreAST
 
-struct coreAST{}
+struct coreAST{@Immutable("")}
 struct CPrim2 extends coreAST{int op; coreAST a; coreAST b;}
 struct CNum extends coreAST{int val;}
 struct CVar extends coreAST{int str;}
