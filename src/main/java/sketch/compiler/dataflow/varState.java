@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 
@@ -143,12 +144,15 @@ abstract public class varState {
 			if(  val.isVect() ){
 				int lv = this.numKeys();
 				List<abstractValue> vlist = val.getVectValue();
+                abstractValue dflt =
+                        (t.defaultValue() instanceof ExprNullPtr) ? vtype.NULL()
+                                : vtype.CONST(0);
 				for(int i=0; i<lv ; ++i){
 					abstractValue cv;
 					if( i < vlist.size() ){
 						cv = vlist.get(i);	
 					}else{
-						cv = vtype.CONST(0);
+                        cv = dflt;
 					}
 					update(vtype.CONST(i), cv, vtype);
 				}
