@@ -1,0 +1,31 @@
+
+struct B{@Immutable("")
+	int x;
+}
+struct A{@Immutable("")
+	bit x;
+	A a;
+	A b;
+}
+
+generator A getA(A a, A b){
+	if(??){
+		A c = new A(x=??,a=a,b=b);
+		return {|null|a|b|c|};
+	}else{
+		return getA(a,b);
+	}	
+}
+
+harness void main(){
+	
+	B foo= new B(x = ??);
+	assert(foo.x == 2);
+	A a = new A(x = ??);
+	A b = new A(x = ??);
+	A c = getA(a,b);
+	
+	assert(!c.x || c.a.x && c.b.x);
+	assert(c.x || !c.a.x || c.b.x);
+	
+}
