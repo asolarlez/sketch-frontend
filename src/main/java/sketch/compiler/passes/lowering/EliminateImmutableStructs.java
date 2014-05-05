@@ -17,15 +17,9 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprNamedParam;
-import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
-import sketch.compiler.ast.core.exprs.ExprTuple;
-import sketch.compiler.ast.core.exprs.ExprTupleAccess;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -161,7 +155,10 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
         int index = struct.getIndex(field);
 
         Expression basePtr = (Expression) ef.getLeft().accept(this);
-
+            if (newStatements != null) {
+                addStatement(new StmtAssert(new ExprBinary(basePtr, "!=",
+                        ExprConstInt.minusone), false));
+            }
         return new ExprTupleAccess(ef, basePtr, index);
         } else
             return ef;
