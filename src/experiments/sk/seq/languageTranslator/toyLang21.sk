@@ -1,5 +1,5 @@
 
-pragma options "--bnd-inbits 3 --beopt:simiters 3";
+pragma options "-p preproc --bnd-inbits 2 --bnd-cbits 2 --fe-keep-tmp --beopt:simiters 5";
 
 
 int Oplus= 0;
@@ -12,7 +12,7 @@ int Ogt = 6;
 int Olt = 7;
 
 int size = 5;
-struct sourceAST {@Immutable("")}
+struct sourceAST {}
 struct SNum extends sourceAST{int val;}
 struct SVar extends sourceAST{ int str;}
 struct STrue extends sourceAST{}
@@ -30,7 +30,7 @@ struct SIf extends sourceAST{sourceAST a; sourceAST b; sourceAST c;}
 
 //CoreAST
 
-struct coreAST{@Immutable("")}
+struct coreAST{}
 struct CPrim2 extends coreAST{int op; coreAST a; coreAST b;}
 struct CNum extends coreAST{int val;}
 struct CVar extends coreAST{int str;}
@@ -100,7 +100,7 @@ coreAST desugar(sourceAST s, int bnd){
 		return out;
 	} 
 	switch(s){
-		case SNum: return new CNum(val = s.val);
+		/*case SNum: return new CNum(val = s.val);
 		case STrue: return new CBool(val =1);
 		case SFalse: return new CBool(val =0);
 		case SVar: return new CVar(str =s.str);
@@ -110,9 +110,9 @@ coreAST desugar(sourceAST s, int bnd){
 		case SPrim2 : return new CPrim2(op = s.op ,a = desugar(s.a,bnd-1), b=desugar(s.b,bnd-1));
 		case SBetween:{ coreAST c = desugar(s.b, bnd-1); return new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd-1), b = c), b = new CPrim2(op = Olt, a = c, b = desugar(s.c, bnd-1)));}
 		//case SBetween: return new CLet( str = 0, a = desugar(s.b, bnd-1), b=new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd-1), b = new CVar(str = 0)), b = new CPrim2(op = Olt, a = new CVar(str = 0), b = desugar(s.c,bnd-1))));
-		case SIf: return new CIf(a = desugar(s.a,bnd-1) , b= desugar(s.b,bnd-1) , c =desugar(s.c,bnd-1));
+		case SIf: return new CIf(a = desugar(s.a,bnd-1) , b= desugar(s.b,bnd-1) , c =desugar(s.c,bnd-1));*/
 	
-		/*repeat_case:
+		repeat_case:
 		{
 			coreAST[3] v = run( s.{sourceAST} );
 			//int d,d1,d2,d3;
@@ -136,7 +136,7 @@ coreAST desugar(sourceAST s, int bnd){
 			if(t==7) return new CLet(str = getConst(op[0]),a =a, b=b);
 			
 			//return new ??(op=getOp(op[0]), a = a, b = b, c =c, str = getConst(op[0]), val = getConst(op[0]),val=??);	
-		}*/
+		}
 	}
 }
 sourceAST gBetween(sourceAST a, sourceAST b, sourceAST c){
@@ -191,53 +191,50 @@ coreAST cBool(bit val){
 	return new CBool(val = val);
 }
 
-sourceAST produce( int[50] encoding, ref int idx, int bnd, int sbnd){
-	
-	if(bnd <=0 || sbnd/2 == 0 ){ 
+sourceAST produce( int[40] encoding, ref int idx, int bnd, int sbnd){
+	//if(idx >= 47) return null;
+	if(bnd <=0  || sbnd ==0|| encoding[idx] ==0){ 
+		idx++;
         if(encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
-       if(encoding[idx]==1){++idx; return new SVar(str = encoding[idx++]);}
+        if(encoding[idx]==1){++idx; return new SVar(str = encoding[idx++]);}
         if(encoding[idx]==2){ ++idx; return new STrue(); }else{ ++idx; return new SFalse(); }          
      }
-    
-  	if( encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
-    else
-     if(encoding[idx]==1){ ++idx; return new SVar(str=encoding[idx++]); }
-    else
-    if(encoding[idx]==2){ ++idx; return new STrue(); }
-    else
-    if(encoding[idx]==3){++idx; return new SFalse(); }
+     
    
-   else
-     if(encoding[idx]==4){
+   else if(encoding[idx]==1 ){
+   	 idx++;
+     if(encoding[idx]<=1){
         ++idx;
         return gOp(2, encoding[idx++],{ produce(encoding, idx, bnd-1,sbnd/2),produce(encoding, idx, bnd-1,sbnd/2)}); 
         
         
     }else
-    if(encoding[idx]==5){
+    if(encoding[idx]<=3){
     	++idx;
     	return gBetween(produce(encoding, idx, bnd-1,sbnd/2), produce(encoding, idx, bnd-1,sbnd/2), produce(encoding, idx, bnd-1,sbnd/2)); 
         
-    }/*else
-    if (encoding[idx] <= 7 ){
-    	return null;
-    }*/
-    else
-    if(encoding[idx]==6){
+    }
+   }
+   else if(encoding[idx] ==2){
+   	 ++idx;
+    if(encoding[idx]<=1){
     	++idx;
     	 //return gOp(1, encoding[idx++],{ produce(encoding, idx, bnd-1,sbnd/2)}); 
     	return new SAssign(str = encoding[idx++],a= produce(encoding, idx, bnd-1,sbnd/2)); 
         
     }else
-  if(encoding[idx]==7){
+ 	 if(encoding[idx]<=3){
     	++idx;
     	
     	return new SLet(str = encoding[idx++],a= produce(encoding, idx, bnd-1,sbnd/2),b = produce(encoding, idx, bnd-1,sbnd/2)); 
         
-    }/*else
-    if(encoding[idx]<=15){
-    	return null;
-    } */
+    }
+   }
+   else{
+   		++idx;
+   		return null;
+   }
+   /*
     else
     if(encoding[idx]==8){
         ++idx;
@@ -248,7 +245,7 @@ sourceAST produce( int[50] encoding, ref int idx, int bnd, int sbnd){
         return gBetween(produce(encoding, idx, bnd-1,sbnd/2), produce(encoding, idx, bnd-1,sbnd/2), produce(encoding, idx, bnd-1,sbnd/2)); 
     } else{
     	return null;
-    }
+    }*/
 }
 
 
@@ -762,15 +759,14 @@ harness void main3(){
 	}
 	int i = 1;
 	
-	coreAST c3 = interpretCoreAST(c2,0,5,5);
+	coreAST c3 = interpretCoreAST(c2,0,5,i+2);
 	assert(c3!=null);
 	assert(equals(c1,c3));
 		
 	
 }*/
-
 /*
-harness void main2(int[40] arr, int sbnd){
+harness void main2(int[50] arr, int sbnd){
 	sbnd = sbnd*2;
 	int idx =0;
 	sourceAST s = produce( arr, idx,3, sbnd);
@@ -789,43 +785,46 @@ harness void main2(int[40] arr, int sbnd){
 		}
 		int i = 1;
 		while(sbnd/2 >=1) {sbnd = sbnd/2; i++;}
-		coreAST c3 = interpretCoreAST(c2,0,4,i+1);
+		
+		coreAST c3 = interpretCoreAST(c2,0,5,i+2);
 		assert(c3!=null);
 		assert(equals(c1,c3));
 		
 	}
 	
-}
-*/
-/*
+}*/
 
-harness void main1( int[50] arr, int sbnd){
+
+
+harness void main1( int[40] arr, int sbnd){
 	
 	int idx =0;
-	sourceAST s = produce( arr, idx, 3, sbnd);
+	sourceAST s = produce( arr, idx, 2, sbnd);
 	
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;
 	}
 	
-	sourceAST c1 = interpretSourceAST(s,0,3);
+	sourceAST c1 = interpretSourceAST(s,0,2);
 	
 	if(c1 != null){
-		coreAST c2  = desugar(s,4);
+		coreAST c2  = desugar(s,3);
 		
 		for(int i = 0; i < size; i++){
 			cmtStore[i] = null;
 		}
 		int i = 1;
 		while(sbnd/2 >=1) {sbnd = sbnd/2; i++;}
-		coreAST c3 = interpretCoreAST(c2,0,5,i+2);
+		
+		
+		coreAST c3 = interpretCoreAST(c2,0,4,i+2);
 		assert(c3!=null);
 		assert(equals(c1,c3));
 		
 	
 	}
 }
-*/
+
 harness void main0( int[30] arr, int sbnd){
 	
 	int idx =0;
@@ -843,10 +842,7 @@ harness void main0( int[30] arr, int sbnd){
 		for(int i = 0; i < size; i++){
 			cmtStore[i] = null;
 		}
-		int i =1;
-		while(sbnd/2 >=1) {sbnd = sbnd/2; i++;}
-		
-		coreAST c3 = interpretCoreAST(c2,0,3,i+1);
+		coreAST c3 = interpretCoreAST(c2,0,3,3);
 		assert(c3!=null);
 		assert(equals(c1,c3));
 		

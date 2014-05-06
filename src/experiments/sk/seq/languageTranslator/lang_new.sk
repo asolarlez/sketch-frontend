@@ -8,8 +8,8 @@ int Onot = 5;
 int Ogt = 6;
 int Olt = 7;
 
-
-struct sourceAST {}
+//sourceAST 
+struct sourceAST {@Immutable("")}
 struct SPrim1 extends sourceAST{int op; sourceAST a;}
 struct SPrim2 extends sourceAST{int op; sourceAST a; sourceAST b;}
 struct SBetween extends sourceAST{sourceAST a;sourceAST b;sourceAST c;}
@@ -21,7 +21,7 @@ struct SFalse extends sourceAST{}
 
 
 //CoreAST
-struct coreAST{}
+struct coreAST{@Immutable("")}
 struct CVar extends coreAST{int str;}
 struct CPrim1 extends coreAST{int op; coreAST a;}
 struct CPrim2 extends coreAST{int op; coreAST a; coreAST b;}
@@ -33,7 +33,6 @@ struct CBool extends coreAST{bit val;}
 
 
 
-
 coreAST desugar(sourceAST s, int bnd){
 	if(s == null){ return null; }
 	if(bnd <= 0){ return null; }
@@ -42,7 +41,7 @@ coreAST desugar(sourceAST s, int bnd){
 	generator int getStr(){ return ??; }
 	generator int getConst(int c){return {| c|??|};}
 	
-	//generator for coreAST
+
 	generator coreAST getPart(coreAST c1, coreAST c2, coreAST c3, int bnd, ref int depth) {
 		assert bnd > 0;
 		depth++;
@@ -60,18 +59,18 @@ coreAST desugar(sourceAST s, int bnd){
 		}
 		return null;
 	}
-	generator coreAST[3] run([int n], fun f, sourceAST[n] fields){
+	generator coreAST[3] run([int n], sourceAST[n] fields){
 		coreAST[3] out;
 		int i=0;
 		repeat(n){
-			out[i] = f(fields[i],bnd-1); ++i;
+			out[i] = desugar(fields[i],bnd-1); ++i;
 		}
 		return out;
 	} 
 	switch(s){
 		repeat_case:
 		{
-			coreAST[3] v = run(desugar, s.{sourceAST} );
+			coreAST[3] v = run( s.{sourceAST} );
 			int d,d1,d2,d3;
 			coreAST a = getPart(v[0], v[1], v[2], 2,d1);
 			coreAST b = getPart(v[0], v[1], v[2], 2,d2);
@@ -139,7 +138,7 @@ coreAST cBool(bit val){
 
 
 
-sourceAST produce(int[20] encoding, ref int idx, int bnd){
+sourceAST produce(int[30] encoding, ref int idx, int bnd){
 	if(bnd <=0 ){ 
         if(encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
         if(encoding[idx]==1){ ++idx; return new STrue(); }else{ ++idx; return new SFalse(); }          
@@ -547,7 +546,7 @@ bit equals(sourceAST c1 ,coreAST c2){
 	
 }
 
-harness void main( int[20] arr){
+harness void main( int[30] arr){
 	int idx =0;
 	sourceAST s = produce( arr, idx, 1);
 	sourceAST c1 = interpretSourceAST(s,2);
@@ -558,8 +557,3 @@ harness void main( int[20] arr){
 		assert(equals(c1,c3));
 	}
 }
-
-
-
-	
-	

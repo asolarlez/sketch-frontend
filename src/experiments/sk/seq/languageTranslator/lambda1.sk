@@ -1,4 +1,4 @@
-//lambda calculus with pairs
+ pragma options "--bnd-inbits 3 --bnd-mbits 2  --beopt:simiters 5";
 int Oplus= 0;
 int Ominus=1;
 int Oneg = 2;
@@ -8,7 +8,7 @@ int Onot = 5;
 int Ogt = 6;
 int Olt = 7;
 
-int count = 0; // for LVars
+int count = 0; 
 struct E{@Immutable("")}
 struct LVar extends E { int name;}
 struct LAbs extends E { LVar var; E a;}
@@ -23,17 +23,16 @@ struct SAbs extends source { SVar var; source a;}
 struct SApp extends source { source a; source b;}
 struct SNum extends source { int val;}
 struct SPrim2 extends source { int op; source a; source b;}
+struct SPrim1 extends source { int op; source a;}
+struct STrue extends source{}
+struct SFalse extends source{}
 
-struct SPair extends source{ source a; source b; }
-struct SFirst extends source{ source a;}
-struct SSecond extends source { source a;}
 
 E desugar(source s, int bnd){
-	if(s == null){ return null; }
-	if(bnd <= 0){ return null; }
+	if(s == null) return null; 
+	if(bnd <= 0) return null; 
 		
 	generator int getOp(int op){ return {| op |Oplus | Ominus |}; }  
-	generator int getOp1(int op){ return {| op |Oplus | Ominus|Oneg|Onot|Oand|Oor |}; }  
 	generator int getConst(int c){return {| c|0-c|??|};}
 	
 	//generator for E in lambda calculus
@@ -53,10 +52,9 @@ E desugar(source s, int bnd){
 		
 		//define false;
 		E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
-		//E combined = new LApp(a = new LApp(a = x, b = c1), b = c2);
 		
 		if(??){
-			return {| c1|c2|True|False|};
+			return {| c1|c2|True|False|_z|_x|};
 		}else{
 			
 			if(bnd > 1){
@@ -66,7 +64,7 @@ E desugar(source s, int bnd){
 				LVar v  = new LVar(name = t);
 				if ( t >= count) count = t+1;
 				
-				return 	new ??(op=getOp(1), a = a, b =b, name = getConst(1), val = getConst(1),var = {|z|v|});
+				return 	new ??(op=getOp(1), a = a, b =b, name = getConst(1), val = getConst(1),var = {|x|z|v|});
 				
 			}
 		}
@@ -87,14 +85,13 @@ E desugar(source s, int bnd){
 			int[1] op = s.{int};
 			
 			int d,d1,d2;
-			E a = getPart(v[0], v[1], 3,d1);
-			E b = getPart(v[0], v[1], 3,d2);
+			E a = getPart(v[0], v[1], 2,d1);
+			E b = getPart(v[0], v[1], 1,d2);
 			d = d1+d2;
-			//minimize(d);
 			
 			int val = op[0];
-			SVar[1] _var = s.{SVar};
-			//if(_var[0] !=null) val = _var[0].name;
+		//	SVar[1] _var = s.{SVar};
+			//if(_var[0] !=null){SVar vvv = _var[0]; val = vvv.name;}
 			
 			int t = getConst(val);
 			LVar var  = new LVar(name = t);
@@ -103,11 +100,8 @@ E desugar(source s, int bnd){
 			else
 			return 	new ??(op = getConst(op[0]), a = a, b =b, name = getConst(op[0]),var = var, val = getConst(op[0]));
 			
-			
-			
 		}
-		
-	}
+		}
 }
 
 source substituteS(SVar x, source E_a, source E_b, int bnd){
@@ -150,17 +144,9 @@ source substituteS(SVar x, source E_a, source E_b, int bnd){
 		{
 			return E_a;
 		}
-		case SPair:
+		case SPrim1:
 		{
-			return new SPair(a= substituteS(x, E_a.a, E_b, bnd-1), b = substituteS(x, E_a.b, E_b, bnd-1));
-		}
-		case SFirst:
-		{
-			return new SFirst(a = substituteS(x, E_a.a, E_b, bnd-1));
-		}
-		case SSecond:
-		{
-			return new SSecond(a = substituteS(x, E_a.a, E_b, bnd -1));
+			return new SPrim1(op=E_a.op, a = substituteS(x, E_a.a, E_b, bnd-1));
 		}
 		case SPrim2:
 		{
@@ -178,44 +164,7 @@ source interpretSource(source s, int bnd){
 	if(bnd <1 || s==null) return null;
 	
 	switch(s){
-		case SPair:
-		{
-			source s_a = interpretSource(s.a, bnd-1);
-			if(s_a ==null) return null;
-			bit valid = true;
-			switch(s_a){
-				case SNum: {}
-				default: valid = false;
-			}
-			source s_b = interpretSource(s.b, bnd-1);
-			if(s_b == null )return null;
-			switch(s_b){
-				case SNum: {}
-				default: valid = false;
-			}
-			if(valid) return new SPair(a = s_a, b = s_b);
-			else return null;
-			
-		}
-		case SFirst:
-		{
-			source s_a = interpretSource(s.a, bnd-1);
-			if(s_a == null) return null;
-			switch(s_a){
-				case SPair: return s_a.a;
-				default: return null;
-			}
-		}
-		case SSecond:
-		{
-			source s_a  = interpretSource(s.a, bnd-1);
-			if(s_a == null) return null;
-			switch(s_a){
-				case SPair: return s_a.b;
-				default: return null;
-			}
-		}
-		
+	
 		case SApp:
 		{
 			source s_a = interpretSource(s.a, bnd-1);
@@ -242,6 +191,30 @@ source interpretSource(source s, int bnd){
 				}
 			}
 		}
+		case SPrim1:
+		{
+			/*if(s.op == Oneg){
+				source s_a = interpretSource(s.a, bnd -1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: {return new SNum(val = (0-s_a.val));}
+					default: {return null;}
+				}
+			}else */
+			if(s.op == Onot){
+				source s_a = interpretSource(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SFalse:{ return new STrue();}
+					case STrue:{ return new SFalse();}
+					default: {return null;}
+				}	
+			}else{
+				return null;
+			}
+		}
+		
+		
 		case SPrim2:
 		{
 			if(s.op == Oplus){
@@ -251,15 +224,21 @@ source interpretSource(source s, int bnd){
 				if(s_a==null) return null;
 				switch(s_a){
 					case SNum: {a = s_a.val;}
-					case SVar: simplified = false;
-					default: return null;
+					case SAbs: return null;
+					case SApp: return null;
+					case STrue: return null;
+					case SFalse: return null;
+					default: simplified = false;
 				}
 				source s_b = interpretSource(s.b,bnd-1);
 				if(s_b==null) return null;
 				switch(s_b){
 					case SNum: {b = s_b.val;}
-					case SVar: simplified = false;
-					default: return null;
+					case SAbs: return null;
+					case SApp: return null;
+					case STrue: return null;
+					case SFalse: return null;
+					default: simplified = false;
 				}
 				if(simplified) return new SNum(val = a+b);
 				else return new SPrim2(op = s.op, a = s_a, b = s_b);
@@ -271,15 +250,21 @@ source interpretSource(source s, int bnd){
 				if(s_a==null) return null;
 				switch(s_a){
 					case SNum: {a = s_a.val;}
-					case SVar: simplified = false;
-					default: return null;
+					case SAbs: return null;
+					case SApp: return null;
+					case STrue: return null;
+					case SFalse: return null;
+					default: simplified = false;
 				}
 				source s_b = interpretSource(s.b,bnd-1);
 				if(s_b==null) return null;
 				switch(s_b){
 					case SNum: {b = s_b.val;}
-					case SVar: simplified = false;
-					default: return null;
+					case SAbs: return null;
+					case SApp: return null;
+					case STrue: return null;
+					case SFalse: return null;
+					default: simplified = false;
 				}
 				if(simplified) return new SNum(val = a-b);
 				else return new SPrim2(op = s.op, a = s_a, b = s_b);
@@ -325,7 +310,7 @@ E substitute(LVar x, E E_a, E E_b, int bnd){ // E_a[E_b/var]
 				LVar z = new LVar(name = count++);
 				//substitute y in E1 with z
 				E e1 = substitute(v,E_a.a, z, bnd -1);
-				assert(e1!=null);
+				
 				//Then substitute x with E_b
 				E e2 = substitute(x, e1, E_b, bnd -1);
 				
@@ -474,52 +459,47 @@ SApp sApp(source a , source b){
 }
 
 //produce symbolic source ASTs
-source produce(int[30] encoding, ref int idx, int bnd){
+source produce(int[20] encoding, ref int idx, int bnd){
 	
 	if(bnd <=0 ){ 
 	
        if(encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
         
-      	else{
+      	if(encoding[idx] ==1){
         	if (encoding[idx] > count) count = encoding[idx]+1;  
        		return new SVar(name = encoding[idx++]); 
         }      
-         
+        if(encoding[idx]==2){ ++idx; return new SFalse(); }else{ ++idx; return new STrue(); }    
      }
-  if(encoding[idx]==0){
+     if(encoding[idx] ==0){
+     	 ++idx; if (encoding[idx] > count) count = encoding[idx]+1; 
+    	 return new SVar(name = encoding[idx++]); 
+   	} else 
+    if(encoding[idx]==1){ ++idx; return new SFalse(); }
+    else if(encoding[idx] == 2){ ++idx; return new STrue(); }    
+  	else if(encoding[idx]==3){
         ++idx;
         return sApp(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); 
     }else
-    if(encoding[idx]==1){
+    if(encoding[idx]==4){
         ++idx;
        if (encoding[idx] > count) count = encoding[idx]+1;
           SVar v = new SVar(name = encoding[idx++]);
         return sAbs(v, produce(encoding, idx, bnd-1)); 
     }else
     
-    
-    if(encoding[idx]==4){
+    if(encoding[idx]==5){ ++idx; return new SNum(val=encoding[idx++]); }
+    else
+    if(encoding[idx]==6){
     	++idx;
         return new SPrim2(op= encoding[idx++],a = produce(encoding, idx, bnd-1), b = produce(encoding, idx, bnd-1)); 
     }else
-    if(encoding[idx] ==5){
+    {
     	++idx;
-    	 
-    	return new SPair(a = produce(encoding,idx, bnd-1), b = produce(encoding, idx, bnd-1));
-    }else
-    if(encoding[idx] ==6){
-    	++idx;
-    	return new SFirst(a = produce(encoding,idx,bnd-1));
-    }else
-    if(encoding[idx] ==7){
-    	++idx;
-    	return new SSecond(a = produce(encoding,idx,bnd-1));
-    }else
-    if(encoding[idx] ==8)
-    { ++idx; if (encoding[idx] > count) count = encoding[idx]+1; 
-     return new SVar(name = encoding[idx++]); 
-    }  
-    else{  ++idx; return new SNum(val=encoding[idx++]); }  
+    	return new SPrim1(op = encoding[idx++], a = produce(encoding, idx, bnd-1));
+    }
+    
+    
 }
 
 
@@ -624,9 +604,10 @@ bit equals(source c1 ,E c2, int bnd){
 	LVar x  = new LVar(name = 0);
 	LVar y = new LVar(name = 1);
 	if(count <2) count  =2;
-	
-	//define nil;
-	//LAbs Nil =  new LAbs(var = x, a = new LAbs(var = y, a = y));
+	//define true
+	LAbs True = new LAbs(var = x, a = new LAbs(var =y, a = x));
+	//define false;
+	LAbs False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
 	assert(bnd >=0 );
 	if(bnd <0 ) return false;
 	if(c1==null) return true;
@@ -670,15 +651,27 @@ bit equals(source c1 ,E c2, int bnd){
 				source e = c1.a;
 				if(bnd <1) return false;
 				else{
+				switch(e){
+					case STrue: {return equals(c1.a, c2.a, bnd-1);}
+					case SFalse:{ return equals(c1.a, c2.a, bnd-1);}
+					default:  {return equals(c1.a , substitute(c2.var, c2.a, v,1), bnd-1);}
 				
-					return equals(c1.a , substitute(c2.var, c2.a, v,1), bnd-1);
+				}
 				}
 				}
 				default: return false;
 			}
 		}
-		
-		
+		case STrue:
+		{
+			
+			 return equalsDef(True, c2,2);
+		}
+		case SFalse:
+		{
+			
+			return equalsDef(False, c2,2);
+		}
 		
 		
 		default: return true;
@@ -686,45 +679,16 @@ bit equals(source c1 ,E c2, int bnd){
 	
 }
 
-harness void main2(int x , int y){
-	int idx =0;
-	source s = new SSecond( a = new SPair(a = new SNum(val = x), b = new SNum(val = y)));
-	source c1 = new SNum(val = y);
-	if(c1!=null){
-		E c2  = desugar(s,3);
-		int sbnd = 3;
-		E c3 = interpretLambda(c2,3,3);
-		assert(c3!=null);
-		assert(equals(c1,c3,1));
-	}
-
-
-}
-harness void main1(int x , int y){
-	int idx =0;
-	source s = new SFirst( a = new SPair(a = new SNum(val = x), b = new SNum(val = y)));
-	source c1 = new SNum(val = x);
-	if(c1!=null){
-		E c2  = desugar(s,3);
-		int sbnd = 3;
-		E c3 = interpretLambda(c2,3,3);
-		assert(c3!=null);
-		assert(equals(c1,c3,1));
-	}
-
-
-}
-
-harness void main( int[30] arr){
-
+harness void main( int[20] arr){
 	int idx =0;
 	source s = produce( arr, idx, 1);
 	source c1 = interpretSource(s,2);
 	if(c1!=null){
 		E c2  = desugar(s,2);
-		int sbnd = 1;
-		E c3 = interpretLambda(c2,2,1);
+		int sbnd = 2;
+		E c3 = interpretLambda(c2,2,sbnd);
 		assert(c3!=null);
 		assert(equals(c1,c3,1));
 	}
 }
+
