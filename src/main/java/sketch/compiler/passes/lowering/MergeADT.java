@@ -78,6 +78,7 @@ public class MergeADT extends SymbolTableVisitor {
         // change this
         StructDef sd = nres.getStruct(t.getName());
         String oldName = sd.getFullName();
+
         StructCombinedTracker tracker = structs.get(oldName);
         TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
         return newType;
@@ -102,7 +103,7 @@ public class MergeADT extends SymbolTableVisitor {
             if (newName == null) {
                 String name = nres.getStructParentName(oldType);
                 while (newName == null && name != null) {
-                    // check later
+
                     StructCombinedTracker parentTracker = structs.get(name);
                     newName = parentTracker.getNewVariable(param.getName());
                     name = nres.getStructParentName(name);
@@ -195,7 +196,18 @@ public class MergeADT extends SymbolTableVisitor {
         nres = new NameResolver(p);
         List<Package> newStreams = new ArrayList<Package>();
 
-
+        // first add all trackers for adts
+        for (Package pkg : p.getPackages()) {
+            nres.setPackage(pkg);
+            List newStructs = new ArrayList();
+            for (StructDef str : pkg.getStructs()) {
+                if (!str.isInstantiable() && str.getParentName() == null) {
+                    // then str is a parent ADT and combine it with its children.
+                    createTracker(nres, str);
+                }
+            }
+        }
+        // Now add the structs
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             List newStructs = new ArrayList();
@@ -213,6 +225,7 @@ public class MergeADT extends SymbolTableVisitor {
 
                 }
             }
+
             newStructs.addAll(pkg.getStructs());
             // Package newpkg = (Package) super.visitPackage(pkg);
             Package newpkg =
@@ -236,9 +249,8 @@ public class MergeADT extends SymbolTableVisitor {
         }
     }
 
-    public StructDef combineStructs(NameResolver nres, StructDef str) {
+    public void createTracker(NameResolver nres, StructDef str) {
         String oldName = str.getFullName();
-
 
         String newName = "combined" + oldName.split("@")[0];
         List structsList = new ArrayList();
@@ -248,6 +260,23 @@ public class MergeADT extends SymbolTableVisitor {
         while (structsList.contains(newName)) {
             newName = "_" + newName;
         }
+        LinkedList<String> list = new LinkedList<String>();
+        list.add(oldName);
+        while (!list.isEmpty()) {
+            String name = list.removeFirst();
+            StructDef childStruct = nres.getStruct(name);
+            StructCombinedTracker tracker =
+                    new StructCombinedTracker(name, newName, i++, true);
+            structs.put(childStruct.getFullName(), tracker);
+            for (String child : nres.getStructChildren(name)) {
+                list.add(child);
+            }
+        }
+    }
+
+    public StructDef combineStructs(NameResolver nres, StructDef str) {
+        String oldName = str.getFullName();
+        String newName = structs.get(oldName).newStruct;
         StructDef ts = null;
         List names = new ArrayList();
         List types = new ArrayList();
@@ -270,9 +299,8 @@ public class MergeADT extends SymbolTableVisitor {
             String name = list.removeFirst();
             StructDef childStruct = nres.getStruct(name);
             childStruct.resetImmutable();
-            StructCombinedTracker tracker =
-                    new StructCombinedTracker(name, newName, i++, true);
-            structs.put(childStruct.getFullName(), tracker);
+            StructCombinedTracker tracker = structs.get(childStruct.getFullName());
+            // structs.put(childStruct.getFullName(), tracker);
 
             List<VarReplacer> vrs = new ArrayList<VarReplacer>();
 
