@@ -1,0 +1,8 @@
+//Test that exposed bug with using structs in field that are not yet initialized
+struct A{}
+struct B extends A{
+	C c;
+}
+struct C{}
+struct D extends C{
+}
