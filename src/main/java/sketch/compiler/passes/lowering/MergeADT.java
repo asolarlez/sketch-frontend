@@ -204,6 +204,10 @@ public class MergeADT extends SymbolTableVisitor {
                 if (!str.isInstantiable() && str.getParentName() == null) {
                     // then str is a parent ADT and combine it with its children.
                     createTracker(nres, str);
+                } else if (str.getParentName() == null) {
+                    copyStruct(str);
+
+
                 }
             }
         }
@@ -219,11 +223,7 @@ public class MergeADT extends SymbolTableVisitor {
                     newStructs.add(ts);
 
                 }
- else if (str.getParentName() == null) {
-                    copyStruct(str);
-                    // newStructs.add(str);
-
-                }
+ 
             }
 
             newStructs.addAll(pkg.getStructs());
