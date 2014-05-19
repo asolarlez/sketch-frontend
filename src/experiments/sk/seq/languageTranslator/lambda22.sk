@@ -15,19 +15,19 @@ struct LVar extends E { int name;}
 struct LAbs extends E { LVar var; E a;}
 struct LApp extends E { E a; E b;}
 struct LNum extends E { int val;}
-struct LPrim2 extends E { int op; E a; E b;}
+//struct LPrim2 extends E { int op; E a; E b;}
 
 
 struct source{@Immutable("")}
 struct SVar extends source { int name;}
 struct SAbs extends source { SVar var; source a;}
 struct SApp extends source { source a; source b;}
-struct SNum extends source { int val;}
-struct SPrim2 extends source { int op; source a; source b;}
-struct SNil extends source {}
-struct SCons extends source { source a; source b;}
-struct SFirst extends source{source a;}
-struct SRest extends source{source a;}
+struct SNum extends source { int val;}//9
+struct SPrim2 extends source { int op; source a; source b;}//10
+struct SNil extends source {}//11
+struct SCons extends source { source a; source b;}//12
+struct SFirst extends source{source a;}//13
+struct SRest extends source{source a;}//14
 
 
 E desugar(source s, int bnd){
@@ -44,20 +44,29 @@ E desugar(source s, int bnd){
 		int c = ??;
 		if ( c >= count) count = c+1;
 		E _z = new LVar(name = c);
-		
+		LVar x  = new LVar(name = 0);
+		LVar y = new LVar(name = 1);
+		if (count < 2) count =2;
+		E True = new LAbs(var = x, a = new LAbs(var =y, a = x));
+		E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
+	
 		if(??){
-			return {| c1|c2|_z|};
+			return {| c1|c2|_z|True|False|};
 		}else{
 			
 			if(bnd > 1){
 				E a = getPart(c1,c2,bnd-1,depth);
-				E b = getPart(c1,c2, bnd-1,depth);
+				E b = getPart(c1,c2, 1,depth);
 				int t = ??;
 				LVar v  = new LVar(name = t);
 				if ( t >= count) count = t+1;
-				
 				return 	new ??(op=getOp(1), a = a, b =b, name = getConst(1), val = getConst(1),var = v);
-				
+				/*E a3 =  new LApp( a = a, b = b);
+			E a4 =  new LAbs(var = v, a= a);
+			E a5 =  new LNum(val = getConst(0));
+			E a6 =  new LVar(name = getConst(0));
+			E[4] arr = {a3,a4,a5,a6};
+			return arr[??];*/
 			}
 		}
 		return null;
@@ -70,11 +79,6 @@ E desugar(source s, int bnd){
 		}
 		return out;
 	} 
-	LVar x  = new LVar(name = 0);
-	LVar y = new LVar(name = 1);
-	if (count < 2) count =2;
-	E True = new LAbs(var = x, a = new LAbs(var =y, a = x));
-	E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
 	switch(s){
 		/*case SVar : return new LVar(name = s.name);
 		case SAbs:{SVar svar = s.var; return new LAbs( var = new LVar(name =svar.name) , a = desugar(s.a,bnd-1));}
@@ -93,7 +97,7 @@ E desugar(source s, int bnd){
 			
 			int d,d1,d2;
 			E a = getPart(v[0], v[1], 3,d1);
-			E b = getPart(v[0], v[1], 3,d2);
+			E b = getPart(v[0], v[1], 1,d2);
 			d = d1+d2;
 			//minimize(d);
 			
@@ -107,14 +111,17 @@ E desugar(source s, int bnd){
 			//if(??) return {|a|b|};
 			//else{
 			//return 	new ??(op = getConst(op[0]), a = a, b =b, name = getConst(op[0]),var = var, val = getConst(op[0]));
-			int xx= ??;
-			if(xx == 0) return a;
-			if(xx == 1) return b;
-			if(xx == 2) return new LApp( a = a, b = b);
-			if(xx == 3) return new LAbs(var = var, a= a);
-			if(xx == 4) return new LNum(val = getConst(op[0]));
-			if(xx == 5) return new LVar(name = getConst(op[0]));
-			else return null;
+			int x = ??;
+			if(x == 0) return new LApp( a = a, b = b);
+			if(x == 1) return new LAbs(var = var, a= a);
+			if(x == 2) return new LNum(val = getConst(op[0]));
+			if(x == 3) return new LVar(name = getConst(op[0]));
+		/*	E a3 =  new LApp( a = a, b = b);
+			E a4 =  new LAbs(var = var, a= a);
+			E a5 =  new LNum(val = getConst(op[0]));
+			E a6 =  new LVar(name = getConst(op[0]));
+			E[4] arr = {a3,a4,a5,a6};
+			return arr[??];*/
 		}
 	}
 }
@@ -194,7 +201,6 @@ source interpretSource(source s, int bnd){
 			source list = interpretSource(s.a, bnd-1);
 			if(list == null) return null;
 			switch(list){
-				case SNil: return null;
 				case SCons: return list.a;
 				default: return null;
 			}
@@ -204,7 +210,6 @@ source interpretSource(source s, int bnd){
 			source list = interpretSource(s.a,bnd-1);
 			if(list == null) return null;
 			switch(list){
-				case SNil: return null;
 				case SCons: return list.b;
 				default: return null;
 			}
@@ -359,12 +364,7 @@ E substitute(LVar x, E E_a, E E_b, int bnd){
 		{
 			return E_a;
 		}
-		case LPrim2:
-		{
-			if(bnd <1) return null;
-			else
-			return new LPrim2(op = E_a.op, a = substitute(x,E_a.a,E_b, bnd -1), b = substitute(x, E_a.b, E_b, bnd -1));
-		}
+		
 		
 	}
 	return null;
@@ -413,59 +413,7 @@ E interpretLambda(E s, int bnd, ref int sbnd){
 		}
 		
 		
-		case LPrim2:
-		{
-			if(bnd<1) return null;
-			else{
-			if(s.op == Oplus){
-				int a, b;
-				E s_a = interpretLambda(s.a,bnd-1,sbnd);
-				bit simplified = true;
-				if(s_a==null) return null;
-				switch(s_a){
-					case LNum: {a = s_a.val;}
-					case LAbs: return null;
-					case LApp: return null;
-					default: simplified  = false;
-				}
-				E s_b = interpretLambda(s.b,bnd-1,sbnd);
-				if(s_b==null) return null;
-				switch(s_b){
-					case LNum: {b = s_b.val;}
-					case LAbs: return null;
-					case LApp: return null;
-					default: simplified  =false;
-				}
-				if (simplified) return new LNum(val = a+b);
-				else return new LPrim2(op = s.op, a=  s_a, b = s_b);
-			}else
-			if(s.op == Ominus){
-				int a, b;
-				bit simplified = true;
-				E s_a = interpretLambda(s.a,bnd-1,sbnd);
-				if(s_a==null) return null;
-				switch(s_a){
-					case LNum: {a = s_a.val;}
-					case LAbs: return null;
-					case LApp: return null;
-					default: simplified = false;
-				}
-				E s_b = interpretLambda(s.b,bnd-1,sbnd);
-				if(s_b==null) return null;
-				switch(s_b){
-					case LNum: {b = s_b.val;}
-					case LAbs: return null;
-					case LApp: return null;
-					default: simplified =  false;
-				}
-				if(simplified) return new LNum(val = a-b);
-				else return new LPrim2( op = s.op, a= s_a, b = s_b);
-			}else
-			{
-				return null;	
-			}		
-			}		
-		}
+			
 	
 		default: return s;
 		
@@ -539,21 +487,7 @@ bit equalsDef(E c1, E c2, int bnd){
 	if(c2==null) return false;
 	switch(c1){
 		
-		case LPrim2:
-		{
-			switch(c2){
-				case LPrim2:
-				{
-					if(bnd <1) return false;
-					else
-					return c1.op == c2.op && equalsDef(c1.a, c2.a, bnd-1) && equalsDef(c1.b, c2.b, bnd-1) ;
-				}
-				default:
-				{
-					return false;
-				}
-			}
-		}
+		
 		case LApp:
 		{
 			switch(c2){
@@ -626,7 +560,14 @@ bit equals(source c1 ,E c2, int bnd){
 	if(c1==null) return true;
 	if(c2 == null) return false;
 	switch(c1){
+		case SCons:
+		{
+			E c_2  = desugar(c1,4);
+			E c_3=  interpretLambda(c_2, 1,1);
+			if(c_2 != null)
+				return (equalsDef(c_3,c2,4));
 	
+		}
 		case SNum:
 		{
 			
@@ -727,7 +668,8 @@ harness void main1( int[20] arr){
 }
 
 */
-harness void main3(int x , int y){
+/*
+harness void main4(int x , int y){
 	int idx =0;
 	source s = new SFirst( a= new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil()))));
 	source c1 = new SNum(val = y);
@@ -742,35 +684,77 @@ harness void main3(int x , int y){
 
 }
 
-harness void main2(int x , int y){
+*/
+/*
+harness void main3( int[70] arr){
 	int idx =0;
+	source s = produce( arr, idx, 5);
+	source c1 = interpretSource(s,5);
+	if(c1!=null){
+		E c2  = desugar(s,5);
+		int sbnd = 6;
+		E c3 = interpretLambda(c2,6,sbnd);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+}*/
+/*harness void main3( int[70] arr){
+	int idx =0;
+	source s = produce( arr, idx, 4);
+	source c1 = interpretSource(s,4);
+	if(c1!=null){
+		E c2  = desugar(s,4);
+		int sbnd = 3;
+		E c3 = interpretLambda(c2,3,sbnd);
+		assert(c3!=null);
+		assert(equals(c1,c3,3));
+	}
+}*/
+
+harness void main30(int x , int y){
+	int idx =0;
+	source s = new SFirst( a= new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil()))));
+	source c1 = new SNum(val = y);
+	if(c1!=null){
+		E c2  = desugar(s,5);
+		int sbnd = 6;
+		E c3 = interpretLambda(c2,6,sbnd);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+
+
+}
+harness void main2(int x , int y){
 	source s =  new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil())));
 	//source c1 = new SNum(val = y);
 	SVar v = new SVar(name = count++);
 	SNum a = new SNum(val = y);
 	
-	source c1 = new SAbs(var =  v, a =new SApp(a =new SApp(a =v,b = a),b=new SNil()));
-	
-	if(c1!=null){
+	source c_1 = new SCons(a = new SNum(val =y), b = new SNil());
+	source c1 = new SNil();
+	E c_2 = desugar(c_1, 3);
 		E c2  = desugar(s,4);
-		
-		E c3 = interpretLambda(c2,3,3);
-		assert(c3!=null);
-		assert(equals(c1,c3,3));
-	}
+		int sbnd1 = 1;
+		E c_3=  interpretLambda(c_2, 1,sbnd1);
+		int sbnd2 = 3;
+		E c3 = interpretLambda(c2,3,sbnd2);
+		//LAbs c = (LAbs) c3;
+		//assert(c3!=null);
+		assert(equalsDef(c_3,c3,4));
+	
 
 
 }
 
 
 harness void main20(int x){
-	int idx =0;
 	source s = new SRest( a = new SCons(a = new SNum(val = x), b = new SNil()));
 	source c1 = new SNil();
 	if(c1!=null){
 		E c2  = desugar(s,3);
 		int sbnd = 3;
-		E c3 = interpretLambda(c2,3,3);
+		E c3 = interpretLambda(c2,3,sbnd);
 		assert(c3!=null);
 		
 		assert(equals(c1,c3,1));
@@ -780,21 +764,19 @@ harness void main20(int x){
 
 
 harness void main1(int x ){
-	int idx =0;
 	source s = new SFirst( a = new SCons(a = new SNum(val = x), b = new SNil()));
 	source c1 = new SNum(val = x);
 	if(c1!=null){
 		E c2  = desugar(s,3);
 		int sbnd = 3;
-		E c3 = interpretLambda(c2,3,3);
+		E c3 = interpretLambda(c2,3,sbnd);
 		assert(c3!=null);
 		
 		assert(equals(c1,c3,1));
 	}
 
-
 }
-
+/*
 harness void main0(int x){
 	int idx =0;
 	source s = new SCons(a = new SNum(val = x), b = new SNil());
@@ -804,13 +786,14 @@ harness void main0(int x){
 		
 		E c3 = interpretLambda(c2,0,0);
 		assert(c3!=null);
-		SVar v = new SVar(name = count++);
-	SNum a = new SNum(val = x);
-	source c1 = new SAbs(var =  v, a = new SApp(a= new SApp(a = v,b = a),b = new SNil()));
-		assert(equals(c1,c3,3));
+		LAbs c = (LAbs) c3;
+		//SVar v = new SVar(name = count++);
+	//SNum a = new SNum(val = x);
+	//source c1 = new SAbs(var =  v, a = new SApp(a= new SApp(a = v,b = a),b = new SNil()));
+		//assert(equals(c1,c3,3));
 	
 
-}
+}*/
 
 
 
@@ -823,6 +806,6 @@ harness void main( int[10] arr){
 		int sbnd = 1;
 		E c3 = interpretLambda(c2,1,sbnd);
 		assert(c3!=null);
-		assert(equals(c1,c3,1));
+		assert(equals(c1,c3,3));
 	}
 }

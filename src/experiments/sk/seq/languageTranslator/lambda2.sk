@@ -474,7 +474,7 @@ SApp sApp(source a , source b){
 }
 
 //produce symbolic source ASTs
-source produce(int[30] encoding, ref int idx, int bnd){
+source produce(int[50] encoding, ref int idx, int bnd){
 	
 	if(bnd <=0 ){ 
 	
@@ -685,7 +685,7 @@ bit equals(source c1 ,E c2, int bnd){
 	}
 	
 }
-
+/*
 harness void main2(int x , int y){
 	int idx =0;
 	source s = new SSecond( a = new SPair(a = new SNum(val = x), b = new SNum(val = y)));
@@ -713,17 +713,17 @@ harness void main1(int x , int y){
 	}
 
 
-}
+}*/
 
-harness void main( int[30] arr){
+harness void main( int[50] arr){
 
 	int idx =0;
 	source s = produce( arr, idx, 1);
-	source c1 = interpretSource(s,2);
+	source c1 = interpretSource(s,1);
 	if(c1!=null){
 		E c2  = desugar(s,2);
 		int sbnd = 1;
-		E c3 = interpretLambda(c2,2,1);
+		E c3 = interpretLambda(c2,1,1);
 		assert(c3!=null);
 		assert(equals(c1,c3,1));
 	}
