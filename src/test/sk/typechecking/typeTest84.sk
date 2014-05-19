@@ -1,0 +1,11 @@
+void foo(int a, int b){
+
+
+}
+
+
+harness void main(int x, int y){
+
+	foo(a=x, b=y); // TypeError named parameters to functions not supported yet.
+
+}

@@ -1,0 +1,12 @@
+struct Bar {}
+
+void foo(ref Bar b){
+
+
+}
+
+harness void main(int x){
+
+	foo(new Bar()); // TypeError
+
+}

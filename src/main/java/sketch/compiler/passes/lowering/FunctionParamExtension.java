@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
+import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 
@@ -113,10 +114,13 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			return super.visitStmtAssign(stmt);
 		}
 		
-		        private void modify(Expression lhs) {
+        private void modify(Expression lhs) {
             while (lhs instanceof ExprArrayRange)
                 lhs = ((ExprArrayRange) lhs).getBase();
-            assert lhs instanceof ExprVar || lhs instanceof ExprField;
+            if (!(lhs instanceof ExprVar || lhs instanceof ExprField)) {
+                throw new ExceptionAtNode("Ref parameter must be an l-value, but " + lhs +
+                        " is not.", lhs);
+            }
             if (lhs instanceof ExprVar) {
                 String lhsName = ((ExprVar) lhs).getName();
                 unmodifiedParams.remove(lhsName);

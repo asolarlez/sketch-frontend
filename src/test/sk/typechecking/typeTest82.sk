@@ -1,0 +1,8 @@
+struct Car {
+  int id;
+  fun gear; // NullPointerException
+}
+
+harness void main() {
+  assert true;
+}

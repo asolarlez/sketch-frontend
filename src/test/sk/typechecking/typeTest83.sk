@@ -1,0 +1,4 @@
+harness void main() {
+  fun1@name(); // NullPointerException
+  assert true;
+}

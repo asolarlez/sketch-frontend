@@ -1,0 +1,21 @@
+int int_rec(int recid, int locaddr, int ts);
+
+
+
+
+harness void left_rotate() {
+
+    if (0 == int_rec(24, 1, 0))
+    {
+        int intleft = int_rec(24, 0, 0);
+        if (intleft == 5) intleft = int_rec(24, 0, 0);
+        
+        assert intleft == 0; // TypeError not really a type error; if this assertion does not trigger, ufuns are failing an assertion.
+    }
+}
+
+
+
+
+
+
