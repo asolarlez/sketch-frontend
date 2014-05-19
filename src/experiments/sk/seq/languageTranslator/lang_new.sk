@@ -52,9 +52,16 @@ coreAST desugar(sourceAST s, int bnd){
 				coreAST a = getPart(c1,c2,c3, bnd-1,depth);
 				coreAST b = getPart(c1,c2,c3, bnd-1,depth);
 				coreAST c = getPart(c1,c2,c3,bnd-1,depth);
-				if(??){
-					return 	new ??(op=getOp(1), a = a, b =b, c= c,str = getStr(), val = getConst(1),val=??);
-				}
+				//return new ??(op=getOp(0), a = a, b = b, c =c, str = getStr(), val = getConst(0),val=??);
+				coreAST aOut = new CNum(val = getConst(1));
+			coreAST bOut = new CBool(val = ??);
+			coreAST cOut = new CVar(str = getConst(1));
+			coreAST dOut = new CPrim1(op = getOp(1), a = a);
+			coreAST eOut = new CPrim2(op = getOp(1),a =a ,b=b);
+			coreAST fOut = new CIf(a=a,b=b,c=c);
+			
+			coreAST[6] out =  {aOut,bOut,cOut,dOut,eOut, fOut};
+			return out[??];
 			}
 		}
 		return null;
@@ -76,9 +83,18 @@ coreAST desugar(sourceAST s, int bnd){
 			coreAST b = getPart(v[0], v[1], v[2], 2,d2);
 			coreAST c = getPart(v[0], v[1], v[2], 2,d3);
 			d = d1+d2+d3;
-			minimize(d);
+			//minimize(d);
 			int[1] op = s.{int};
-			return new ??(op=getOp(op[0]), a = a, b = b, c =c, str = getStr(), val = getConst(op[0]),val=??);	
+			//return new ??(op=getOp(op[0]), a = a, b = b, c =c, str = getStr(), val = getConst(op[0]),val=??);	
+			coreAST aOut = new CNum(val = getConst(op[0]));
+			coreAST bOut = new CBool(val = ??);
+			coreAST cOut = new CVar(str = getConst(op[0]));
+			coreAST dOut = new CPrim1(op = getOp(op[0]), a = a);
+			coreAST eOut = new CPrim2(op = getOp(op[0]),a =a ,b=b);
+			coreAST fOut = new CIf(a=a,b=b,c=c);
+			
+			coreAST[6] out =  {aOut,bOut,cOut,dOut,eOut, fOut};
+			return out[??];
 		}
 	}
 }
@@ -143,26 +159,29 @@ sourceAST produce(int[30] encoding, ref int idx, int bnd){
         if(encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
         if(encoding[idx]==1){ ++idx; return new STrue(); }else{ ++idx; return new SFalse(); }          
      }
-    if(encoding[idx]==0){
-        ++idx;
-        return gBetween(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); 
-    }else
     if(encoding[idx]==1){
+    	 ++idx; return new SFalse();
+        
+    }else
+    if(encoding[idx]==5){
         ++idx;
         return gIf(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); 
     }else
-    if(encoding[idx]==2){
+    if(encoding[idx]==3){
         ++idx;
         return gOp(1, encoding[idx++],{ produce(encoding, idx, bnd-1)}); 
     }else
-    if(encoding[idx]==3){
+    if(encoding[idx]==4){
     	++idx;
         return gOp(2, encoding[idx++],{ produce(encoding, idx, bnd-1),produce(encoding, idx, bnd-1)}); 
     }
     else
-    if(encoding[idx]==4){ ++idx; return new SNum(val=encoding[idx++]); }
+    if(encoding[idx]==2){ ++idx; return new SNum(val=encoding[idx++]); }
     else
-    if(encoding[idx]==5){ ++idx; return new STrue(); }else{ ++idx; return new SFalse(); }
+    if(encoding[idx]==0){ ++idx; return new STrue(); }else{
+    	++idx;
+        return gBetween(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); 
+         }
 }
 
 sourceAST interpretSourceAST(sourceAST s,int bnd){
@@ -548,11 +567,11 @@ bit equals(sourceAST c1 ,coreAST c2){
 
 harness void main( int[30] arr){
 	int idx =0;
-	sourceAST s = produce( arr, idx, 1);
-	sourceAST c1 = interpretSourceAST(s,2);
+	sourceAST s = produce( arr, idx, 2);
+	sourceAST c1 = interpretSourceAST(s,3);
 	if(c1!=null){
-		coreAST c2  = desugar(s,2);
-		coreAST c3 = interpretCoreAST(c2,3);
+		coreAST c2  = desugar(s,3);
+		coreAST c3 = interpretCoreAST(c2,4);
 		assert(c3!=null);
 		assert(equals(c1,c3));
 	}
