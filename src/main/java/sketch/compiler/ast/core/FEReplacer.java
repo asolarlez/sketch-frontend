@@ -191,7 +191,7 @@ public class FEReplacer implements FEVisitor
 
     public Object visitExprNew(ExprNew expNew){
         Type nt = null;
-        if (!expNew.isHole()) {
+        if (expNew.getTypeToConstruct() != null) {
             nt = (Type) expNew.getTypeToConstruct().accept(this);
         }
         boolean changed = false;

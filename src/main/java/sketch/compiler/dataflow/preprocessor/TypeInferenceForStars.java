@@ -163,6 +163,9 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
 
         public Object visitExprNew(ExprNew expNew) {
+
+            if (expNew.isHole())
+                return expNew;
             Type nt = (Type) expNew.getTypeToConstruct().accept(this);
             StructDef ts = null;
             {
@@ -400,6 +403,10 @@ rt.promotesTo(lt, nres),
 	}
 
     public Object visitExprNew(ExprNew expNew) {
+        // But make sure that new ?? doesn't contain any ??s in its parameters.
+
+        if (expNew.isHole())
+            return expNew;
         TypeStructRef nt = (TypeStructRef) expNew.getTypeToConstruct().accept(this);
         StructDef sd = nres.getStruct(nt.getName());
         Map<String, Expression> repl = new HashMap<String, Expression>();
