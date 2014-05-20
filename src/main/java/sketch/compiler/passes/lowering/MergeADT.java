@@ -10,15 +10,7 @@ import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprNamedParam;
-import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
-import sketch.compiler.ast.core.exprs.ExprTypeCast;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -93,27 +85,65 @@ public class MergeADT extends SymbolTableVisitor {
         StructCombinedTracker tracker = structs.get(oldType);
         TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
         List newParams = new ArrayList();
-        ExprConstInt expr = new ExprConstInt(exprNew.getContext(), tracker.getId());
-        if (tracker.ADT) {
-            newParams.add(new ExprNamedParam(exprNew.getContext(), "type", expr));
-        }
+        if (!sd.isInstantiable()) {
+            // change this (5 to maxSize)
+            Expression expr = new ExprStar(exprNew, 5, TypePrimitive.int32type);
+            if (tracker.ADT) {
+                newParams.add(new ExprNamedParam(exprNew.getContext(), "type", expr));
+            }
+            LinkedList<String> queue = new LinkedList<String>();
+            queue.add(oldType);
 
-        for (ExprNamedParam param : exprNew.getParams()) {
-            String newName = tracker.getNewVariable(param.getName());
-            if (newName == null) {
-                String name = nres.getStructParentName(oldType);
-                while (newName == null && name != null) {
-
-                    StructCombinedTracker parentTracker = structs.get(name);
-                    newName = parentTracker.getNewVariable(param.getName());
-                    name = nres.getStructParentName(name);
+            while (!queue.isEmpty()) {
+                boolean first = true;
+                String parent = queue.removeFirst();
+                List<String> children = nres.getStructChildren(parent);
+                if (children.isEmpty()) {
+                    StructDef str = nres.getStruct(parent);
+                    StructCombinedTracker childtracker = structs.get(parent);
+                    Map<String, Integer> map = new HashMap<String, Integer>();
+                    for (ExprNamedParam p : exprNew.getParams()) {
+                        if (!map.containsKey(p.getName()) &&
+                                str.hasField(p.getName()) &&
+                                getType(p.getExpr()).promotesTo(
+                                        str.getFieldTypMap().get(p.getName()), nres))
+                        {
+                            map.put(p.getName(), 1);
+                            String newName = childtracker.getNewVariable(p.getName());
+                            Expression newExpr = doExpression(p.getExpr());
+                            newParams.add(new ExprNamedParam(exprNew.getContext(),
+                                    newName, newExpr));
+                        }
+                    }
+                } else {
+                    queue.addAll(children);
                 }
             }
-            Expression newExpr = doExpression(param.getExpr());
-            newParams.add(new ExprNamedParam(param.getContext(), newName, newExpr));
-        }
+            return new ExprNew(exprNew.getContext(), newType, newParams, false);
 
-        return new ExprNew(exprNew.getContext(), newType, newParams, false);
+        } else {
+            ExprConstInt expr = new ExprConstInt(exprNew.getContext(), tracker.getId());
+            if (tracker.ADT) {
+                newParams.add(new ExprNamedParam(exprNew.getContext(), "type", expr));
+            }
+
+            for (ExprNamedParam param : exprNew.getParams()) {
+                String newName = tracker.getNewVariable(param.getName());
+                if (newName == null) {
+                    String name = nres.getStructParentName(oldType);
+                    while (newName == null && name != null) {
+
+                        StructCombinedTracker parentTracker = structs.get(name);
+                        newName = parentTracker.getNewVariable(param.getName());
+                        name = nres.getStructParentName(name);
+                    }
+                }
+                Expression newExpr = doExpression(param.getExpr());
+                newParams.add(new ExprNamedParam(param.getContext(), newName, newExpr));
+            }
+
+            return new ExprNew(exprNew.getContext(), newType, newParams, false);
+        }
 
     }
 
@@ -223,7 +253,7 @@ public class MergeADT extends SymbolTableVisitor {
                     newStructs.add(ts);
 
                 }
- 
+
             }
 
             newStructs.addAll(pkg.getStructs());

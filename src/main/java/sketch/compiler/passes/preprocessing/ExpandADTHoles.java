@@ -1,21 +1,13 @@
 package sketch.compiler.passes.preprocessing;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtSwitch;
-import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -39,30 +31,27 @@ public class ExpandADTHoles extends SymbolTableVisitor {
 
             if (exp.isHole()){
                 if(ts.isStruct()){
-                   TypeStructRef t = (TypeStructRef) ts;
-                List<ExprNamedParam> newParams = new ArrayList<ExprNamedParam>();
-               
+                    TypeStructRef t = (TypeStructRef) ts;
 
-                StructDef str = nres.getStruct(t.getName());
-                Map<String, Integer> map = new HashMap<String, Integer>();
-                for (ExprNamedParam p : exp.getParams()) {
-                    if (!map.containsKey(p.getName()) &&
-                            str.hasField(p.getName()) &&
-                            getType(p.getExpr()).promotesTo(
-                                    str.getFieldTypMap().get(p.getName()), nres))
-                    {
-                        map.put(p.getName(), 1);
-                        newParams.add(p);
-                    }
+                    /*
+                     * List<ExprNamedParam> newParams = new ArrayList<ExprNamedParam>();
+                     * StructDef str = nres.getStruct(t.getName()); Map<String, Integer>
+                     * map = new HashMap<String, Integer>(); for (ExprNamedParam p :
+                     * exp.getParams()) { if (!map.containsKey(p.getName()) &&
+                     * str.hasField(p.getName()) && getType(p.getExpr()).promotesTo(
+                     * str.getFieldTypMap().get(p.getName()), nres)) {
+                     * map.put(p.getName(), 1); newParams.add(p); } }
+                     */
 
-                }
-                ExprNew newExp = new ExprNew(exp.getContext(), ts, newParams, false);
-                return newExp;
+                    ExprNew newExp =
+                            new ExprNew(exp.getContext(), ts, exp.getParams(), true);
+                    return newExp;
+
                 }else{
                     //throw error
                     throw new ExceptionAtNode("Type must be of type struct", exp);
                 }
-                }
+            }
 
 
             return exp;
@@ -84,29 +73,18 @@ public class ExpandADTHoles extends SymbolTableVisitor {
             LinkedList<String> queue = new LinkedList<String>();
             queue.add(ts.getName());
             Statement prev = null;
-            while (!queue.isEmpty()) {
-                boolean first = true;
-                String parent = queue.removeFirst();
-                List<String> children = nres.getStructChildren(parent);
-                if (children.isEmpty()) {
-                    ReplaceExprNew r =
-                            new ReplaceExprNew(new TypeStructRef(parent, false), nres,
-                                    symtab);
-                    StmtAssign newS = (StmtAssign) s.accept(r);
-                    if (newS == s) {
-                        return s;
-                    }
-                    prev =
-                            new StmtIfThen(s.getContext(), new ExprStar(s.getOrigin(), 0,
-                                    1), newS, prev);
-
-                } else {
-                    queue.addAll(children);
-
-                }
-            }
-
-            return prev;
+            ReplaceExprNew r = new ReplaceExprNew(ts, nres, symtab);
+            StmtAssign newS = (StmtAssign) s.accept(r);
+            return newS;
+            /*
+             * while (!queue.isEmpty()) { boolean first = true; String parent =
+             * queue.removeFirst(); List<String> children =
+             * nres.getStructChildren(parent); if (children.isEmpty()) { ReplaceExprNew r
+             * = new ReplaceExprNew(new TypeStructRef(parent, false), nres, symtab);
+             * StmtAssign newS = (StmtAssign) s.accept(r); if (newS == s) { return s; }
+             * prev = new StmtIfThen(s.getContext(), new ExprStar(s.getOrigin(), 0, 1),
+             * newS, prev); } else { queue.addAll(children); } } return prev;
+             */
         } else {
             ReplaceExprNew r = new ReplaceExprNew(t, nres, symtab);
             StmtAssign newS = (StmtAssign) s.accept(r);

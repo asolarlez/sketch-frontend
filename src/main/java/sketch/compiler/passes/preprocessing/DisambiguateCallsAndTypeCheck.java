@@ -1441,7 +1441,13 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (lhsExp instanceof ExprVar) {
             lhsn = ((ExprVar) lhsExp).getName();
         }
-        matchTypes(stmt, lt, rt);
+        boolean isHole = false;
+        if (newRHS instanceof ExprNew) {
+            isHole = ((ExprNew) newRHS).isHole();
+        }
+        if (!isHole) {
+            matchTypes(stmt, lt, rt);
+        }
         if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
             return stmt;
         return new StmtAssign(stmt, newLHS, newRHS, stmt.getOp());
@@ -1466,8 +1472,13 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             Expression ie = result.getInit(i);
             if (ie != null) {
                 Type rt = getType(ie);
-
-                matchTypes(result, (result.getType(i)), rt);
+                boolean isHole = false;
+                if (ie instanceof ExprNew) {
+                    isHole = ((ExprNew) ie).isHole();
+                }
+                if (!isHole) {
+                    matchTypes(result, (result.getType(i)), rt);
+                }
             }
         }
         return result;

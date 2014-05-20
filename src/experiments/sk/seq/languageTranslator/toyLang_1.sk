@@ -1,5 +1,5 @@
 
-pragma options "--bnd-inbits 2 --beopt:simiters 5";
+pragma options "--bnd-inbits 2 --beopt:simiters 5 --beopt:-bndwrand 32";
 
 
 int Oplus= 0;
@@ -61,8 +61,8 @@ coreAST desugar(sourceAST s, int bnd){
 		coreAST var = new CVar(str=getStr());
 		//coreAST c4 = new CPrim2(op = Oand, a = new CPrim2(op = Olt, a  = c3, b = new CVar(str = 1)), b = new CPrim2(op = Olt,a = new CVar(str = 1), b =  c2));
 		
-		
-		if(  ?? || bnd <=1){
+		coreAST[5] arr;
+		if(  ??||depth < 2|| bnd <=1){
 			return {| c1|c2|c3|var |};
 		}
 		else{
@@ -71,16 +71,17 @@ coreAST desugar(sourceAST s, int bnd){
 				coreAST b = getPart(c1,c2,c3, bnd-1,depth/2);
 				coreAST c = getPart(c1,c2,c3, bnd-1,depth/2);
 				//return new CPrim2(op = getOp(1), a = a, b = b);
-				return 	new ??(op=getOp(1), a = a, b =b, c= c,str = getStr(), val = getConst(1),val=??);
-				/*//coreAST aOut = new CNum(val = getConst(1));
-				//coreAST bOut = new CBool(val = ??);
-				//coreAST cOut = new CVar(str = getStr());
-				//coreAST dOut = new CPrim1(op = getOp(1), a = a);
+				bit val =??;
+				return 	new ??(op=getOp(1), a = a, b =b, c= c,str = getStr(), val = getConst(1),val=val);
+				/*coreAST aOut = new CNum(val = getConst(1));
+				coreAST bOut = new CBool(val = ??);
+				coreAST cOut = new CVar(str = getStr());
+				coreAST dOut = new CPrim1(op = getOp(1), a = a);
 				coreAST eOut = new CPrim2(op = getOp(1),a =a ,b=b);
-				//coreAST fOut = new CIf(a=a,b=b,c=c);
-				//coreAST gOut = new CAssign(str = getStr(), a = a);
+				coreAST fOut = new CIf(a=a,b=b,c=c);
+				coreAST gOut = new CAssign(str = getStr(), a = a);
 				coreAST hOut = new CLet(str = getStr(),a =a, b=b);
-				coreAST[2] out =  {eOut, hOut};
+				coreAST[8] out =  {aOut, bOut, cOut, dOut, eOut, fOut, gOut, hOut};
 			return out[??];*/
 			}
 		}
@@ -119,7 +120,7 @@ coreAST desugar(sourceAST s, int bnd){
 		//case SBetween:{ coreAST c = desugar(s.b, bnd-1); return new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd-1), b = c), b = new CPrim2(op = Olt, a = c, b = desugar(s.c, bnd-1)));}
 		//case SBetween: return new CLet( str = 0, a = desugar(s.b, bnd-1), b=new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd-1), b = new CVar(str = 0)), b = new CPrim2(op = Olt, a = new CVar(str = 0), b = desugar(s.c,bnd-1))));
 		case SIf: return new CIf(a = desugar(s.a,bnd-1) , b= desugar(s.b,bnd-1) , c =desugar(s.c,bnd-1));
-	
+
 		case SBetween:
 		{
 			coreAST[3] v = run( s.{sourceAST} );
@@ -131,9 +132,9 @@ coreAST desugar(sourceAST s, int bnd){
 			coreAST b = getPart(v[0], v[1], v[2], 5,d2);
 			coreAST c = getPart(v[0], v[1], v[2], 1,d3);
 			int[1] op = s.{int};
-			
-			//return new ??(op=getOp(op[0]), a = a, b = b, c =c, str = getConst(op[0]), val = getConst(op[0]),val=??);	
-			coreAST aOut = new CNum(val = getConst(op[0]));
+			bit val =??;
+			return new ??(op=getOp(op[0]), a = a, b = b, c =c, str = getConst(op[0]), val = getConst(op[0]),val=val);	
+			/*coreAST aOut = new CNum(val = getConst(op[0]));
 			coreAST bOut = new CBool(val = ??);
 			coreAST cOut = new CVar(str = getStr());
 			coreAST dOut = new CPrim1(op = getOp(op[0]), a = a);
@@ -142,7 +143,7 @@ coreAST desugar(sourceAST s, int bnd){
 			coreAST gOut = new CAssign(str = getStr(), a = a);
 			coreAST hOut = new CLet(str = getStr(),a =a, b=b);
 			coreAST[8] out =  {aOut,bOut,cOut,dOut,eOut,fOut,gOut, hOut};
-			return out[??(3)];
+			return out[??(3)];*/
 			
 		}
 	}
@@ -640,8 +641,8 @@ coreAST interpretCoreAST(coreAST s,ref int idx, int bnd){
 				}*/
 				coreAST s_b = interpretCoreAST(s.b,idx, bnd-1);
 				b = ((CNum)s_b).val;
-				//if(s_b==null) return null;
-				/*switch(s_b){
+				/*//if(s_b==null) return null;
+				switch(s_b){
 					case CNum: {b = s_b.val;}
 					default: {return null;}
 				}*/
@@ -910,11 +911,11 @@ harness void main0(int[40] arr, int sbnd){
 		for(int i = 0; i < size; i++){
 			cmtStore[i] = null;
 		}
-		coreAST c3 = interpretCoreAST(c2,0,5);
+		int bnd  = 0;
+		coreAST c3 = interpretCoreAST(c2,bnd,5);
 		assert(c3!=null);
 		assert(equals(c1,c3));
 		
 	
 	}
 }
-
