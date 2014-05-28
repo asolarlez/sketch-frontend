@@ -1300,6 +1300,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
                 Type rhsType = getType(rhs);
                 Type lhsType = current.getType(en.getName());
+                if (rhsType == null || lhsType == null) {
+                    return expNew;
+                }
                 lhsType = lhsType.addDefaultPkg(ts.getPkg(), nres);
                 matchTypes(expNew, lhsType, rhsType);
 

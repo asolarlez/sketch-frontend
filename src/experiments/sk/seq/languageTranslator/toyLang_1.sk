@@ -630,16 +630,18 @@ coreAST interpretCoreAST(coreAST s,ref int idx, int bnd){
 		{
 			if(bnd <1 ) return null;
 			else{
+			    coreAST s_a = interpretCoreAST(s.a,idx, bnd-1);
+			    coreAST s_b = interpretCoreAST(s.b,idx, bnd-1);
 			if(s.op == Oplus){
 				int a, b;
-				coreAST s_a = interpretCoreAST(s.a,idx, bnd-1);
+				// coreAST s_a = interpretCoreAST(s.a,idx, bnd-1);
 				//if(s_a==null) return null;
 				a = ((CNum)s_a).val;
 				/*switch(s_a){
 					case CNum: {a = s_a.val;}
 					default: {return null;}
 				}*/
-				coreAST s_b = interpretCoreAST(s.b,idx, bnd-1);
+				//coreAST s_b = interpretCoreAST(s.b,idx, bnd-1);
 				b = ((CNum)s_b).val;
 				/*//if(s_b==null) return null;
 				switch(s_b){
@@ -650,14 +652,14 @@ coreAST interpretCoreAST(coreAST s,ref int idx, int bnd){
 			}else
 			if(s.op == Ominus){
 				int a, b;
-				coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
+				//coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
 				a = ((CNum)s_a).val;
 				/*if(s_a==null) return null;
 				switch(s_a){
 					case CNum: {a = s_a.val;}
 					default: {return null;}
 				}*/
-				coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
+				//coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
 				b = ((CNum)s_b).val;
 				/*if(s_b==null) return null;
 				switch(s_b){
@@ -665,17 +667,17 @@ coreAST interpretCoreAST(coreAST s,ref int idx, int bnd){
 					default: {return null;}
 				}*/
 				return new CNum(val = a-b);
-			}else
+			}else{
 			if(s.op == Oand){
 				bit a, b;
-				coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
+				//coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
 				a = ((CBool)s_a).val;
 				/*if(s_a==null) return null;
 				switch(s_a){
 					case CBool:{ a = s_a.val;}
 					default:{ return null;}
 				}*/
-				coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
+				//coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
 				b = ((CBool)s_b).val;
 				/*if(s_b==null) return null;
 				switch(s_b){
@@ -686,14 +688,14 @@ coreAST interpretCoreAST(coreAST s,ref int idx, int bnd){
 			}else
 			if(s.op == Oor){
 				bit a, b;
-				coreAST s_a = interpretCoreAST(s.a,idx,  bnd-1);
+				//coreAST s_a = interpretCoreAST(s.a,idx,  bnd-1);
 				a = ((CBool)s_a).val;
 				/*if(s_a==null) return null;
 				switch(s_a){
 					case CBool: {a = s_a.val;}
 					default: {return null;}
 				}*/
-				coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
+				//coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
 				b = ((CBool)s_b).val;
 				/*if(s_b==null) return null;
 				switch(s_b){
@@ -701,46 +703,30 @@ coreAST interpretCoreAST(coreAST s,ref int idx, int bnd){
 					default: {return null;}
 				}*/
 				return new CBool(val = a||b);
-			}else
-			if(s.op == Ogt){
-				int a, b;
-				coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
-				a = ((CNum)s_a).val;
-				/*if(s_a==null) return null;
-				switch(s_a){
-					case CNum: {a = s_a.val;}
-					default: {return null;}
-				}*/
-				coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
-				b = ((CNum)s_b).val;
-				/*if(s_b==null) return null;
-				switch(s_b){
-					case CNum:{ b = s_b.val;}
-					default: {return null;}
-				}*/
-				return new CBool(val = a>b);
-			}else
-			if(s.op == Olt){
-				int a, b;
-				coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
-				a = ((CNum)s_a).val;
-				/*if(s_a==null) return null;
-				switch(s_a){
-					case CNum: {a = s_a.val;}
-					default: {return null;}
-				}*/
-				coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
-				b = ((CNum)s_b).val;
-				/*if(s_b==null) return null;
-				switch(s_b){
-					case CNum:{ b = s_b.val;}
-					default: {return null;}
-				}*/
-				return new CBool(val = a<b);
-			}else{
-				return null;	
-			}	
-			}			
+			}else{			    
+    			if(s.op == Ogt){
+    			    int a, b;
+                    //coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
+                    a = ((CNum)s_a).val;
+        
+                    //coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
+                    b = ((CNum)s_b).val;
+    				return new CBool(val = a>b);
+    			}else    			    
+        			if(s.op == Olt){
+        			    int a, b;
+                        //coreAST s_a = interpretCoreAST(s.a,idx,bnd-1);
+                        a = ((CNum)s_a).val;
+            
+                        //coreAST s_b = interpretCoreAST(s.b,idx,bnd-1);
+                        b = ((CNum)s_b).val;
+        				return new CBool(val = a<b);
+        			}else{
+        				return null;	
+        			}	
+    			}	
+			}
+			}
 		}
 		case CLet:
 		{
@@ -902,8 +888,8 @@ harness void main0(int[40] arr, int sbnd){
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;
 	}
-	
-	sourceAST c1 = interpretSourceAST(s,0,1);
+	int z = 0;
+	sourceAST c1 = interpretSourceAST(s,z,1);
 	
 	if(c1 != null){
 		coreAST c2  = desugar(s,2);

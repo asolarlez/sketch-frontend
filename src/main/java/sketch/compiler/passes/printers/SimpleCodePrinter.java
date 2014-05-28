@@ -66,7 +66,12 @@ public class SimpleCodePrinter extends CodePrinter
 
         nres.setPackage(spec);
         printLine("/* BEGIN PACKAGE " + spec.getName() + "*/");
-
+        boolean wrapPkg = false;
+        if (!spec.getName().equals("ANONYMOUS")) {
+            wrapPkg = true;
+            printLine("package " + spec.getName() + "{");
+            ++indent;
+        }
         for (StructDef tsOrig : spec.getStructs()) {
             StructDef ts = (StructDef) tsOrig.accept(this);
         }
@@ -96,6 +101,10 @@ public class SimpleCodePrinter extends CodePrinter
             }
         }
         printLine("/* END PACKAGE " + spec.getName() + "*/");
+        if (wrapPkg) {
+            --indent;
+            printLine("}");
+        }
         return spec;
     }
 	

@@ -840,8 +840,18 @@ public class FEReplacer implements FEVisitor
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
         fields = new HashSet<String>();
-        for (Entry<String, Type> entry : ts) {
-            fields.add(entry.getKey());
+
+        StructDef sdf = ts;
+        while (sdf != null) {
+            for (Entry<String, Type> entry : sdf) {
+                fields.add(entry.getKey());
+            }
+            String pn = sdf.getParentName();
+            if (pn != null) {
+                sdf = nres.getStruct(pn);
+            } else {
+                sdf = null;
+            }
         }
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept (this);

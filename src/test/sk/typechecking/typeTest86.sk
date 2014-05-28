@@ -1,0 +1,33 @@
+pragma options "--bnd-unroll-amnt 32";
+
+
+int x;
+
+
+harness void foo(int w){
+    void too(){
+        x = x + 1;
+    }
+
+    x = 0;
+    too();
+    assert x == 1;
+    
+    int vv = x + 3;
+    
+    int[w] bar(){
+        int[w] q;
+        void moo(int[vv] pp){ // TypeError
+            for(int i=0; i<w; ++i){
+                q[i] = 3;
+            }
+            assert pp[0] == 5;
+        }
+        moo({5,5});
+        return q;
+    }
+    int[w] bb = bar();
+    for(int i=0; i<w; ++i){
+        assert bb[i] == 3;
+    }
+}

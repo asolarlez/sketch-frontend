@@ -148,15 +148,8 @@ public class MergeADT extends SymbolTableVisitor {
     }
 
 
-
-    @Override
-    public Object visitExprField(ExprField ef) {
-        StructDef t = this.getStructDef(getType(ef.getLeft()));
-
-
+    public String newFieldName(String field, StructDef t) {
         StructCombinedTracker structTracker = structs.get(t.getFullName());
-        String field = ef.getName();
-
         String newField = structTracker.getNewVariable(field);
         // if field is a field of parent
         if (newField == null) {
@@ -167,6 +160,17 @@ public class MergeADT extends SymbolTableVisitor {
                 name = nres.getStructParentName(name);
             }
         }
+        return newField;
+    }
+
+    @Override
+    public Object visitExprField(ExprField ef) {
+        StructDef t = this.getStructDef(getType(ef.getLeft()));
+
+        StructCombinedTracker structTracker = structs.get(t.getFullName());
+        String field = ef.getName();
+
+        String newField = newFieldName(field, t);
         Expression basePtr = (Expression) ef.getLeft().accept(this);
 
         return new ExprField(basePtr, newField);
@@ -304,6 +308,19 @@ public class MergeADT extends SymbolTableVisitor {
         }
     }
 
+    StructDef globalCurStruct = null;
+
+    public Object visitExprVar(ExprVar ev) {
+
+        if (globalCurStruct != null) {
+            return new ExprVar(ev, newFieldName(ev.getName(), globalCurStruct));
+        }
+
+        Object o = super.visitExprVar(ev);
+
+        return o;
+    }
+
     public StructDef combineStructs(NameResolver nres, StructDef str) {
         String oldName = str.getFullName();
         String newName = structs.get(oldName).newStruct;
@@ -341,7 +358,9 @@ public class MergeADT extends SymbolTableVisitor {
                 names.add(newVarname);
                 VarReplacer vr = new VarReplacer(var.getName(), newVarname);
                 vrs.add(vr);
+                globalCurStruct = childStruct;
                 Type newType = (Type) var.getType().accept(this);
+                globalCurStruct = null;
                 if (newType.isArray()) {
                     for (VarReplacer v : vrs) {
                         newType = (Type) newType.accept(v);

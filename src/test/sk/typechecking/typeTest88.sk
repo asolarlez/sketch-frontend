@@ -1,0 +1,8 @@
+struct A{}
+struct B extends A{ int x; int[x] a;}
+struct C extends A{ int y; int[y] a;}
+
+harness void main(){
+    A a = new ??(x=2, y=3, a = ??); // TypeError
+    
+}

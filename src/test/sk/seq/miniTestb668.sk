@@ -1,0 +1,26 @@
+
+package P3;
+void foo(int x){
+    assert x > 10;
+}
+    
+
+package P1{
+    int foo(){
+       return 10; 
+        
+    }
+    
+}
+
+package P2{
+    int foo(int x){
+        assert x < 10;
+        return x;
+    }
+}
+
+harness void main(int x, int y){
+    foo( foo@P1() + ??);
+    foo@P2( foo@P1() - ??);
+}

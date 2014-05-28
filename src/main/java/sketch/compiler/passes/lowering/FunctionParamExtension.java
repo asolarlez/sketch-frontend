@@ -749,6 +749,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
                     if (ptype == Parameter.OUT) {
                         tempVars.add(ev);
                     }
+
+                    if (ptype == Parameter.REF) {
+                        if (oldArg instanceof ExprConstInt) {
+                            throw new ExceptionAtNode(
+                                    "You can not use a constant as a reference parameter.",
+                                    exp);
+                        } else {
+                            throw new ExceptionAtNode("You can not use expression " +
+                                    oldArg + " as a reference parameter.", exp);
+                        }
+
+                    }
+
                     assert ptype != Parameter.REF;
                 }
             }

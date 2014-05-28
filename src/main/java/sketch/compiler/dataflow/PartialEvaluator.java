@@ -868,6 +868,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitStmtAssign(StmtAssign stmt)
     {
+        System.out.println("HHH:" + stmt);
         boolean isFieldAcc;
         abstractValue rhs = null;
         try{
@@ -929,7 +930,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             abstractValue lhsIdx, int rlen) {
         if(rlen == -2){
             state.setVarValue(lhsName, vtype.BOTTOM(), rhs);
-        }else if( rlen <= 1){
+        } else if (rlen <= 1) {
             state.setVarValue(lhsName, lhsIdx, rhs);
         }else{
             List<abstractValue> lst = null;
@@ -1669,17 +1670,36 @@ nvarContext,
         try {
             lvl = state.pushLevel(new BlockLevel("PartialEvaluator level"));
             fields = new HashSet<String>();
-            for (Entry<String, Type> entry : ts) {
-                fields.add(entry.getKey());
-                if (!(entry.getValue() instanceof TypeArray)) {
-                    state.varDeclare(entry.getKey(), entry.getValue());
-                    state.setVarValue(entry.getKey(), vtype.BOTTOM());
+
+            StructDef sdf = ts;
+            while (sdf != null) {
+                for (Entry<String, Type> entry : sdf) {
+                    fields.add(entry.getKey());
+                    if (!(entry.getValue() instanceof TypeArray)) {
+                        state.varDeclare(entry.getKey(), entry.getValue());
+                        state.setVarValue(entry.getKey(), vtype.BOTTOM());
+                    }
+                }
+                String pn = sdf.getParentName();
+                if (pn != null) {
+                    sdf = nres.getStruct(pn);
+                } else {
+                    sdf = null;
                 }
             }
-            for (Entry<String, Type> entry : ts) {
-                if ((entry.getValue() instanceof TypeArray)) {
-                    state.varDeclare(entry.getKey(), entry.getValue());
-                    state.setVarValue(entry.getKey(), vtype.BOTTOM());
+            sdf = ts;
+            while (sdf != null) {
+                for (Entry<String, Type> entry : sdf) {
+                    if ((entry.getValue() instanceof TypeArray)) {
+                        state.varDeclare(entry.getKey(), entry.getValue());
+                        state.setVarValue(entry.getKey(), vtype.BOTTOM());
+                    }
+                }
+                String pn = sdf.getParentName();
+                if (pn != null) {
+                    sdf = nres.getStruct(pn);
+                } else {
+                    sdf = null;
                 }
             }
 

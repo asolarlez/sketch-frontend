@@ -92,6 +92,7 @@ public class ReinterpretAssumes extends FEReplacer {
         rfuns.setNres(nres);
         List<Package> newNewPkgs = new ArrayList<Package>();
         for (Package pk : newPkgs) {
+            nres.setPackage(pk);
             List<Function> lf = new ArrayList<Function>();
              for(Function f : pk.getFuncs()){
                  //What follows is a big hack to deal with the _Wrapper that may surround harnesses.

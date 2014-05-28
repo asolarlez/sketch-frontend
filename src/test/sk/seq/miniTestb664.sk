@@ -834,8 +834,8 @@ harness void main0( int[30] arr, int sbnd){
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;
 	}
-	
-	sourceAST c1 = interpretSourceAST(s,0,1);
+	int vv = 0;
+	sourceAST c1 = interpretSourceAST(s,vv,1);
 	
 	if(c1 != null){
 		coreAST c2  = desugar(s,2);
@@ -845,8 +845,8 @@ harness void main0( int[30] arr, int sbnd){
 		}
 		int i =1;
 		while(sbnd/2 >=1) {sbnd = sbnd/2; i++;}
-		
-		coreAST c3 = interpretCoreAST(c2,0,3,i+1);
+		int v = 0;
+		coreAST c3 = interpretCoreAST(c2,v,3,i+1);
 		assert(c3!=null);
 		assert(equals(c1,c3));
 		

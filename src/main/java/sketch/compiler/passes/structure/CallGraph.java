@@ -1,11 +1,14 @@
 package sketch.compiler.passes.structure;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.util.datastructures.HashmapSet;
@@ -42,6 +45,8 @@ public class CallGraph extends FEReplacer {
     /** for the visitor only */
     protected Function enclosing;
 
+    Program cprog;
+
     public CallGraph(Program prog) {
         init(prog);
     }
@@ -50,6 +55,7 @@ public class CallGraph extends FEReplacer {
     protected CallGraph() {}
 
     protected void init(Program prog) {
+        cprog = prog;
         prog.accept(this);
         buildEdges();
     }
@@ -114,9 +120,17 @@ public class CallGraph extends FEReplacer {
     }
 
     protected void buildEdges() {
+        Map<String, Package> pmap = new HashMap<String, Package>();
+        for (Package p : cprog.getPackages()) {
+            pmap.put(p.getName(), p);
+        }
+
         for (Entry<ExprFunCall, Function> ent : fcnCallEnclosing.entrySet()) {
             final Function caller = ent.getValue();
             final String name = ent.getKey().getName();
+
+            nres.setPackage(pmap.get(caller.getPkg()));
+
             final Function target =
                     nonnull(nres.getFun(name), "Unknown function \"" + name + "\" called");
             edges.add(new CallEdge(caller, target));

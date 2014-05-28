@@ -36,9 +36,10 @@ public class LowerToSketch extends MetaStage {
 
         // prog.debugDump("before combineFunc");
 
-        prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
-
-        // prog.debugDump("After combine");
+        if (false) {
+            prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
+        }
+        prog.debugDump("After combine");
 
         // prog = (Program) prog.accept(new AddArraySizeAssertions());
         // prog.debugDump("aa");
@@ -63,8 +64,11 @@ public class LowerToSketch extends MetaStage {
 
         prog = (Program) prog.accept(new MakeBodiesBlocks());
 
+        prog.debugDump("BBBAA");
 
         prog = stencilTransform.visitProgram(prog);
+
+        prog.debugDump("BBBGG");
 
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));
         
@@ -111,6 +115,7 @@ public class LowerToSketch extends MetaStage {
 
         // dump(prog, "After Stencilification.");
         // prog.debugDump("After es");
+        prog.debugDump("Before ent");
         prog = (Program) prog.accept(new EliminateNestedTuples(varGen));
         prog = (Program) prog.accept(new EliminateNestedTupleReads(varGen));
         prog.debugDump("after ent");
