@@ -37,6 +37,8 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
 
     @Override
     public Object visitFunction(Function fn) {
+        if (fn.hasAnnotation("DontCombine"))
+            return fn;
         List<Parameter> newParam = new ArrayList<Parameter>();
         Iterator<Parameter> it = fn.getParams().iterator();
         boolean samePars = true;

@@ -29,7 +29,6 @@ import sketch.util.datastructures.HashmapList;
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class MergeADT extends SymbolTableVisitor {
     private Map<String, StructCombinedTracker> structs;
-    private int i = 0;
 
     public MergeADT() {
         super(null);
@@ -119,6 +118,12 @@ public class MergeADT extends SymbolTableVisitor {
                     queue.addAll(children);
                 }
             }
+            // add assert statement for hole
+            Expression cond =
+                    new ExprBinary(exprNew, ExprBinary.BINOP_LT, expr, new ExprConstInt(
+                            tracker.count));
+            this.addStatement(new StmtAssert(exprNew, cond, "Type length constraint",
+                    StmtAssert.UBER));
             return new ExprNew(exprNew.getContext(), newType, newParams, false);
 
         } else {
@@ -275,7 +280,7 @@ public class MergeADT extends SymbolTableVisitor {
 
     public void copyStruct(StructDef str) {
         StructCombinedTracker tracker =
-                new StructCombinedTracker(str.getFullName(), str.getFullName(), i++,
+                new StructCombinedTracker(str.getFullName(), str.getFullName(), 0,
                         false);
         structs.put(str.getFullName(), tracker);
         for (String var : str.getFields()) {
@@ -285,7 +290,7 @@ public class MergeADT extends SymbolTableVisitor {
 
     public void createTracker(NameResolver nres, StructDef str) {
         String oldName = str.getFullName();
-
+        int count = 0;
         String newName = "combined" + oldName.split("@")[0];
         List structsList = new ArrayList();
         for (String i : nres.structNamesList()) {
@@ -300,12 +305,13 @@ public class MergeADT extends SymbolTableVisitor {
             String name = list.removeFirst();
             StructDef childStruct = nres.getStruct(name);
             StructCombinedTracker tracker =
-                    new StructCombinedTracker(name, newName, i++, true);
+                    new StructCombinedTracker(name, newName, count++, true);
             structs.put(childStruct.getFullName(), tracker);
             for (String child : nres.getStructChildren(name)) {
                 list.add(child);
             }
         }
+        structs.get(oldName).count = count;
     }
 
     StructDef globalCurStruct = null;
@@ -389,7 +395,7 @@ public class MergeADT extends SymbolTableVisitor {
         Map<String, String> varMapping = new HashMap<String, String>();
         int id;
         boolean ADT;
-
+        int count;
         public StructCombinedTracker(String prevStruct, String newStruct, int id,
                 boolean ADT)
         {
