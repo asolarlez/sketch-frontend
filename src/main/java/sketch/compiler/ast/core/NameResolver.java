@@ -46,6 +46,9 @@ public class NameResolver {
     }
 
     public String compound(String a, String b) {
+        if (b.contains("@")) {
+            return b;
+        }
         return b + "@" + a;
     }
 

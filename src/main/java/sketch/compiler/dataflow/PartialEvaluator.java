@@ -868,7 +868,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitStmtAssign(StmtAssign stmt)
     {
-        System.out.println("HHH:" + stmt);
+
         boolean isFieldAcc;
         abstractValue rhs = null;
         try{

@@ -15,7 +15,7 @@ struct E extends C{
 
 
 int get(A a ){
-	return new ??();	
+	return new ??();	//TypeError
 }
 
 harness void main(){

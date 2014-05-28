@@ -1,4 +1,4 @@
-struct Car {
+struct Car { //TypeError
   int id;
   fun gear; // NullPointerException
 }

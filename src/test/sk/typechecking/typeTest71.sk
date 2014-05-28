@@ -1,6 +1,6 @@
 //does not work
 harness void main(){
 	 int x = 5;
-	 int[1] y = x.{int};	
+	 int[1] y = x.{int};	//TypeError
 	
 }

@@ -15,8 +15,11 @@
  */
 
 package sketch.compiler.passes.lowering;
+
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -309,7 +312,8 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = new SymbolTable(symtab);
 
         StructDef sdl = ts;
-
+        int maxcnt = nstructsInPkg;
+        Set<String> s = null;
         while (sdl != null) {
             for (Entry<String, Type> entry : sdl) {
                 symtab.registerVar(entry.getKey(), (entry.getValue()), sdl,
@@ -320,6 +324,18 @@ public class SymbolTableVisitor extends FEReplacer
                 break;
             } else {
                 sdl = nres.getStruct(pn);
+            }
+            --maxcnt;
+            if (maxcnt < 0) {
+                if (s == null) {
+                    s = new HashSet<String>();
+                }
+                if (s.contains(pn)) {
+                    throw new ExceptionAtNode(
+                            "There is a loop in the extends relation involving struct " +
+                                    pn, ts);
+                }
+                s.add(pn);
             }
         }
 

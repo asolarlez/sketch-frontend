@@ -254,7 +254,7 @@ public class IntVtype extends abstractValueType {
 	}
 
     public abstractValue tupleacc(abstractValue arr, abstractValue idx) {
-        return BOTTOM("(" + arr + ".[" + idx + "])");
+        return BOTTOM("((" + arr + ").[" + idx + "])");
     }
 	public abstractValue arracc(abstractValue arr, abstractValue idx) {
 		assert false; return null;

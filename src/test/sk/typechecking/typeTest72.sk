@@ -7,5 +7,5 @@ struct A{
 
 harness void main(){
 	A a = new A();
-	bit[3] arr = a.{int};
+	bit[3] arr = a.{int}; // TypeError
 }

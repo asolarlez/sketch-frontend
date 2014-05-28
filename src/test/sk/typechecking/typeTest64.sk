@@ -42,4 +42,4 @@ int sum(Tree t){
 		}
     }
     
-}
+} //TypeError

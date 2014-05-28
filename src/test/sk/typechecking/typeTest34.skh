@@ -24,3 +24,4 @@ File fopen_r(Str filename){
 Str fread(pFile){ // TypeError missing type
 	return new Str(n=6, buf="hello"); // parser will give an error here too. TypeError
 }
+// TypeError and here.

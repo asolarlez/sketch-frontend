@@ -15,7 +15,7 @@ harness void main2(int in){
     generator int one(){ return 1; }
     generator int boo(){
         generator int app2(fun f){ return f(); }
-        if(??){ return app2(something) + 1; }
+        if(??){ return app2(something) + 1; } //TypeError
         return one();
     }
     

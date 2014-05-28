@@ -1,5 +1,5 @@
 //Type casting error
-struct Tree{ 
+struct Tree{  //TypeError
 	int x;
 	Tree left;
 	Tree right;

@@ -1,4 +1,4 @@
 harness void main() {
-  fun1@name(); // NullPointerException
+  fun1@name(); // TypeError
   assert true;
 }
