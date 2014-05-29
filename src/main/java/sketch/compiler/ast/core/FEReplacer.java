@@ -212,7 +212,7 @@ public class FEReplacer implements FEVisitor
             if (!changed) {
                 enl = expNew.getParams();
             }
-            return new ExprNew(expNew, nt, enl, expNew.isHole());
+            return new ExprNew(expNew, nt, enl, expNew.isHole(), expNew.getStar());
         } else {
             return expNew;
         }

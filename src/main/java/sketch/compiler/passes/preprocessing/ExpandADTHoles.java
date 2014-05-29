@@ -5,10 +5,12 @@ import java.util.LinkedList;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprNew;
+import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -45,6 +47,8 @@ public class ExpandADTHoles extends SymbolTableVisitor {
 
                     ExprNew newExp =
                             new ExprNew(exp.getContext(), ts, exp.getParams(), true);
+                    newExp.setStar(new ExprStar(exp, 5, TypePrimitive.int32type));
+
                     return newExp;
 
                 }else{
