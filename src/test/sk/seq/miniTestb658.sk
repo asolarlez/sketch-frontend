@@ -8,7 +8,7 @@ struct A{@Immutable("")
 
 harness void main(){
 	
-	A a = new A();
+	A a = new A(nxt = new A() );
 	A b= a.nxt;
 	assert(b.x !=1); 
 	

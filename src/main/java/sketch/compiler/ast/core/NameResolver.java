@@ -46,6 +46,9 @@ public class NameResolver {
     }
 
     public String compound(String a, String b) {
+        if (b.contains("@")) {
+            return b;
+        }
         return b + "@" + a;
     }
 
@@ -78,6 +81,8 @@ public class NameResolver {
         }
 
     }
+
+
 
     public void registerStruct(StructDef ts) {
         registerStuff(pkgForStruct, structMap, ts, ts.getName());

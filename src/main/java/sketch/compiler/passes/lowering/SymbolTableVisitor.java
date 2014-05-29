@@ -15,8 +15,11 @@
  */
 
 package sketch.compiler.passes.lowering;
+
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
@@ -308,12 +311,36 @@ public class SymbolTableVisitor extends FEReplacer
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
+        StructDef sdl = ts;
+        int maxcnt = nstructsInPkg;
+        Set<String> s = null;
+        while (sdl != null) {
+            for (Entry<String, Type> entry : sdl) {
+                symtab.registerVar(entry.getKey(), (entry.getValue()), sdl,
+                        SymbolTable.KIND_FIELD);
+            }
+            String pn = sdl.getParentName();
+            if (pn == null) {
+                break;
+            } else {
+                sdl = nres.getStruct(pn);
+            }
+            --maxcnt;
+            if (maxcnt < 0) {
+                if (s == null) {
+                    s = new HashSet<String>();
+                }
+                if (s.contains(pn)) {
+                    throw new ExceptionAtNode(
+                            "There is a loop in the extends relation involving struct " +
+                                    pn, ts);
+                }
+                s.add(pn);
+            }
+        }
+
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
-        for (Entry<String, Type> entry : ts) {
-            symtab.registerVar(entry.getKey(), (entry.getValue()), ts,
-                    SymbolTable.KIND_FIELD);
-        }
 
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept(this);

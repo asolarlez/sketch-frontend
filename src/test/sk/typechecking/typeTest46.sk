@@ -12,7 +12,7 @@ harness void test(){
 int sum(Tree t){
 		
     switch(new Branch()){ // TypeError this should be a variable.
-        case Leaf:           
+        case Leaf:           //TypeError the parser will actually show an error here.
             {     
             return 1;
             }    

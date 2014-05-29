@@ -1,0 +1,24 @@
+package XX{
+    struct A{}
+    struct B extends A{}
+    struct C extends A{}
+    
+    harness void main(){
+        A x = new B();        
+    }
+    
+}
+
+
+package YY{
+    struct H extends A{} // TypeError
+    struct L extends A{} // TypeError
+    
+    harness void main(){
+        
+        
+    }
+    
+    
+    
+}

@@ -1,0 +1,29 @@
+package YY{
+    struct A{}
+    struct B extends A{ int m; int[m] x;}
+    struct C extends A{ int m; int[m] t;}
+    
+    harness void main(int n){
+        A a = new B(m=7, x = ??);
+        A c = new C(m=7, t = ??);
+        
+        assert ((C)c).t == ((B)a).x;
+    }
+    
+}
+
+
+
+package XX{
+    struct A{int n;}
+    struct B extends A{int[n] x;}
+    struct C extends A{int[n] y;}
+    
+    harness void main(int n){
+        A a = new B(n=7, x = ??);
+        A c = new C(n=7, y = ??);
+        
+        assert ((C)c).y == ((B)a).x;
+        
+    }
+}

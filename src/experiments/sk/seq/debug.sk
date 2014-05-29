@@ -1,14 +1,57 @@
-pragma options "--bnd-inbits 3 --debug-show-dag --bnd-unroll-amnt 8 --bnd-inline-amnt 15";
-
-harness void main(int n, int m, int[n][m] x){
-	int[n] y;
-	for(int j=0; j<m; ++j){
-		for(int i=0; i<n; ++i){
-			y[i] = x[j][i]*??;	
-		}
-		for(int i=0; i<n; ++i){
-			assert 	y[i] % 2 == 0;
-		}
-	}
-
+/* BEGIN PACKAGE P1*/
+package P1{
+  /*miniTestb668.sk:9*/
+  
+void foo (ref int _out)/*miniTestb668.sk:9*/
+  {
+    _out = 0;
+    _out = 10;
+    return;
+  }
+  /* END PACKAGE P1*/
+}
+/* BEGIN PACKAGE P3*/
+package P3{
+  /*miniTestb668.sk:23*/
+  
+void _main (int x, int y)/*miniTestb668.sk:23*/
+  {
+    int _out_s1 = 0;
+    foo@P1(_out_s1);
+    foo(_out_s1 + 8);
+    int _out_s3 = 0;
+    foo@P1(_out_s3);
+    int _out_s5 = 0;
+    foo@P2(_out_s3 - 1, _out_s5);
+  }
+  /*miniTestb668.sk:3*/
+  
+void foo (int x)/*miniTestb668.sk:3*/
+  {
+    assert (x > 10); //Assert at miniTestb668.sk:4 (7752238519753188119)
+  }
+  /*miniTestb668.sk:23*/
+  
+void main__Wrapper (int x, int y)  implements main__WrapperNospec/*miniTestb668.sk:23*/
+  {
+    _main(x, y);
+  }
+  /*miniTestb668.sk:23*/
+  
+void main__WrapperNospec (int x, int y)/*miniTestb668.sk:23*/
+  { }
+  /* END PACKAGE P3*/
+}
+/* BEGIN PACKAGE P2*/
+package P2{
+  /*miniTestb668.sk:17*/
+  
+void foo (int x, ref int _out)/*miniTestb668.sk:17*/
+  {
+    _out = 0;
+    assert (x < 10); //Assert at miniTestb668.sk:18 (-6254334287368389334)
+    _out = x;
+    return;
+  }
+  /* END PACKAGE P2*/
 }

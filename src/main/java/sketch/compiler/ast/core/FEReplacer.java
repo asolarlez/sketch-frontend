@@ -715,6 +715,7 @@ public class FEReplacer implements FEVisitor
 
 
     protected List<Function> newFuncs;
+    protected int nstructsInPkg = -1;
 
     /**
      * StreamSpec represents a namespace. spec.getVars() will get you all the global
@@ -743,6 +744,7 @@ public class FEReplacer implements FEVisitor
         }
 
         List<StructDef> newStructs = new ArrayList<StructDef>();
+        nstructsInPkg = spec.getStructs().size();
         for (StructDef tsOrig : spec.getStructs()) {
             StructDef ts = (StructDef) tsOrig.accept(this);
             if (ts != tsOrig) {
@@ -750,7 +752,7 @@ public class FEReplacer implements FEVisitor
             }
             newStructs.add(ts);
         }
-
+        nstructsInPkg = -1;
 
         int nonNull = 0;
         for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); )
@@ -840,8 +842,18 @@ public class FEReplacer implements FEVisitor
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
         fields = new HashSet<String>();
-        for (Entry<String, Type> entry : ts) {
-            fields.add(entry.getKey());
+
+        StructDef sdf = ts;
+        while (sdf != null) {
+            for (Entry<String, Type> entry : sdf) {
+                fields.add(entry.getKey());
+            }
+            String pn = sdf.getParentName();
+            if (pn != null) {
+                sdf = nres.getStruct(pn);
+            } else {
+                sdf = null;
+            }
         }
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept (this);

@@ -1,7 +1,7 @@
 //Semantic check failed - same field in parent and child
-struct Tree{
+struct Tree{ //TypeError
 	int value;
 }
-struct Leaf extends Tree{
-	int value; // TypeError
+struct Leaf extends Tree{ // TypeError
+	int value; 
 }

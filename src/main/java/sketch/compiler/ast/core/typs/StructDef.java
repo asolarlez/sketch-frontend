@@ -226,6 +226,9 @@ annotations);
             HashmapList<String, Annotation> annotations)
     {
         super(context);
+        if (parentName != null && parentName.contains("@")) {
+            parentName = parentName.substring(0, parentName.indexOf('@'));
+        }
         this.name = name;
         this.pkg = pkg;
         this.parentName = parentName;
@@ -246,6 +249,11 @@ annotations);
             HashmapList<String, Annotation> annotations)
     {
         super(context);
+
+        if (parentName != null && parentName.contains("@")) {
+            parentName = parentName.substring(0, parentName.indexOf('@'));
+        }
+
         fieldOrder = (forder);
         this.name = name;
         this.pkg = pkg;
@@ -280,7 +288,10 @@ annotations);
 
     // ADT
     public String getParentName() {
-        return parentName;
+        if (parentName == null) {
+            return null;
+        }
+        return parentName + '@' + pkg;
     }
 
     public boolean isInstantiable() {

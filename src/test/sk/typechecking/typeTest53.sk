@@ -1,5 +1,5 @@
 //Semantic Check failed
-struct Tree{ 
+struct Tree{ //TypeError
 	Tree left;
 	Tree right;
 }
@@ -17,7 +17,7 @@ struct Branch extends Tree{ //TypeError duplicate declarations
 
 harness void test(){
 	Leaf leaf = new Leaf();
-Branch b = (Leaf) sum(leaf); //Type matching error
+Branch b = (Leaf) sum(leaf); //TypeError matching error
 
 }
 

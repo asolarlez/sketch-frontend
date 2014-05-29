@@ -143,6 +143,7 @@ public class GlobalsToParams extends FEReplacer {
         assert fcnsToAdd.isEmpty();
         nres = new NameResolver(prog); // get the new versions of functions into the nres.
         for (Package pkg : prog.getPackages()) {
+            nres.setPackage(pkg);
             for (Function f : pkg.getFuncs()) {
                 if (f.getSpecification() != null) {
                     Function spec = nres.getFun(f.getSpecification());

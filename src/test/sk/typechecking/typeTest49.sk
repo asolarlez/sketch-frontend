@@ -1,6 +1,6 @@
 //Parent and child should not have same fields
 //Tests for ADT
-struct Tree{ 
+struct Tree{ //TypeError
 	int x;
 	Tree left;
 	Tree right;
@@ -10,7 +10,7 @@ struct Tree{
 struct Leaf extends Tree{
     int value;
 }
-struct Branch extends Tree{
+struct Branch extends Tree{ //TypeError
     Tree left;
     Tree right;
 }

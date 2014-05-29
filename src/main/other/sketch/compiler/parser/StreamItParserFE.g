@@ -80,6 +80,9 @@ options {
     private Set<Directive> directives = new HashSet<Directive> ();
     private boolean preprocess;
     private List<String> cppDefs;
+    private String currPkg;
+    private FEContext curPkgCx;
+    
      //ADT
     private List<String> parentStructNames = new ArrayList<String>();
 
@@ -177,7 +180,8 @@ options {
 }// end of ANTLR header block
 
 program	 returns [Program p]
-{ p = null; List vars = new ArrayList();  
+{   Package pk;
+    p = null; List vars = new ArrayList();  
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
@@ -193,8 +197,8 @@ program	 returns [Program p]
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    file=include_stmt { handleInclude (file, namespaces); }
-           |    TK_package id:ID SEMI
-				{ pkgCtxt = getContext(id); pkgName = (id.getText()); }
+           |    TK_package id:ID { currPkg = (id.getText()); curPkgCx = getContext(id);}
+                            (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id);} | pk = pkgbody {namespaces.add(pk);  } ) 
            |    pragma_stmt
         )*
 		EOF
@@ -210,9 +214,7 @@ program	 returns [Program p]
 				fun.setPkg(pkgName);	
 			}
 			
-			 Package ss=new Package(pkgCtxt, 
- 				pkgName,
- 				structs, vars, funcs);
+		        Package ss=new Package(pkgCtxt, pkgName, structs, vars, funcs);
  				namespaces.add(ss);
                 if (!hasError) {
                     if (p == null) {
@@ -221,8 +223,41 @@ program	 returns [Program p]
                     p =
                     p.creator().streams(namespaces).create();
                 }
-                }
+        }
 	;
+
+
+pkgbody returns [Package pk] 
+{
+    pk = null;
+    FieldDecl fd; 
+	List vars = new ArrayList();  
+	List<Function> funcs=new ArrayList(); Function f;
+	StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
+	FEContext pkgCtxt = null;
+}
+: 
+	LCURLY
+  (  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
+                     TK_generator |  TK_stencil | TK_model)*
+                    return_type ID LPAREN) => f=function_decl { funcs.add(f); }
+           |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
+		   | 	fd=field_decl SEMI { vars.add(fd); }
+           |    ts=struct_decl { structs.add(ts); }
+   )*
+   RCURLY
+   {			
+		for(StructDef struct : structs){
+			if(parentStructNames.contains(struct.getName())) struct.setIsInstantiable(false);
+			struct.setPkg(currPkg);	
+		}
+		for(Function fun : funcs){
+			fun.setPkg(currPkg);	
+		}
+		
+	    pk=new Package(pkgCtxt, currPkg, structs, vars, funcs);
+    }
+   ;
 
 include_stmt    returns [String f]  { f = null; }
     :   TK_include fn:STRING_LITERAL SEMI

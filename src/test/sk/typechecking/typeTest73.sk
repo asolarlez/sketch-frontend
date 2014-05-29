@@ -6,10 +6,10 @@ struct A{
 
 
 A get(A a ){
-	switch(a){
+	switch(a){ //TypeError type has no variants
 		repeat_case:
 		{
-			return A;
+			return A; //TypeError unrecognized variable 'A'
 		}
 		
 			

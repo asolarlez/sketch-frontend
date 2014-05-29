@@ -797,9 +797,16 @@ public class RemoveFunctionParameters extends FEReplacer {
                          * return exp; } if (extractedInnerFuns.containsKey(fullName)) {
                          * // hoistedFun.accept(this); return exp; } return exp; }
                          */
+
                         Type pt = InnerFunReplacer.this.symtab.lookupVarNocheck(exp);
                         if (pt == null) {
                             return exp;
+                        }
+
+                        if (isInParam) {
+                            throw new ExceptionAtNode(
+                                    "You cannot use a captured variable in an array length expression: " +
+                                            exp, exp);
                         }
                         int kind =
                                 InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
@@ -867,6 +874,16 @@ public class RemoveFunctionParameters extends FEReplacer {
                         isAssignee = oldIsA;
                     }
                     return exp;
+                }
+
+                boolean isInParam = false;
+
+                public Object visitParameter(Parameter p) {
+                    boolean op = isInParam;
+                    isInParam = true;
+                    Object o = super.visitParameter(p);
+                    isInParam = op;
+                    return o;
                 }
 
                 public Object visitExprArrayInit(ExprArrayInit init) {

@@ -174,8 +174,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             // ADT
             // To check for parent structs.
             for (StructDef ts : spec.getStructs()) {
-                if (ts.getParentName() != null) {
-                    if (!structNames.containsKey(ts.getParentName())) {
+                String pname = ts.getParentName();
+                if (pname != null) {
+                    pname = pname.substring(0, pname.indexOf('@'));
+                    if (!structNames.containsKey(pname)) {
                         report(ts.getContext(),
                                 "Parent struct must exist and be defined within the same package");
                     }
@@ -490,6 +492,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         throw new ExceptionAtNode("Incorrect number of parameters", exp);
                     }
                     Expression actual = actIt.next();
+                    if (actual instanceof ExprNamedParam) {
+                        throw new ExceptionAtNode(
+                                "Named function parameters not supported. ", actual);
+                    }
                     Type ftt = formal.getType();
                     Type att = getType(actual);
                     while (ftt instanceof TypeArray) {
@@ -549,6 +555,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 if (lt == null || !lt.promotesTo(formalType, nres)) {
                     report(exp, "Bad parameter type: Formal type=" + formal +
                             "\n Actual type=" + lt + "  " + f);
+                }
+                if (newParam instanceof ExprNamedParam) {
+                    throw new ExceptionAtNode(
+                            "Named function parameters not supported. ", newParam);
                 }
                 newParams.add(newParam);
                 if (param != newParam)
@@ -929,9 +939,17 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (children == null || children.isEmpty()) {
             return false;
         }
+        Set<String> cset = new HashSet<String>();
+        for (String t : cases) {
+            if (cset.contains(t)) {
+                return false;
+            }
+            cset.add(t);
+        }
+
         boolean isExhaustive = true;
         for (String child : children) {
-            if (cases.contains(child.split("@")[0])) {
+            if (cset.contains(child.split("@")[0])) {
                 // check for mutually exclusive i.e. cases should not contain any children
                 // of child
 
@@ -1300,6 +1318,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
                 Type rhsType = getType(rhs);
                 Type lhsType = current.getType(en.getName());
+                if (rhsType == null || lhsType == null) {
+                    return expNew;
+                }
                 lhsType = lhsType.addDefaultPkg(ts.getPkg(), nres);
                 matchTypes(expNew, lhsType, rhsType);
 

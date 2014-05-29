@@ -1,5 +1,5 @@
 //Semantic Check failed  - Duplicate field type
-struct ASTNode{ int type; }
+struct ASTNode{ int type; } // TypeError
 struct Expression extends ASTNode{  }
 struct Statement extends ASTNode{  }
 struct Plus extends Expression{ int type; Expression left; Expression right; } // TypeError duplicate filed type
