@@ -310,6 +310,7 @@ public class MergeADT extends SymbolTableVisitor {
         while (structsList.contains(newName)) {
             newName = "_" + newName;
         }
+        newName = newName + "@" + str.getPkg();
         LinkedList<String> list = new LinkedList<String>();
         list.add(oldName);
         while (!list.isEmpty()) {
@@ -398,6 +399,8 @@ public class MergeADT extends SymbolTableVisitor {
         ts =
                 StructDef.creator(str.getContext(), newName, null, true, names, types,
                         annotations).create();
+        ts.setPkg(str.getPkg());
+        // structs.get(str.getFullName()).newStruct = ts.getFullName();
 
         return ts;
 

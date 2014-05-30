@@ -129,7 +129,7 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
                 if (t != null)
                     break;
                 String parent;
-                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                if ((parent = nres.getStructParentName(current.getFullName())) != null) {
                     current = nres.getStruct(parent);
                 } else {
                     current = null;

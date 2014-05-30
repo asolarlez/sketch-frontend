@@ -974,8 +974,11 @@ public class NodesToSuperCpp extends NodesToJava {
                 String body = (String) bodyStatement.accept(this);
                 int x = body.indexOf("{");
                 int y = body.lastIndexOf("}");
-
-                result += body.substring(x + 1, y);
+                if (x != -1 && y != -1) {
+                    result += body.substring(x + 1, y);
+                } else {
+                    result += body;
+                }
                 result += indent + "break;\n";
                 result += indent + "}\n";
                 symtab = oldSymTab;

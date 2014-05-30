@@ -233,6 +233,7 @@ pkgbody returns [Package pk]
     FieldDecl fd; 
 	List vars = new ArrayList();  
 	List<Function> funcs=new ArrayList(); Function f;
+	parentStructNames = new ArrayList<String>();
 	StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
 	FEContext pkgCtxt = null;
 }
