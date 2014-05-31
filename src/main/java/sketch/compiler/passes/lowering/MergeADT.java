@@ -75,7 +75,6 @@ public class MergeADT extends SymbolTableVisitor {
 
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
-        // change this
         StructDef sd = nres.getStruct(t.getName());
         String oldName = sd.getFullName();
 
@@ -168,7 +167,7 @@ public class MergeADT extends SymbolTableVisitor {
         String newField = structTracker.getNewVariable(field);
         // if field is a field of parent
         if (newField == null) {
-            String name = nres.getStructParentName(t.getName());
+            String name = nres.getStructParentName(t.getFullName());
             while (newField == null && name != null) {
                 structTracker = structs.get(name);
                 newField = structTracker.getNewVariable(field);
@@ -310,7 +309,7 @@ public class MergeADT extends SymbolTableVisitor {
         while (structsList.contains(newName)) {
             newName = "_" + newName;
         }
-        newName = newName + "@" + str.getPkg();
+        newName = newName + "_" + str.getPkg();
         LinkedList<String> list = new LinkedList<String>();
         list.add(oldName);
         while (!list.isEmpty()) {

@@ -256,11 +256,13 @@ public class SymbolTableVisitor extends FEReplacer
 
         // visit each case body
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+        String pkg = nres.getStruct(((TypeStructRef) getType(var)).getName()).getPkg();
         for (String caseExpr : stmt.getCaseConditions()) {
             if (caseExpr != "default" && caseExpr != "repeat") {
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
-                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+                symtab.registerVar(var.getName(),
+                        (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);

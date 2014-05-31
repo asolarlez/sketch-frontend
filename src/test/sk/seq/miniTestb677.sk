@@ -1,0 +1,7 @@
+struct A{int x;}
+struct B extends A{}
+harness void main(){
+	B a = new B(x = ??);
+	assert(a.x == 1);	
+	
+}
