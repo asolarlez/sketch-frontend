@@ -307,7 +307,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             TypeStructRef ts = (TypeStructRef) type;
             StructDef struct = nres.getStruct(ts.getName());
             if(struct.immutable()){
-                return struct.getName().toUpperCase();
+                return struct.getName().toUpperCase() + "_" +
+                        struct.getPkg().toUpperCase();
             }
         }
 
@@ -428,7 +429,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             nres.setPackage(pkg);
             for (StructDef t : pkg.getStructs()) {
                 if (t.immutable()) {
-                    out.print(t.getName().toUpperCase() + " ( ");
+                    out.print(t.getName().toUpperCase() + "_" + t.getPkg().toUpperCase() +
+                            " ( ");
                     for (StructFieldEnt e : t.getFieldEntriesInOrder()) {
                         out.print(printType(e.getType()) + " ");
                     }

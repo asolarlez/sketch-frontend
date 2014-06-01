@@ -72,8 +72,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
         String funName;
         boolean isOuter;
         Map<String, Type> typeMap = new HashMap<String, Type>();
-        // SymbolTable symtab;
-
+        
         public BreakIfThenStatements(NameResolver nr, TempVarGen vg, String name,
                 SymbolTable st, boolean isOuter)
         {
@@ -82,8 +81,6 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
             varGen = vg;
             funName = name;
             this.isOuter = isOuter;
-
-            // symtab =st;
         }
 
         private class GlobalizeVar extends SymbolTableVisitor {
