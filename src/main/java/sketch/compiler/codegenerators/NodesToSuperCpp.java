@@ -947,9 +947,10 @@ public class NodesToSuperCpp extends NodesToJava {
         String var = (String) stmt.getExpr().accept(this);
         result += var;
         String name = ((TypeStructRef) getType(stmt.getExpr())).getName();
-        name = nres.getStructName(name);
-        while (nres.getStructParentName(name) != null) {
-            name = nres.getStructParentName(name);
+        StructDef sd = nres.getStruct(name);
+        name = sd.getFullName();
+        while (sd.getParentName() != null) {
+            name = sd.getParentName();
         }
         result += "->" + NodesToSuperH.typeVars.get(name) + "){\n";
         name = name.split("@")[0];
@@ -957,7 +958,8 @@ public class NodesToSuperCpp extends NodesToJava {
             // brakects around cases and constants with type.
             if (c != "default") {
                 result +=
-                        indent + "case " + name + "::" + c.toUpperCase() + "_type" +
+                        indent + "case " + sd.getPkg() + "::" + name + "::" +
+                                c.toUpperCase() + "_type" +
                                 ":\n" +
                                 indent + indent;
                 String newVar = "_" + var;
@@ -965,7 +967,9 @@ public class NodesToSuperCpp extends NodesToJava {
                     newVar = "_" + newVar;
                 }
                 result += "{\n" + indent + indent;
-                result += c + "* " + newVar + " = (" + c + "*)  " + var + ";" + indent;// semicolon
+                result +=
+                        sd.getPkg() + "::" + c + "* " + newVar + " = (" + sd.getPkg() +
+                                "::" + c + "*)  " + var + ";" + indent;// semicolon
                 VarReplacer vr = new VarReplacer(var, newVar);
                 SymbolTable oldSymTab = symtab;
                 symtab = new SymbolTable(oldSymTab);

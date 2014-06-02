@@ -651,7 +651,8 @@ public class NodesToJava extends SymbolTableVisitor
     public Object visitStmtAssert(StmtAssert stmt)
     {
         return stmt.getAssertSymbol() + " (" +
-                (String) stmt.getCond().accept(this) + ")";
+ (String) stmt.getCond().accept(this) +
+                ");";
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {

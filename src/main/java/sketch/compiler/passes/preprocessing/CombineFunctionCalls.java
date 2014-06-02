@@ -143,10 +143,18 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                                 String newVar = varGen.nextVar();
                                 stmts.add(new StmtVarDecl(dim.getContext(),
                                         getType(newExp), newVar, null));
-                                stmts.add(
-                                        new StmtAssign(new ExprVar(dim.getContext(),
-                                        newVar), newExp));
+                                // Is there any side effect because of this??
+                                StmtIfThen conditionalAssign =
+                                        new StmtIfThen(
+                                                dim.getContext(),
+                                                cond,
+                                                new StmtAssign(new ExprVar(
+                                                        dim.getContext(), newVar), newExp),
+                                                null);
+                                conditionalAssign.singleVarAssign();
+                                stmts.add(conditionalAssign);
                                 newDims.add(new ExprVar(dim.getContext(), newVar));
+
                             } else {
                                 newDims.add(dim);
                             }
@@ -184,16 +192,18 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                 return stmt;
             }
 
-            // Ignore declarations in these calls - because, they are anyways not broken
-            // up.
-            // TODO: Check if everything is covered.
             @Override
             public Object visitStmtIfThen(StmtIfThen stmt) {
                 if (stmt.isSingleVarAssign()) {
+                    // TODO: should combine conditions
                     stmt.getCons().accept(this);
                 }
                 return stmt;
             }
+
+            // Ignore declarations in these calls - because, they are anyways not broken
+            // up.
+            // TODO: Check if everything is covered.
 
             @Override
             public Object visitStmtFor(StmtFor stmt) {
