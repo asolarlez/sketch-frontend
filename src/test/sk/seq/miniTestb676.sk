@@ -1,0 +1,34 @@
+//Immutable package test
+package XX{
+    struct A{ @Immutable("") int x; int y;}
+    struct B extends A{}
+    struct C extends A{}
+    
+    harness void main(){
+        A x = new B();        
+    }
+    
+}
+
+
+package YY{
+    struct A{@Immutable("")}
+    struct B extends A{}
+    harness void main(){
+        int x = ??;
+        A@XX a = new B@XX(x=5, y=7);
+        switch(a){
+            case B:{
+                assert x == 7; 
+            }
+            case C:{
+                assert x == 5;
+            }
+                        
+        }
+        ppprint(x);
+    }
+    void ppprint(int x);
+    
+    
+}

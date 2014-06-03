@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
@@ -18,6 +19,7 @@ import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.*;
@@ -62,7 +64,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
         newBody = (Statement) fn.getBody().accept(bif);
         if (newBody != fn.getBody()) {
             return fn.creator().body(newBody).create();
-        }else{
+        } else {
             return fn;
         }
     }
@@ -70,10 +72,8 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
     private class BreakIfThenStatements extends SymbolTableVisitor {
         TempVarGen varGen;
         String funName;
-        boolean isOuter;
+        boolean isOuterAndOneBranch;
         Map<String, Type> typeMap = new HashMap<String, Type>();
-        // SymbolTable symtab;
-
         public BreakIfThenStatements(NameResolver nr, TempVarGen vg, String name,
                 SymbolTable st, boolean isOuter)
         {
@@ -81,92 +81,129 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
             nres = nr;
             varGen = vg;
             funName = name;
-            this.isOuter = isOuter;
-
-            // symtab =st;
+            this.isOuterAndOneBranch = isOuter;
         }
 
+        private class ReplaceExpression extends FEReplacer {
+            Map<String, Expression> trackVar;
+
+            public ReplaceExpression(Map<String, Expression> trackMap)
+            {
+                trackVar = trackMap;
+
+            }
+
+            public Object visitExprVar(ExprVar exp) {
+                if (trackVar.containsKey(exp.getName())) {
+                    Expression newExp =
+                            (Expression) trackVar.get(exp.getName()).accept(this);
+
+                    return newExp;
+                }
+                return exp;
+            }
+
+
+        }
         private class GlobalizeVar extends SymbolTableVisitor {
             List stmts;
+            Map<String, Expression> trackVar = new HashMap<String, Expression>();
+            TempVarGen vg;
+            Expression cond;
 
-            public GlobalizeVar(SymbolTable symtab) {
+            public GlobalizeVar(SymbolTable symtab, TempVarGen vg, NameResolver nr,
+                    Expression cond)
+            {
                 super(symtab);
+                this.vg = vg;
+                nres = nr;
                 stmts = new ArrayList();
+                this.cond = cond;
 
             }
 
             @Override
             public Object visitStmtVarDecl(StmtVarDecl stmt) {
+                List types = new ArrayList();
                 List inits = new ArrayList();
-                for (int i = 0; i < stmt.getNames().size(); i++) {
-                    inits.add(null);
-                }
-                stmts.add(new StmtVarDecl(stmt.getContext(), stmt.getTypes(),
-                        stmt.getNames(), inits));
+                List names = new ArrayList();
+
+
                 List<Statement> newStmts = new ArrayList<Statement>();
                 for (int i = 0; i < stmt.getNames().size(); i++) {
+                    names.add(stmt.getName(i));
+                    inits.add(null);
+                    if (stmt.getType(i).isArray()) {
+                        TypeArray t =(TypeArray) (stmt.getType(i));
+                        List<Expression> newDims = new ArrayList<Expression>();
+                        for(Expression dim: t.getDimensions()){
+                            ReplaceExpression re = new ReplaceExpression(trackVar);
+                            Expression newExp = (Expression) dim.accept(re);
+                            if (newExp != dim) {
+                                String newVar = varGen.nextVar();
+                                stmts.add(new StmtVarDecl(dim.getContext(),
+                                        getType(newExp), newVar, null));
+                                // Is there any side effect because of this??
+                                StmtIfThen conditionalAssign =
+                                        new StmtIfThen(
+                                                dim.getContext(),
+                                                cond,
+                                                new StmtAssign(new ExprVar(
+                                                        dim.getContext(), newVar), newExp),
+                                                null);
+                                conditionalAssign.singleVarAssign();
+                                stmts.add(conditionalAssign);
+                                newDims.add(new ExprVar(dim.getContext(), newVar));
+
+                            } else {
+                                newDims.add(dim);
+                            }
+
+                        }
+                        Type newType = t.getAbsoluteBase();
+
+                        while (!newDims.isEmpty()) {
+                            newType =
+                                    new TypeArray(newType, (Expression) newDims.remove(0));
+                        }
+                        types.add(newType);
+
+                    } else {
+                        types.add(stmt.getType(i));
+                    }
+                    if (stmt.getInit(i) != null)
+                        trackVar.put(stmt.getName(i), stmt.getInit(i));
                     if (stmt.getInits().get(i) != null) {
                         newStmts.add(new StmtAssign(new ExprVar(stmt.getContext(),
-                                stmt.getNames().get(i)),
-                                (Expression) stmt.getInits().get(i)));
+                                stmt.getName(i)), (Expression) stmt.getInit(i)));
                     }
                 }
+                stmts.add(new StmtVarDecl(stmt.getContext(), types, names, inits));
                 return new StmtBlock(newStmts);
             }
 
-            @Override
-            public Object visitStmtIfThen(StmtIfThen stmt) {
-                Expression newCond = doExpression(stmt.getCond());
-                Statement newCons =
-                        stmt.getCons() == null ? null
-                                : (Statement) stmt.getCons().accept(this);
-                Statement newAlt =
-                        stmt.getAlt() == null ? null : (Statement) stmt.getAlt().accept(
-                                this);
-                if (newCond == stmt.getCond() && newCons == stmt.getCons() &&
-                        newAlt == stmt.getAlt())
-                    return stmt;
-                if (newCons == null && newAlt == null) {
-                    return new StmtExpr(stmt, newCond);
+            public Object visitStmtAssign(StmtAssign stmt) {
+                stmt = (StmtAssign) super.visitStmtAssign(stmt);
+                Expression lhs = stmt.getLHS();
+                if (lhs instanceof ExprVar) {
+                    String name = ((ExprVar) lhs).getName();
+                    trackVar.put(name, stmt.getRHS());
                 }
-                stmt = new StmtIfThen(stmt, newCond, newCons, newAlt);
-                stmt.isAtomic();
                 return stmt;
-
-            }
-
-            public List varDeclStmts() {
-                return stmts;
-            }
-        }
-
-        private class CollectFunCalls extends SymbolTableVisitor {
-            // private List functions;
-            private ExprFunCall f;
-            String funName;
-
-            public CollectFunCalls(String name, SymbolTable symtab) {
-                super(symtab);
-                f = null;
-                funName = name;
-
-            }
-
-            @Override
-            public Object visitExprFunCall(ExprFunCall exp) {
-                if (exp.getName().equals(funName))
-                    f = exp;
-                return exp;
-
             }
 
             @Override
             public Object visitStmtIfThen(StmtIfThen stmt) {
-                if (stmt.isAtomic()) {
+                if (stmt.isSingleVarAssign()) {
+                    // TODO: should combine conditions
                     stmt.getCons().accept(this);
                 }
                 return stmt;
             }
+
+            // Ignore declarations in these calls - because, they are anyways not broken
+            // up.
+            // TODO: Check if everything is covered.
 
             @Override
             public Object visitStmtFor(StmtFor stmt) {
@@ -183,6 +220,70 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                 return stmt;
             }
 
+            // Switch statements should not exist at this point.
+            @Override
+            public Object visitStmtSwitch(StmtSwitch stmt) {
+                return stmt;
+            }
+
+            @Override
+            public Object visitFunction(Function f) {
+                return f;
+            }
+
+            public List varDeclStmts() {
+                return stmts;
+            }
+
+
+        }
+
+        /*
+         * This class extracts the recursive funCall from a statement block.
+         */
+        private class GetFunCall extends SymbolTableVisitor {
+            private ExprFunCall f;
+            String funName;
+
+            public GetFunCall(String name, SymbolTable symtab) {
+                super(symtab);
+                f = null;
+                funName = name;
+            }
+
+            @Override
+            public Object visitExprFunCall(ExprFunCall exp) {
+                if (exp.getName().equals(funName))
+                    f = exp;
+                return exp;
+
+            }
+
+            @Override
+            public Object visitStmtIfThen(StmtIfThen stmt) {
+                //What does atomic mean?
+                if (stmt.isSingleFunCall()) {
+                    stmt.getCons().accept(this);
+                }
+                return stmt;
+            }
+            //Ignore function calls in these statements because they are tricky to merge
+            @Override
+            public Object visitStmtFor(StmtFor stmt) {
+                return stmt;
+            }
+
+            @Override
+            public Object visitStmtDoWhile(StmtDoWhile stmt) {
+                return stmt;
+            }
+
+            @Override
+            public Object visitStmtWhile(StmtWhile stmt) {
+                return stmt;
+            }
+
+            //Switch statements should not exist at this point.
             @Override
             public Object visitStmtSwitch(StmtSwitch stmt) {
                 return stmt;
@@ -198,8 +299,9 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
             }
         }
 
-
-
+        /*
+         * Divides a statement block at recursive function call statements.
+         */
         private List[] divideBlock(Statement stmt) {
             FlattenStmtBlocks f = new FlattenStmtBlocks();
             stmt = (Statement) stmt.accept(f);
@@ -211,7 +313,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                 List statements = new ArrayList();
                 while (itr.hasNext()) {
                     Statement s = itr.next();
-                    CollectFunCalls c = new CollectFunCalls(funName, symtab);
+                    GetFunCall c = new GetFunCall(funName, symtab);
                     s.doStatement(c);
                     ExprFunCall function = c.getFunction();
                     if (function == null) {
@@ -222,14 +324,13 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                         funCalls.add(function);
                         statements = new ArrayList();
                     }
-
                 }
                 blocks.add(new StmtBlock(statements));
 
             } else {
                 // deal with single statements
                 List statements = new ArrayList();
-                CollectFunCalls c = new CollectFunCalls(funName, symtab);
+                GetFunCall c = new GetFunCall(funName, symtab);
                 stmt.doStatement(c);
                 ExprFunCall function = c.getFunction();
                 if (function == null) {
@@ -242,7 +343,6 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                 }
             }
             return new List[] { blocks, funCallStatements, funCalls };
-
         }
 
 
@@ -250,20 +350,32 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
         public Object visitStmtIfThen(StmtIfThen stmt) {
 
             List Statements = new ArrayList();
+
+            // Extract the condition inorder to avoid re-executing the condition
+            // multiple times.
             String condVar = varGen.nextVar("");
             Statements.add(new StmtVarDecl(stmt.getContext(), TypePrimitive.bittype,
                     condVar, stmt.getCond()));
+
+
             List consBlocks = new ArrayList(), consFunCallStatements = new ArrayList(), consFunCalls =
                     new ArrayList();
 
             if (stmt.getAlt() != null)
-                isOuter = false;
+                isOuterAndOneBranch = false;
             if (stmt.getCons() != null) {
+                // Recurse on cons
                 Statement cons = (Statement) stmt.getCons().accept(this);
-                if (isOuter) {
+
+                // If all outer if-then statements have only one branch, then no need to
+                // merge.
+                if (isOuterAndOneBranch) {
                     return new StmtIfThen(stmt, stmt.getCond(), cons, null);
                 }
-                GlobalizeVar g = new GlobalizeVar(symtab);
+
+                // Extract init stmts from cons
+                Expression cond = new ExprVar(stmt.getContext(), condVar);
+                GlobalizeVar g = new GlobalizeVar(symtab, varGen, nres, cond);
                 cons = (Statement) cons.accept(g);
                 Statements.addAll(g.varDeclStmts());
 
@@ -271,15 +383,23 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                 consBlocks = consParts[0];
                 consFunCallStatements = consParts[1];
                 consFunCalls = consParts[2];
-
             }
+
             List altBlocks = new ArrayList(), altFunCallStatements = new ArrayList(), altFunCalls =
                     new ArrayList();
+
             if (stmt.getAlt() != null) {
+                // Recurse on alt
                 Statement alt = (Statement) stmt.getAlt().accept(this);
-                GlobalizeVar g = new GlobalizeVar(symtab);
+
+                // Extract init statements from alt
+                Expression cond =
+                        new ExprUnary(stmt.getContext(), ExprUnary.UNOP_NOT, new ExprVar(
+                                stmt.getContext(), condVar));
+                GlobalizeVar g = new GlobalizeVar(symtab, varGen, nres, cond);
                 alt = (Statement) alt.accept(g);
                 Statements.addAll(g.varDeclStmts());
+
                 List[] altParts = divideBlock(alt);
                 altBlocks = altParts[0];
                 altFunCallStatements = altParts[1];
@@ -289,22 +409,23 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
 
             List newCons = new ArrayList();
             List newAlt = new ArrayList();
+            Statement prevConStatements = null;
+            Statement prevAltStatements = null;
 
-            Statement prevConFunStatement = null;
-            Statement prevAltFunStatement = null;
             int conSize = consFunCalls.size();
             int altSize = altFunCalls.size();
             int max = Math.max(conSize, altSize);
             int con = 0, alt = 0;
+
             for (int i = 0; i < max; i++) {
+
                 newCons = new ArrayList();
-                if (prevConFunStatement != null) {
-                    newCons.add(prevConFunStatement);
-                    prevConFunStatement = null;
+                if (prevConStatements != null) {
+                    newCons.add(prevConStatements);
+                    prevConStatements = null;
                 }
+
                 if (i < conSize) {
-
-
                     if (consFunCallStatements.get(i).getClass() == StmtIfThen.class) {
                         con = 2;
                     } else {
@@ -313,32 +434,41 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                     newCons.add(consBlocks.get(i));
                 } else
                     con = 0;
+
                 newAlt = new ArrayList();
-                if (prevAltFunStatement != null) {
-                    newAlt.add(prevAltFunStatement);
-                    prevAltFunStatement = null;
+                if (prevAltStatements != null) {
+                    newAlt.add(prevAltStatements);
+                    prevAltStatements = null;
                 }
                 if (i < altSize) {
-
                     if (altFunCallStatements.get(i).getClass() == StmtIfThen.class) {
                         alt = 2;
                     } else {
                         alt = 1;
                     }
                     newAlt.add(altBlocks.get(i));
-
                 } else
                     alt = 0;
 
 
+                StmtIfThen blocks =
+                        new StmtIfThen(stmt.getContext(), new ExprVar(stmt.getContext(),
+                                condVar), new StmtBlock(newCons), new StmtBlock(newAlt));
+                Statements.add(blocks);
+
+                newCons = new ArrayList();
+                newAlt = new ArrayList();
+
+                // Variables to hold parameters of function.
                 List<String> paramVars = new ArrayList<String>();
                 List<Type> paramTypes = new ArrayList<Type>();
 
                 Statement finalFunCall = null;
-                prevConFunStatement = null;
-                prevAltFunStatement = null;
-                List prevConStmts = new ArrayList();
-                List prevAltStmts = new ArrayList();
+                prevConStatements = null;
+                prevAltStatements = null;
+
+                List prevConStmtsList = new ArrayList();
+                List prevAltStmtsList = new ArrayList();
 
                 ExprFunCall consFunction = null;
                 List<Expression> conParamExps = null;
@@ -353,12 +483,18 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                     altFunction = (ExprFunCall) altFunCalls.get(i);
                     altParamExps = altFunction.getParams();
                 }
+
                 // find a better way for doing this
                 for (Entry<String, Type> entry : typeMap.entrySet()) {
                     symtab.registerVar(entry.getKey(), entry.getValue());
                 }
+
                 List<Parameter> params = nres.getFun(funName).getParams();
+
                 List<Expression> paramExprs = new ArrayList<Expression>();
+
+                List<Statement> conParamStmts = new ArrayList<Statement>();
+                List<Statement> altParamStmts = new ArrayList<Statement>();
                 for (int l = 0; l < params.size(); l++) {
                     Parameter pm = params.get(l);
                     // generate new variable
@@ -372,18 +508,20 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                             if (dim.isConstant()) {
                                 dims.add(dim);
                             } else {
-                               if(con>0 && alt >0){
+                                if (con > 0 && alt > 0) {
+                                    // Expression for maximum of two sizes
                                     Expression le =
                                             ((TypeArray) getType(conParamExps.get(l))).getDimension(_i);
-
                                     Expression ri =
                                             ((TypeArray) getType(altParamExps.get(l))).getDimension(_i);
                                     Expression cond =
                                             new ExprBinary(ExprBinary.BINOP_GE, le, ri);
                                     dims.add(new ExprTernary("?:", cond, le, ri));
-                               }else{
-                                   dims.add(dim);
-                               }
+                                } else if (con > 0) {
+                                    dims.add(((TypeArray) getType(conParamExps.get(l))).getDimension(_i));
+                                } else {
+                                    dims.add(((TypeArray) getType(altParamExps.get(l))).getDimension(_i));
+                                }
                             }
 
                         }
@@ -392,7 +530,6 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
 
                         while (!dims.isEmpty()) {
                             t = new TypeArray(t, (Expression) dims.remove(0));
-
                         }
                         paramTypes.add(t);
 
@@ -410,37 +547,39 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                             if (dim.isConstant()) {
                                 dims.add(new RangeLen(ExprConstInt.zero, dim));
                             } else {
-                               for (int _j = 0; _j < params.size();_j++){
-                                   //change this
-                                   if(params.get(_j).getName() == ((ExprVar)dim).getName()){
+                                for (int _j = 0; _j < params.size(); _j++) {
+                                    // change this
+                                    if (params.get(_j).getName() == ((ExprVar) dim).getName())
+                                    {
                                         dims.add(new RangeLen(ExprConstInt.zero,
                                                 new ExprVar(pm.getContext(),
                                                         paramVars.get(_j))));
-                                       break;
-                                   }
-                                           
-                               }
-                               
+                                        break;
+                                    }
+                                }
                             }
-
                         }
 
                         Expression t = left;
-
                         t = new ExprArrayRange(pm, t, dims, false);
-
-
                         paramExprs.add(t);
+
                         if (pm.getPtype() > 0) {
+                            // ref or output param
+
                             if (con > 0) {
-                            if (((Expression) conParamExps.get(l)).isLValue()) {
-                                prevConStmts.add(new StmtAssign(conParamExps.get(l), t));
-                            }
+                                if (((Expression) conParamExps.get(l)).isLValue()) {
+                                    prevConStmtsList.add(new StmtAssign(
+                                            conParamExps.get(l),
+                                            t));
+                                }
                             }
                             if (alt > 0) {
-                            if (altParamExps.get(l).isLValue()) {
-                                prevAltStmts.add(new StmtAssign(altParamExps.get(l), t));
-                            }
+                                if (altParamExps.get(l).isLValue()) {
+                                    prevAltStmtsList.add(new StmtAssign(
+                                            altParamExps.get(l),
+                                            t));
+                                }
                             }
 
                         }
@@ -450,31 +589,47 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
 
                             if (con > 0) {
                                 if (((Expression) conParamExps.get(l)).isLValue()) {
-                                    prevConStmts.add(new StmtAssign(conParamExps.get(l),
+                                    prevConStmtsList.add(new StmtAssign(
+                                            conParamExps.get(l),
                                             new ExprVar(pm.getContext(), newParamVar)));
                                 }
                             }
                             if (alt > 0) {
                                 if (altParamExps.get(l).isLValue()) {
-                                    prevAltStmts.add(new StmtAssign(altParamExps.get(l),
+                                    prevAltStmtsList.add(new StmtAssign(
+                                            altParamExps.get(l),
                                             new ExprVar(pm.getContext(), newParamVar)));
                                 }
                             }
                         }
                         paramExprs.add(left);
                     }
-
                     if (con > 0)
-                            newCons.add(new StmtAssign(left, conParamExps.get(l)));
+                        conParamStmts.add(new StmtAssign(left, conParamExps.get(l)));
                     if (alt > 0)
-                            newAlt.add(new StmtAssign(left, altParamExps.get(l)));
-
+                        altParamStmts.add(new StmtAssign(left, altParamExps.get(l)));
 
 
                 }
+                if(con ==1){
+                    newCons.add(new StmtBlock(conParamStmts));
+                }
+                if(con ==2){
+                    newCons.add(new StmtIfThen(stmt,
+                            ((StmtIfThen) consFunCallStatements.get(i)).getCond(),
+                            new StmtBlock(conParamStmts), null));
+                }
+                if(alt ==1){
+                    newAlt.add(new StmtBlock(altParamStmts));
+                }
+                if(alt ==2){
+                    newAlt.add(new StmtIfThen(stmt,
+                            ((StmtIfThen) altFunCallStatements.get(i)).getCond(),
+                            new StmtBlock(altParamStmts), null));
+                }
 
-                prevConFunStatement = new StmtBlock(prevConStmts);
-                prevAltFunStatement = new StmtBlock(prevAltStmts);
+                prevConStatements = new StmtBlock(prevConStmtsList);
+                prevAltStatements = new StmtBlock(prevAltStmtsList);
 
                 if (con == 1 && alt == 1) {
                     finalFunCall =
@@ -502,7 +657,7 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                             new StmtExpr(new ExprFunCall(stmt.getContext(), funName,
                                     paramExprs));
                     finalFunCall = new StmtIfThen(stmt.getContext(), cond, f, null);
-                    ((StmtIfThen) finalFunCall).setAtomic();
+                    ((StmtIfThen) finalFunCall).singleFunCall();
 
                 } else {
                     Expression cond1 = ExprConstInt.zero;
@@ -518,9 +673,10 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
                             new StmtExpr(new ExprFunCall(stmt.getContext(), funName,
                                     paramExprs));
                     finalFunCall = new StmtIfThen(stmt.getContext(), cond1, f, null);
-                    ((StmtIfThen) finalFunCall).setAtomic();
+                    ((StmtIfThen) finalFunCall).singleFunCall();
 
                 }
+
                 for (int a = 0; a < paramTypes.size(); a++) {
                     StmtVarDecl st = new StmtVarDecl(stmt.getContext(), paramTypes.get(a),
                             paramVars.get(a), null);
@@ -537,27 +693,26 @@ public class CombineFunctionCalls extends SymbolTableVisitor {
 
 
                 newCons = new ArrayList();
-
-
             }
-            if (prevConFunStatement != null) {
-                newCons.add(prevConFunStatement);
-                prevConFunStatement = null;
+
+            if (prevConStatements != null) {
+                newCons.add(prevConStatements);
+                prevConStatements = null;
             }
             if (consBlocks.size() > 0) {
-            newCons.add(consBlocks.get(consBlocks.size() - 1));
+                newCons.add(consBlocks.get(consBlocks.size() - 1));
             }
             newAlt = new ArrayList();
-            if (prevAltFunStatement != null) {
-                newAlt.add(prevAltFunStatement);
-                prevAltFunStatement = null;
+            if (prevAltStatements != null) {
+                newAlt.add(prevAltStatements);
+                prevAltStatements = null;
             }
             if (altBlocks.size() > 0)
-            newAlt.add(altBlocks.get(altBlocks.size() - 1));
+                newAlt.add(altBlocks.get(altBlocks.size() - 1));
             StmtIfThen s =
                     new StmtIfThen(stmt.getContext(), new ExprVar(stmt.getContext(),
                             condVar), new StmtBlock(
-                            newCons), new StmtBlock(newAlt));
+newCons), new StmtBlock(newAlt));
             Statements.add(s);
             return new StmtBlock(Statements);
 

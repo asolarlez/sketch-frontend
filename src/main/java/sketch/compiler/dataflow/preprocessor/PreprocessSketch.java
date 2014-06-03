@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -56,6 +57,16 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         return obj;
     }
 
+    public Object visitExprNew(ExprNew exp) {
+        Object obj = super.visitExprNew(exp);
+        ExprNew nexp = (ExprNew) this.exprRV;
+        if (nexp.isHole()) {
+            nexp.getStar().accept(this);
+            nexp.setStar((ExprStar) exprRV);
+            exprRV = nexp;
+        }
+        return obj;
+    }
 
     @Override
     public String transName(String name){

@@ -212,7 +212,7 @@ public class FEReplacer implements FEVisitor
             if (!changed) {
                 enl = expNew.getParams();
             }
-            return new ExprNew(expNew, nt, enl, expNew.isHole());
+            return new ExprNew(expNew, nt, enl, expNew.isHole(), expNew.getStar());
         } else {
             return expNew;
         }
@@ -631,8 +631,10 @@ public class FEReplacer implements FEVisitor
             return new StmtExpr(stmt, newCond);
         }
         StmtIfThen newStmt = new StmtIfThen(stmt, newCond, newCons, newAlt);
-        if (stmt.isAtomic())
-            newStmt.setAtomic();
+        if (stmt.isSingleFunCall())
+            newStmt.singleFunCall();
+        if (stmt.isSingleVarAssign())
+            newStmt.singleVarAssign();
         return newStmt;
     }
 

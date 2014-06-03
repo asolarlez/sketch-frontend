@@ -195,7 +195,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
         }
 
         // this.addStatement (struct.makeAllocationGuard (expNew));
-        return new ExprTuple(expNew, exprs, str.getFullName());
+        return new ExprTuple(expNew, exprs, str.getName() + "_" + str.getPkg());
         
     }
 

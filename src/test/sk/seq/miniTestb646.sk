@@ -7,6 +7,7 @@ struct D extends A{ A x; A z;}
 
 
 void checkEq(A a, A b){
+	if(a==null && b == null) return;
 	switch(a){
 		case B :{ B bb = (B) b; checkEq(a.x, bb.x); }
 		case C :{ C bb = (C) b; checkEq(a.y, bb.y); }

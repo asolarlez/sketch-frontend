@@ -10,7 +10,15 @@ import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprNamedParam;
+import sketch.compiler.ast.core.exprs.ExprNew;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
+import sketch.compiler.ast.core.exprs.ExprTypeCast;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -29,10 +37,11 @@ import sketch.util.datastructures.HashmapList;
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class MergeADT extends SymbolTableVisitor {
     private Map<String, StructCombinedTracker> structs;
-
+    private Map<String, Integer> structsCount;
     public MergeADT() {
         super(null);
         structs = new HashMap<String, StructCombinedTracker>();
+        structsCount = new HashMap<String, Integer>();
 
     }
 
@@ -66,7 +75,6 @@ public class MergeADT extends SymbolTableVisitor {
 
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
-        // change this
         StructDef sd = nres.getStruct(t.getName());
         String oldName = sd.getFullName();
 
@@ -86,7 +94,7 @@ public class MergeADT extends SymbolTableVisitor {
         List newParams = new ArrayList();
         if (!sd.isInstantiable()) {
             // change this (5 to maxSize)
-            Expression expr = new ExprStar(exprNew, 5, TypePrimitive.int32type);
+            Expression expr = exprNew.getStar();
             if (tracker.ADT) {
                 newParams.add(new ExprNamedParam(exprNew.getContext(), "type", expr));
             }
@@ -121,7 +129,8 @@ public class MergeADT extends SymbolTableVisitor {
             // add assert statement for hole
             Expression cond =
                     new ExprBinary(exprNew, ExprBinary.BINOP_LT, expr, new ExprConstInt(
-                            tracker.count));
+                            structsCount.get(tracker.newStruct)));
+
             this.addStatement(new StmtAssert(exprNew, cond, "Type length constraint",
                     StmtAssert.UBER));
             return new ExprNew(exprNew.getContext(), newType, newParams, false);
@@ -158,7 +167,7 @@ public class MergeADT extends SymbolTableVisitor {
         String newField = structTracker.getNewVariable(field);
         // if field is a field of parent
         if (newField == null) {
-            String name = nres.getStructParentName(t.getName());
+            String name = nres.getStructParentName(t.getFullName());
             while (newField == null && name != null) {
                 structTracker = structs.get(name);
                 newField = structTracker.getNewVariable(field);
@@ -290,8 +299,9 @@ public class MergeADT extends SymbolTableVisitor {
 
     public void createTracker(NameResolver nres, StructDef str) {
         String oldName = str.getFullName();
-        int count = 0;
+        int count = -1;
         String newName = "combined" + oldName.split("@")[0];
+
         List structsList = new ArrayList();
         for (String i : nres.structNamesList()) {
             structsList.add(i.split("@")[0]);
@@ -299,11 +309,13 @@ public class MergeADT extends SymbolTableVisitor {
         while (structsList.contains(newName)) {
             newName = "_" + newName;
         }
+        newName = newName + "_" + str.getPkg();
         LinkedList<String> list = new LinkedList<String>();
         list.add(oldName);
         while (!list.isEmpty()) {
             String name = list.removeFirst();
             StructDef childStruct = nres.getStruct(name);
+
             StructCombinedTracker tracker =
                     new StructCombinedTracker(name, newName, count++, true);
             structs.put(childStruct.getFullName(), tracker);
@@ -311,7 +323,9 @@ public class MergeADT extends SymbolTableVisitor {
                 list.add(child);
             }
         }
-        structs.get(oldName).count = count;
+        // structs.get(oldName).count = count;
+        structsCount.put(newName, count);
+
     }
 
     StructDef globalCurStruct = null;
@@ -384,6 +398,8 @@ public class MergeADT extends SymbolTableVisitor {
         ts =
                 StructDef.creator(str.getContext(), newName, null, true, names, types,
                         annotations).create();
+        ts.setPkg(str.getPkg());
+        // structs.get(str.getFullName()).newStruct = ts.getFullName();
 
         return ts;
 
@@ -395,7 +411,6 @@ public class MergeADT extends SymbolTableVisitor {
         Map<String, String> varMapping = new HashMap<String, String>();
         int id;
         boolean ADT;
-        int count;
         public StructCombinedTracker(String prevStruct, String newStruct, int id,
                 boolean ADT)
         {

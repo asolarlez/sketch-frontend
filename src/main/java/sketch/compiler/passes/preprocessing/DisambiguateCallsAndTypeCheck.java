@@ -110,7 +110,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     /**
      * Checks that no structures have duplicated field names. In particular, a field in a
      * structure or filter can't have the same name as another field in the same structure
-     * or parent structure or filter.
+     * or parent structure or filter. Also checks that no mutable structs are fields in an
+     * immutable struct.
      * 
      * @param prog
      *            parsed program object to check
@@ -270,6 +271,24 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         return ev;
     }
 
+    /**
+     * Explicit type cast checking for ADTs
+     */
+    public Object visitExprTypeCast(ExprTypeCast exp) {
+        Type castedType = (Type) exp.getType().accept(this);
+        Expression newExpr = exp.getExpr().doExpr(this);
+        if (castedType.isStruct()) {
+            Type curType = getType(newExpr);
+            // Make sure that curType is a super type of castedType
+            if (!castedType.promotesTo(curType, nres)) {
+                report(exp, "Invalid explicit typecasting");
+            }
+        }
+        if (newExpr == exp.getExpr() && castedType == exp.getType())
+            return exp;
+        else
+            return new ExprTypeCast(exp, castedType, newExpr);
+    }
     public Object visitFieldDecl(FieldDecl field) {
         curcx = field.getCx();
         // check that array sizes match

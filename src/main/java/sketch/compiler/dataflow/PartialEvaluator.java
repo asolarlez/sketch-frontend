@@ -69,6 +69,15 @@ class CloneHoles extends FEReplacer{
         return rv;
     }
 
+    public Object visitExprNew(ExprNew exp) {
+        ExprNew nexp = (ExprNew) super.visitExprNew(exp);
+        if (nexp.isHole()) {
+            ExprStar newStar = (ExprStar) nexp.getStar().accept(this);
+            nexp.setStar(newStar);
+        }
+        return nexp;
+    }
+
 }
 
 public class PartialEvaluator extends SymbolTableVisitor {

@@ -301,7 +301,7 @@ public class EliminateDeadCode extends BackwardDataflow {
                 if (!changed) {
                     enl = expNew.getParams();
                 }
-                exprRV = new ExprNew(expNew, nt, enl, false);
+                exprRV = new ExprNew(expNew, nt, enl, false, expNew.getStar());
             } else {
                 exprRV = expNew;
             }

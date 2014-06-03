@@ -18,6 +18,7 @@ public class ExprNew extends Expression {
 
     List<ExprNamedParam> params;
     boolean hole;
+    ExprStar star;
 
     public ExprNew(FENode context, Type typeToConstruct, List<ExprNamedParam> params,
             boolean hole)
@@ -32,6 +33,21 @@ public class ExprNew extends Expression {
         this.params = params;
 
 	}
+
+    public ExprNew(FENode context, Type typeToConstruct, List<ExprNamedParam> params,
+            boolean hole, ExprStar star)
+    {
+        super(context);
+        this.typeToConstruct = typeToConstruct;
+        this.hole = hole;
+        this.star = star;
+        if (!hole) {
+            assert typeToConstruct instanceof TypeStructRef;
+        }
+        // TODO Auto-generated constructor stub
+        this.params = params;
+
+    }
 
     public List<ExprNamedParam> getParams() {
         return this.params;
@@ -52,10 +68,27 @@ public class ExprNew extends Expression {
         this.hole = hole;
 	}
 
+    public ExprNew(FEContext context, Type typeToConstruct, List<ExprNamedParam> params,
+            boolean hole, ExprStar star)
+    {
+        super(context);
+        this.typeToConstruct = typeToConstruct;
+        this.params = params;
+        this.hole = hole;
+        this.star = star;
+    }
+
 	public Type getTypeToConstruct () {
 		return typeToConstruct;
 	}
 
+    public void setStar(ExprStar star) {
+        this.star = star;
+    }
+
+    public ExprStar getStar() {
+        return star;
+    }
     public boolean isHole() {
         return hole;
     }

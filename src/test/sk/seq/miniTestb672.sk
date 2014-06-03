@@ -1,0 +1,33 @@
+package XX{
+    struct A{ int x; int y;}
+    struct B extends A{}
+    struct C extends A{}
+    
+    harness void main(){
+        A x = new B();        
+    }
+    
+}
+
+
+package YY{
+    struct A{}
+    struct B extends A{int x;}
+    harness void main(){
+        int x = ??;
+        A@XX a = new B@XX(x=5, y=7);
+        switch(a){
+            case B:{
+                assert x == a.x; 
+            }
+            case C:{
+                assert x == 5;
+            }
+                        
+        }
+        ppprint(x);
+    }
+    void ppprint(int x);
+    
+    
+}

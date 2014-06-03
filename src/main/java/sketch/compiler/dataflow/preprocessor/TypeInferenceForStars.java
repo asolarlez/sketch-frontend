@@ -183,6 +183,11 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 Expression old = en.getExpr();
                 Type oldType = type;
                 type = ts.getFieldTypMap().get(en.getName());
+                StructDef cur = ts;
+                while (type == null) {
+                    cur = nres.getStruct(cur.getParentName());
+                    type = cur.getFieldTypMap().get(en.getName());
+                }
                 Expression rhs = doExpression(old);
                 if (rhs != old) {
                     enl.add(new ExprNamedParam(en, en.getName(), rhs));
@@ -482,7 +487,7 @@ rt.promotesTo(lt, nres),
                 if (t != null)
                     break;
                 String parent;
-                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                if ((parent = nres.getStructParentName(current.getFullName())) != null) {
                     current = nres.getStruct(parent);
                 } else {
                     current = null;

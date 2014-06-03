@@ -82,6 +82,8 @@ public class NameResolver {
 
     }
 
+
+
     public void registerStruct(StructDef ts) {
         registerStuff(pkgForStruct, structMap, ts, ts.getName());
         registerStructParent(ts.getName(), ts.getParentName());
