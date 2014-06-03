@@ -244,10 +244,17 @@ public class ExprStar extends Expression
 
     public String toString()
     {
-        if (getType() != null) {
-            return detailName() + getType() + ":" + size;
+        if (isAngelicMax()) {
+            return "**/*" + getSname() /* + (exprMax == null ? "" : "@" + exprMax) */
+                    + "*/";
+        } else {
+            if (getType() != null) {
+                return "??" + "/* " + getSname() + getType() + ":" + size + " */";
+            } else {
+                return "??" + "/*" + getSname() + "*/";
+            }
         }
-        return detailName();
+
     }
 
 	/**

@@ -1,0 +1,19 @@
+pragma options "--bnd-unroll-amnt 8 --bnd-inbits 3";
+
+
+void foo([int n], ref int[n][n][n] x){
+    x= {};    
+}
+
+
+harness void main(int n){
+    assume n > 0;
+    int[n][n][n] t;
+    for(int i=0; i<n; ++i){
+        t[i] = i;
+    }
+    foo(t);
+    for(int i=0; i<n; ++i){
+        assert t[0][0][i] == 0;
+    }
+}

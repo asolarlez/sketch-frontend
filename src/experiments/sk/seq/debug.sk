@@ -1,3 +1,8 @@
+(assert (and (and (and (and (and (and (= X 6 ) (= Q 0 ) ) (= i 0 ) ) (< J K ) ) (= K0 K ) ) (= J0 J ) ) (= uu 0 ) ))
+(and (and (= (- X Q ) (- 6 i ) ) (= (- K J ) (- (- K0 J0 ) (* 2 uu ) ) ) ) (= (- X Q ) (- 6 i ) ) )(and (= (- K J ) (- (- K0 J0 ) (* 2 uu ) ) ) (= (- X Q ) (- 6 i ) ) )
+
+
+
 /* BEGIN PACKAGE P1*/
 package P1{
   /*miniTestb668.sk:9*/
