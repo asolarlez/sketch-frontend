@@ -8,7 +8,7 @@ void foo([int n], ref int[n][n][n] x){
 
 harness void main(int n){
     assume n > 0;
-    int[n][n][n] t;
+    int[n][n][n] t={};
     for(int i=0; i<n; ++i){
         t[i] = i;
     }

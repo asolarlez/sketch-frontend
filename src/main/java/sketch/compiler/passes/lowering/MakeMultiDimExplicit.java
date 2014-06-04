@@ -136,9 +136,18 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
         
         StmtAssign nas;
         if(tright instanceof TypeArray){
-            nas = new StmtAssign(
-                new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),
-                new ExprArrayRange(rhexp, new ExprVar(sa, nv)));
+            if (rhexp instanceof ExprArrayInit &&
+                    ((ExprArrayInit) rhexp).getElements().size() == 0)
+            {
+                nas =
+                        new StmtAssign(new ExprArrayRange(sa.getLHS(),
+                                new ExprVar(sa, nv)), tleft.defaultValue());
+            } else {
+                nas =
+                        new StmtAssign(new ExprArrayRange(sa.getLHS(),
+                                new ExprVar(sa, nv)), new ExprArrayRange(rhexp,
+                                new ExprVar(sa, nv)));
+            }
         }else{
             nas = new StmtAssign(
                     new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),

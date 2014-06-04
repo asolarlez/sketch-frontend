@@ -44,7 +44,20 @@ public class NodesToSuperCpp extends NodesToJava {
 
     protected String outputCreator(StructDef struct) {
         List<Pair<String, TypeArray>> fl = new ArrayList<Pair<String, TypeArray>>();
-        final TypedHashMap<String, Type> fmap = struct.getFieldTypMap();
+        final TypedHashMap<String, Type> fmap = new TypedHashMap<String, Type>();
+        {
+            StructDef current = struct;
+            while (current != null) {
+                fmap.putAll(current.getFieldTypMap());
+                String parent;
+                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                    current = nres.getStruct(parent);
+                } else {
+                    current = null;
+                }
+            }
+        }
+
         FEReplacer fer = new FEReplacer() {
             public Object visitExprVar(ExprVar ev) {
                 if (fmap.containsKey(ev.getName())) {
@@ -951,6 +964,7 @@ public class NodesToSuperCpp extends NodesToJava {
         name = sd.getFullName();
         while (sd.getParentName() != null) {
             name = sd.getParentName();
+            sd = nres.getStruct(name);
         }
         result += "->" + NodesToSuperH.typeVars.get(name) + "){\n";
         name = name.split("@")[0];

@@ -57,6 +57,10 @@ public class TypedHashMap<K, V> implements Cloneable, Iterable<Entry<K, V>> {
     public Set<K> keySet() { return base.keySet(); }
     public V put(K key, V value) { return base.put(key, value); }
     public void putAll(Map<? extends K, ? extends V> m) { base.putAll(m); }
+
+    public void putAll(TypedHashMap<? extends K, ? extends V> m) {
+        base.putAll(m.base);
+    }
     public V remove(K key) { return base.remove(key); }
     public int size() { return base.size(); }
     public Collection<V> values() { return base.values(); }

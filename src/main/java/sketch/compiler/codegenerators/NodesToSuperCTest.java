@@ -1,8 +1,10 @@
 package sketch.compiler.codegenerators;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
@@ -23,7 +25,7 @@ public class NodesToSuperCTest extends NodesToJava {
     private String filename;
     private StringBuffer output;
     // private HashMap<String,Function> fMap;
-    private List<String> testFuncs;
+    private Set<String> testFuncs;
     private static final String IN = "in";
     private static final String OUTSK = "outsk";
     private static final String OUTSP = "outsp";
@@ -41,7 +43,7 @@ public class NodesToSuperCTest extends NodesToJava {
         this.filename = filename;
         _converter = new NodesToSuperCpp(null, filename);
         output = new StringBuffer();
-        testFuncs = new ArrayList<String>();
+        testFuncs = new HashSet<String>();
     }
 
     protected void writeLine(String s) {
@@ -352,7 +354,13 @@ public class NodesToSuperCTest extends NodesToJava {
         if (func.getSpecification() == null)
             return null;
 
-        String fname = remColon(nres.getFunName(func)) + "Test";
+        String fname = remColon(func.getFullName()) + "Test";
+        String base = fname;
+        int i = 0;
+        while (testFuncs.contains(fname)) {
+            fname = base + i;
+            ++i;
+        }
         testFuncs.add(fname);
         Function spec = nres.getFun(func.getSpecification());
         writeLine("void " + fname + "(Parameters& _p_) {");
@@ -415,7 +423,7 @@ public class NodesToSuperCTest extends NodesToJava {
         // The call to the spec should go first because it may have stronger assumptions.
         writeLine(makecpp(nres.getFunName(func.getSpecification())) + "(" + skInputs +
                 ");");
-        writeLine(makecpp(nres.getFunName(func)) + "(" + specInputs + ");");
+        writeLine(makecpp(func.getFullName()) + "(" + specInputs + ");");
         this.unIndent();
         writeLine("}catch(AssumptionFailedException& afe){  }");
         for (Parameter outPar : outPars) {
