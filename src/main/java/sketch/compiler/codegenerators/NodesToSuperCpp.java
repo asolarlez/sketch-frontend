@@ -715,7 +715,7 @@ public class NodesToSuperCpp extends NodesToJava {
                 }
             }
             String parent;
-            if ((parent = nres.getStructParentName(current.getName())) != null) {
+            if ((parent = nres.getStructParentName(current.getFullName())) != null) {
                 current = nres.getStruct(parent);
             } else {
                 current = null;
@@ -1239,7 +1239,12 @@ public class NodesToSuperCpp extends NodesToJava {
             if (range.hasLen()) {
                 return "(" + base.accept(this) + "+ " + tmp + ")";
             } else {
-                return "(" + base.accept(this) + "[" + tmp + "])";
+                String ba = (String) base.accept(this);
+                if (ba.equals("NULL")) {
+                    return "NULL";
+                } else {
+                    return "(" + base.accept(this) + "[" + tmp + "])";
+                }
             }
         }
     }
