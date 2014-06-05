@@ -424,11 +424,13 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 	protected Expression makeGuard (Expression base, Expression len, Expression idx) {
 		Expression sz = ((TypeArray) getType(base)).getLength();
         Expression ex = new ExprBinary(idx, ">=", ExprConstInt.zero);
+        Expression eb = new ExprBinary(len, ">=", ExprConstInt.zero);
+        Expression e2 = new ExprBinary(new ExprBinary(idx, "+", len), "<=", sz);
+
         if (sz == null) {
             return ex;
         }
-        return new ExprBinary(ex, "&&", new ExprBinary(new ExprBinary(idx, "+", len),
-                "<=", sz));
+        return new ExprBinary(ex, "&&", new ExprBinary(eb, "&&", e2));
 	}
 
 

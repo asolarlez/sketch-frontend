@@ -145,6 +145,12 @@ public class EliminateReturns extends SymbolTableVisitor{
         return conditionWrap(s);
     }
     
+    @Override
+    public Object visitStmtAssume(StmtAssume sa) {
+        Statement s = (Statement) super.visitStmtAssume(sa);
+        return conditionWrap(s);
+    }
+
     Set<String> currentRefParams = new HashSet<String>();
     
     @Override

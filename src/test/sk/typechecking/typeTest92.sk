@@ -14,5 +14,5 @@ generator void malloc() {
 
 harness void insSecond(bit active) {
     malloc();
-    assert active && !active;
+    assert active && !active; // TypeError unsatisfiable assertion.
 }

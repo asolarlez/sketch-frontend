@@ -26,6 +26,7 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.stencilSK.VarReplacer;
 
 public class MakeMultiDimExplicit extends SymbolTableVisitor {
@@ -105,18 +106,24 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
         }
         TypeArray taar = (TypeArray) tleft;
 
+        Type trightBase = tright;
+
         Expression tblen;
         if(tright instanceof TypeArray){
-            tblen = ((TypeArray)tright).getLength();
+            TypeArray ttt = ((TypeArray) tright);
+            tblen = ttt.getLength();
+            trightBase = ttt.getAbsoluteBase();
         }else{
             tblen = ExprConstInt.one;
         }
         String nv = varGen.nextVar();       
         
         Expression rhexp;
-        if(sa.getRHS() instanceof ExprConstant){
+        if (sa.getRHS() instanceof ExprConstant ||
+                trightBase.equals(TypePrimitive.bottomtype))
+        {
             rhexp = sa.getRHS(); 
-        }else{
+        } else {
             String rhv = varGen.nextVar();
             addStatement((Statement)new StmtVarDecl(sa.getRHS(), tright, rhv, null).accept(this));
             rhexp = new ExprVar(sa.getRHS(), rhv);
@@ -129,9 +136,18 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
         
         StmtAssign nas;
         if(tright instanceof TypeArray){
-            nas = new StmtAssign(
-                new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),
-                new ExprArrayRange(rhexp, new ExprVar(sa, nv)));
+            if (rhexp instanceof ExprArrayInit &&
+                    ((ExprArrayInit) rhexp).getElements().size() == 0)
+            {
+                nas =
+                        new StmtAssign(new ExprArrayRange(sa.getLHS(),
+                                new ExprVar(sa, nv)), tleft.defaultValue());
+            } else {
+                nas =
+                        new StmtAssign(new ExprArrayRange(sa.getLHS(),
+                                new ExprVar(sa, nv)), new ExprArrayRange(rhexp,
+                                new ExprVar(sa, nv)));
+            }
         }else{
             nas = new StmtAssign(
                     new ExprArrayRange(sa.getLHS(), new ExprVar(sa, nv)),

@@ -31,6 +31,7 @@ public class SimpleCodePrinter extends CodePrinter
 		return this;
 	}
 
+
 	public SimpleCodePrinter() {
 		this(System.out, false);
 	}

@@ -57,6 +57,8 @@ public class CleanupFinalCode extends MetaStage {
         prog = (Program) prog.accept(new RemoveUselessCasts());
 
 
+
+
         prog =
                 (Program) prog.accept(new EliminateDeadCode(varGen,
                         !options.feOpts.killAsserts));
@@ -85,10 +87,10 @@ public class CleanupFinalCode extends MetaStage {
         // System.out.println("Simplify");
         // prog.accept(new SimpleCodePrinter());
 
-        // FIXME xzl: AssembleInit has bug that reorder vars
-        // with incorrect dependency
-        // int b; int w; w = ...; b = w/2; will be wrong
+
+
         prog = (Program) prog.accept(new AssembleInitializers());
+
 
         // prog.accept(new SimpleCodePrinter());
         prog = (Program) prog.accept(new RemoveShallowTempVars());

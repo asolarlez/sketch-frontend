@@ -1,0 +1,7 @@
+harness void main(int x){
+    
+    assume x > 5;
+    assert x > ??+3;
+    assume x < 4;        
+    
+}

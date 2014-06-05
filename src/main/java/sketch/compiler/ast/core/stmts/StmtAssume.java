@@ -124,6 +124,8 @@ public class StmtAssume extends Statement
     }
 
     public String getMsg() {
+        if (msg == null || msg.isEmpty())
+            return "Assume at " + getCx();
         return msg;
     }
 }

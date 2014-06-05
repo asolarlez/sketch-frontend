@@ -36,12 +36,12 @@ public class LowerToSketch extends MetaStage {
 
         // prog.debugDump("before combineFunc");
 
-        if (true) {
+        if (false) {
             prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
         }
         // prog.debugDump("After combine");
 
-        // prog = (Program) prog.accept(new AddArraySizeAssertions());
+        prog = (Program) prog.accept(new AddArraySizeAssertions());
         // prog.debugDump("aa");
 
         // FIXME xzl: use efs instead of es, can generate wrong program!

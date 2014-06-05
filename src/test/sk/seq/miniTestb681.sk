@@ -1,0 +1,8 @@
+harness void main(int x, int y){
+    
+    assume x < y+5;
+    int t = ??;
+    assert t > 10;
+    assert x+t <= y + ??; 
+    
+}

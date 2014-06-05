@@ -1,7 +1,3 @@
-
-
-
-
 harness void main(int x){
 	int foo(int t, fun f){
 		int baz(){
