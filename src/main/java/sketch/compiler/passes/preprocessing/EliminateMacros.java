@@ -32,7 +32,7 @@ public class EliminateMacros extends SymbolTableVisitor{
       
             for (StructFieldEnt e : ts.getFieldEntriesInOrder()) {
               
-                if (e.getType().equals(t)) {
+                if (e.getType().promotesTo(t, nres)) {
                 matchedFields.add(new ExprField(exp.getLeft(), exp.getLeft(),
                         e.getName(), false));
             }

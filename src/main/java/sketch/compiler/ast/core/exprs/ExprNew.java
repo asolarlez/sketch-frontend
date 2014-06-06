@@ -109,6 +109,9 @@ public class ExprNew extends Expression {
             rv += (enp.getName() + "=" + enp.getExpr().toString());
         }
         rv += ")";
+        if (hole) {
+            rv += "/*" + this.star.toString();
+        }
         return rv;
 	}
 
