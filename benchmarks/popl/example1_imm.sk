@@ -1,0 +1,479 @@
+int Oplus= 0;
+int Ominus=1;
+int Oneg = 2;
+int Oand = 3;
+int Oor = 4;
+int Onot = 5;
+int Ogt = 6;
+int Olt = 7;
+
+//sourceAST 
+struct sourceAST {@Immutable("")}
+struct SPrim1 extends sourceAST{int op; sourceAST a;}
+struct SPrim2 extends sourceAST{int op; sourceAST a; sourceAST b;}
+struct SBetween extends sourceAST{sourceAST a;sourceAST b;sourceAST c;}
+struct SIf extends sourceAST{sourceAST a; sourceAST b; sourceAST c;}
+struct SNum extends sourceAST{int val;}
+struct STrue extends sourceAST{}
+struct SFalse extends sourceAST{}
+
+
+//CoreAST
+struct coreAST{@Immutable("")}
+struct CPrim1 extends coreAST{int op; coreAST a;}
+struct CPrim2 extends coreAST{int op; coreAST a; coreAST b;}
+struct CIf extends coreAST{coreAST a; coreAST b; coreAST c;}
+struct CNum extends coreAST{int val;}
+struct CBool extends coreAST{bit val;}
+
+
+
+coreAST desugar(sourceAST s, int bnd){
+	if(s == null){ return null; }
+	if(bnd <= 0){ return null; }
+		
+	generator int getOp(int op){ return {| op |Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
+	generator int getStr(){ return ??; }
+	generator int getConst(int c){return {| c|??|};}
+	
+	generator coreAST getPart(coreAST c1, coreAST c2, coreAST c3, int bnd) {
+		assert bnd > 0;
+		if(??){
+			return {| c1|c2|c3|};
+		}else{
+			if(bnd > 1){
+				coreAST a = getPart(c1,c2,c3, bnd-1);
+				coreAST b = getPart(c1,c2,c3, bnd-1);
+				coreAST c = getPart(c1,c2,c3, bnd-1);
+				bit val = ??;
+				return new ??(op=getOp(0), a = a, b = b, c =c, val = getConst(0),val=val);
+			}
+		}
+		return null;
+	}
+	
+	generator coreAST[3] desugarFields([int n], sourceAST[n] fields){
+		coreAST[3] out;
+		int i=0;
+		repeat(n){
+			out[i] = desugar(fields[i],bnd-1); ++i;
+		}
+		return out;
+	} 
+	
+	switch(s){
+		repeat_case:
+		{
+			coreAST[3] v = desugarFields( s.{sourceAST} );
+			coreAST a = getPart(v[0], v[1], v[2], 2);
+			coreAST b = getPart(v[0], v[1], v[2], 2);
+			coreAST c = getPart(v[0], v[1], v[2], 2);
+			int[1] op = s.{int};
+			bit val = ??;
+			return new ??(op=getOp(op[0]), a = a, b = b, c =c,  val = getConst(op[0]),val=val);	
+		}
+	}
+}
+
+sourceAST gOp([int n], int op, sourceAST[n] p){
+	if(n==1){
+		return new SPrim1( op= op, a = p[0]);
+	}else{
+		return new SPrim2(op=op, a=p[0], b=p[1]);
+	}
+} 
+
+sourceAST produce(int[30] encoding, ref int idx, int bnd){
+	if(bnd <=0 ){ 
+        if(encoding[idx]==0){ ++idx; return new SNum(val=encoding[idx++]); }
+        if(encoding[idx]==1){ ++idx; return new STrue(); }else{ ++idx; return new SFalse(); }          
+     }
+    if(encoding[idx]==0){ ++idx; return new STrue(); }
+    else if(encoding[idx]==1){ ++idx; return new SFalse();}
+    else if(encoding[idx]==2){ ++idx; return new SNum(val=encoding[idx++]); }
+    else if(encoding[idx]==3){ ++idx; return gOp(1, encoding[idx++],{ produce(encoding, idx, bnd-1)}); }
+    else if(encoding[idx]==4){
+    	++idx;
+        return gOp(2, encoding[idx++],{ produce(encoding, idx, bnd-1),produce(encoding, idx, bnd-1)}); 
+    }
+    else if(encoding[idx]==5){
+        ++idx;
+        return new SIf(a=produce(encoding, idx, bnd-1),b=produce(encoding, idx, bnd-1), c=produce(encoding, idx, bnd-1)); 
+    }
+    else{
+    	++idx;
+        return new SBetween(a=produce(encoding, idx, bnd-1),b=produce(encoding, idx, bnd-1),c=produce(encoding, idx, bnd-1)); 
+    }
+}
+
+/*
+Interpreter for source language
+*/
+sourceAST interpretSourceAST(sourceAST s,int bnd){
+	assert bnd > 0;
+	if(s==null || bnd <= 0) return null;
+	
+	switch(s){
+		case SPrim1:
+		{
+			if(s.op == Oneg){
+				sourceAST s_a = interpretSourceAST(s.a, bnd -1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: return new SNum(val = (0-s_a.val));
+					default: return null;
+				}
+			}else
+			if(s.op == Onot){
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case STrue: return new SFalse();
+					case SFalse: return new STrue();
+					default: return null;
+				}	
+			}else{
+				return null;
+			}
+		}
+		
+		case SPrim2:
+		{
+			if(s.op == Oplus){
+				int a, b;
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: a = s_a.val;
+					default: return null;
+				}
+				sourceAST s_b = interpretSourceAST(s.b,bnd -1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case SNum: b = s_b.val;
+					default: return null;
+				}
+				return new SNum(val = a+b);
+			}else
+			if(s.op == Ominus){
+				int a, b;
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: a = s_a.val;
+					default: return null;
+				}
+				sourceAST s_b = interpretSourceAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case SNum: b = s_b.val;
+					default: return null;
+				}
+				return new SNum(val = a-b);
+			}else
+			if(s.op == Oand){
+				bit a, b;
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case STrue: a = 1;
+					case SFalse: a = 0;
+					default: return null;
+				}
+				sourceAST s_b = interpretSourceAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case STrue: b = 1;
+					case SFalse: b = 0;
+					default: return null;
+				}
+				if (a&&b) return new STrue();
+				else return new SFalse();
+				
+			}else
+			if(s.op == Oor){
+				bit a, b;
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case STrue: a = 1;
+					case SFalse: a = 0;
+					default: return null;
+				}
+				sourceAST s_b = interpretSourceAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case STrue: b = 1;
+					case SFalse: b = 0;
+					default: return null;
+				}
+				if(a||b) return new STrue();
+				else return new SFalse();
+				
+			}else
+			if(s.op == Ogt){
+				int a, b;
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: a = s_a.val;
+					default: return null;
+				}
+				sourceAST s_b = interpretSourceAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case SNum: b = s_b.val;
+					default: return null;
+				}
+				if(a>b) return new STrue();
+				else return new SFalse();
+				
+			}else
+			if(s.op == Olt){
+				int a, b;
+				sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case SNum: a = s_a.val;
+					default: return null;
+				}
+				sourceAST s_b = interpretSourceAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case SNum: b = s_b.val;
+					default: return null;
+				}
+				if(a<b) return new STrue();
+				else return new SFalse();
+				
+			}else{
+				return null;	
+			}				
+		}
+		case SBetween:
+		{
+			int a, b, c;
+			sourceAST s_a = interpretSourceAST(s.a,bnd-1);
+			
+			if(s_a==null) return null;
+			switch(s_a){
+				case SNum: a = s_a.val;
+				default: return null;
+			}
+			sourceAST s_b = interpretSourceAST(s.b,bnd-1);
+			if(s_b==null) return null;
+			switch(s_b){
+				case SNum: b = s_b.val;
+				default: return null;
+			}
+			sourceAST s_c = interpretSourceAST(s.c,bnd-1);
+			if(s_c==null) return null;
+			switch(s_c){
+				case SNum: c = s_c.val;
+				default: return null;
+			}
+			if(a<b&&b<c) return new STrue();
+			else return new SFalse();
+			
+		}	
+		case SIf:
+		{
+			sourceAST c  = interpretSourceAST(s.a,bnd-1);
+			if(c==null) return null;
+			switch(c){
+				case STrue: return interpretSourceAST(s.b,bnd-1);
+				case SFalse: return interpretSourceAST(s.c,bnd-1);
+				default: return null;
+			}
+		}
+		default: {return s;}
+	}
+}
+	
+/*
+Interpreter for core language
+*/
+coreAST interpretCoreAST(coreAST s, int bnd){
+    assert bnd > 0;
+	if(s==null || bnd<=0) return null;
+	switch(s){
+		case CPrim1:
+		{
+			if(s.op == Oneg){
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CNum: return new CNum(val = (0-s_a.val));
+					default: return null;
+				}
+			}else
+			if(s.op == Onot){
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CBool: return new CBool( val = (!s_a.val));
+					default: return null;
+				}	
+			}else{
+				return null;
+			}
+		}
+		
+		case CPrim2:
+		{
+			if(s.op == Oplus){
+				int a, b;
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CNum: a = s_a.val;
+					default: return null;
+				}
+				coreAST s_b = interpretCoreAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case CNum: b = s_b.val;
+					default: return null;
+				}
+				return new CNum(val = a+b);
+			}else
+			if(s.op == Ominus){
+				int a, b;
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CNum: a = s_a.val;
+					default: return null;
+				}
+				coreAST s_b = interpretCoreAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case CNum: b = s_b.val;
+					default: return null;
+				}
+				return new CNum(val = a-b);
+			}else
+			if(s.op == Oand){
+				bit a, b;
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CBool: a = s_a.val;
+					default: return null;
+				}
+				coreAST s_b = interpretCoreAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case CBool: b = s_b.val;
+					default: return null;
+				}
+				return new CBool(val = a&&b);
+			}else
+			if(s.op == Oor){
+				bit a, b;
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CBool: a = s_a.val;
+					default: return null;
+				}
+				coreAST s_b = interpretCoreAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case CBool: b = s_b.val;
+					default: return null;
+				}
+				return new CBool(val = a||b);
+			}else
+			if(s.op == Ogt){
+				int a, b;
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CNum: a = s_a.val;
+					default: return null;
+				}
+				coreAST s_b = interpretCoreAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case CNum: b = s_b.val;
+					default: return null;
+				}
+				return new CBool(val = a>b);
+			}else
+			if(s.op == Olt){
+				int a, b;
+				coreAST s_a = interpretCoreAST(s.a,bnd-1);
+				if(s_a==null) return null;
+				switch(s_a){
+					case CNum: a = s_a.val;
+					default: return null;
+				}
+				coreAST s_b = interpretCoreAST(s.b,bnd-1);
+				if(s_b==null) return null;
+				switch(s_b){
+					case CNum: b = s_b.val;
+					default: return null;
+				}
+				return new CBool(val = a<b);
+			}else{
+				return null;	
+			}				
+		}
+		case CIf:
+		{
+			coreAST c  = interpretCoreAST(s.a,bnd-1);
+			if(c==null) return null;
+			switch(c){
+				case CBool:
+				{
+					if (c.val ==1) return interpretCoreAST(s.b,bnd-1);
+					else return interpretCoreAST(s.c,bnd-1);
+						
+					
+				}
+				default: return null;	
+			}
+		}
+		default: return s;
+	}
+}
+bit equals(sourceAST c1 ,coreAST c2){
+	switch(c1){
+		case SNum:
+		{
+			switch(c2){
+				case CNum: return c1.val == c2.val;
+				default: return false;
+			}
+		}
+		case STrue:
+		{
+			switch(c2){
+				case CBool:return c2.val==1;
+				default: return false;
+			}
+		}
+		case SFalse:
+		{
+			switch(c2){
+				case CBool: return c2.val==0;
+				default: return false;
+			}
+		}
+		default: return false;
+	}
+}
+
+
+harness void main( int[30] arr){
+	int idx =0;
+	sourceAST s = produce( arr, idx, 1);
+	sourceAST c1 = interpretSourceAST(s,2);
+	if(c1!=null){
+		coreAST c2  = desugar(s,2);
+		coreAST c3 = interpretCoreAST(c2,3);
+		assert(c3!=null);
+		assert(equals(c1,c3));
+	}
+}

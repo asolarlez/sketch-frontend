@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.preprocessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -437,11 +438,16 @@ rt.promotesTo(lt, nres),
             } else {
                 mst = new HashMap<String, Type>();
                 ftypeMaps.put(t.getName(), mst);
+
+                String cur = t.getName();
+                LinkedList<String> queue = new LinkedList<String>();
+                queue.add(cur);
                 addFieldsToMap(mst, nres.getStruct(t.getName()));
-                List<String> sc = nres.getStructChildren(t.getName());
-                for (String cs : sc) {
+                while (!queue.isEmpty()) {
+                    String cs = queue.removeFirst();
                     StructDef sdef = nres.getStruct(cs);
                     addFieldsToMap(mst, sdef);
+                    queue.addAll(nres.getStructChildren(sdef.getFullName()));
                 }
             }
             Map<String, Expression> repl = new HashMap<String, Expression>();

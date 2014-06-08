@@ -16,7 +16,7 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 class CloneHoles extends FEReplacer {
 
-    // TODO xzl: what's this?
+
     public Object visitExprStar(ExprStar es) {
         ExprStar newStar = new ExprStar(es);
         es.renewName();
