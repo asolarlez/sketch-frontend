@@ -2,7 +2,6 @@ package sketch.compiler.passes.optimization;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -77,5 +76,10 @@ public class ReplaceMinLoops extends FEReplacer {
         return new StmtLoop(stmtMinLoop, new ExprVar(stmtMinLoop, localName),
                 (Statement) stmtMinLoop.getBody().accept(this));
     }
+    /*
+     * public Object visitExprNew(ExprNew exp) { exp = (ExprNew) super.visitExprNew(exp);
+     * if (exp.isHole()) { ExprStar es = exp.getStar(); ExprStar newStar = new
+     * ExprStar(es); es.renewName(); exp.setStar(newStar); } return exp; }
+     */
 
 }

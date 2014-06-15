@@ -99,7 +99,7 @@ public class NodesToSuperCpp extends NodesToJava {
                 }
             }
             String parent;
-            if ((parent = nres.getStructParentName(current.getName())) != null) {
+            if ((parent = nres.getStructParentName(current.getFullName())) != null) {
                 current = nres.getStruct(parent);
             } else {
                 current = null;
@@ -148,7 +148,7 @@ public class NodesToSuperCpp extends NodesToJava {
                 }
             }
             String parent;
-            if ((parent = nres.getStructParentName(current.getName())) != null) {
+            if ((parent = nres.getStructParentName(current.getFullName())) != null) {
                 current = nres.getStruct(parent);
             } else {
                 current = null;
@@ -178,7 +178,7 @@ public class NodesToSuperCpp extends NodesToJava {
                             ", " + field + "_len ); \n";
 
         }
-        String parent = nres.getStructParentName(struct.getName());
+        String parent = nres.getStructParentName(struct.getFullName());
         if (parent != null) {
             while (nres.getStructParentName(parent) != null) {
                 parent = nres.getStructParentName(parent);

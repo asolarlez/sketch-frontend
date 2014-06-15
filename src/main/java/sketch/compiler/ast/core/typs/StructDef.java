@@ -85,7 +85,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     public static class TStructCreator {
         private String name;
         private String pkg;
-        // for sake of ADT
+        // ADT
         private String parentName;
         private boolean isInstantiable;
         private ImmutableTypedHashMap<String, Type> fieldTypMap;

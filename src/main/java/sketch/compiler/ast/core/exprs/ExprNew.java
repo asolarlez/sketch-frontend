@@ -109,7 +109,7 @@ public class ExprNew extends Expression {
             rv += (enp.getName() + "=" + enp.getExpr().toString());
         }
         rv += ")";
-        if (hole) {
+        if (hole && this.star != null) {
             rv += "/*" + this.star.toString();
         }
         return rv;

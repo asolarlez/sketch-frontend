@@ -407,20 +407,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return func;
     }
 
-    /*
-     * private void addStructToUsedStructs(StructDef struct, Map<StructDef,
-     * Integer>structs) { if (!structs.containsKey(struct)) { structs.put(struct, 1); for
-     * (StructFieldEnt e : struct.getFieldEntriesInOrder()) { if (e.getType().isStruct())
-     * { TypeStructRef ts = (TypeStructRef) e.getType(); StructDef st =
-     * nres.getStruct(ts.getName()); if(st.immutable()){ addStructToUsedStructs(st,
-     * structs); } } } } } private Set<StructDef> getRequiredStructs(Program p) {
-     * Map<StructDef, Integer> structs = new HashMap<StructDef, Integer>(); nres = new
-     * NameResolver(p); for (Package pkg : p.getPackages()) { nres.setPackage(pkg); for
-     * (Function f : pkg.getFuncs()) { for (Parameter param : f.getParams()) { if
-     * (param.getType().isStruct()) { TypeStructRef ts = (TypeStructRef) param.getType();
-     * StructDef struct = nres.getStruct(ts.getName()); if (struct.immutable()) {
-     * addStructToUsedStructs(struct, structs); } } } } } return structs.keySet(); }
-     */
+
     public Object visitProgram(Program p) {
         PrintStream out = ((NtsbVtype) this.vtype).out;
         out.println("typedef{");

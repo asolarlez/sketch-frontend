@@ -52,7 +52,8 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), stmt.getExpr());
         TypeStructRef tres = (TypeStructRef) getType(stmt.getExpr());
         LinkedList<String> queue = new LinkedList<String>();
-        queue.add(tres.getName());
+        String name = nres.getStruct(tres.getName()).getFullName();
+        queue.add(name);
         // List<String> children = nres.getStructChildren(tres.getName());
         if (stmt.getCaseConditions().size() == 0) {
             return stmt;

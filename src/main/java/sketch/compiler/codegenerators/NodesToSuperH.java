@@ -45,10 +45,10 @@ public class NodesToSuperH extends NodesToSuperCpp {
         }
 
         result += indent + "class " + escapeCName(struct.getName());
-        if (nres.getStructParentName(struct.getName())!=null){
+        if (nres.getStructParentName(struct.getFullName()) != null) {
             result +=
                     " : public " +
-                            nres.getStructParentName(struct.getName()).split("@")[0];
+                            nres.getStructParentName(struct.getFullName()).split("@")[0];
         }
         result += "{\n  public:\n";
         addIndent();
@@ -64,14 +64,14 @@ public class NodesToSuperH extends NodesToSuperCpp {
         if (!struct.isInstantiable() &&
                 nres.getStructParentName(struct.getName()) == null)
         {
-            //ADT change as the name might already be taken
+            // ADT
             // add field for type
             String var = "type";
             List varNames = new ArrayList();
 
             String children = "";
             LinkedList<String> list = new LinkedList<String>();
-            list.add(struct.getName());
+            list.add(struct.getFullName());
             while (!list.isEmpty()) {
                 String parent = list.removeFirst();
                 varNames.addAll(nres.getStruct(parent).getFields());
@@ -145,7 +145,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
                     }
                 }
                 String parent;
-                if ((parent = nres.getStructParentName(current.getName())) != null) {
+                if ((parent = nres.getStructParentName(current.getFullName())) != null) {
                     current = nres.getStruct(parent);
                 } else {
                     current = null;
