@@ -8,7 +8,7 @@ int Oor = 4;
 int Onot = 5;
 int Ogt = 6;
 int Olt = 7;
-int count = 0; 
+
 
 struct E{}
 struct LVar extends E { int name;}
@@ -34,11 +34,11 @@ E desugar(source s, int bnd){
 	//generator for E in lambda calculus
 	generator E getPart(E c1, E c2, int bnd) {
 		int c = ??;
-		if ( c >= count) count = c+1;
+		
 		E _z = new LVar(name = c);
 		LVar x  = new LVar(name = 0);
 		LVar y = new LVar(name = 1);
-		if (count < 2) count =2;
+		
 		E True = new LAbs(var = x, a = new LAbs(var =y, a = x));
 		E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
 	
@@ -51,7 +51,7 @@ E desugar(source s, int bnd){
 				E b = getPart(c1,c2, 1);
 				int t = ??;
 				LVar v  = new LVar(name = t);
-				if ( t >= count) count = t+1;
+
 				return 	new ??( a = a, b =b, name = getConst(1), val = getConst(1),var = v);
 			}
 		}
@@ -77,7 +77,7 @@ E desugar(source s, int bnd){
 			int val = op[0];
 			int t = getConst(val);
 			LVar var  = new LVar(name = t);
-			if ( t >= count) count = t+1;
+			
 			
 			return 	new ??( a = a, b =b, name = getConst(op[0]),var = var, val = getConst(op[0]));
 		}
@@ -167,7 +167,7 @@ source interpretSource(source s, int bnd){
 	
 	
 }
-
+int count = 32;
 E substitute(LVar x, E E_a, E E_b, int bnd){ 
 	assert(bnd >= 0);
 	if (bnd <0 || E_a ==null || E_b == null || x ==null) return null;
@@ -374,7 +374,6 @@ bit equalsDef(E c1, E c2, int bnd){
 bit equals(source c1 ,E c2, int bnd){
 	LVar x  = new LVar(name = 0);
 	LVar y = new LVar(name = 1);
-	if(count <2) count  =2;
 	
 	LAbs False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
 	assert(bnd >=0 );
@@ -385,7 +384,8 @@ bit equals(source c1 ,E c2, int bnd){
 		case SCons:
 		{
 			E c_2  = desugar(c1,4);
-			E c_3=  interpretLambda(c_2, 1,1);
+			int sbnd = 1;
+			E c_3=  interpretLambda(c_2, 1,sbnd);
 			if(c_2 != null)
 				return (equalsDef(c_3,c2,4));
 	
@@ -394,14 +394,6 @@ bit equals(source c1 ,E c2, int bnd){
 		{
 			switch(c2){
 				case LNum: return c1.val == c2.val;
-				default: return false;
-			}
-		}
-		
-		case SVar:
-		{
-			switch(c2){
-				case LVar:return c1.name == c2.name;
 				default: return false;
 			}
 		}
@@ -432,7 +424,6 @@ harness void main4(int x , int y){
 }
 harness void main3(int x , int y){
 	source s =  new SRest( a = new SCons(a = new SNum(val = x), b = new SCons(a = new SNum(val =y), b = new SNil())));
-	SVar v = new SVar(name = count++);
 	SNum a = new SNum(val = y);
 	source c_1 = new SCons(a = new SNum(val =y), b = new SNil());
 	E c_2 = desugar(c_1, 3);

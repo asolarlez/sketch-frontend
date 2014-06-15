@@ -1,7 +1,5 @@
  pragma options "--bnd-inbits 3 --bnd-mbits 3  --beopt:simiters 5";
 
-int count = 0; 
-
 //source language - lambda calculus + boolean + operations on boolean
 struct source{}
 struct SVar extends source { int name;}
@@ -31,13 +29,11 @@ E desugar(source s, int bnd){
 	generator E getPart(E c1, E c2, int bnd) {
 		assert bnd > 0;
 		int c = ??;
-		if ( c >= count) count = c+1;
 		LVar z = new LVar(name = c);
 		E _z = new LVar(name = c);
 		
 		LVar x  = new LVar(name = 0);
 		LVar y = new LVar(name = 1);
-		if (count < 2) count =2;
 		E _x = x;
 		//definition for true
 		E True = new LAbs(var = x, a = new LAbs(var =y, a = x));
@@ -52,8 +48,7 @@ E desugar(source s, int bnd){
 				E b = getPart(c1,c2, bnd-1);
 				int t = ??;
 				LVar v  = new LVar(name = t);
-				if ( t >= count) count = t+1;
-				return 	new ??( a = a, b =b, name = getConst(1), val = getConst(1),var = {|x|z|v|});
+				return 	new ??( a = a, b =b, name = getConst(1),var = {|x|z|v|});
 			}
 		}
 		return null;
@@ -73,19 +68,24 @@ E desugar(source s, int bnd){
 			E[2] v = desugarFields( s.{source} );
 			int[1] op = s.{int};
 			E a = getPart(v[0], v[1], 2);
-			E b = getPart(v[0], v[1], 1);
+			E b = getPart(v[0], v[1], 2);
+			
+			
 			int val = op[0];
 			int t = getConst(val);
+			SVar[1] svar = s.{SVar};
+			if(svar[0]!=null){
+				t = getConst(svar[0].name);
+			}
 			LVar var  = new LVar(name = t);
-			if ( t >= count) count = t+1;
 			if(??) return {|a|b|};
 			else
-			return 	new ??(a = a, b =b, name = getConst(op[0]),var = var, val = getConst(op[0]));
+			return 	new ??(a = a, b =b, name = getConst(op[0]),var = var);
 			
 		}
 	}
 }
-
+int count = 32;
 source substituteS(SVar x, source E_a, source E_b, int bnd){
 	if (bnd <1 || E_a ==null || E_b == null || x ==null) return null;
 	
@@ -117,7 +117,6 @@ source substituteS(SVar x, source E_a, source E_b, int bnd){
 		}
 		case SVar:
 		{	
-			
 			if (E_a.name == x.name) {return E_b;}
 			else {return E_a;}
 		}
@@ -136,8 +135,6 @@ source substituteS(SVar x, source E_a, source E_b, int bnd){
 		}
 		default: return E_a;
 	}
-
-
 }
 
 
@@ -349,13 +346,12 @@ source produce(int[20] encoding, ref int idx, int bnd){
 	if(bnd <=0 ){ 
 		if(encoding[idx] ==0){
 			idx++;
-        	if (encoding[idx] > count) count = encoding[idx]+1; 
-       		return new SVar(name = encoding[idx++]); 
+        	return new SVar(name = encoding[idx++]); 
         }      
         if(encoding[idx]==1){ ++idx; return new SFalse(); }else{ ++idx; return new STrue(); }    
      }
      if(encoding[idx] ==0){
-     	 ++idx; if (encoding[idx] > count) count = encoding[idx]+1; 
+     	 ++idx; 
     	 return new SVar(name = encoding[idx++]); 
    	} else 
     if(encoding[idx]==1){ ++idx; return new SFalse(); }
@@ -366,7 +362,6 @@ source produce(int[20] encoding, ref int idx, int bnd){
     }else
     if(encoding[idx]==4){
         ++idx;
-       if (encoding[idx] > count) count = encoding[idx]+1;
           SVar v = new SVar(name = encoding[idx++]);
         return sAbs(v, produce(encoding, idx, bnd-1)); 
     }else
@@ -382,8 +377,6 @@ source produce(int[20] encoding, ref int idx, int bnd){
     	++idx;
     	return new SNot( a = produce(encoding, idx, bnd-1));
     }
-    
-    
 }
 
 
@@ -453,7 +446,6 @@ bit equalsDef(E c1, E c2, int bnd){
 bit equals(source c1 ,E c2, int bnd){
 	LVar x  = new LVar(name = 0);
 	LVar y = new LVar(name = 1);
-	if(count <2) count  =2;
 	//define true
 	LAbs True = new LAbs(var = x, a = new LAbs(var =y, a = x));
 	//define false;
@@ -465,7 +457,6 @@ bit equals(source c1 ,E c2, int bnd){
 	switch(c1){
 		case SVar:
 		{
-			
 			switch(c2){
 				case LVar:return c1.name == c2.name;
 				default: return false;
@@ -516,7 +507,20 @@ bit equals(source c1 ,E c2, int bnd){
 	}
 	
 }
-
+harness  void main1(int str, int str2){
+	source s = new SApp(a = new SAbs(var = new SVar(name = str), a= new SVar(name = str)), b = new SVar(name=str2));
+	source c1 = interpretSource(s,3);
+	if(c1!=null){
+		E c2 = desugar(s,3);
+		int sbnd = 2;
+		E c3 = interpretLambda(c2,3,sbnd);
+		LVar c4 = (LVar) c3;
+		assert(c4.name == str2);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+	
+}
 harness void main( int[20] arr){
 	int idx =0;
 	source s = produce( arr, idx, 1);
