@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -106,6 +107,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             state.pushParallelSection(imv.lhsVars);
      }
 
+    boolean hasAssumes = false;
+
+    public Object visitStmtAssume(StmtAssume stmt) {
+        hasAssumes = true;
+        return super.visitStmtAssume(stmt);
+    }
+
     @Override
      public Object visitStmtAssert (StmtAssert stmt) {
             /* Evaluate given assertion expression. */
@@ -113,7 +121,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             abstractValue vcond  = (abstractValue) assertCond.accept (this);
         if (vcond.hasIntVal() && vcond.getIntVal() == 0) {
             abstractValue vcrv = state.getRvflag().state(vtype);
-            if (this.checkTA() || (vcrv.hasIntVal() && vcrv.getIntVal() == 0)) {
+            if (this.checkTA() ||
+                    (vcrv.hasIntVal() && vcrv.getIntVal() == 0 && !hasAssumes))
+            {
                 throw new ArrayIndexOutOfBoundsException(
                         "ASSERTION CAN NOT BE SATISFIED: " +
                     stmt.getCx() + " " + stmt.getMsg());
@@ -291,6 +301,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     
     
     public Object visitFunction(Function func){
+        hasAssumes = false;
         if (newFuns.containsKey(nres.getFunName(func.getName()))) {
             return newFuns.get(nres.getFunName(func.getName()));
         }
