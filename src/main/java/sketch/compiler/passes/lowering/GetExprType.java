@@ -151,7 +151,8 @@ public class GetExprType extends FENullVisitor
         case ExprBinary.BINOP_LE:
         case ExprBinary.BINOP_GT:
         case ExprBinary.BINOP_GE:
-                return TypePrimitive.bittype;
+        case ExprBinary.BINOP_TEQ:
+             return TypePrimitive.bittype;
         }
         return binopType (exp.getOp (), exp.getLeft (), exp.getRight ());
     }

@@ -10,8 +10,11 @@ import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
+import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
+import sketch.compiler.passes.preprocessing.EliminateTripleEquals;
 import sketch.compiler.passes.preprocessing.ExpandADTHoles;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
+import sketch.compiler.passes.preprocessing.ReplaceADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
 
 /**
@@ -43,6 +46,8 @@ public class PreprocessStage extends MetaStage {
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
+        prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
+        //prog.debugDump("after expand ===");
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
@@ -88,12 +93,10 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
-        // prog = (Program) prog.accept(new EliminateFieldHoles());
-
-
-        // prog.debugDump("af");
-        // prog = (Program) prog.accept(new TypeInferenceForStars());
+        prog = (Program) prog.accept(new EliminateFieldHoles());
+        //prog.debugDump("af");
         
+        prog = (Program) prog.accept(new ReplaceADTHoles());
         if (partialEval) {
             prog.accept(new PerformFlowChecks());
         }
@@ -114,7 +117,7 @@ public class PreprocessStage extends MetaStage {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
-            // prog.debugDump("after preprocess");
+            //prog.debugDump("after preprocess");
         }
 
         return prog;

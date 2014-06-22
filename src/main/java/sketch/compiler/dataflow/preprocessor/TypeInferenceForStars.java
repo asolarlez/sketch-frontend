@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -164,11 +165,9 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 return stmt;
             return new StmtLoop(stmt, newIter, newBody);
         }
-
+        Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
         public Object visitExprNew(ExprNew expNew) {
 
-            if (expNew.isHole())
-                return expNew;
             Type nt = (Type) expNew.getTypeToConstruct().accept(this);
             StructDef ts = null;
             {
@@ -183,7 +182,11 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             for (ExprNamedParam en : expNew.getParams()) {
                 Expression old = en.getExpr();
                 Type oldType = type;
-                type = ts.getFieldTypMap().get(en.getName());
+                if (expNew.isHole()) {
+                    type  = getFieldsMap(ts).get(en.getName());
+                } else {
+                    type = ts.getFieldTypMap().get(en.getName());
+                }
                 StructDef cur = ts;
                 while (type == null) {
                     cur = nres.getStruct(cur.getParentName());
@@ -203,12 +206,46 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 if (!changed) {
                     enl = expNew.getParams();
                 }
-                return new ExprNew(expNew, nt, enl, false);
+                if (expNew.isHole()) {
+                    return new ExprNew(expNew, nt, enl, false, expNew.getStar());
+                } else {
+                    return new ExprNew(expNew, nt, enl, false);
+                }
             } else {
                 return expNew;
             }
         }
 
+        private Map<String, Type> getFieldsMap(StructDef ts) {
+            String strName = ts.getFullName();
+            if (fTypesMap.containsKey(strName)) {
+                return fTypesMap.get(strName);
+            } else {
+                Map<String, Type> fieldsMap = new HashMap<String, Type>();
+                LinkedList<String> queue = new LinkedList<String>();
+                queue.add(strName);
+                while (!queue.isEmpty()) {
+                    String current = queue.removeFirst();
+                    StructDef curStruct = nres.getStruct(current);
+                    List<String> children = nres.getStructChildren(current);
+                    queue.addAll(children);
+                    for (Entry<String, Type> field : curStruct.getFieldTypMap()) {
+                        String name = field.getKey();
+                        Type type = field.getValue();
+                        if (fieldsMap.containsKey(name) && !fieldsMap.get(name).equals(type)) {
+                            //throw error
+                            throw new ExceptionAtNode("Two fields with name = " + name +
+                                    " and different types. Rename one of them.",
+                                    ts);
+                        } else {
+                            fieldsMap.put(name, type);
+                        }
+                    }
+                }
+                fTypesMap.put(strName, fieldsMap);
+                return fieldsMap;
+            }
+        }
         public Object visitExprArrayInit(ExprArrayInit eai) {
             Type oldType = type;
             assert type instanceof TypeArray;
@@ -269,45 +306,45 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
     }
 
-	public TypeInferenceForStars(){
-		super(null);
-	}
-	
-	@Override
-    public Object visitPackage(Package spec) {
-	    return super.visitPackage(spec);
-	}
+    public TypeInferenceForStars(){
+        super(null);
+    }
 
-	public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
-		if(stmt.isCond()){
-			Expression ie = stmt.getCond();
+    @Override
+    public Object visitPackage(Package spec) {
+        return super.visitPackage(spec);
+    }
+
+    public Object visitStmtAtomicBlock(StmtAtomicBlock stmt){
+        if(stmt.isCond()){
+            Expression ie = stmt.getCond();
             ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
-		}
-		return super.visitStmtAtomicBlock(stmt);
-	}
-	
+        }
+        return super.visitStmtAtomicBlock(stmt);
+    }
+
     public Object visitStmtIfThen(StmtIfThen stmt){
-    	Expression ie = stmt.getCond();
+        Expression ie = stmt.getCond();
         ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
-    	return super.visitStmtIfThen(stmt);
+        return super.visitStmtIfThen(stmt);
     }
 
     public Object visitStmtWhile(StmtWhile stmt){
-      Expression ie = stmt.getCond();
+        Expression ie = stmt.getCond();
         ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
-      return super.visitStmtWhile(stmt);
+        return super.visitStmtWhile(stmt);
     }
 
     public Object visitStmtDoWhile(StmtDoWhile stmt){
-      Expression ie = stmt.getCond();
+        Expression ie = stmt.getCond();
         ie.accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
-      return super.visitStmtDoWhile(stmt);
+        return super.visitStmtDoWhile(stmt);
     }
 
     @Override
     public Object visitStmtAssert(StmtAssert a){
         a.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
-    	return a;
+        return a;
     }
 
 
@@ -339,76 +376,76 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     }
 
     public Object visitStmtLoop(StmtLoop stmt){
-    	Expression ie = stmt.getIter();
+        Expression ie = stmt.getIter();
         ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype, nres));
-    	return super.visitStmtLoop(stmt);
+        return super.visitStmtLoop(stmt);
     }
 
     private Type matchTypes(Statement stmt,String lhsn, Type lt, Type rt){
-//    	if((lt != null && rt != null && !rt.promotesTo(lt)))
-//    	{
-//        	if((lt != null && rt != null && !rt.promotesTo(lt)))
-//        		System.out.println("CRAP");
-//    	}
-    	stmt.assertTrue (
-    			lt !=null && rt != null,
-    			"internal error: " + lt + "   " + rt);
-    	stmt.assertTrue (
-rt.promotesTo(lt, nres),
-    			"Type mismatch " + lt +" !>= " + rt);
+        //    	if((lt != null && rt != null && !rt.promotesTo(lt)))
+        //    	{
+        //        	if((lt != null && rt != null && !rt.promotesTo(lt)))
+        //        		System.out.println("CRAP");
+        //    	}
+        stmt.assertTrue (
+                lt !=null && rt != null,
+                "internal error: " + lt + "   " + rt);
+        stmt.assertTrue (
+                rt.promotesTo(lt, nres),
+                "Type mismatch " + lt +" !>= " + rt);
         return lt;
     }
     public void upgradeStarToInt(Expression exp, Type ftype){
         exp.accept(new UpgradeStarToInt(this, ftype, nres));
     }
-	public Object visitStmtAssign(StmtAssign stmt)
+    public Object visitStmtAssign(StmtAssign stmt)
     {
-	   Type lt = getType(stmt.getLHS());
-       Type rt = getType(stmt.getRHS());
-       String lhsn = null;
-       Expression lhsExp = stmt.getLHS();
-       while(lhsExp instanceof ExprArrayRange){
-          	lhsExp = ((ExprArrayRange)lhsExp).getBase();
-       }
-       if(lhsExp instanceof ExprVar){
-       	lhsn = ( (ExprVar) lhsExp).getName();
-       }
-       Type ftype = matchTypes(stmt, lhsn, lt, rt);
-       upgradeStarToInt(stmt.getRHS(), ftype);
-       upgradeStarToInt(stmt.getLHS(), ftype);
+        Type lt = getType(stmt.getLHS());
+        Type rt = getType(stmt.getRHS());
+        String lhsn = null;
+        Expression lhsExp = stmt.getLHS();
+        while(lhsExp instanceof ExprArrayRange){
+            lhsExp = ((ExprArrayRange)lhsExp).getBase();
+        }
+        if(lhsExp instanceof ExprVar){
+            lhsn = ( (ExprVar) lhsExp).getName();
+        }
+        Type ftype = matchTypes(stmt, lhsn, lt, rt);
+        upgradeStarToInt(stmt.getRHS(), ftype);
+        upgradeStarToInt(stmt.getLHS(), ftype);
         // recurse:
         Statement result = (Statement)super.visitStmtAssign(stmt);
         return result;
     }
-	public Object visitStmtVarDecl(StmtVarDecl stmt)
+    public Object visitStmtVarDecl(StmtVarDecl stmt)
     {
-    	Object result = super.visitStmtVarDecl(stmt);
+        Object result = super.visitStmtVarDecl(stmt);
         for (int i = 0; i < stmt.getNumVars(); i++){
-        	Expression ie = stmt.getInit(i);
-        	if(ie != null){
-        		Type rt = getType(ie);
+            Expression ie = stmt.getInit(i);
+            if(ie != null){
+                Type rt = getType(ie);
                 Type ftype = matchTypes(stmt, stmt.getName(i), (stmt.getType(i)), rt);
-        		upgradeStarToInt(ie, ftype);
-        	}
+                upgradeStarToInt(ie, ftype);
+            }
         }
         return result;
     }
-	
-	@Override
-	public Object visitExprFunCall(ExprFunCall exp) {
-	    exp = (ExprFunCall) super.visitExprFunCall(exp);
+
+    @Override
+    public Object visitExprFunCall(ExprFunCall exp) {
+        exp = (ExprFunCall) super.visitExprFunCall(exp);
         Function callee = nres.getFun(exp.getName());
         Map<String, Expression> repl = new HashMap<String, Expression>();
         VarReplacer vr = new VarReplacer(repl);
-	    for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
+        for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
             Expression actual = arg.entry;
             Parameter p = callee.getParams().get(arg.idx);
             Type t = p.getType();
             repl.put(p.getName(), actual);
             upgradeStarToInt(actual, (Type) t.accept(vr));
-	    }
-	    return exp;
-	}
+        }
+        return exp;
+    }
 
     private void addFieldsToMap(Map<String, Type> fm, StructDef sdef) {
         for (StructFieldEnt fld : sdef.getFieldEntries()) {
@@ -428,8 +465,6 @@ rt.promotesTo(lt, nres),
     Map<String, Map<String, Type>> ftypeMaps = new HashMap<String, Map<String, Type>>();
 
     public Object visitExprNew(ExprNew expNew) {
-        // But make sure that new ?? doesn't contain any ??s in its parameters.
-
         if (expNew.isHole()) {
             TypeStructRef t = (TypeStructRef) expNew.getTypeToConstruct();
             Map<String, Type> mst;
@@ -506,11 +541,11 @@ rt.promotesTo(lt, nres),
         return expNew;
     }
 
-	@Override
-	public Object visitTypeArray(TypeArray ta){
-	    Expression ie = ta.getLength();
+    @Override
+    public Object visitTypeArray(TypeArray ta){
+        Expression ie = ta.getLength();
         ie.accept(new UpgradeStarToInt(this, TypePrimitive.inttype, nres));
-	    return super.visitTypeArray(ta);
-	}
+        return super.visitTypeArray(ta);
+    }
 }
 

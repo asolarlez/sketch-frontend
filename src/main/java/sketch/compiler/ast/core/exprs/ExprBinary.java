@@ -50,6 +50,7 @@ public class ExprBinary extends Expression
     public static final int BINOP_LSHIFT = 17;
     public static final int BINOP_RSHIFT = 18;
     public static final int BINOP_SELECT = 19;
+    public static final int BINOP_TEQ = 20;
 
     private int op;
     private Expression left, right;
@@ -66,7 +67,7 @@ public class ExprBinary extends Expression
      * @param right    expression on the right of the operator
      */
     public ExprBinary(FENode node,
-                      int op, Expression left, Expression right)
+            int op, Expression left, Expression right)
     {
         super(node);
         this.op = op;
@@ -85,76 +86,76 @@ public class ExprBinary extends Expression
      * @param right    expression on the right of the operator
      */
     public ExprBinary (int op, Expression left, Expression right) {
-    	this (left, op, left, right);
+        this (left, op, left, right);
     }
 
 
     public ExprBinary(FENode context, Expression left, String sop, Expression right){
-    	this(left, sop, right);
-    	this.setCx(context.getCx());
+        this(left, sop, right);
+        this.setCx(context.getCx());
     }
 
     public ExprBinary(Expression left, String sop, Expression right)
-{
-	super(left);
-	this.left = left;
-	this.right = right;
-	int lop = -1;
+    {
+        super(left);
+        this.left = left;
+        this.right = right;
+        int lop = -1;
 
-	if(sop.equals("+")){
-		lop = BINOP_ADD;
-	}else if(sop.equals("-")){
-		lop = BINOP_SUB;
-	}else if(sop.equals("*")){
-		lop = BINOP_MUL;
-	}else if(sop.equals("/")){
-		lop = BINOP_DIV;
-	}else if(sop.equals("%")){
-		lop = BINOP_MOD;
-	}else if(sop.equals("&&")){
-		lop = BINOP_AND;
-	}else if(sop.equals("||")){
-		lop = BINOP_OR;
-	}else if(sop.equals("==")){
-		lop = BINOP_EQ;
-	}else if(sop.equals("!=")){
-		lop = BINOP_NEQ;
-	}else if(sop.equals("<")){
-		lop = BINOP_LT;
-	}else if(sop.equals("<=")){
-		lop = BINOP_LE;
-	}else if(sop.equals(">")){
-		lop = BINOP_GT;
-	}else if(sop.equals(">=")){
-		lop = BINOP_GE;
-	}else if(sop.equals("&")){
-		lop = BINOP_BAND;
-	}else if(sop.equals("|")){
-		lop = BINOP_BOR;
-	}else if(sop.equals("^")){
-		lop = BINOP_BXOR;
-	}else if(sop.equals("xor")){
-		lop = BINOP_BXOR;
-	}else if(sop.equals(">>")){
-		lop = BINOP_RSHIFT;
-	}else if(sop.equals("<<")){
-		lop = BINOP_LSHIFT;
-	}else {
-		throw new IllegalArgumentException ("What is this operator: "+ sop +" ??!!");
-	}
+        if(sop.equals("+")){
+            lop = BINOP_ADD;
+        }else if(sop.equals("-")){
+            lop = BINOP_SUB;
+        }else if(sop.equals("*")){
+            lop = BINOP_MUL;
+        }else if(sop.equals("/")){
+            lop = BINOP_DIV;
+        }else if(sop.equals("%")){
+            lop = BINOP_MOD;
+        }else if(sop.equals("&&")){
+            lop = BINOP_AND;
+        }else if(sop.equals("||")){
+            lop = BINOP_OR;
+        }else if(sop.equals("==")){
+            lop = BINOP_EQ;
+        }else if(sop.equals("!=")){
+            lop = BINOP_NEQ;
+        }else if(sop.equals("<")){
+            lop = BINOP_LT;
+        }else if(sop.equals("<=")){
+            lop = BINOP_LE;
+        }else if(sop.equals(">")){
+            lop = BINOP_GT;
+        }else if(sop.equals(">=")){
+            lop = BINOP_GE;
+        }else if(sop.equals("&")){
+            lop = BINOP_BAND;
+        }else if(sop.equals("|")){
+            lop = BINOP_BOR;
+        }else if(sop.equals("^")){
+            lop = BINOP_BXOR;
+        }else if(sop.equals("xor")){
+            lop = BINOP_BXOR;
+        }else if(sop.equals(">>")){
+            lop = BINOP_RSHIFT;
+        }else if(sop.equals("<<")){
+            lop = BINOP_LSHIFT;
+        }else {
+            throw new IllegalArgumentException ("What is this operator: "+ sop +" ??!!");
+        }
 
-	this.op = lop;
-	alias = this;
-}
+        this.op = lop;
+        alias = this;
+    }
 
     public ExprBinary(FENode node,
-    		int op, Expression left, Expression right, ExprBinary alias)
+            int op, Expression left, Expression right, ExprBinary alias)
     {
-    	super(node);
-    	this.op = op;
-    	this.left = left;
-    	this.right = right;
-    	this.alias = alias;
+        super(node);
+        this.op = op;
+        this.left = left;
+        this.right = right;
+        this.alias = alias;
     }
 
     /** */
@@ -189,12 +190,13 @@ public class ExprBinary extends Expression
 
     /** Returns true iff this expression is a comparison. */
     public boolean isComparison () {
-    	return op == BINOP_EQ
-        	|| op == BINOP_NEQ
-        	|| op == BINOP_LT
-        	|| op == BINOP_LE
-        	|| op == BINOP_GT
-        	|| op == BINOP_GE;
+        return op == BINOP_EQ
+                || op == BINOP_NEQ
+                || op == BINOP_LT
+                || op == BINOP_LE
+                || op == BINOP_GT
+                || op == BINOP_GE 
+                || op == BINOP_TEQ;
     }
 
     /** Accept a front-end visitor. */
@@ -223,76 +225,77 @@ public class ExprBinary extends Expression
     }
 
     public Integer getIValue(){
-    	Integer ivI = getLeft().getIValue();
-    	Integer rvI = getRight().getIValue();
-    	if( ivI!= null && rvI!= null){
-    		int lv = ivI.intValue();
-    		int rv = rvI.intValue();
-    		switch (op)
+        Integer ivI = getLeft().getIValue();
+        Integer rvI = getRight().getIValue();
+        if( ivI!= null && rvI!= null){
+            int lv = ivI.intValue();
+            int rv = rvI.intValue();
+            switch (op)
             {
-            case ExprBinary.BINOP_ADD: return new Integer(lv + rv);
-            case ExprBinary.BINOP_SUB: return new Integer(lv - rv);
-            case ExprBinary.BINOP_DIV: return new Integer(lv / rv);
-            case ExprBinary.BINOP_AND: return new Integer((lv==1 && rv==1)?1:0);
-            case ExprBinary.BINOP_OR: return new Integer((lv==1 || rv==1)?1:0);
-            case ExprBinary.BINOP_EQ: return new Integer((lv== rv)?1:0);
-            case ExprBinary.BINOP_NEQ: return new Integer((lv!= rv)?1:0);
-            case ExprBinary.BINOP_LT: return new Integer((lv< rv)?1:0);
-            case ExprBinary.BINOP_LE: return new Integer((lv<= rv)?1:0);
-            case ExprBinary.BINOP_GT: return new Integer((lv> rv)?1:0);
-            case ExprBinary.BINOP_GE: return new Integer((lv >= rv)?1:0);
-            case ExprBinary.BINOP_BAND: return new Integer((lv & rv));
-            case ExprBinary.BINOP_BOR: return new Integer((lv | rv));
-            case ExprBinary.BINOP_BXOR: return new Integer((lv ^ rv));
-            case ExprBinary.BINOP_LSHIFT: return new Integer((lv << rv));
-            case ExprBinary.BINOP_RSHIFT: return new Integer((lv >> rv));
-            case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
-            case ExprBinary.BINOP_MOD: return new Integer(lv % rv);
+                case ExprBinary.BINOP_ADD: return new Integer(lv + rv);
+                case ExprBinary.BINOP_SUB: return new Integer(lv - rv);
+                case ExprBinary.BINOP_DIV: return new Integer(lv / rv);
+                case ExprBinary.BINOP_AND: return new Integer((lv==1 && rv==1)?1:0);
+                case ExprBinary.BINOP_OR: return new Integer((lv==1 || rv==1)?1:0);
+                case ExprBinary.BINOP_EQ: return new Integer((lv== rv)?1:0);
+                case ExprBinary.BINOP_NEQ: return new Integer((lv!= rv)?1:0);
+                case ExprBinary.BINOP_LT: return new Integer((lv< rv)?1:0);
+                case ExprBinary.BINOP_LE: return new Integer((lv<= rv)?1:0);
+                case ExprBinary.BINOP_GT: return new Integer((lv> rv)?1:0);
+                case ExprBinary.BINOP_GE: return new Integer((lv >= rv)?1:0);
+                case ExprBinary.BINOP_BAND: return new Integer((lv & rv));
+                case ExprBinary.BINOP_BOR: return new Integer((lv | rv));
+                case ExprBinary.BINOP_BXOR: return new Integer((lv ^ rv));
+                case ExprBinary.BINOP_LSHIFT: return new Integer((lv << rv));
+                case ExprBinary.BINOP_RSHIFT: return new Integer((lv >> rv));
+                case ExprBinary.BINOP_MUL: return new Integer(lv * rv);
+                case ExprBinary.BINOP_MOD: return new Integer(lv % rv);
 
             }
-    	}
-    	if( op == ExprBinary.BINOP_MOD && rvI != null){
-    		if( getLeft() instanceof ExprBinary ){
-    			ExprBinary left = (ExprBinary)getLeft();
-    			Integer lleft = left.getLeft().getIValue();
-    			Integer rleft = left.getRight().getIValue();
-    			int rvIint = rvI.intValue();
-    			if( left.getOp() == ExprBinary.BINOP_MUL ){
-    				if(  (rleft != null && rleft.intValue()%rvIint == 0) || (lleft != null && lleft.intValue()%rvIint == 0) ){
-    					return new Integer(0);
-    				}
-    			}
-    		}
-    	}
-    	return null;
+        }
+        if( op == ExprBinary.BINOP_MOD && rvI != null){
+            if( getLeft() instanceof ExprBinary ){
+                ExprBinary left = (ExprBinary)getLeft();
+                Integer lleft = left.getLeft().getIValue();
+                Integer rleft = left.getRight().getIValue();
+                int rvIint = rvI.intValue();
+                if( left.getOp() == ExprBinary.BINOP_MUL ){
+                    if(  (rleft != null && rleft.intValue()%rvIint == 0) || (lleft != null && lleft.intValue()%rvIint == 0) ){
+                        return new Integer(0);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public String getOpString(){
-    	String theOp;
-    	switch (op)
+        String theOp;
+        switch (op)
         {
-        case ExprBinary.BINOP_ADD: theOp = "+"; break;
-        case ExprBinary.BINOP_SUB: theOp = "-"; break;
-        case ExprBinary.BINOP_MUL: theOp = "*"; break;
-        case ExprBinary.BINOP_DIV: theOp = "/"; break;
-        case ExprBinary.BINOP_MOD: theOp = "%"; break;
-        case ExprBinary.BINOP_AND: theOp = "&&"; break;
-        case ExprBinary.BINOP_OR: theOp = "||"; break;
-        case ExprBinary.BINOP_EQ: theOp = "=="; break;
-        case ExprBinary.BINOP_NEQ: theOp = "!="; break;
-        case ExprBinary.BINOP_LT: theOp = "<"; break;
-        case ExprBinary.BINOP_LE: theOp = "<="; break;
-        case ExprBinary.BINOP_GT: theOp = ">"; break;
-        case ExprBinary.BINOP_GE: theOp = ">="; break;
-        case ExprBinary.BINOP_BAND: theOp = "&"; break;
-        case ExprBinary.BINOP_BOR: theOp = "|"; break;
-        case ExprBinary.BINOP_BXOR: theOp = "^"; break;
-        case ExprBinary.BINOP_LSHIFT: theOp = "<<"; break;
-        case ExprBinary.BINOP_RSHIFT: theOp = ">>"; break;
-        case ExprBinary.BINOP_SELECT: theOp = "{|}"; break;
-        default: theOp = "? (" + op + ")"; break;
+            case ExprBinary.BINOP_ADD: theOp = "+"; break;
+            case ExprBinary.BINOP_SUB: theOp = "-"; break;
+            case ExprBinary.BINOP_MUL: theOp = "*"; break;
+            case ExprBinary.BINOP_DIV: theOp = "/"; break;
+            case ExprBinary.BINOP_MOD: theOp = "%"; break;
+            case ExprBinary.BINOP_AND: theOp = "&&"; break;
+            case ExprBinary.BINOP_OR: theOp = "||"; break;
+            case ExprBinary.BINOP_EQ: theOp = "=="; break;
+            case ExprBinary.BINOP_TEQ: theOp = "==="; break;
+            case ExprBinary.BINOP_NEQ: theOp = "!="; break;
+            case ExprBinary.BINOP_LT: theOp = "<"; break;
+            case ExprBinary.BINOP_LE: theOp = "<="; break;
+            case ExprBinary.BINOP_GT: theOp = ">"; break;
+            case ExprBinary.BINOP_GE: theOp = ">="; break;
+            case ExprBinary.BINOP_BAND: theOp = "&"; break;
+            case ExprBinary.BINOP_BOR: theOp = "|"; break;
+            case ExprBinary.BINOP_BXOR: theOp = "^"; break;
+            case ExprBinary.BINOP_LSHIFT: theOp = "<<"; break;
+            case ExprBinary.BINOP_RSHIFT: theOp = ">>"; break;
+            case ExprBinary.BINOP_SELECT: theOp = "{|}"; break;
+            default: theOp = "? (" + op + ")"; break;
         }
-    	return theOp;
+        return theOp;
     }
 
     public String toString()
@@ -314,37 +317,37 @@ public class ExprBinary extends Expression
 
     /** Return the precedence of OP (higher means evaluated sooner). */
     public static int opPrec (int op) {
-    	switch (op) {
-        case ExprBinary.BINOP_OR:
-        	return 1;
-        case ExprBinary.BINOP_AND:
-        	return 2;
+        switch (op) {
+            case ExprBinary.BINOP_OR:
+                return 1;
+            case ExprBinary.BINOP_AND:
+                return 2;
 
-        case ExprBinary.BINOP_BOR:
-        	return 10;
-        case ExprBinary.BINOP_BXOR:
-        	return 11;
-        case ExprBinary.BINOP_BAND:
-        	return 12;
-    	// This is the bastard of the bunch -- we'll put it higher than the
-    	// other bitdiddling operators
-        case ExprBinary.BINOP_SELECT:
-        	return 15;
+            case ExprBinary.BINOP_BOR:
+                return 10;
+            case ExprBinary.BINOP_BXOR:
+                return 11;
+            case ExprBinary.BINOP_BAND:
+                return 12;
+                // This is the bastard of the bunch -- we'll put it higher than the
+                // other bitdiddling operators
+            case ExprBinary.BINOP_SELECT:
+                return 15;
 
-        case ExprBinary.BINOP_EQ:  case ExprBinary.BINOP_NEQ:
-        	return 20;
-        case ExprBinary.BINOP_LT: case ExprBinary.BINOP_LE:
-        case ExprBinary.BINOP_GT: case ExprBinary.BINOP_GE:
-        	return 21;
-        case ExprBinary.BINOP_LSHIFT: case ExprBinary.BINOP_RSHIFT:
-        	return 22;
+            case ExprBinary.BINOP_EQ:  case ExprBinary.BINOP_NEQ:
+                return 20;
+            case ExprBinary.BINOP_LT: case ExprBinary.BINOP_LE:
+            case ExprBinary.BINOP_GT: case ExprBinary.BINOP_GE:
+                return 21;
+            case ExprBinary.BINOP_LSHIFT: case ExprBinary.BINOP_RSHIFT:
+                return 22;
 
-        case ExprBinary.BINOP_ADD: case ExprBinary.BINOP_SUB:
-        	return 30;
-        case ExprBinary.BINOP_MUL: case ExprBinary.BINOP_DIV: case ExprBinary.BINOP_MOD:
-        	return 31;
+            case ExprBinary.BINOP_ADD: case ExprBinary.BINOP_SUB:
+                return 30;
+            case ExprBinary.BINOP_MUL: case ExprBinary.BINOP_DIV: case ExprBinary.BINOP_MOD:
+                return 31;
 
-        default: throw new IllegalArgumentException ("unknown operator "+ op);
-    	}
+            default: throw new IllegalArgumentException ("unknown operator "+ op);
+        }
     }
 }

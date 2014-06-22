@@ -93,7 +93,6 @@ public class MergeADT extends SymbolTableVisitor {
         TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
         List newParams = new ArrayList();
         if (!sd.isInstantiable()) {
-            // change this (5 to maxSize)
             Expression expr = exprNew.getStar();
             if (tracker.ADT) {
                 newParams.add(new ExprNamedParam(exprNew.getContext(), "type", expr));

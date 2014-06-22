@@ -59,7 +59,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     private String pkg;
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
     // For sake of ADT
-    private final String parentName;
+    private String parentName;
     private boolean isInstantiable;
     private boolean immutable = false;
     private final List<String> fieldOrder;
@@ -286,6 +286,9 @@ annotations);
         return name + '@' + pkg;
     }
 
+    public void setParentName(String name) {
+        parentName = name;
+    }
     // ADT
     public String getParentName() {
         if (parentName == null) {

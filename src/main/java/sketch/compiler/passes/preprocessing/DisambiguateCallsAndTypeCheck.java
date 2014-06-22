@@ -884,12 +884,22 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     report(expr, "Can only shift array types for now. " + ct);
                 break;
                 // And now we should have covered everything.
+            case ExprBinary.BINOP_TEQ:
+                checkTripleEquals(expr, lt, rt);
+                break;
             default:
                 report(expr, "semantic checker missed a binop type");
                 break;
         }
 
         // return expr;
+    }
+
+    private void checkTripleEquals(FENode expr, Type lt, Type rt) {
+        if(!lt.isStruct() || !rt.isStruct())
+            report(expr, "Triple equals only operates on structs");
+        if (! lt.promotesTo(rt, nres) && ! rt.promotesTo(lt, nres))
+            report(expr, "Triple equals operates on same struct types");
     }
 
     public Object visitExprChoiceBinary(ExprChoiceBinary exp) {
