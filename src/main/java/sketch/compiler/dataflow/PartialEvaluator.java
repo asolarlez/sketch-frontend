@@ -1747,7 +1747,8 @@ nvarContext,
                     if (stmt.getType(i) instanceof TypeStructRef) {
                         state.setVarValue(nm, this.vtype.NULL());
                     }else{
-                        state.setVarValue(nm, this.vtype.CONST(0));
+                        Expression dv = vt.defaultValue();
+                        state.setVarValue(nm, (abstractValue) dv.accept(this));
                     }
                 }else{                    
                     TypeArray tar = (TypeArray) vt;

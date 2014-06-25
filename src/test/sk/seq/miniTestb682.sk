@@ -1,0 +1,23 @@
+pragma options "--bnd-inbits 3";
+
+harness void main(int N, double [N] a, double[N] b, int k) {
+        double foo =  gen(N, a, b, k);
+}
+
+generator int lhs(int a, int b) { return a; }
+generator double gen(int N, double [N] a, double [N] b, int k) {
+  generator int lin() {
+
+  if (??) { return lhs(N,k); }
+  if (??) { return lhs(N,k+1); }
+  if (??) { return lhs(N,k-1); }
+  }
+
+  generator double arraccess() {
+    if (??) { return b[lin()]; }
+  }
+  if (??) { return arraccess(); }
+  if (??) { return arraccess() + gen(N, a, b, k); }
+  if (??) { return arraccess() - gen(N, a, b, k); }
+
+}
