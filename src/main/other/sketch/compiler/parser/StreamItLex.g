@@ -55,6 +55,7 @@ tokens {
 	// Complicated types:
 	"struct"; // "template";
 	"ref";
+	"adt";
 
 	// Control flow:
 	"if"; "else"; "while"; "for"; "switch"; "case"; "repeat_case"; "default"; "break"; "do";
@@ -175,6 +176,7 @@ BITWISE_OR: "|";
 BITWISE_XOR: "^";
 ASSIGN: '=';
 DEF_ASSIGN: ":=";
+TRIPLE_EQUAL: "===";
 EQUAL: "==";
 NOT_EQUAL: "!=";
 LESS_THAN: '<';

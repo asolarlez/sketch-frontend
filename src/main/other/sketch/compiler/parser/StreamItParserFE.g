@@ -185,6 +185,7 @@ program	 returns [Program p]
 	List<Function> funcs=new ArrayList(); Function f;
 	List<Package> namespaces = new ArrayList<Package>();
     FieldDecl fd; StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
+    List<StructDef> adtList;
    
     String file = null;
     String pkgName = null;
@@ -196,6 +197,7 @@ program	 returns [Program p]
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
+           |    adtList=adt_decl { structs.addAll(adtList); }
            |    file=include_stmt { handleInclude (file, namespaces); }
            |    TK_package id:ID { currPkg = (id.getText()); curPkgCx = getContext(id);}
                             (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id);} | pk = pkgbody {namespaces.add(pk);  } ) 
@@ -235,6 +237,7 @@ pkgbody returns [Package pk]
 	List<Function> funcs=new ArrayList(); Function f;
 	parentStructNames = new ArrayList<String>();
 	StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
+	List<StructDef> adtList;
 	FEContext pkgCtxt = null;
 }
 : 
@@ -245,6 +248,7 @@ pkgbody returns [Package pk]
            |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
+           |    adtList=adt_decl { structs.addAll(adtList); }
    )*
    RCURLY
    {			
@@ -840,6 +844,7 @@ bitwiseAndExpr returns [Expression x] { x = null; Expression r; }
 equalExpr returns [Expression x] { x = null; Expression r; Expression last; int o = 0; }
 	:	x=compareExpr {last=x;}
 		(	( EQUAL     { o = ExprBinary.BINOP_EQ; }
+			| TRIPLE_EQUAL { o = ExprBinary.BINOP_TEQ; }
 			| NOT_EQUAL { o = ExprBinary.BINOP_NEQ; }
 			)
 			r = compareExpr
@@ -1034,7 +1039,45 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	}
             }
     ;
- 
+
+adt_decl returns [List<StructDef> adtList]
+{ adtList = new ArrayList<StructDef>(); List<StructDef> innerList; 
+  StructDef str = null; Parameter p; List names = new ArrayList();
+  Annotation an = null; StructDef innerStruct;
+  HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
+  List types = new ArrayList(); }
+
+	:  t:TK_adt id:ID LCURLY
+	(innerList=adt_decl { innerStruct = innerList.get(0); innerStruct.setParentName(id.getText());
+	adtList.addAll(innerList);}
+	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); adtList.add(innerStruct);}
+	| p=param_decl SEMI {names.add(p.getName()); types.add(p.getType());}
+	| an=annotation {annotations.append(an.tag, an);}
+	)*
+	RCURLY
+	{str = StructDef.creator(getContext(t), id.getText(), null, false, names, types, annotations).create();
+     str.setImmutable();
+	 adtList.add(0, str);
+	}
+	;
+structInsideADT_decl returns [StructDef ts]
+{ ts = null; Parameter p; List names = new ArrayList();
+	Annotation an=null;
+	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
+	List types = new ArrayList(); }
+	:	id:ID
+		
+		LCURLY
+		(p=param_decl SEMI
+			{ names.add(p.getName()); types.add(p.getType()); }
+			|
+			an=annotation{ annotations.append(an.tag, an); }
+		)*
+		RCURLY
+		{ 
+			ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, annotations).create();
+			}
+	;
 struct_decl returns [StructDef ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	Annotation an=null;

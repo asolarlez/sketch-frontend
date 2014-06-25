@@ -61,9 +61,15 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Object obj = super.visitExprNew(exp);
         ExprNew nexp = (ExprNew) this.exprRV;
         if (nexp.isHole()) {
-            nexp.getStar().accept(this);
-            nexp.setStar((ExprStar) exprRV);
-            exprRV = nexp;
+            ExprStar star = nexp.getStar();
+            star.accept(this);
+            ExprStar newStar = (ExprStar) exprRV;
+            if (newStar != star) {
+                exprRV  = new ExprNew(nexp, nexp.getTypeToConstruct(), nexp.getParams(),
+                        true, newStar);
+            } else {
+                exprRV = nexp;
+            }
         }
         return obj;
     }

@@ -76,10 +76,6 @@ public class ReplaceMinLoops extends FEReplacer {
         return new StmtLoop(stmtMinLoop, new ExprVar(stmtMinLoop, localName),
                 (Statement) stmtMinLoop.getBody().accept(this));
     }
-    /*
-     * public Object visitExprNew(ExprNew exp) { exp = (ExprNew) super.visitExprNew(exp);
-     * if (exp.isHole()) { ExprStar es = exp.getStar(); ExprStar newStar = new
-     * ExprStar(es); es.renewName(); exp.setStar(newStar); } return exp; }
-     */
+    
 
 }
