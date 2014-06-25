@@ -1,28 +1,20 @@
 pragma options "--bnd-inbits 2 --beopt:simiters 3";
 
-int Oplus= 0;
-int Ominus=1;
-int Oneg = 2;
-int Oand = 3;
-int Oor = 4;
-int Onot = 5;
-int Ogt = 6;
-int Olt = 7;
+adt E{
+	LVar { int name;}
+	LAbs { LVar var; E a;}
+	LApp { E a; E b;}
+	LNum { int val;}
+}
 
 
-struct E{@Immutable("")}
-struct LVar extends E { int name;}
-struct LAbs extends E { LVar var; E a;}
-struct LApp extends E { E a; E b;}
-struct LNum extends E { int val;}
-
-
-struct source{@Immutable("")}
-struct SNum extends source { int val;}//9
-struct SNil extends source {}//11
-struct SCons extends source { source a; source b;}//12
-struct SFirst extends source{source a;}//13
-struct SRest extends source{source a;}//14
+adt source{
+	SNum { int val;}
+	SNil {}
+	SCons { source a; source b;}
+	SFirst {source a;}
+	SRest {source a;}
+}
 
 
 E desugar(source s, int bnd){
@@ -70,9 +62,10 @@ E desugar(source s, int bnd){
 		{
 			E[2] v = run(s.{source} );
 			int[1] op = s.{int};
-			
-			E a = getPart(v[0], v[1], 3);
-			E b = getPart(v[0], v[1], 1);
+			E v1 = desugar(s.??, bnd - 1);
+			E v2 = desugar(s.??, bnd - 1);
+			E a = getPart(v1,v2, 3);
+			E b = getPart(v1,v2, 1);
 			
 			int val = op[0];
 			int t = getConst(val);

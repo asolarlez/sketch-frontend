@@ -1,22 +1,23 @@
  pragma options "--bnd-inbits 3 --bnd-mbits 3  --beopt:simiters 5";
 
 //source language - lambda calculus + boolean + operations on boolean
-struct source{@Immutable("")}
-struct SVar extends source { int name;}
-struct SAbs extends source { SVar var; source a;}
-struct SApp extends source { source a; source b;}
-struct SAnd extends source { source a; source b;}
-struct SOr extends source{ source a; source b;}
-struct SNot extends source {  source a;}
-struct STrue extends source{}
-struct SFalse extends source{}
+adt source{
+	SVar { int name;}
+	SAbs { SVar var; source a;}
+	SApp { source a; source b;}
+	SAnd { source a; source b;}
+	SOr { source a; source b;}
+	SNot { source a;}
+	STrue {}
+	SFalse {}
+}
 
 //core language - lambda calculus
-struct E{@Immutable("")}
-struct LVar extends E { int name;}
-struct LAbs extends E { LVar var; E a;}
-struct LApp extends E { E a; E b;}
-
+adt E {
+	LVar { int name;}
+	LAbs { LVar var; E a;}
+	LApp { E a; E b;}
+}	
 
 
 E desugar(source s, int bnd){
@@ -41,7 +42,7 @@ E desugar(source s, int bnd){
 		E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
 		
 		if(??){
-			return {| c1|c2|True|False|_z|_x|};
+			return {| c1|c2|True|False|_z|};
 		}else{
 			if(bnd > 1){
 				E a = getPart(c1,c2,bnd-1);
@@ -67,8 +68,10 @@ E desugar(source s, int bnd){
 		{
 			E[2] v = desugarFields( s.{source} );
 			int[1] op = s.{int};
-			E a = getPart(v[0], v[1], 2);
-			E b = getPart(v[0], v[1], 2);
+			E v1 = desugar(s.??, bnd-1);
+			E v2 = desugar(s.??, bnd-1);
+			E a = getPart(v1, v2, 2);
+			E b = getPart(v1, v2, 2);
 			
 			
 			int val = op[0];
