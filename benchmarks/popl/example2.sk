@@ -13,7 +13,7 @@ int Olt = 7;
 int size = 7;
 
 //sourceAST
-struct sourceAST {@Immutable("")}
+struct sourceAST {}
 struct SNum extends sourceAST{int val;}
 struct SVar extends sourceAST{ int str;}
 struct STrue extends sourceAST{}
@@ -26,7 +26,7 @@ struct SBetween extends sourceAST{sourceAST a;sourceAST b;sourceAST c;}
 
 
 //CoreAST
-struct coreAST{@Immutable("")}
+struct coreAST{}
 struct CNum extends coreAST{int val;}
 struct CVar extends coreAST{int str;}
 struct CBool extends coreAST{bit val;}
@@ -606,9 +606,8 @@ bit equals(sourceAST c1 ,coreAST c2){
 	
 }
 
-
 harness void main2(){
-	sourceAST s =  new SLet(str = 1, a = gN(1), b = new SBetween(a = gN(1), b = new SAssign(str = 1, a= new SPrim2(op = Oplus, a = new SVar(str = 1), b= new SNum(val = 1))),c = gN(3)));	
+	sourceAST s =  new SLet(str = 1, a = gN(1), b = new SBetween(a = new SVar(str=1), b = new SAssign(str = 1, a= new SPrim2(op = new Oplus(), a = new SVar(str = 1), b= new SNum(val = 1))),c = gN(3)));	
 	
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;
@@ -628,10 +627,9 @@ harness void main2(){
 	}
 }
 
-
 harness void main1(int[50] arr){
 	int idx =0;
-	sourceAST s = new SBetween(a =produce( arr, idx, 1, 2), b = produce( arr, idx, 1,2),c =produce( arr, idx, 1, 2));
+	sourceAST s = produce(arr, idx, 2, 3);//new SBetween(a =produce( arr, idx, 1, 2), b = produce( arr, idx, 1,2),c =produce( arr, idx, 1, 2));
 	
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;

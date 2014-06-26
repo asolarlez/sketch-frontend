@@ -651,7 +651,7 @@ bit equals(sourceAST c1 ,coreAST c2){
 }
 
 harness void main2(){
-	sourceAST s =  new SLet(str = 1, a = gN(1), b = new SBetween(a = gN(1), b = new SAssign(str = 1, a= new SPrim2(op = new Oplus(), a = new SVar(str = 1), b= new SNum(val = 1))),c = gN(3)));	
+	sourceAST s =  new SLet(str = 1, a = gN(1), b = new SBetween(a = new SVar(str=1), b = new SAssign(str = 1, a= new SPrim2(op = new Oplus(), a = new SVar(str = 1), b= new SNum(val = 1))),c = gN(3)));	
 	
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;
