@@ -18,11 +18,11 @@ struct LNum extends E { int val;}
 
 
 struct source{}
-struct SNum extends source { int val;}//9
-struct SNil extends source {}//11
-struct SCons extends source { source a; source b;}//12
-struct SFirst extends source{source a;}//13
-struct SRest extends source{source a;}//14
+struct SNum extends source { int val;}
+struct SNil extends source {}
+struct SCons extends source { source a; source b;}
+struct SFirst extends source{source a;}
+struct SRest extends source{source a;}
 
 
 E desugar(source s, int bnd){

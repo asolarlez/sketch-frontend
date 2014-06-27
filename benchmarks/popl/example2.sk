@@ -29,7 +29,7 @@ struct SBetween extends sourceAST{sourceAST a;sourceAST b;sourceAST c;}
 struct coreAST{}
 struct CNum extends coreAST{int val;}
 struct CVar extends coreAST{int str;}
-struct CBool extends coreAST{bit val;}
+struct CBool extends coreAST{bit v;}
 struct CPrim1 extends coreAST{int op; coreAST a;}
 struct CAssign extends coreAST{int str; coreAST a;}
 struct CLet extends coreAST{int str; coreAST a; coreAST b;}
@@ -71,8 +71,8 @@ coreAST desugar(sourceAST s, int bnd){
 	
 	switch(s){
 		case SNum: return new CNum(val = s.val);
-		case STrue: return new CBool(val =1);
-		case SFalse: return new CBool(val =0);
+		case STrue: return new CBool(v =1);
+		case SFalse: return new CBool(v =0);
 		case SVar: return new CVar(str =s.str);
 		case SAssign: return new CAssign(str = s.str, a = desugar(s.a,bnd-1));
 		case SLet: return new CLet(str = s.str, a = desugar(s.a,bnd-1), b= desugar(s.b,bnd-1));
@@ -126,7 +126,13 @@ sourceAST produce( int[50] encoding, ref int idx, int bnd, int sbnd){
      }
      else if(encoding[idx]==1){
         ++idx;
+        if(encoding[idx] == 0){ ++idx;
         return gOp(2, encoding[idx++],{ produce(encoding, idx, bnd-1,sbnd/2),produce(encoding, idx, bnd-1,sbnd/2)}); 
+        }
+        else{
+        	++idx; 
+        	return new SBetween(a=produce(encoding, idx, bnd-1,sbnd/2),b=produce(encoding, idx, bnd-1,sbnd/2),c=produce(encoding, idx, bnd-1,sbnd/2));
+        }
      }else if(encoding[idx]==2){
     	++idx;
     	return new SAssign(str = encoding[idx++],a= produce(encoding, idx, bnd-1,sbnd/2)); 
@@ -446,7 +452,7 @@ coreAST interpretCoreAST(coreAST s, int bnd){
 				//coreAST s_a = interpretCoreAST(s.a,idx, bnd-1);
 				if(s_a==null) {assert false; return null;}
 				switch(s_a){
-					case CBool:{ return new CBool( val = (!s_a.val));}
+					case CBool:{ return new CBool( v = (!s_a.v));}
 					default: {assert false; return null;}
 				}	
 			}else{
@@ -491,29 +497,29 @@ coreAST interpretCoreAST(coreAST s, int bnd){
 				bit a, b;
 				if(s_a==null) {assert false; return null;}
 				switch(s_a){
-					case CBool:{ a = s_a.val;}
+					case CBool:{ a = s_a.v;}
 					default:{ assert false; return null;}
 				}
 				if(s_b==null){assert false; return null;}
 				switch(s_b){
-					case CBool:{ b = s_b.val;}
+					case CBool:{ b = s_b.v;}
 					default: {assert false; return null;}
 				}
-				return new CBool(val = a&&b);
+				return new CBool(v = a&&b);
 			}else
 			if(s.op == Oor){
 				bit a, b;
 				if(s_a==null) {assert false; return null;}
 				switch(s_a){
-					case CBool: {a = s_a.val;}
+					case CBool: {a = s_a.v;}
 					default: {assert false; return null;}
 				}
 				if(s_b==null) {assert false; return null;}
 				switch(s_b){
-					case CBool: {b = s_b.val;}
+					case CBool: {b = s_b.v;}
 					default: {assert false; return null;}
 				}
-				return new CBool(val = a||b);
+				return new CBool(v = a||b);
 			}else
 			if(s.op == Ogt){
 				int a, b;
@@ -527,7 +533,7 @@ coreAST interpretCoreAST(coreAST s, int bnd){
 					case CNum:{ b = s_b.val;}
 					default: {assert false; return null;}
 				}
-				return new CBool(val = a>b);
+				return new CBool(v = a>b);
 			}else
 			if(s.op == Olt){
 				int a, b;
@@ -541,7 +547,7 @@ coreAST interpretCoreAST(coreAST s, int bnd){
 					case CNum:{ b = s_b.val;}
 					default: {assert false; return null;}
 				}
-				return new CBool(val = a<b);
+				return new CBool(v = a<b);
 			}else{
 				assert false;
 				return null;	
@@ -582,14 +588,14 @@ bit equals(sourceAST c1 ,coreAST c2){
 		case STrue:
 		{
 			switch(c2){
-				case CBool:return c2.val==1;
+				case CBool:return c2.v==1;
 				default: {assert false; return false;}
 			}
 		}
 		case SFalse:
 		{
 			switch(c2){
-				case CBool: return c2.val==0;
+				case CBool: return c2.v==0;
 				default: {assert false; return false;}
 			}
 		}
@@ -607,7 +613,7 @@ bit equals(sourceAST c1 ,coreAST c2){
 }
 
 harness void main2(){
-	sourceAST s =  new SLet(str = 1, a = gN(1), b = new SBetween(a = new SVar(str=1), b = new SAssign(str = 1, a= new SPrim2(op = new Oplus(), a = new SVar(str = 1), b= new SNum(val = 1))),c = gN(3)));	
+	sourceAST s =  new SLet(str = 1, a = gN(1), b = new SBetween(a = gN(1), b = new SAssign(str = 1, a= new SPrim2(op = Oplus, a = new SVar(str = 1), b= new SNum(val = 1))),c = gN(3)));	
 	
 	for(int i = 0; i < size; i++){
 		smtStore[i] = null;
@@ -626,7 +632,6 @@ harness void main2(){
 		assert(equals(c1,c3));
 	}
 }
-
 harness void main1(int[50] arr){
 	int idx =0;
 	sourceAST s = produce(arr, idx, 2, 3);//new SBetween(a =produce( arr, idx, 1, 2), b = produce( arr, idx, 1,2),c =produce( arr, idx, 1, 2));
