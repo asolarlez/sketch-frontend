@@ -16,7 +16,7 @@ adt Constraint {
 	And{Constraint a; Constraint b;}
 }
 
-Constraint getConstraints(E e, Type t, int bnd, Type[5] arr, ref int id) {
+Constraint getConstraints(E e, Type t, int bnd, Type[8] arr, ref int id) {
 	if(e == null || bnd < 0) return null;
 	int id1 = id++;
 	int id2 = id++;
@@ -39,18 +39,15 @@ Constraint getConstraints(E e, Type t, int bnd, Type[5] arr, ref int id) {
 		repeat_case:{
 			int i = e.??;
 			Type t1;
-			if (i >=0 && i < 5){
+			if (i >=0 && i < 8){
 			 	t1 = arr[i];
 			}
-			Type t2l = new ??(id = getId());
-			Type t2r = new ??(id = getId());
-			
-			if(?? && i >= 0 && i <5) arr[e.??] = {|t|t1|t2l|t2r|};
+			if(?? && i >= 0 && i <8) arr[e.??] = getType({|t| t1|},2);
 			Constraint a = getConstraints( e.?? , getType(t,2), bnd-1, arr, id);
 			Constraint b = getConstraints( e.?? , getType(t,2), bnd-1, arr, id);
 			
 			return new ??( l = getType({|t| t1|},2), r = getType({|t| t1|},2),
-				a = {|a | getConstraint(t) |}, b = {|b  |});
+				a = {|a | getConstraint(t) |}, b = {|b | getConstraint(t) |});
 		}	
 	}	
 }
@@ -111,50 +108,50 @@ bit equalsC(Constraint c1, Constraint c2, int bnd) {
 		
 	}
 }*/
-/*
+
 harness void main30() {
-	Type[5] arr= {};
-	for(int i = 0; i <5; i++) {arr[i] = null;}
+	Type[8] arr= {};
+	for(int i = 0; i <8; i++) {arr[i] = null;}
 	int id = 1;
 	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Var(name = 0)), b = new Var(name = 0)),  new Unknown(id = 0), 2,arr,id) ;	
-	Constraint exp =new And(a= new And(a = new Equals( l = new Unknown(id = 3), r = new Unknown(id = 4)), b = new Equals(l = new Function(in = new Unknown(id = 1), out = new Unknown(id = 0)), r = new Function(in = new Unknown(id = 3), out = new Unknown(id = 4)))), b = new Equals(l = new Unknown(id = 3), r = new Unknown(id = 1))) ;
+	Constraint exp =new And(a= new And(a = new Equals( l = new Unknown(id = 3), r = new Unknown(id = 4)), b = new Equals(l = new Function(in = new Unknown(id = 1), out = new Unknown(id = 0)), r = new Function(in = new Unknown(id = 3), out = new Unknown(id = 4)))), b = new Equals(l = null, r = new Unknown(id = 1))) ;
 	assert(exp === out);
-}*/
+}
 harness void main3() {
-	Type[5] arr= {};
-	for(int i = 0; i <5; i++) {arr[i] = null;}
+	Type[8] arr= {};
+	for(int i = 0; i <8; i++) {arr[i] = null;}
 	int id = 1;
 	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Var(name = 0)), b = new Num(val = 1)),  new Unknown(id = 0), 2,arr,id) ;	
 	Constraint exp =new And(a= new And(a = new Equals( l = new Unknown(id = 3), r = new Unknown(id = 4)), b = new Equals(l = new Function(in = new Unknown(id = 1), out = new Unknown(id = 0)), r = new Function(in = new Unknown(id = 3), out = new Unknown(id = 4)))), b = new Equals(l = new Int(), r = new Unknown(id = 1))) ;
 	assert(exp === out);
 }
 harness void main11() {
-	Type[5] arr= {};
-	for(int i = 0; i <5; i++) {arr[i] = null;}
+	Type[8] arr= {};
+	for(int i = 0; i <8; i++) {arr[i] = null;}
 	int id = 1;
 	Constraint out = getConstraints(new Abs(var = 0, a = new Num(val = 0)), new Unknown(id = 0), 1, arr, id);	
 	Constraint exp = new And(a = new Equals( l = new Int(), r = new Unknown(id = 2)), b = new Equals(l = new Unknown(id = 0), r = new Function(in = new Unknown(id = 1), out = new Unknown(id = 2)))) ;
 	assert(exp === out);
 }
 harness void main1() {
-	Type[5] arr= {};
-	for(int i = 0; i <5; i++) {arr[i] = null;}
+	Type[8] arr= {};
+	for(int i = 0; i <8; i++) {arr[i] = null;}
 	int id = 1;
 	Constraint out = getConstraints(new Abs(var = 0, a = new Var(name = 0)), new Unknown(id = 0), 1, arr, id);	
 	Constraint exp = new And(a = new Equals( l = new Unknown(id = 1), r = new Unknown(id = 2)), b = new Equals(l = new Unknown(id = 0), r = new Function(in = new Unknown(id = 1), out = new Unknown(id = 2)))) ;
 	assert(exp === out);
 }
 harness void main() {
-	Type[5] arr= {};
-	for(int i = 0; i <5; i++) {arr[i] = null;}
+	Type[8] arr= {};
+	for(int i = 0; i <8; i++) {arr[i] = null;}
 	int id = 0;
 	Constraint out = getConstraints(new Num(val = 1), new Unknown(id = 0), 1, arr, id);	
 	Constraint exp = new Equals(l = new Int(), r = new Unknown(id = 0));
 	assert(exp === out);
 }
 harness void main0() {
-	Type[5] arr= {};
-	for(int i = 0; i <5; i++) {arr[i] = null;}
+	Type[8] arr= {};
+	for(int i = 0; i <8; i++) {arr[i] = null;}
 	int id = 1;
 	Constraint out = getConstraints(new Var(name = 0), new Unknown(id = 0), 1, arr, id);	
 	Constraint exp = new Equals( r = new Unknown(id = 0));
