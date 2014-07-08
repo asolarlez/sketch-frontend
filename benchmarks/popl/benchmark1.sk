@@ -1,0 +1,75 @@
+adt BinaryTree {
+	Branch { int value; BinaryTree l; BinaryTree r; }
+	Leaf {int value;}
+	Empty {}
+}
+
+BinaryTree insertNode(BinaryTree tree, int x, int bnd) {
+	if (tree == null || bnd <0) return new ??(value = x) ;
+
+	switch(tree){
+		repeat_case:
+		{
+			int val = tree.??;
+			BinaryTree nl = insertNode(tree.??,x,bnd-1);
+			BinaryTree nr = insertNode(tree.??,x,bnd-1);
+			BinaryTree l = tree.??;
+			BinaryTree r = tree.??;
+			BinaryTree rr = new ??(value = x) ;
+			BinaryTree ll =  new ??(value = x);
+			minrepeat{
+			if ({|1 |(x (<|>|<=|>=) val)|} ) {
+			return new ??(value = {|x|val|??|}, l = {|l|nl|ll|}, r = {|r|nr|rr|});
+			}
+			}
+		}
+	}
+}
+harness void main7() {
+	BinaryTree t = new Branch(value = 2, l = new Leaf(value = 1), r = new Empty());
+	BinaryTree nt = insertNode(t, 3,2);
+	BinaryTree exp = new Branch(value = 2, l = new Leaf(value = 1) , r = new Leaf(value = 3));
+	assert(exp === nt);
+			
+}
+harness void main6() {
+	BinaryTree t = new Branch(value = 3, l = new Leaf(value=2), r = new Empty());
+	BinaryTree nt = insertNode(t, 1,2);
+	BinaryTree exp = new Branch(value = 3, l = new Branch(value = 2, l = new Leaf(value = 1), r = new Empty()), r = new Empty());
+	assert(exp === nt);
+			
+}
+harness void main5() {
+	BinaryTree t = new Branch(value = 1, l= new Empty(),r = new Leaf(value = 3));
+	BinaryTree nt = insertNode(t, 2,2);
+	BinaryTree exp = new Branch(value = 1, l= new Empty(),r = new Branch(value = 3, l = new Leaf(value = 2),r= new Empty()));
+	assert(exp === nt);
+			
+}
+harness void main4() {
+	BinaryTree t =  new Branch(value = 1,l = new Empty(), r =new Leaf(value = 2));
+	BinaryTree nt = insertNode(t, 3,2);
+	BinaryTree exp = new Branch(value = 1,l = new Empty(), r = new Branch(value = 2,l= new Empty(), r = new Leaf(value = 3)));
+	assert(exp === nt);
+			
+}
+harness void main3() {
+	BinaryTree t = new Leaf(value= 1);
+	BinaryTree nt = insertNode(t, 0,2);
+	BinaryTree exp = new Branch(value = 1, l = new Leaf(value = 0),r= new Empty());
+	
+} 
+harness void main2() {
+	BinaryTree t = new Leaf(value= 1);
+	BinaryTree nt = insertNode(t, 2,2);
+	BinaryTree exp = new Branch(value = 1,l= new Empty(), r = new Leaf(value = 2));
+	assert(exp === nt);
+}
+harness void main1() {
+	BinaryTree t = new Empty();
+	BinaryTree nt = insertNode(t, 1,2);
+	BinaryTree exp = new Leaf(value = 1);
+	assert(exp === nt);
+}
+	
+	
