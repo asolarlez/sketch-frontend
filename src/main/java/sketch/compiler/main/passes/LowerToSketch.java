@@ -36,7 +36,7 @@ public class LowerToSketch extends MetaStage {
 
         // prog.debugDump("before combineFunc");
 
-        if (false) {
+        if (true) {
             prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
         }
         // prog.debugDump("After combine");
