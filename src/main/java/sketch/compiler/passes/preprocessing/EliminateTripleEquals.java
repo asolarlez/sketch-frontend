@@ -9,11 +9,13 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
@@ -69,14 +71,20 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             stmts.add(new StmtVarDecl(context,TypePrimitive.bittype, outName, ExprConstInt.zero));
             stmts.add(new StmtVarDecl(context, type, lvName, left));
             stmts.add(new StmtVarDecl(context, type, rvName, right));
-            
+            Expression lc = new ExprBinary(ExprBinary.BINOP_EQ, lv, new ExprNullPtr());
+            Expression rc = new ExprBinary(ExprBinary.BINOP_EQ, rv, new ExprNullPtr());
+            Expression cond = new ExprBinary(ExprBinary.BINOP_AND, lc, rc);
             StmtSwitch stmt = new StmtSwitch(context, lv);
             List<String> cases = getCases(structName);
             for (String c: cases) {
                 Statement body = generateBody(context, c, out ,structName, pkgName, lv, rv, depth);
                 stmt.addCaseBlock(c, body);
             }
-            stmts.add(stmt);
+            StmtIfThen st =
+                    new StmtIfThen(context, cond, new StmtAssign(out, ExprConstInt.one),
+                            stmt);
+
+            stmts.add(st);
             
             Expression eq = out;
             StructDef struct  = nres.getStruct(structName);
