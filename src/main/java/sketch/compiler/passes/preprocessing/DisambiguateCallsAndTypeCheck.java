@@ -571,6 +571,12 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 Type lt = getType(newParam);
                 Type formalType = formal.getType();
                 formalType = formalType.addDefaultPkg(f.getPkg(), nres);
+                if (formalType instanceof TypeStructRef &&
+                        ((TypeStructRef) formalType).getName() == null)
+                {
+                    report(exp, "Bad parameter type: Formal type=" + formal +
+                            "\n Actual type=" + lt + "  " + f);
+                }
                 if (lt == null || !lt.promotesTo(formalType, nres)) {
                     report(exp, "Bad parameter type: Formal type=" + formal +
                             "\n Actual type=" + lt + "  " + f);
@@ -1425,7 +1431,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         } else {
             report(expr, "array index must be an int");
         }
-        return (expr);
+        return super.visitExprArrayRange(expr);
     }
 
     public Object visitExprArrayInit(ExprArrayInit expr) {

@@ -1,0 +1,17 @@
+
+bit foo(int x){
+    assert x > 5;
+    return false;
+}
+
+
+harness void main(int x){
+    
+    if(x > 5){    
+        if(foo(x)){
+            return;                
+        }    
+    }
+    assume x > 5;
+    foo(x);
+}

@@ -1,18 +1,63 @@
+pragma options "--slv-lightverif --debug-show-dag --debug-cex -V11 --beopt:simiters 150 --fe-fpencoding AS_FFIELD --bnd-unroll-amnt 9 --bnd-inline-amnt 9 --bnd-arr1d-size 9 --bnd-arr-size 9 --bnd-inbits 5";
 
+generator double gen_prevol_out(int N, ref double [N*N] postvol, ref
+double [N*N] prevol_out, ref double [N*N] prevol, ref double [N*N]
+volfluxx, ref double [N*N] volfluxy, int k,int j,int _limit) {
+  assert (_limit > 0);
+  generator double arraccess() {
+    generator int lin() {
 
-pragma options "--debug-show-dag ";
+    int linval = lhs(N,k,j);
+    if (??) { linval = lhs(N,k+1,j); }
+    if (??) { linval = lhs(N,k-1,j); }
+    if (??) { linval = lhs(N,k,j+1); }
+    if (??) { linval = lhs(N,k,j-1); }
+    return linval;
+    }
 
-
-bit sll(int t);
-
-
-generator void malloc() {
-    if (true) return;
-    assume(sll(0));
+    double acc = postvol[lin()];
+    if (??) { acc = prevol[lin()]; }
+    if (??) { acc = volfluxx[lin()]; }
+    if (??) { acc = volfluxy[lin()]; }
+    return acc;
+  }
+  double arracc = arraccess();
+  if (??) {
+    double genned = gen_prevol_out(N, postvol, prevol_out, prevol,
+volfluxx, volfluxy, k,j,_limit-1);
+    if (??) { arracc = arracc + genned; }
+    else { arracc = arracc - genned; }
+  }
+//  else if (??) { arracc = -arracc; }
+  return arracc;
 }
 
+generator int lhs(int N, int k, int j) {
+if (??) return j + N*k;
+return k + N*j;
+}
 
-harness void insSecond(bit active) {
-    malloc();
-    assert active && !active;
+void main_spec(int N, ref double [N*N] postvol, ref double [N*N]
+prevol_out, ref double [N*N] prevol, ref double [N*N] volfluxx, ref
+double [N*N] volfluxy, int k,int j, int k_p,int j_p) {
+ assume( (N) == 3);
+assume( (N) < 5);
+assume( (k) >= 0);
+assume( (k) < (N - 2)+ 1);
+assume( (k_p) >= 0);
+assume( (k_p) < (N - 2));
+assume( (j) >= 0);
+assume( (j) < (N - 2)+ 1);
+assume( (j_p) >= 0);
+assume( (j_p) < (N - 2));
+
+}
+
+void main(int N, ref double [N*N] postvol, ref double [N*N] prevol_out, ref double [N*N] prevol, ref double [N*N] volfluxx, ref double [N*N] volfluxy, int k,int j, int k_p,int j_p) implements
+main_spec {
+assert(
+        /* gen_prevol_out(N,postvol,prevol_out,prevol,volfluxx,volfluxy,k,j,9)*/
+        prevol[1] - (volfluxx[2] + volfluxx[3]) 
+        ==
+    prevol[1] - volfluxx[3] - volfluxx[2] );
 }

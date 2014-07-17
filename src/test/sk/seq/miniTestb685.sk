@@ -1,0 +1,28 @@
+int foo(int t){
+    return t*?? + ??;
+}
+
+harness void main0(int x){
+    assume false;
+    
+}
+
+harness void mainB(int x){
+    assume false;
+    
+}
+
+harness void main1(int x){
+    assume x > 10;
+    assert foo(x) > 10;        
+}
+
+harness void main2(int x){
+    assume x == 0;
+    assert foo(x) > 5;        
+}
+
+harness void main3(int x){
+    assume x == 30;
+    assert foo(x) < 60;        
+}

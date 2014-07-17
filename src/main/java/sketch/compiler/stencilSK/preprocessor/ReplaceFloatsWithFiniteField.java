@@ -1,9 +1,16 @@
 package sketch.compiler.stencilSK.preprocessor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
@@ -14,10 +21,16 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssume;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.util.exceptions.ExceptionAtNode;
 
 public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
@@ -37,6 +50,91 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
         le.add(ExprConstInt.createConstant(3));
         le.add(ExprConstInt.createConstant(6));
         DIVTABLE = new ExprArrayInit((FENode) null, le);
+    }
+
+    Set<String> toCheck = new HashSet<String>();
+
+    public Object visitProgram(Program p) {
+        nres = new NameResolver(p);
+        for (Package pk : p.getPackages()) {
+            nres.setPackage(pk);
+            for (Function f : pk.getFuncs()) {
+                if (f.getSpecification() != null) {
+                    String name = f.getSpecification();
+                    Function spec = nres.getFun(name);
+                    toCheck.add(spec.getFullName());
+                }
+            }
+        }
+        return super.visitProgram(p);
+    }
+
+    TempVarGen vgen = new TempVarGen("_fff");
+
+    Statement assumeSizeOLD(Expression toConstrain, TypeArray ta) {
+        Type base = ta.getBase();
+        String iter = vgen.nextVar();
+        Statement body;
+        if (base instanceof TypeArray) {
+            body =
+                    assumeSize(new ExprArrayRange(toConstrain, new ExprVar(toConstrain,
+                            iter)), (TypeArray) base);
+        } else {
+            body =
+                    new StmtAssume(toConstrain, new ExprBinary(new ExprArrayRange(
+                            toConstrain, new ExprVar(toConstrain, iter)), "<", BASE),
+                            "FLOATS < " + BASE);
+        }
+        Statement loop = new StmtFor(iter, ta.getLength(), body);
+        return loop;
+    }
+
+    Statement assumeSize(Expression toConstrain, TypeArray ta) {
+        int size = SketchOptions.getSingleton().bndOpts.arr1dSize;
+        Type base = ta.getBase();
+        String iter = vgen.nextVar();
+        Statement body;
+        assert base instanceof TypePrimitive : "NYI";
+       {
+            Expression ii = new ExprVar(toConstrain, iter);
+            body =
+                    new StmtAssume(toConstrain, 
+                            new ExprBinary(new ExprBinary(ii, ">=", ta.getLength()), "||", new ExprBinary(new ExprArrayRange(
+                                    toConstrain, ii), "<", BASE) )
+                    ,
+                            "FLOATS < " + BASE);
+        }
+        Statement loop = new StmtFor(iter, new ExprConstInt(size), body);
+        return loop;
+    }
+
+
+    @Override
+    public Object visitFunction(Function f) {
+        if (toCheck.contains(f.getFullName())) {
+            List<Statement> assumes = new ArrayList<Statement>();
+            for (Parameter param : f.getParams()) {
+                if (param.getType().equals(TypePrimitive.doubletype) ||
+                        param.getType().equals(TypePrimitive.floattype))
+                {
+                    assumes.add(new StmtAssume(param, new ExprBinary(new ExprVar(param,
+                            param.getName()), "<", BASE), "FLOATS < " + BASE));
+                    continue;
+                }
+                if (param.getType() instanceof TypeArray) {
+                    TypeArray ta = (TypeArray) param.getType();
+                    assumes.add(assumeSize(new ExprVar(param, param.getName()), ta));
+                }
+            }
+            if (assumes.size() == 0) {
+                return super.visitFunction(f);
+            }
+            Function nf = (Function) super.visitFunction(f);
+            assumes.add(nf.getBody());
+            return nf.creator().body(new StmtBlock(assumes)).create();
+        } else {
+            return super.visitFunction(f);
+        }
     }
 
     // private Expression getCondition(List<Statement> stmts, Parameter p) {
