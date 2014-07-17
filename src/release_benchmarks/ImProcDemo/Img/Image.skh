@@ -1,0 +1,128 @@
+package Img;
+include "Img/scaleDown.skh";
+include "Img/scaleUp.skh";
+
+struct Image{
+    @NeedsInclude("#include \"ImgHelper.h\"")
+    @Native("string filename;")
+    @Native("unsigned char head[60];")
+    int r;
+    int c;
+    int[3][c][r] im;    
+}
+
+struct Pixel{
+    int r;
+    int g;
+    int b;
+}
+
+generator int abs(int i){
+    return i>0?i:-i;
+}
+
+
+generator void setPixel(Image im, int i, int j, |Pixel| p){
+	im.im[i][j][2] = p.r; im.im[i][j][1] = p.g; im.im[i][j][0] = p.b;
+}
+
+generator |Pixel| getPixel(Image im, int i, int j){
+    return |Pixel|(r=im.im[i][j][2], g=im.im[i][j][1], b=im.im[i][j][0]);
+}
+
+generator |Pixel| plus(|Pixel| a, |Pixel| b){
+    return |Pixel|(r=a.r + b.r , g = a.g + b.g, b=a.b+b.b);
+}
+
+generator |Pixel| minus(|Pixel| a, |Pixel| b){
+    return |Pixel|(r=a.r - b.r , g = a.g - b.g, b=a.b-b.b);
+}
+
+generator |Pixel| over(|Pixel| a, int b){
+    return |Pixel|(r=a.r / b , g = a.g / b, b=a.b /b);
+}
+
+generator int l1dist(|Pixel| a, |Pixel| b){
+    return abs(a.r-b.r) + abs(a.g-b.g) + abs(a.b - b.b);
+}
+
+
+generator void iterator(Image im, fun f){
+    int K = ??;
+    minimize(K);
+    int r = im.r;
+    int c = im.c;
+    for(int i=K; i<r-K; ++i){
+        for(int j=K; j<c-K; ++j){
+            f(i, j);
+        }
+    }    
+}
+
+generator void iteratorBnd(Image im, fun f, int[2] low, int[2] high){    
+   int l0=low[0], l1=low[1], h0 = high[0], h1 = high[1];
+    for(int i=l0; i<h0; ++i){
+        for(int j=l1; j<h1; ++j){
+            f(i, j);
+        }
+    }    
+}
+
+
+int rid=0;
+int cid=0;
+int imid=0;
+int getR(int i);
+int getC(int i);
+int getIm(int i);
+
+@NeedsInclude("#include \"ImgHelper.cpp\"")
+@Native("{ _out = readImage(name); }")
+Image readImg([int n], char[n] name){
+    int r = getR(rid++);
+    int c = getC(cid++);
+    if(r>5){ r = 5; }
+    if(c>5){ c = 5; }
+    Image im = new Image(r=r, c=c);
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            im.im[i][j][0] = getIm(imid++)/4;
+            im.im[i][j][1] = getIm(imid++)/4;
+            im.im[i][j][2] = getIm(imid++)/4;
+        }
+    }
+    return im;
+}
+
+bit compare(Image im1, Image im2){
+    if(im1.r != im2.r){ return false; }
+    if(im1.c != im2.c){ return false; }
+    int c = im1.c; int r = im1.r;
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            if(im1.im[i][j] != im2.im[i][j]){ return false; }
+        }
+    }
+    return true;
+}
+
+Image copyImg(Image im){
+    Image rv = new Image(r=im.r, c=im.c);
+    int c = im.c; int r = im.r;
+    for(int i=0; i<r; ++i){
+        for(int j=0; j<c; ++j){
+            rv.im[i][j] = im.im[i][j];
+        }
+    }
+    return rv;
+}
+
+@Native("{ copyMD(from, to); }")
+void copyMetaData(Image from, Image to){
+    
+}
+
+@Native("{ writeImage(im); }")
+void writeImg(Image im){
+    
+}
