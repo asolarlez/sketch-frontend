@@ -676,29 +676,41 @@ public class PartialEvaluator extends SymbolTableVisitor {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }
 
-        assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
+        // assert outSlist.size() == tempLHSVs.size() :
+        // "The funcall in vtype should populate the outSlist with 1 element per output parameter";
 
-        Iterator<lhsVisitor> lhsIt = tempLHSVs.iterator();
-        for (abstractValue outval : outSlist) {
+        if (!outSlist.isEmpty()) {
+            abstractValue outval = outSlist.get(0);
             // state.setVarValue(nmIt.next(), it.next());
+            String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
+            state.varDeclare(outLhsName, new TypeStructRef("norec", false));
+            abstractValue outLhsIdx = null; // change this
 
-            String lhsName = null;
-            abstractValue lhsIdx = null;
-            int rlen = -1;
+            boolean outtmpir = isReplacer;
+            isReplacer = false;
+            assignmentToLocal(outval, outLhsName, outLhsIdx, 1);
+            isReplacer = outtmpir;
 
-            lhsVisitor lhsv = lhsIt.next();
-            lhsName = lhsv.lhsName;
-            lhsIdx = lhsv.lhsIdx;
-            rlen = lhsv.rlen;
-            boolean isFieldAcc = lhsv.isFieldAcc;
+            for (int i = 0; i < tempLHSVs.size(); i++) {
+                lhsVisitor lhsv = tempLHSVs.get(i);
+                String lhsName = null;
+                abstractValue lhsIdx = null;
+                int rlen = -1;
+                lhsName = lhsv.lhsName;
+                lhsIdx = lhsv.lhsIdx;
+                rlen = lhsv.rlen;
+                boolean isFieldAcc = lhsv.isFieldAcc;
+                abstractValue ov =
+                        vtype.tupleacc(state.varValue(outLhsName), vtype.CONST(i));
 
-            if (!isFieldAcc) {
-                assignmentToLocal(outval, lhsName, lhsIdx, rlen);
-            } else {
-                boolean tmpir = isReplacer;
-                isReplacer = false;
-                assignmentToField(lhsName, null, lhsIdx, outval, null, null);
-                isReplacer = tmpir;
+                if (!isFieldAcc) {
+                    assignmentToLocal(ov, lhsName, lhsIdx, rlen);
+                } else {
+                    boolean tmpir = isReplacer;
+                    isReplacer = false;
+                    assignmentToField(lhsName, null, lhsIdx, ov, null, null);
+                    isReplacer = tmpir;
+                }
             }
         }
 

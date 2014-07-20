@@ -210,10 +210,11 @@ public class Cfctype extends abstractValueType {
     public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue patchCond){
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         int idx = 0;
+        boolean hasOutput = false;
         while(formalParams.hasNext()){
             Parameter param = formalParams.next();
             if( param.isParameterOutput()){
-                outSlist.add(CONST(1));
+                hasOutput = true;
             }
 
             if (param.isParameterInput()) {
@@ -227,6 +228,8 @@ public class Cfctype extends abstractValueType {
                 ++idx;
             }           
         }
+        if (hasOutput)
+            outSlist.add(CONST(1));
     }
 
 }

@@ -263,7 +263,10 @@ public class NtsbVtype extends IntVtype {
     }
     
     int funid = 0;
-    public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond){
+
+    public void funcall(Function fun, List<abstractValue> avlist,
+            List<abstractValue> outSlist, abstractValue pathCond)
+    {
         ++funid;
        
         Iterator<abstractValue> actualParams = avlist.iterator();
@@ -320,7 +323,7 @@ public class NtsbVtype extends IntVtype {
             if( param.isParameterOutput()){
                 {
                     hasout = true;
-                    if(param.getType().isArray()){
+                    /*if (param.getType().isArray()) {
                         TypeArray ta = (TypeArray)param.getType();
                         Expression el = ta.getLength();
                         Integer lntt = el != null ? el.getIValue() : null;
@@ -356,7 +359,7 @@ public class NtsbVtype extends IntVtype {
                                  * ArrayList<abstractValue>(lst.size()); for (int tt = 0;
                                  * tt < lst.size(); ++tt) { nls.add(BOTTOM(vnm+"[" +
                                  * tt+"]")); }
-                                 */
+                                 *
                                 outSlist.add(BOTTOM(vnm));
                             }else{
                                 outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
@@ -370,12 +373,15 @@ public class NtsbVtype extends IntVtype {
                                 "]( " + plist + "  )(" + pathCond + ")[ _p_" +
                                 ProduceBooleanFunctions.filterPound(param.getName()) +
                                 "," + funid + "]"));
-                    }
+                    }*/
                 }
             }
         }
-        
-        if(!hasout){
+        if (hasout) {
+            outSlist.add(BOTTOM(name + "[NOREC]( " + plist + "  )(" + pathCond + ")[ _p_out_" +
+                    fun.getName() + "_" + fun.getPkg() +
+                    "," + funid + "]"));
+        } else {
             String par = "___GaRbAgE" + (gbgid++) +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
             out.println(par);
         }        
