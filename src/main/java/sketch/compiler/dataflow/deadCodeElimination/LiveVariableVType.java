@@ -1,5 +1,6 @@
 package sketch.compiler.dataflow.deadCodeElimination;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -321,13 +322,15 @@ public class LiveVariableVType extends abstractValueType {
 		}
 		
 		boolean hasOP = false;
+		List<abstractValue> outAV = new ArrayList<abstractValue>();
     	while(formalParams.hasNext()){
     		Parameter param = formalParams.next();    	
     		if( param.isParameterOutput()){
-    			outSlist.add(lv);
+    			outAV.add(lv);
     			hasOP = true;
     		}
         }
+        outSlist.add(lv);
         if (pathCond instanceof LiveVariableAV) {
             lv.set.add((LiveVariableAV) pathCond);
         }

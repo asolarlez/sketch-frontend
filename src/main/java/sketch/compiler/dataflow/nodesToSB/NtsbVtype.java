@@ -378,7 +378,8 @@ public class NtsbVtype extends IntVtype {
             }
         }
         if (hasout) {
-            outSlist.add(BOTTOM(name + "[NOREC]( " + plist + "  )(" + pathCond + ")[ _p_out_" +
+            outSlist.add(BOTTOM(name + "[*NOREC]( " + plist + "  )(" + pathCond +
+                    ")[ _p_out_" +
                     fun.getName() + "_" + fun.getPkg() +
                     "," + funid + "]"));
         } else {

@@ -683,12 +683,13 @@ public class PartialEvaluator extends SymbolTableVisitor {
             abstractValue outval = outSlist.get(0);
             // state.setVarValue(nmIt.next(), it.next());
             String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
-            state.varDeclare(outLhsName, new TypeStructRef("norec", false));
+            state.outVarDeclare(outLhsName, new TypeStructRef("norec", false));
             abstractValue outLhsIdx = null; // change this
 
             boolean outtmpir = isReplacer;
             isReplacer = false;
-            assignmentToLocal(outval, outLhsName, outLhsIdx, 1);
+            state.setVarValue(outLhsName, outval);
+            // assignmentToLocal(outval, outLhsName, outLhsIdx, 1);
             isReplacer = outtmpir;
 
             for (int i = 0; i < tempLHSVs.size(); i++) {
@@ -702,7 +703,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 boolean isFieldAcc = lhsv.isFieldAcc;
                 abstractValue ov =
                         vtype.tupleacc(state.varValue(outLhsName), vtype.CONST(i));
-
                 if (!isFieldAcc) {
                     assignmentToLocal(ov, lhsName, lhsIdx, rlen);
                 } else {
