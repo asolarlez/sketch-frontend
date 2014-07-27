@@ -92,6 +92,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public boolean isPrecise = true;
     protected int throwAssertionsFalse = 0;
     protected int throwAssertionsTrue = 0;
+    protected boolean combineOutput = false;
 
     protected void pushTrue() {
         throwAssertionsTrue++;
@@ -124,7 +125,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
 
 
-    public PartialEvaluator(abstractValueType vtype, TempVarGen varGen,  boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
+    public PartialEvaluator(abstractValueType vtype, TempVarGen varGen,
+            boolean isReplacer, int maxUnroll, RecursionControl rcontrol)
+    {
         super(null);
         this.MAX_UNROLL = maxUnroll;
         this.rcontrol = rcontrol;
@@ -676,9 +679,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }
 
-        // assert outSlist.size() == tempLHSVs.size() :
-        // "The funcall in vtype should populate the outSlist with 1 element per output parameter";
-
+        if (combineOutput) {
         if (!outSlist.isEmpty()) {
             abstractValue outval = outSlist.get(0);
             // state.setVarValue(nmIt.next(), it.next());
@@ -709,6 +710,33 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     boolean tmpir = isReplacer;
                     isReplacer = false;
                     assignmentToField(lhsName, null, lhsIdx, ov, null, null);
+                    isReplacer = tmpir;
+                }
+            }
+        }
+        } else {
+            assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
+
+            Iterator<lhsVisitor> lhsIt = tempLHSVs.iterator();
+            for (abstractValue outval : outSlist) {
+                // state.setVarValue(nmIt.next(), it.next());
+
+                String lhsName = null;
+                abstractValue lhsIdx = null;
+                int rlen = -1;
+
+                lhsVisitor lhsv = lhsIt.next();
+                lhsName = lhsv.lhsName;
+                lhsIdx = lhsv.lhsIdx;
+                rlen = lhsv.rlen;
+                boolean isFieldAcc = lhsv.isFieldAcc;
+
+                if (!isFieldAcc) {
+                    assignmentToLocal(outval, lhsName, lhsIdx, rlen);
+                } else {
+                    boolean tmpir = isReplacer;
+                    isReplacer = false;
+                    assignmentToField(lhsName, null, lhsIdx, outval, null, null);
                     isReplacer = tmpir;
                 }
             }
