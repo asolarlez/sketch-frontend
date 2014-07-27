@@ -684,13 +684,12 @@ public class PartialEvaluator extends SymbolTableVisitor {
             abstractValue outval = outSlist.get(0);
             // state.setVarValue(nmIt.next(), it.next());
             String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
-            state.outVarDeclare(outLhsName, new TypeStructRef("norec", false));
+                state.varDeclare(outLhsName, new TypeStructRef("norec", false));
             abstractValue outLhsIdx = null; // change this
 
             boolean outtmpir = isReplacer;
             isReplacer = false;
             state.setVarValue(outLhsName, outval);
-            // assignmentToLocal(outval, outLhsName, outLhsIdx, 1);
             isReplacer = outtmpir;
 
             for (int i = 0; i < tempLHSVs.size(); i++) {
