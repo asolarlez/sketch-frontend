@@ -1,0 +1,105 @@
+pragma options "--debug-show-dag --bnd-unroll-amnt 8 --bnd-inbits 3 --bnd-inline-amnt 11";
+include "Image.skh";
+
+harness void main(int n, char[n] fname){
+    Image im = readImg(fname);
+    
+    bestedges(im);
+    
+    writeImg(im);    
+}
+
+
+void bestedges(Image im){
+    int[im.c][im.r] tmp;
+    generator void edgeD(int i, int j){            
+        |Pixel| top =
+            over(plus(getPixel(im, i-1, j), 
+                plus(getPixel(im, i-2, j-1), 
+                        getPixel(im, i-2, j+1))), 3);
+        |Pixel| bot = 
+            over(plus(getPixel(im, i+1, j), 
+                    plus(getPixel(im, i+2, j-1), 
+                            getPixel(im, i+2, j+1))), 3);
+        
+        |Pixel| left = 
+            over(plus(getPixel(im, i, j-1), 
+                    plus(getPixel(im, i-1, j-2), 
+                            getPixel(im, i+1, j-2))), 3);
+        
+        |Pixel| right = 
+            over(plus(getPixel(im, i, j+1), 
+                    plus(getPixel(im, i-1, j+2), 
+                            getPixel(im, i+1, j+2))), 3);
+        
+        if(l1dist(top, bot) + l1dist(left, right) < 40){
+            tmp[i][j] = 0;                
+        }else{
+            tmp[i][j] = 100;
+        }
+    }
+    iterator(im, edgeD);
+    
+    // cleanup2(im.c, im.r, tmp);
+    
+    
+    
+    generator void end(int i, int j){
+        if(tmp[i][j]>0 && i>1){
+           im.im[i][j][1] = tmp[i][j];
+           im.im[i][j][0] = 0;
+           im.im[i][j][2] = 0;
+        }else{
+            im.im[i][j][1] = im.im[i][j][1]/3;
+            im.im[i][j][0] = im.im[i][j][0]/3;
+            im.im[i][j][2] = im.im[i][j][2]/3;
+        }     
+    }
+    iterator(im, end);
+}
+
+
+
+void cleanup2(int c, int r, ref int[c][r] tmp2){
+    int K = 5;
+    int[c][r] tmp = tmp2;
+    
+    for(int i=K; i<r-K; ++i){
+        for(int j=K; j<c-K; ++j){
+            int cnt = 0;
+            for (int ii=i-K; ii<i+K; ++ii){
+                for (int jj=j-K; jj<j+K; ++jj){
+                    if(tmp[ii][jj] > 0){
+                        cnt++;
+                    }
+                } 
+            }
+            if(cnt>(4*K*K)/2){                  
+                for (int ii=i-(K-1); ii<i+(K-1); ++ii){
+                    for (int jj=j-(K-1); jj<j+(K-1); ++jj){
+                        if(tmp[ii][jj-1] != tmp[ii][jj+1]){
+                            tmp2[ii][jj]=0;
+                        }
+                        if(tmp[ii-1][jj] != tmp[ii+1][jj]){
+                            tmp2[ii][jj]=0;
+                        }
+                        if(tmp[ii-1][jj-1] != tmp[ii+1][jj+1]){
+                            tmp2[ii][jj]=0;
+                        }
+                        if(tmp[ii-1][jj+1] != tmp[ii+1][jj-1]){
+                            tmp2[ii][jj]=0;
+                        }
+                    } 
+                }
+            }
+            if(cnt < 3*K/2){
+                for (int ii=i-(K-1); ii<i+(K-1); ++ii){
+                    for (int jj=j-(K-1); jj<j+(K-1); ++jj){
+                        tmp2[ii][jj]=0;
+                    }
+                }
+            }
+        }
+    }
+}
+

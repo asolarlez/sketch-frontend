@@ -498,12 +498,12 @@ public class SequentialSketchMain extends CommonSketchMain
         
         prog = (Program) prog.accept(new PidReplacer());
 
-        // prog.debugDump("After");
+
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
-
+        prog.debugDump("After");
         if (!dtc.good) {
             throw new ProgramParseException("Semantic check failed");
         }
@@ -626,7 +626,9 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
-                e.printStackTrace();
+                if (sketchmain.options.debugOpts.verbosity > 3) {
+                    e.printStackTrace();
+                }
                 System.exit(1);
             }
         }

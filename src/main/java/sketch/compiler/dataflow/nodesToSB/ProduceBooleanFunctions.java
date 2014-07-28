@@ -167,12 +167,14 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         PrintStream out = ((NtsbVtype)this.vtype).out;
         boolean first = true;
         out.print("(");
+        int count = 0;
         for(Iterator<Parameter> iter = params.iterator(); iter.hasNext(); ){
             Parameter param = iter.next();
             Type ptype = (Type) param.getType().accept(this);
 
             if (param.isParameterOutput()) {
                 hasOutput = true;
+                count++;
             } else {
                 if (!first)
                     out.print(", ");
@@ -271,6 +273,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             out.print("! ");
             out.print("NOREC ");
             out.print(finalOpname);
+            out.print(" " + count);
             // addInitStmts.add(finalOpname + "= -1;");
         }
         out.print(")");

@@ -1,0 +1,11 @@
+pragma options "--fe-fpencoding AS_FFIELD --bnd-inbits 4 --bnd-unroll-amnt 32";
+
+harness void main(double a, double b, double c){
+    
+    assert a - (b + c) == a - b - c;
+}
+
+harness void main2(int n, double[n][n] a, double[n] b, double[n] c){
+    assume n == 4;
+    assert a[2][1] - (b[1] + c[3]) == a[??][??] - b[??] - c[??];
+}

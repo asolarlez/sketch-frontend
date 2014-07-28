@@ -319,69 +319,18 @@ public class NtsbVtype extends IntVtype {
         actualParams = avlist.iterator();
         boolean hasout = false;
         while(formalParams.hasNext()){
-            Parameter param = formalParams.next();  
+            Parameter param = formalParams.next();
+
             if( param.isParameterOutput()){
                 {
                     hasout = true;
-                    /*if (param.getType().isArray()) {
-                        TypeArray ta = (TypeArray)param.getType();
-                        Expression el = ta.getLength();
-                        Integer lntt = el != null ? el.getIValue() : null;
-                        if (lntt != null) {
-                            int lnt = lntt;
-                            List<abstractValue> ls = new ArrayList<abstractValue>(lnt);
-                            for (int i = 0; i < lnt; ++i) {
-                                ls.add(BOTTOM(name + "[" + printType(ta.getBase()) +
-                                        "]( " + plist + "  )(" + pathCond + ")[ _p_" +
-                                        param.getName() + "_idx_" + i + "," + funid + "]"));
-                                plist = "0";
-                            }
-                            outSlist.add(ARR(ls));
-                        } else {
-                            if (true) {
-                                String vnm = "___tEmP" + (gbgid++);
-                                String par =
-                                        vnm + "=" + name + "[" +
-                                                printType(ta.getBase()) +
-                                                "_arr" +
-                                                "]( " +
-                                                oplist +
-                                                "  )(" +
-                                                pathCond +
-                                                ")[ _p_" +
-                                                ProduceBooleanFunctions.filterPound(param.getName()) +
-                                                "," + funid + "];";
-                                oplist = "0";
-                                out.println(par);
-                                /*
-                                 * List<abstractValue> lst = actual.getVectValue();
-                                 * List<abstractValue> nls = new
-                                 * ArrayList<abstractValue>(lst.size()); for (int tt = 0;
-                                 * tt < lst.size(); ++tt) { nls.add(BOTTOM(vnm+"[" +
-                                 * tt+"]")); }
-                                 *
-                                outSlist.add(BOTTOM(vnm));
-                            }else{
-                                outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
-                                        "]( " + plist + "  )(" + pathCond + ")[ _p_" +
-                                        ProduceBooleanFunctions.filterPound(param.getName()) +
-                                        "," + funid + "]"));
-                            }
-                        }
-                    }else{
-                        outSlist.add(BOTTOM(name + "[" + printType(param.getType()) +
-                                "]( " + plist + "  )(" + pathCond + ")[ _p_" +
-                                ProduceBooleanFunctions.filterPound(param.getName()) +
-                                "," + funid + "]"));
-                    }*/
                 }
             }
         }
         if (hasout) {
             outSlist.add(BOTTOM(name + "[*NOREC]( " + plist + "  )(" + pathCond +
                     ")[ _p_out_" +
-                    fun.getName() + "_" + fun.getPkg() +
-                    "," + funid + "]"));
+ fun.getName() + "_" + fun.getPkg() + "," + funid + "]"));
         } else {
             String par = "___GaRbAgE" + (gbgid++) +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
             out.println(par);

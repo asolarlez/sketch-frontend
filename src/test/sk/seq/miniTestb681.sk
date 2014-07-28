@@ -6,3 +6,23 @@ harness void main(int x, int y){
     assert x+t <= y + ??; 
     
 }
+
+harness void mainC(int x, int y){
+    if(!(y > x)){
+        return;
+    }
+    if(x< y){
+        return;        
+    }
+    if(x < y){
+        assert ??;
+    }
+}
+
+harness void mainB(int x, int y){
+    assume y > x;
+    assume y < x;
+    
+    assert ??;
+    
+}

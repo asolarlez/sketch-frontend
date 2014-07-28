@@ -1,0 +1,2 @@
+sketch --fe-inc Img --fe-output-code --fe-kill-asserts edgeDetector.sk 
+g++ -O3 -I Img/ -I ../../runtime/include/  edgeDetector.cpp driver.cpp 
