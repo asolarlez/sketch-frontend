@@ -3,7 +3,7 @@ struct A{
 	
 }
 struct B extends A{
-	bit x;
+	bit _x;
 }
 struct C extends A{
 	int x;
@@ -12,7 +12,7 @@ struct C extends A{
 A get(A a ){
 	int c =2;
 	bit b =1;
-	return new ??(x = c, x= b);	//a is not a field of any struct extending A
+	return new ??(x = c, _x= b);	//a is not a field of any struct extending A
 }
 
 harness void main(){

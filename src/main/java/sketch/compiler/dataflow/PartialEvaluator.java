@@ -680,39 +680,44 @@ public class PartialEvaluator extends SymbolTableVisitor {
         }
 
         if (combineOutput) {
-        if (!outSlist.isEmpty()) {
-            abstractValue outval = outSlist.get(0);
-            // state.setVarValue(nmIt.next(), it.next());
-            String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
+            if (!outSlist.isEmpty()) {
+                abstractValue outval = outSlist.get(0);
+                // state.setVarValue(nmIt.next(), it.next());
+                String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
                 state.varDeclare(outLhsName, new TypeStructRef("norec", false));
-            abstractValue outLhsIdx = null; // change this
+                abstractValue outLhsIdx = null; // change this
 
-            boolean outtmpir = isReplacer;
-            isReplacer = false;
-            state.setVarValue(outLhsName, outval);
-            isReplacer = outtmpir;
+                boolean outtmpir = isReplacer;
+                isReplacer = false;
+                state.setVarValue(outLhsName, outval);
+                isReplacer = outtmpir;
 
-            for (int i = 0; i < tempLHSVs.size(); i++) {
-                lhsVisitor lhsv = tempLHSVs.get(i);
-                String lhsName = null;
-                abstractValue lhsIdx = null;
-                int rlen = -1;
-                lhsName = lhsv.lhsName;
-                lhsIdx = lhsv.lhsIdx;
-                rlen = lhsv.rlen;
-                boolean isFieldAcc = lhsv.isFieldAcc;
-                abstractValue ov =
-                        vtype.tupleacc(state.varValue(outLhsName), vtype.CONST(i));
-                if (!isFieldAcc) {
-                    assignmentToLocal(ov, lhsName, lhsIdx, rlen);
-                } else {
-                    boolean tmpir = isReplacer;
-                    isReplacer = false;
-                    assignmentToField(lhsName, null, lhsIdx, ov, null, null);
-                    isReplacer = tmpir;
+                for (int i = 0; i < tempLHSVs.size(); i++) {
+                    lhsVisitor lhsv = tempLHSVs.get(i);
+                    String lhsName = null;
+                    abstractValue lhsIdx = null;
+                    int rlen = -1;
+                    lhsName = lhsv.lhsName;
+                    lhsIdx = lhsv.lhsIdx;
+                    rlen = lhsv.rlen;
+                    boolean isFieldAcc = lhsv.isFieldAcc;
+                    abstractValue ov =
+                            vtype.tupleacc(state.varValue(outLhsName), vtype.CONST(i));
+                    String tmpName = varGen.nextVar(lhsName);
+                    state.varDeclare(tmpName, new TypeStructRef("norec", false));
+                    assignmentToLocal(ov, tmpName, null, -1);
+                    abstractValue rhs = state.varValue(tmpName);
+
+                    if (!isFieldAcc) {
+                        assignmentToLocal(rhs, lhsName, lhsIdx, rlen);
+                    } else {
+                        boolean tmpir = isReplacer;
+                        isReplacer = false;
+                        assignmentToField(lhsName, null, lhsIdx, rhs, null, null);
+                        isReplacer = tmpir;
+                    }
                 }
             }
-        }
         } else {
             assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
 
