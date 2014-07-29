@@ -207,7 +207,9 @@ public class Cfctype extends abstractValueType {
         return join(cond, join(vtrue, vfalse));
     }
 
-    public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue patchCond){
+    public void funcall(Function fun, List<abstractValue> avlist,
+            List<abstractValue> outSlist, abstractValue patchCond, MethodState state)
+    {
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         int idx = 0;
         while(formalParams.hasNext()){

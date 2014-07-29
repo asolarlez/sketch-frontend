@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow;
 
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -100,6 +101,10 @@ public abstract class abstractValueType{
      *            This is the path condition for the function call. The call only executes
      *            if path cond is true.
      */
-	abstract public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond);
+    abstract public void funcall(Function fun, List<abstractValue> avlist,
+            List<abstractValue> outSlist, abstractValue pathCond, MethodState state);
+
+    public static Map<Integer, Integer> outputMap;
+
 }
 

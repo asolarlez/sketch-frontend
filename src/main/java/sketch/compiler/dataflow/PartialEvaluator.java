@@ -92,7 +92,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public boolean isPrecise = true;
     protected int throwAssertionsFalse = 0;
     protected int throwAssertionsTrue = 0;
-    protected boolean combineOutput = false;
 
     protected void pushTrue() {
         throwAssertionsTrue++;
@@ -674,77 +673,38 @@ public class PartialEvaluator extends SymbolTableVisitor {
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
         // Function nfun = fun.creator().params(nplist).create();
         try {
-            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true));
+            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true), state);
         } catch (SketchException se) {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }
 
-        if (combineOutput) {
-            if (!outSlist.isEmpty()) {
-                abstractValue outval = outSlist.get(0);
-                // state.setVarValue(nmIt.next(), it.next());
-                String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
-                state.varDeclare(outLhsName, new TypeStructRef("norec", false));
-                abstractValue outLhsIdx = null; // change this
 
-                boolean outtmpir = isReplacer;
+        assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
+
+        Iterator<lhsVisitor> lhsIt = tempLHSVs.iterator();
+        for (abstractValue outval : outSlist) {
+            // state.setVarValue(nmIt.next(), it.next());
+
+            String lhsName = null;
+            abstractValue lhsIdx = null;
+            int rlen = -1;
+
+            lhsVisitor lhsv = lhsIt.next();
+            lhsName = lhsv.lhsName;
+            lhsIdx = lhsv.lhsIdx;
+            rlen = lhsv.rlen;
+            boolean isFieldAcc = lhsv.isFieldAcc;
+
+            if (!isFieldAcc) {
+                assignmentToLocal(outval, lhsName, lhsIdx, rlen);
+            } else {
+                boolean tmpir = isReplacer;
                 isReplacer = false;
-                state.setVarValue(outLhsName, outval);
-                isReplacer = outtmpir;
-
-                for (int i = 0; i < tempLHSVs.size(); i++) {
-                    lhsVisitor lhsv = tempLHSVs.get(i);
-                    String lhsName = null;
-                    abstractValue lhsIdx = null;
-                    int rlen = -1;
-                    lhsName = lhsv.lhsName;
-                    lhsIdx = lhsv.lhsIdx;
-                    rlen = lhsv.rlen;
-                    boolean isFieldAcc = lhsv.isFieldAcc;
-                    abstractValue ov =
-                            vtype.tupleacc(state.varValue(outLhsName), vtype.CONST(i));
-                    String tmpName = varGen.nextVar(lhsName);
-                    state.varDeclare(tmpName, new TypeStructRef("norec", false));
-                    assignmentToLocal(ov, tmpName, null, -1);
-                    abstractValue rhs = state.varValue(tmpName);
-
-                    if (!isFieldAcc) {
-                        assignmentToLocal(rhs, lhsName, lhsIdx, rlen);
-                    } else {
-                        boolean tmpir = isReplacer;
-                        isReplacer = false;
-                        assignmentToField(lhsName, null, lhsIdx, rhs, null, null);
-                        isReplacer = tmpir;
-                    }
-                }
-            }
-        } else {
-            assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
-
-            Iterator<lhsVisitor> lhsIt = tempLHSVs.iterator();
-            for (abstractValue outval : outSlist) {
-                // state.setVarValue(nmIt.next(), it.next());
-
-                String lhsName = null;
-                abstractValue lhsIdx = null;
-                int rlen = -1;
-
-                lhsVisitor lhsv = lhsIt.next();
-                lhsName = lhsv.lhsName;
-                lhsIdx = lhsv.lhsIdx;
-                rlen = lhsv.rlen;
-                boolean isFieldAcc = lhsv.isFieldAcc;
-
-                if (!isFieldAcc) {
-                    assignmentToLocal(outval, lhsName, lhsIdx, rlen);
-                } else {
-                    boolean tmpir = isReplacer;
-                    isReplacer = false;
-                    assignmentToField(lhsName, null, lhsIdx, outval, null, null);
-                    isReplacer = tmpir;
-                }
+                assignmentToField(lhsName, null, lhsIdx, outval, null, null);
+                isReplacer = tmpir;
             }
         }
+
 
 
         //assert !isReplacer : "A replacer should really do something different with function calls.";

@@ -73,7 +73,6 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     public ProduceBooleanFunctions(TempVarGen varGen, 
             ValueOracle oracle, PrintStream out, int maxUnroll, int maxArrSize, RecursionControl rcontrol, boolean tracing){
         super(new NtsbVtype(oracle, out), varGen, false, maxUnroll, rcontrol);
-        this.combineOutput = true;
         this.varGen = varGen;
         this.tracing = tracing;
         if(tracing){

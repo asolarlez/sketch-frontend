@@ -433,7 +433,9 @@ public class IntVtype extends abstractValueType {
 		}
 	}
 
-	public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue patchCond){
+    public void funcall(Function fun, List<abstractValue> avlist,
+            List<abstractValue> outSlist, abstractValue patchCond, MethodState state)
+    {
 		Iterator<Parameter> formalParams = fun.getParams().iterator();
     	while(formalParams.hasNext()){
     		Parameter param = formalParams.next();

@@ -30,20 +30,18 @@ import sketch.util.exceptions.ExceptionAtNode;
 public class NtsbVtype extends IntVtype {
     public PrintStream out;
     protected AbstractValueOracle oracle;   
-    
-    
+
     public NtsbVtype(AbstractValueOracle oracle, PrintStream out){
         this.oracle = oracle;
         this.out = out;     
     }
-    
-    
+
     public abstractValue outOfBounds(){
         return CONST(0);
     }
-    
+
     protected Map<FENode, NtsbValue> memoizedValues = new HashMap<FENode, NtsbValue>();
-    
+
 
     public abstractValue STAR(FENode node) {
         // TODO: do we guarantee each node is visited just once?
@@ -57,7 +55,7 @@ public class NtsbVtype extends IntVtype {
         }
         if(node instanceof ExprStar){
             ExprStar star = (ExprStar) node;
-            
+
             Type t = star.getType();
             int ssz = 1;
             List<abstractValue> avlist = null;
@@ -103,7 +101,7 @@ public class NtsbVtype extends IntVtype {
         if(oracle.allowMemoization()){ memoizedValues.put(node, nv); }
         return nv;
     }
-    
+
     public abstractValue BOTTOM(){
         return new NtsbValue();
     }
@@ -124,39 +122,38 @@ public class NtsbVtype extends IntVtype {
     public abstractValue CONST(int v){
         return new NtsbValue(v); 
     }
-    
+
     public abstractValue NULL(){
         return CONST(-1); 
     }
-    
+
     public abstractValue CONST(boolean v){
         return new NtsbValue(v); 
     }
-    
+
     public abstractValue TUPLE(List<abstractValue> vals, String name) {
         return new NtsbValue(vals, name);
     }
     public abstractValue ARR(List<abstractValue> vals){
         return new NtsbValue(vals);     
     }
-    
-    
+
     public void Assert(abstractValue val, StmtAssert stmt) {
         String msg = stmt.getMsg();
-         if( val.hasIntVal() ){
-             if(val.getIntVal() == 0){
+        if (val.hasIntVal()) {
+            if (val.getIntVal() == 0) {
                 DebugOut.printWarning(stmt.getCx() +
                         "This assertion will fail unconditionally when you call this function: " +
                         msg);
-             }
-             if(val.getIntVal() == 1){
-                 return;
-             }
-         }
+            }
+            if (val.getIntVal() == 1) {
+                return;
+            }
+        }
         out.print(stmt.getAssertSymbol() + " (" + val + ") : \"" +
                 msg + "\" ;\n");
     }
-    
+
     public void Assume(abstractValue val, StmtAssume stmt) {
         String msg = stmt.getMsg();
         if (val.hasIntVal()) {
@@ -176,7 +173,7 @@ public class NtsbVtype extends IntVtype {
     public varState cleanState(String var, Type t, MethodState mstate){
         return new NtsbState(var, t, this);
     }
-    
+
     public abstractValue plus(abstractValue v1, abstractValue v2) {
         NtsbValue rv = (NtsbValue) super.plus(v1, v2);
         if(rv.isBottom()){
@@ -207,13 +204,12 @@ public class NtsbVtype extends IntVtype {
                 rv.X = X;
             }
             // else if (c_original) {
-                // printWarning("skipping ax+b optimization for nodes", v1, v2);
+            // printWarning("skipping ax+b optimization for nodes", v1, v2);
             // }
         }
         return rv;
     }
-    
-    
+
     public abstractValue times(abstractValue v1, abstractValue v2) {
         NtsbValue rv = (NtsbValue) super.times(v1, v2);
         if(rv.isBottom()){
@@ -243,8 +239,7 @@ public class NtsbVtype extends IntVtype {
         }       
         return rv;
     }
-    
-    
+
     protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
         NtsbValue nidx = (NtsbValue) idx;
         if (nidx.isAXPB && arr.isVect()) {
@@ -261,18 +256,19 @@ public class NtsbVtype extends IntVtype {
         }else
             return BOTTOM( "(" + arr + "[" + idx + "])" );
     }
-    
+
     int funid = 0;
 
     public void funcall(Function fun, List<abstractValue> avlist,
-            List<abstractValue> outSlist, abstractValue pathCond)
+            List<abstractValue> outSlist, abstractValue pathCond, MethodState state)
     {
         ++funid;
-       
+        outputMap = new HashMap<Integer, Integer>();
         Iterator<abstractValue> actualParams = avlist.iterator();
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
         String plist = "";
+
         while( actualParams.hasNext() ){
             abstractValue param = actualParams.next();
             Parameter formal = formalParams.next();
@@ -318,26 +314,61 @@ public class NtsbVtype extends IntVtype {
         formalParams = fun.getParams().iterator();
         actualParams = avlist.iterator();
         boolean hasout = false;
-        while(formalParams.hasNext()){
-            Parameter param = formalParams.next();
 
-            if( param.isParameterOutput()){
-                {
-                    hasout = true;
+        abstractValue outval =
+                BOTTOM(name + "[*NOREC]( " + plist + "  )(" + pathCond + ")[ _p_out_" +
+                        fun.getName() + "_" + fun.getPkg() + "," + funid + "]");
+        String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
+        state.varDeclare(outLhsName, new TypeStructRef("norec", false));
+        abstractValue outLhsIdx = null;
+
+        state.setVarValue(outLhsName, outval);
+        int outIndex = 0;
+
+        while (formalParams.hasNext()) {
+            Parameter param = formalParams.next();
+            abstractValue ov;
+            if (param.isParameterOutput()) {
+                if (param.getType().isArray()) {
+                    TypeArray ta = (TypeArray) param.getType();
+                    Expression el = ta.getLength();
+                    Integer lntt = el != null ? el.getIValue() : null;
+                    if (lntt != null) {
+                        int lnt = lntt;
+                        List<abstractValue> avList = new ArrayList<abstractValue>();
+                        for (int p = 0; p < lnt; p++) {
+                            abstractValue av =
+                                    tupleacc(state.varValue(outLhsName), CONST(outIndex));
+                            outIndex++;
+                            avList.add(av);
+                        }
+                        ov = ARR(avList);
+                        outSlist.add(ov);
+
+                    } else {
+                        ov = tupleacc(state.varValue(outLhsName), CONST(outIndex));
+                        outIndex++;
+                        String tmpName = "___tEmP" + (gbgid++);
+                        state.varDeclare(tmpName, new TypeStructRef("norec", false));
+                        state.setVarValue(tmpName, ov);
+                        abstractValue rhs = state.varValue(tmpName);
+                        outSlist.add(rhs);
+                    }
+                } else {
+                    ov = tupleacc(state.varValue(outLhsName), CONST(outIndex));
+                    outIndex++;
+                    outSlist.add(ov);
                 }
+
             }
         }
-        if (hasout) {
-            outSlist.add(BOTTOM(name + "[*NOREC]( " + plist + "  )(" + pathCond +
-                    ")[ _p_out_" +
- fun.getName() + "_" + fun.getPkg() + "," + funid + "]"));
-        } else {
+        if (!hasout) {
             String par = "___GaRbAgE" + (gbgid++) +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
             out.println(par);
         }        
     }
     int gbgid = 0; //This is a big hack!!
-    
+
     String printType(Type t){
         if (t instanceof TypeStructRef) {
             TypeStructRef ts = (TypeStructRef) t;
