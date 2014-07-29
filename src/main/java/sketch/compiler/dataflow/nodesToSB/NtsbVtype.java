@@ -268,7 +268,6 @@ public class NtsbVtype extends IntVtype {
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
         String plist = "";
-
         while( actualParams.hasNext() ){
             abstractValue param = actualParams.next();
             Parameter formal = formalParams.next();
@@ -312,19 +311,27 @@ public class NtsbVtype extends IntVtype {
         }
         String oplist = plist;
         formalParams = fun.getParams().iterator();
-        actualParams = avlist.iterator();
         boolean hasout = false;
+        while (formalParams.hasNext()) {
+            Parameter param = formalParams.next();
+            if (param.isParameterOutput()) {
+                hasout = true;
+            }
+        }
+        formalParams = fun.getParams().iterator();
+        actualParams = avlist.iterator();
 
+        int outIndex = 0;
+        String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
+        if (hasout) {
         abstractValue outval =
                 BOTTOM(name + "[*NOREC]( " + plist + "  )(" + pathCond + ")[ _p_out_" +
                         fun.getName() + "_" + fun.getPkg() + "," + funid + "]");
-        String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
         state.varDeclare(outLhsName, new TypeStructRef("norec", false));
         abstractValue outLhsIdx = null;
 
         state.setVarValue(outLhsName, outval);
-        int outIndex = 0;
-
+        }
         while (formalParams.hasNext()) {
             Parameter param = formalParams.next();
             abstractValue ov;
