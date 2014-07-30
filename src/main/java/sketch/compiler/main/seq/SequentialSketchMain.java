@@ -503,7 +503,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
-        prog.debugDump("After");
+        // prog.debugDump("After");
         if (!dtc.good) {
             throw new ProgramParseException("Semantic check failed");
         }

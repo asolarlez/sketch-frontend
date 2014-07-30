@@ -241,7 +241,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
                         List<Expression> elems = new ArrayList<Expression>(ln);
                         ExprArrayInit aib = (ExprArrayInit) nbase;
                         for(int t=0; t<ln; ++t ){
+                            try {
                             elems.add( aib.getElements().get(i+t) );
+                            } catch (IndexOutOfBoundsException ex) {
+                                throw new ArrayIndexOutOfBoundsException(ex.getMessage());
+                            }
                         }
                         exprRV = new ExprArrayInit(exp, elems);
                     }else{

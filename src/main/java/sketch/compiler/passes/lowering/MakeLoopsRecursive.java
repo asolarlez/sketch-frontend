@@ -168,8 +168,12 @@ public class MakeLoopsRecursive extends SymbolTableVisitor {
                 List<Parameter> params = extractParams(stmt);
                 params.add(0, new Parameter(stmt, TypePrimitive.inttype, itname));
                 List<Statement> body = new ArrayList<Statement>();
+                SymbolTable old = this.symtab;
+                this.symtab = new SymbolTable(old);
+                stmt.getInit().accept(this);
                 body.add(new StmtIfThen(stmt, stmt.getCond(),
                         (Statement) stmt.getBody().accept(this), null));
+                this.symtab = old;
                 body.add(stmt.getIncr());
                 List<Expression> actuals = new ArrayList<Expression>();
                 List<Expression> firstCall = new ArrayList<Expression>();

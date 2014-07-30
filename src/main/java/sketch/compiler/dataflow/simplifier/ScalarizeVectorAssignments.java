@@ -89,8 +89,11 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         if (lt.equals(rt) && !agressive && (lhs instanceof ExprVar) &&
                 (rhs instanceof ExprVar))
         {
-            if (this.symtab.lookupKind(lhs.toString(), lhs) != SymbolTable.KIND_FUNC_PARAM &&
-                    this.symtab.lookupKind(rhs.toString(), rhs) != SymbolTable.KIND_FUNC_PARAM)
+            if (this.symtab.lookupKind(lhs.toString(), lhs) != SymbolTable.KIND_FUNC_PARAM
+            /*
+             * && this.symtab.lookupKind(rhs.toString(), rhs) !=
+             * SymbolTable.KIND_FUNC_PARAM
+             */)
             {
                 return 0;
             }
