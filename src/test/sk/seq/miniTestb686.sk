@@ -14,3 +14,15 @@ harness int main(int n){
     }
     assert bar({foo({1}), foo({2}), foo({3})}[0::n])==??;
 }
+
+
+harness void mainb(int n){
+    int t = foo({2});
+    assume t == 2;
+    foo({2});
+    if(t == n){
+        t = foo({2});
+    }
+    assume t <= 3;
+    foo({2});
+}

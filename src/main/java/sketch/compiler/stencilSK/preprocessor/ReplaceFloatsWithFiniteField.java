@@ -12,15 +12,7 @@ import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstFloat;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprTypeCast;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -222,6 +214,25 @@ public class ReplaceFloatsWithFiniteField extends ReplaceFloatsWithBits {
                         exp + " " + exp.getOp();
         }
         return null;
+    }
+
+    public Object visitExprUnary(ExprUnary exp) {
+        Type type = getType(exp.getExpr());
+        if (!isFloat(type)) {
+            return super.visitExprUnary(exp);
+        }
+
+        Expression expr = doExpression(exp.getExpr());
+        switch (exp.getOp()) {
+            case ExprUnary.UNOP_NEG:
+                return new ExprBinary(BASE, "-", expr);
+            default:
+        }
+
+        if (expr == exp.getExpr())
+            return exp;
+        else
+            return new ExprUnary(exp, exp.getOp(), expr);
     }
 
 
