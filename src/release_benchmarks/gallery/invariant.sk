@@ -31,7 +31,7 @@ bit inv(int y, int y_0, int k, int k_0, int t){
 }
 */
 
-/*
+
 harness void main(int y, int y_0, int k, int k_0, int t,
                   int yp, int tp, int ypp, int tpp
    ){
@@ -42,22 +42,6 @@ harness void main(int y, int y_0, int k, int k_0, int t,
       }
       if(inv(ypp, y_0, k, k_0, tpp) && tpp<=0){
           assert ypp <= k_0;
-      }
-   }
-
-}
-*/
-
-harness void main(int y, int y_0, int k, int k_0, int t,
-                  int yp, int tp, int ypp, int tpp
-   ){
-   if(y==y_0 && k==k_0 && t==k_0){
-      assert inv(y, y_0, k, k_0, t);
-      if(inv(yp, y_0, k, k_0, tp) && tp>0){
-         assert inv(yp+1, y_0, k, k_0, tp-1);
-      }
-      if(inv(ypp, y_0, k, k_0, tpp) && tpp<=0){
-          assert ypp == y_0 + k_0;
       }
    }
 
