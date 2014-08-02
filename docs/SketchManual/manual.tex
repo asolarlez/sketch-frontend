@@ -12,10 +12,18 @@
 \usepackage{amsthm}
 \usepackage{fullpage}
 \usepackage{glossaries}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
 
 \input{macros.tex}
 
-\newcommand{\version}{1.6.5}
+\newcommand{\version}{1.6.7}
 
 \makeglossaries
 
@@ -38,6 +46,8 @@
 \maketitle
 
 \tableofcontents
+
+\newpage
 
 \input{compilerUsage}
 \input{baseLanguage}

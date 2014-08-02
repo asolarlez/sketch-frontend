@@ -1,0 +1,64 @@
+/*
+This sketch is designed to find an invariant for the following problem:
+
+{y=y_0, k=k_0, t=y_0-k_0}
+while(t>0){
+           y = y-1;
+           t = t-1;
+}
+Assert k <= k_0;
+
+*/
+
+pragma options "--bnd-unroll-amnt 3";
+
+
+bit inv(int y, int y_0, int k, int k_0, int t){
+	generator bit genexp(){
+		int lhs = {| (y | y_0 | k | k_0 | t | ??) |};
+		int rhs = {|  ((y | y_0 | k | k_0 | t | ??) (+ | -) (y | y_0 | k | k_0 | t | ??)) |};
+		rhs = {| rhs (+ | -) (y | y_0 | k | k_0 | t | ??) |};
+		return {| lhs (< | <= | == ) rhs |};
+	}
+    return genexp();
+    return rv;
+}
+
+
+/*
+bit inv(int y, int y_0, int k, int k_0, int t){
+	return y==y_0 + k_0 - t;
+}
+*/
+
+/*
+harness void main(int y, int y_0, int k, int k_0, int t,
+                  int yp, int tp, int ypp, int tpp
+   ){
+   if(y==y_0 && k==k_0 && t==y_0-k_0){
+      assert inv(y, y_0, k, k_0, t);
+      if(inv(yp, y_0, k, k_0, tp) && tp>0){
+         assert inv(yp-1, y_0, k, k_0, tp-1);
+      }
+      if(inv(ypp, y_0, k, k_0, tpp) && tpp<=0){
+          assert ypp <= k_0;
+      }
+   }
+
+}
+*/
+
+harness void main(int y, int y_0, int k, int k_0, int t,
+                  int yp, int tp, int ypp, int tpp
+   ){
+   if(y==y_0 && k==k_0 && t==k_0){
+      assert inv(y, y_0, k, k_0, t);
+      if(inv(yp, y_0, k, k_0, tp) && tp>0){
+         assert inv(yp+1, y_0, k, k_0, tp-1);
+      }
+      if(inv(ypp, y_0, k, k_0, tpp) && tpp<=0){
+          assert ypp == y_0 + k_0;
+      }
+   }
+
+}

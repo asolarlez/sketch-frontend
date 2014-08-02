@@ -1,0 +1,88 @@
+include "sparse.skh";
+
+
+
+harness void main(double[2][2] Ai, double[2][2] Minum, double[2] vb, double[2] vx, double eps){
+    Mat A = new Mat(M=Ai, size=3);
+    Mat Minv = new Mat(M=Minum);
+    Vec b = new Vec(v=vb);
+    Vec x = new Vec(v=vx);
+    double epsilon =eps;
+    
+    Vec r1=CG(A, Minv, b, x, epsilon);
+    Vec r2=CGbetter(A, Minv, b, x, epsilon);
+    
+    assert r1.v == r2.v;    
+}
+
+
+Vec CG(Mat A, Mat Minv, Vec b, Vec x, double epsilon){
+    Vec r= vsub(b, mvmul(A,x));
+    Vec z = mvmul(Minv, r);
+    Vec p = z;
+    double gamma = dot(r,z);
+    for(int k=0; k<A.size; ++k){
+        Vec s = mvmul(A, p);
+        double alpha = gamma / dot(p,s);
+        x = vadd(x , scale(p, alpha));
+        r = vsub(r, scale(s, alpha));
+        if(Check(r, epsilon)){
+            return x;
+        }
+        z = mvmul(Minv,r);
+        double gammaNew = dot(r, z);
+        double beta = gammaNew / gamma;
+        gamma = gammaNew;
+        p=vadd(z, scale(p, beta));
+    }
+    
+    return x;
+}
+
+
+generator Vec Gen(bit domul, Mat a, Mat b, Vec w, Vec x, Vec y, Vec z, double d1, double d2){
+    Vec tt = {| w | x | y |z |};
+    if(??){
+        tt = scale(tt, {|d1 | d2 |});
+    }
+    if(domul && ??){
+        tt = mvmul({|a | b|}, tt);
+    }
+    if(??){
+        tt = vsub({|w|x|y|z|tt|}, {|w|x|y|z|tt|});
+    }
+    return tt;
+}
+
+Vec CGbetter(Mat A, Mat Minv, Vec b, Vec x, double epsilon){
+    Vec r= vsub(b, mvmul(A,x));
+    Vec z = mvmul(Minv, r);
+    Vec p = z;
+    double gamma = dot(r,z);
+    for(int k=0; k<A.size; ++k){
+        Vec s = mvmul(A, p);
+        Vec t = Gen(true, A, Minv, r, z, p, s, gamma, gamma);
+        
+        double alpha = gamma / dot(p,s);                
+        x = vadd(x , scale(p, alpha));
+        r = vsub(r, scale(s, alpha));
+        if(Check(r, epsilon)){
+            return x;
+        }
+
+        z = Gen(false, A, Minv, r, z, t, s, alpha, gamma);
+        double gammaNew = dot(r, z);
+        double beta = gammaNew / gamma;
+        gamma = gammaNew;
+        p=vadd(z, scale(p, beta));
+    }
+    
+    return x;
+}
+
+
+
+bit NDCheck(double x1, double x2, double y);
+bit Check(Vec r, double epsilon){
+    return NDCheck(r.v[0], r.v[1], epsilon);
+}

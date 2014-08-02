@@ -1,0 +1,37 @@
+package Sparse;
+
+pragma options "--fe-fpencoding AS_FFIELD --be:lightverif --beopt:simstopsize 400 --beopt:simiters 6 --bnd-inbits 3";
+
+
+struct Mat{
+    double[2][2] M;
+    int size;
+}
+
+struct Vec{
+    double[2] v;
+}
+
+
+Vec mvmul(Mat A, Vec x){
+    
+    return new Vec(v={(A.M[0][0]*x.v[0]) + (A.M[0][1]*x.v[1]),
+                      (A.M[1][0]*x.v[0]) + (A.M[1][1]*x.v[1]) });
+}
+
+Vec vsub(Vec x, Vec y){
+    return new Vec(v={(x.v[0]- y.v[0]), (x.v[1] - y.v[1])});
+}
+
+Vec vadd(Vec x, Vec y){
+    return new Vec(v={(x.v[0] + y.v[0]),(x.v[1] + y.v[1])});
+}
+
+Vec scale(Vec x, double v){
+    return new Vec(v={(x.v[0]* v), (x.v[1]* v)});
+}
+
+double dot(Vec x, Vec y){
+    return (x.v[0] * y.v[0]) + (x.v[1] * y.v[1]) ;
+}
+

@@ -38,8 +38,8 @@ void main(){
   Point p1 = new Point();
   assert p1.x == 0 && p1.y == 0; //Fields initialized to default values.
 
-  Point p1 = new Point(x=5, y=7);
-  assert p1.x == 5 && p1.y == 7; //Fields initialized by constructor.
+  Point p2 = new Point(x=5, y=7);
+  assert p2.x == 5 && p2.y == 7; //Fields initialized by constructor.
 }
 \end{lstlisting}
 \end{Example}
@@ -75,13 +75,13 @@ void strange(Car x, Car y){
 
 \end{Example}
 
-Just like in Java, references are typesafe and the heap is assumed to be garbage collected (which is another way of saying the synthesizer doesn't model deallocation). A consequence of this is that a reference to a record of type T must either be \C{null} or point to a valid object of type T. Also, just like in Java, all pointer dereferences have an implicit null pointer check.
+Just like in Java, references are typesafe and the heap is assumed to be garbage collected (which is another way of saying the synthesizer doesn't model deallocation). A consequence of this is that a reference to a record of type T must either be \C{null} or point to a valid object of type T. All dereferences have an implicit null pointer check, so dereferencing \C{null} will cause an assertion failure.
 
 \subsection{Temporary Structures}
 
-There are instances where it's desirable to have the convenience of structures but without the cost of allocation and dereferencing, and without the burden of reasoning about aliasing. 
+There are instances where it is desirable to have the convenience of structures but without the cost of allocation and dereferencing, and without the burden of reasoning about aliasing. 
 
-The language supports \emph{temporary structures}, which are unboxed, so they don't incur many of the usual costs associated with heap allocated structures. Temporary structures have copy semantics, so the programmer can think of them as primitive values and does not have to worry about aliasing. 
+The language supports \emph{temporary structures}, which are unboxed, so they do not incur many of the usual costs associated with heap allocated structures. Temporary structures have copy semantics, so the programmer can think of them as primitive values and does not have to worry about aliasing. 
 
 One can use temporary structures as local variables and parameters by enclosing the type of the structure in vertical bars \C{|type|}. Temporary structures can be created with a constructor \C{|type|($args$)}, where $args$ are named parameters just like with a normal constructor, but the keyword \C{new} is not used since nothing is being allocated in the heap. 
 
@@ -121,7 +121,7 @@ An assignment from a heap allocated structure to a temporary structure is interp
 \begin{lstlisting}
 p3.x = px.x; p3.y = p2.y;
 \end{lstlisting}
-Such an assignment requires that \C{p2} not be \C{null}. Similarly, an assignment from a temporary structure to a heap allocated structure is also interpreted as a field-by-field copy, with a similar assumption that the reference will not be null. Failure to satisfy the assumption will cause an exception. 
+Such an assignment requires that \C{p2} not be \C{null}. Similarly, an assignment from a temporary structure to a heap allocated structure is also interpreted as a field-by-field copy, with a similar assertion that the reference will not be null. Failure to satisfy the assumption will cause an assertion failure. 
 
 Similarly, an equality comparison of a heap allocated structure and a temporary structure will be equivalent to a field-by-field comparison.
 
@@ -247,6 +247,22 @@ One interesting point to note is the size of \C{out}; because it uses \C{arr.sz}
 \flagdoc{bnd-arr-size}{
 If an input array is dynamically sized, the flag \C{--bnd-arr-size} can be used to control the maximum size arrays to be considered by the system. For any non-constant variable in the array size, the system will assume that that variable can have a maximum value of \C{--bnd-arr-size}. For example, if a sketch takes as input an array \C{int[N] x}, if \C{N} is another parameter, the system will consider arrays up to size \C{bnd-arr-size}. On the other hand, for an array parameter of type \C{int[N*N] x}, the system will consider arrays up to size \C{bnd-arr-size}$^2$.
 }
+
+
+\paragraph{Multi-dimensional arrays}
+In sketch you can declare a multi-dimensional array as follows.
+\begin{lstlisting}
+T[$sz_0$, $sz_1$, $\ldots$, $sz_n$] A;
+\end{lstlisting}
+You can then access an element \C{A[$i_0$, $i_1$, $\ldots$, $i_n$]}, where $0\leq i_j < sz_n$. 
+
+Multi-dimensional arrays are actually just syntactic sugar for nested arrays; so a declaration like the one above would be desugared to the one below.
+\begin{lstlisting}
+T[$sz_n$]$\ldots$[$sz_1$][$sz_0$] A;
+\end{lstlisting}
+And similarly, the access \C{A[$i_0$, $i_1$, $\ldots$, $i_n$]} is desugared to \C{A[$i_0$][$i_1$]$\ldots$[$i_n$]}. The nested array notation and the multi-dimensional array notation are completely interchangeable, so for example, it is fine to pass a nested array to a function expecting a multi-dimensional array, and vice-versa. 
+
+The main advantage of the multi-dimensional array notation over the nested array notation is that the bounds in the declaration appear in the same order as the indexes in the array access, instead of being reversed as happens with the nested array notation.
 
 
 
@@ -515,7 +531,7 @@ So in the example above, \C{y[i]} will be of type \C{Car[4]} and \C{x[i]} will b
 
 
 \subsection{Explicit Typecasting}
-The \Sk{} language also offers some limited explicit typecasting. In particular, the language offers only three explicit typecasts:
+The \Sk{} language also offers some limited explicit typecasting. In particular, the language offers only four explicit typecasts:
 \begin{itemize}
 
 \item An array \C{a} of type \C{T[N]} can be explicitly typecast into an array of type \C{T[M]} by using the syntax \C{(T[M])a} (standard typecast notation from C). When an array is typecast to a smaller size, the remaining elements are simply truncated. 
@@ -523,7 +539,7 @@ The \Sk{} language also offers some limited explicit typecasting. In particular,
 \item A bit array \C{bit[N]} can be explicitly typecast into an integer. When this happens, the first bit in the array is interpreted as the least significant bit and the last one as the most significant bit. The reverse cast from an integer to a bit array is not supported.
 
 \item If using \C{--fe-fpencoding AS_FIXPOINT}, explicit casts from integers to floating point values and vice versa are also allowed.
-
+\item An object of an algebraic data type can be explicitly typecast to one of its variants. The system will automatically introduce an assertion to ensure that the value is of the right type. For example, in the \C{Tree} example from \secref{adts}, one can cast a value of type \C{Tree} into a value of type \C{Leaf}, but if the value is a \C{Branch} instead of a \C{Leaf}, the cast will trigger an assertion failure.
 \end{itemize}
 
 \begin{Example}
@@ -545,7 +561,7 @@ If we knew that \C{N} is smaller than \C{M}, we could have written simply \C{y=x
 \end{Example}
 
 \subsection{Control Flow}
-The language supports the following constructs for control flow: \C{if-then}, \C{while}, \C{do-while}, \C{for}. These have the same syntax and semantics as in \C{C/C++} or \C{Java}. The language does not have a \C{switch} statement, although it is likely to be added in a future version of the language. The language also does not support \C{continue} and \C{break}, although they can easily be emulated with \C{return} by using closures (see \secref{closures}).
+The language supports the following constructs for control flow: \C{if-then}, \C{while}, \C{do-while}, \C{for}. These have the same syntax and semantics as in \C{C/C++} or \C{Java}. The language does not support a C-like \C{switch} statement, since \C{switch} is used for pattern matching instead (see \secref{adts}). The language also does not support \C{continue} and \C{break}, although they can easily be emulated with \C{return} by using closures (see \secref{closures}).
 
 The synthesizer reasons about loops by unrolling them. The degree of unrolling is controlled by a flag \C{--bnd-unroll-amnt}. If the loop iteration bounds are static, however, the loop will be unrolled as many times as necessary to satisfy the static bounds. 
 
@@ -559,7 +575,7 @@ for(int i=0; i<N; ++i){...}
 for(int i=0; i<100; ++i){...}
 for(int i=0; i<N && i<7; ++i){...}
 \end{lstlisting}
-If \C{N} is an input variable, the first loop will be unrolled as many times as specified by \C{--bnd-unroll-amnt}. The second loop will be unrolled \C{100} times regardless of the value of the flag. For the third loop, the unroll factor will be controlled by the flag, but will never exceed seven.
+If \C{N} is an input variable, the first loop will be unrolled as many times as specified by \C{--bnd-unroll-amnt}. The second loop will be unrolled \C{100} times regardless of the value of the flag (as long as there are no return statements in its body). For the third loop, the unroll factor will be controlled by the flag, but will never exceed seven.
 \end{Example}
 
 
@@ -577,7 +593,7 @@ $ret\_type$ $name$($args$){
 \paragraph{Recursion}
 The synthesizer reasons about function calls by inlining them into their calling context. In principle, this could be problematic for recursive functions, but in practice this usually is not a problem. The synthesizer uses a flag \C{bnd-inline-amnt} to bound the maximum number of times a function can be inlined. If any input requires inlining more than the allowed number of times, synthesis will fail.
 
-\flagdoc{bnd-inline-amnt}{Bounds the amount of inlining for any function call. The value of this parameter corresponds to the maximum number of times any function can appear in the stack.}
+\flagdoc{bnd-inline-amnt}{Bounds the amount of inlining for any function call. The value of this parameter corresponds to the maximum number of times any call site can appear in the stack.}
 
 
 \paragraph{Reference Vs. Value Parameter Passing}
