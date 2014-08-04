@@ -329,7 +329,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         PrintStream out = ((NtsbVtype) this.vtype).out;
         Iterator<Integer> opsz = opsizes.iterator();
         if (hasOutput) {
-            out.print(finalOpname + "= [NOREC]{< ");
+
             for (Iterator<Parameter> iter = params.iterator(); iter.hasNext();) {
                 Parameter param = iter.next();
                 String lhs = param.getName();
@@ -396,6 +396,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         Statement newBody = (Statement) func.getBody().accept(this);
 
         state.handleReturnTrackers();
+        if (hasOutput) {
+            out.print(finalOpname + "= [" + func.getName().toUpperCase() + "_" +
+                    func.getPkg().toUpperCase() + "]{< ");
+        }
         doOutParams(func.getParams());
 
         state.endFunction(lvl);
@@ -427,6 +431,22 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     }
                     out.println(")");
                 }
+            }
+        }
+        for (Package pkg : p.getPackages()) {
+            nres.setPackage(pkg);
+            for (Function fun : pkg.getFuncs()) {
+                out.print(fun.getName().toUpperCase() + "_" + fun.getPkg().toUpperCase() +
+                      " ( ");
+                List<Parameter> params = fun.getParams();
+                for (Iterator<Parameter> iter = params.iterator(); iter.hasNext();) {
+                    Parameter param = iter.next();
+                    if (param.isParameterOutput()) {
+                        out.print(printType(param.getType()) + " ");
+                    }
+                }
+                out.println(")");
+                
             }
         }
         out.println("}");

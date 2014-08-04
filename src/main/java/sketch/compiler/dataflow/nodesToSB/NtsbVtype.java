@@ -325,7 +325,9 @@ public class NtsbVtype extends IntVtype {
         String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
         if (hasout) {
         abstractValue outval =
-                BOTTOM(name + "[*NOREC]( " + plist + "  )(" + pathCond + ")[ _p_out_" +
+                    BOTTOM(name + "[*" + fun.getName().toUpperCase() + "_" +
+                            fun.getPkg().toUpperCase() + "]( " + plist + "  )(" +
+                            pathCond + ")[ _p_out_" +
                         fun.getName() + "_" + fun.getPkg() + "," + funid + "]");
         state.varDeclare(outLhsName, new TypeStructRef("norec", false));
         abstractValue outLhsIdx = null;
