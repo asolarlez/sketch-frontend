@@ -442,7 +442,22 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 for (Iterator<Parameter> iter = params.iterator(); iter.hasNext();) {
                     Parameter param = iter.next();
                     if (param.isParameterOutput()) {
-                        out.print(printType(param.getType()) + " ");
+                        if (param.getType().isArray()) {
+                            TypeArray ta = (TypeArray) param.getType();
+                            Expression el = ta.getLength();
+                            Integer lntt = el != null ? el.getIValue() : null;
+                            if (lntt != null) {
+                                int lnt = lntt;
+                                for (int j = 0; j < lnt; j++) {
+                                    out.print(printType(ta.getBase()) + " ");
+                                }
+
+                            } else {
+                                out.print(printType(param.getType()) + " ");
+                            }
+                        } else {
+                            out.print(printType(param.getType()) + " ");
+                        }
                     }
                 }
                 out.println(")");
