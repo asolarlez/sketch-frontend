@@ -436,8 +436,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             for (Function fun : pkg.getFuncs()) {
-                out.print(fun.getName().toUpperCase() + "_" + fun.getPkg().toUpperCase() +
+                if (fun.getPkg() == null) {
+                    out.print(fun.getName().toUpperCase() + "_ANNONYMOUS" + " ( ");
+                } else {
+                    out.print(fun.getName().toUpperCase() + "_" +
+                            fun.getPkg().toUpperCase() +
                       " ( ");
+                }
                 List<Parameter> params = fun.getParams();
                 for (Iterator<Parameter> iter = params.iterator(); iter.hasNext();) {
                     Parameter param = iter.next();

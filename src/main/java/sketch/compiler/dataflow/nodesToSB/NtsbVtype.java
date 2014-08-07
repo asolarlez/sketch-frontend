@@ -324,9 +324,13 @@ public class NtsbVtype extends IntVtype {
         int outIndex = 0;
         String outLhsName = "out_" + fun.getName() + "_" + fun.getPkg();
         if (hasout) {
+            String pkg = fun.getPkg();
+            if (pkg == null) {
+                pkg = "ANNONYMOUS";
+            }
         abstractValue outval =
                     BOTTOM(name + "[*" + fun.getName().toUpperCase() + "_" +
-                            fun.getPkg().toUpperCase() + "]( " + plist + "  )(" +
+                            pkg.toUpperCase() + "]( " + plist + "  )(" +
                             pathCond + ")[ _p_out_" +
                         fun.getName() + "_" + fun.getPkg() + "," + funid + "]");
         state.varDeclare(outLhsName, new TypeStructRef("norec", false));
