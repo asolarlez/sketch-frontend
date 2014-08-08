@@ -415,6 +415,25 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return func;
     }
 
+    String printType1(Type t) {
+        if (t instanceof TypeStructRef) {
+            TypeStructRef ts = (TypeStructRef) t;
+            StructDef struct = nres.getStruct(ts.getName());
+            if (struct.immutable()) {
+                return struct.getName().toUpperCase() + "_" +
+                        struct.getPkg().toUpperCase();
+            }
+        }
+        if (t.equals(TypePrimitive.bittype)) {
+            return "bit";
+        } else {
+            if (t.equals(TypePrimitive.floattype) || t.equals(TypePrimitive.doubletype)) {
+                return "float";
+            } else {
+                return "int";
+            }
+        }
+    }
 
     public Object visitProgram(Program p) {
         PrintStream out = ((NtsbVtype) this.vtype).out;
@@ -447,7 +466,22 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 for (Iterator<Parameter> iter = params.iterator(); iter.hasNext();) {
                     Parameter param = iter.next();
                     if (param.isParameterOutput()) {
-                        out.print(printType(param.getType()) + " ");
+                        if (param.getType().isArray()) {
+                            TypeArray ta = (TypeArray) param.getType();
+                            Expression el = ta.getLength();
+                            Integer lntt = el != null ? el.getIValue() : null;
+                            if (lntt != null) {
+                                int lnt = lntt;
+                                for (int i = 0; i < lnt; ++i) {
+                                    out.print(printType1(ta.getBase()) + " ");
+                                }
+
+                            } else {
+                                out.print(printType1(ta.getBase()) + "_arr" + " ");
+                            }
+                        } else {
+                            out.print(printType1(param.getType()) + " ");
+                        }
                     }
                 }
                 out.println(")");
