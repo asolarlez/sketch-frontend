@@ -37,6 +37,8 @@ public class ExprFunCall extends Expression
 {
     private final String name;
     private static int NEXT_UID=0;
+
+    private int clusterId; // Used to identify the cluster to combine funCalls.
     private int callid;
     private final List<Expression> params;
 
@@ -57,10 +59,12 @@ public class ExprFunCall extends Expression
         this.params = Collections.unmodifiableList(params);
         if(context instanceof ExprFunCall){
         	this.callid = ((ExprFunCall)context).callid;
+            this.clusterId = ((ExprFunCall) context).getClusterId();
         }else{
         	this.callid = NEXT_UID++;
         }
     }
+
 
     /** Creates a new function call with the specified name and
      * parameter list.
@@ -124,9 +128,17 @@ public class ExprFunCall extends Expression
         }
         return s;
     }
+
+    public void setClusterId(int i) {
+        this.clusterId = i;
+    }
+
+    public int getClusterId() {
+        return this.clusterId;
+    }
     
     public String toString()
     {
-    	return name+"("+printParams()+")";
+        return name + "(" + printParams() + ")";
     }
 }
