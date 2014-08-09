@@ -334,8 +334,6 @@ public class NtsbVtype extends IntVtype {
                             pathCond + ")[ _p_out_" +
                         fun.getName() + "_" + fun.getPkg() + "," + funid + "]");
         state.varDeclare(outLhsName, new TypeStructRef("norec", false));
-        abstractValue outLhsIdx = null;
-
         state.setVarValue(outLhsName, outval);
         }
         while (formalParams.hasNext()) {

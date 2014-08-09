@@ -1,7 +1,6 @@
 package sketch.compiler.dataflow;
 
 import java.util.List;
-import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -103,8 +102,6 @@ public abstract class abstractValueType{
      */
     abstract public void funcall(Function fun, List<abstractValue> avlist,
             List<abstractValue> outSlist, abstractValue pathCond, MethodState state);
-
-    public static Map<Integer, Integer> outputMap;
 
 }
 
