@@ -263,7 +263,6 @@ public class NtsbVtype extends IntVtype {
             List<abstractValue> outSlist, abstractValue pathCond, MethodState state)
     {
         ++funid;
-        outputMap = new HashMap<Integer, Integer>();
         Iterator<abstractValue> actualParams = avlist.iterator();
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
