@@ -26,8 +26,8 @@ public class CollectFunCallsToCombine extends SymbolTableVisitor {
         if (newBody == null)
             return fn;
         CollectFunCallsFromBody cfc = new CollectFunCallsFromBody(fn.getName(), id);
-        id = cfc.id;
         newBody = (Statement) fn.getBody().accept(cfc);
+        id = cfc.id;
         if (newBody != fn.getBody()) {
             return fn.creator().body(newBody).create();
         } else {
@@ -73,16 +73,14 @@ public class CollectFunCallsToCombine extends SymbolTableVisitor {
                 Iterator<Statement> itr = ((StmtBlock) stmt).getStmts().iterator();
                 while (itr.hasNext()) {
                     Statement s = itr.next();
-                    GetFunCall c = new GetFunCall(funName, id, this);
+                    GetFunCall c = new GetFunCall(funName, this);
                     s.doStatement(c);
-                    id = c.id;
 
                 }
             } else {
                 // deal with single statements
-                GetFunCall c = new GetFunCall(funName, id, this);
+                GetFunCall c = new GetFunCall(funName, this);
                 stmt.doStatement(c);
-                id = c.id;
 
             }
         }
@@ -94,20 +92,18 @@ public class CollectFunCallsToCombine extends SymbolTableVisitor {
      */
     private class GetFunCall extends SymbolTableVisitor {
         String funName;
-        int id;
         CollectFunCallsFromBody cfc;
 
-        public GetFunCall(String name, int id, CollectFunCallsFromBody cfc) {
+        public GetFunCall(String name, CollectFunCallsFromBody cfc) {
             super(null);
             funName = name;
-            this.id = id;
             this.cfc = cfc;
         }
 
         @Override
         public Object visitExprFunCall(ExprFunCall exp) {
             if (exp.getName().equals(funName))
-                exp.setClusterId(id++);
+                exp.setClusterId(cfc.id++);
             return exp;
 
         }

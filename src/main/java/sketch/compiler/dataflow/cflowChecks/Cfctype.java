@@ -208,7 +208,8 @@ public class Cfctype extends abstractValueType {
     }
 
     public void funcall(Function fun, List<abstractValue> avlist,
-            List<abstractValue> outSlist, abstractValue patchCond, MethodState state)
+            List<abstractValue> outSlist, abstractValue patchCond, MethodState state,
+            int clusterId)
     {
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         int idx = 0;

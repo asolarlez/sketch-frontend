@@ -677,7 +677,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
         // Function nfun = fun.creator().params(nplist).create();
         try {
-            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true), state);
+            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true), state,
+                    exp.getClusterId());
         } catch (SketchException se) {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }

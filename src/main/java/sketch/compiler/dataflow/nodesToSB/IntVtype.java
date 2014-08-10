@@ -434,7 +434,8 @@ public class IntVtype extends abstractValueType {
 	}
 
     public void funcall(Function fun, List<abstractValue> avlist,
-            List<abstractValue> outSlist, abstractValue patchCond, MethodState state)
+            List<abstractValue> outSlist, abstractValue patchCond, MethodState state,
+            int clusterId)
     {
 		Iterator<Parameter> formalParams = fun.getParams().iterator();
     	while(formalParams.hasNext()){

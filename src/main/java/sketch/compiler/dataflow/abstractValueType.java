@@ -101,7 +101,8 @@ public abstract class abstractValueType{
      *            if path cond is true.
      */
     abstract public void funcall(Function fun, List<abstractValue> avlist,
-            List<abstractValue> outSlist, abstractValue pathCond, MethodState state);
+            List<abstractValue> outSlist, abstractValue pathCond, MethodState state,
+            int clusterId);
 
 }
 

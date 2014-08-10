@@ -260,9 +260,9 @@ public class NtsbVtype extends IntVtype {
     int funid = 0;
 
     public void funcall(Function fun, List<abstractValue> avlist,
-            List<abstractValue> outSlist, abstractValue pathCond, MethodState state)
+            List<abstractValue> outSlist, abstractValue pathCond, MethodState state,
+            int clusterId)
     {
-        ++funid;
         Iterator<abstractValue> actualParams = avlist.iterator();
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
@@ -331,7 +331,8 @@ public class NtsbVtype extends IntVtype {
                     BOTTOM(name + "[*" + fun.getName().toUpperCase() + "_" +
                             pkg.toUpperCase() + "]( " + plist + "  )(" +
                             pathCond + ")[ _p_out_" +
-                        fun.getName() + "_" + fun.getPkg() + "," + funid + "]");
+ fun.getName() + "_" + fun.getPkg() + "," +
+                            clusterId + "]");
         state.varDeclare(outLhsName, new TypeStructRef("norec", false));
         state.setVarValue(outLhsName, outval);
         }
@@ -373,7 +374,9 @@ public class NtsbVtype extends IntVtype {
             }
         }
         if (!hasout) {
-            String par = "___GaRbAgE" + (gbgid++) +  "=" + name + "[bit]( "+ plist +"  )(" + pathCond + ")[ NONE," + funid +"];";
+            String par =
+                    "___GaRbAgE" + (gbgid++) + "=" + name + "[bit]( " + plist + "  )(" +
+                            pathCond + ")[ NONE," + clusterId + "];";
             out.println(par);
         }        
     }
