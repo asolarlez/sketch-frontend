@@ -38,6 +38,7 @@ import sketch.compiler.codegenerators.OutputHoleFunc;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.PlatformLocalization;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.main.other.ErrorHandling;
 import sketch.compiler.main.passes.CleanupFinalCode;
@@ -52,7 +53,6 @@ import sketch.compiler.passes.cleanup.EliminateAliasesInRefParams;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
 import sketch.compiler.passes.cuda.LowerInstrumentation;
-import sketch.compiler.passes.cuda.ReplaceParforLoops;
 import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
 import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ConstantReplacer;
@@ -166,9 +166,11 @@ public class SequentialSketchMain extends CommonSketchMain
                             /*
                              * new ReplaceMinLoops(varGen), new MainMethodCreateNospec(),
                              */
-                            new SetDeterministicFcns(),
-                            new ReplaceParforLoops(options.cudaOpts.threadBlockDim,
-                                    varGen), new ReplaceImplicitVarDecl(),
+                    new SetDeterministicFcns()/*
+                                               * , new
+                                               * ReplaceParforLoops(options.cudaOpts.
+                                               * threadBlockDim, varGen)
+                                               */, new ReplaceImplicitVarDecl(),
                             new SetDefaultCudaMemoryTypes(),
                             new ConvertArrayAssignmentsToInout(),
                             new CopyCudaMemTypeToFcnReturn() };
@@ -598,7 +600,8 @@ public class SequentialSketchMain extends CommonSketchMain
     public static boolean isTest = false;
 
     public static void main(String[] args) {
-        System.out.println("SKETCH version features: tprint, cuda-model, vlarrays");
+        System.out.println("SKETCH version " +
+                PlatformLocalization.getLocalization().version);
         long beg = System.currentTimeMillis();
         ErrorHandling.checkJavaVersion(1, 6);
         // TODO -- change class names so this is clear

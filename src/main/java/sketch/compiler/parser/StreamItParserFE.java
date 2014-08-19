@@ -1614,7 +1614,7 @@ inputState.guessing--;
 					inputState.guessing++;
 					try {
 						{
-						block();
+						match(LCURLY);
 						}
 					}
 					catch (RecognitionException pe) {

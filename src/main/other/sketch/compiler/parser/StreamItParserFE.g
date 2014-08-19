@@ -303,7 +303,7 @@ statement returns [Statement s] { s = null; }
 	|	s=insert_block
 	|	s=reorder_block
 	|	s=atomic_block
-	|	(block)=> s=block // 9
+	|	(LCURLY)=> s=block // 9
 	|(return_type ID LPAREN) =>s=fdecl_statement
 	|	(data_type ID) => s=variable_decl SEMI!
     // |   (ID DEF_ASSIGN) => s=implicit_type_variable_decl SEMI!

@@ -62,12 +62,6 @@ public class PlatformLocalization {
                     osname = System.getProperty("os.name");// localization.getProperty("osname");
                     osarch = System.getProperty("os.arch");// localization.getProperty("osarch");
                     isSet = true;
-                    if (SketchOptions.getSingleton() == null ||
-                            SketchOptions.getSingleton().debugOpts.verbosity > 3)
-                    {
-                        printDebug("SKETCH version", version, "; detected OS", osname,
-                                osarch);
-                    }
                 } else {
                     printWarning("couldn't read SKETCH info from localization file");
                 }

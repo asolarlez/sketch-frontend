@@ -1,6 +1,5 @@
 package sketch.compiler.passes.preprocessing.cuda;
 
-import static sketch.util.DebugOut.assertFalse;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -8,6 +7,8 @@ import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.util.cuda.CudaThreadBlockDim;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * Replace "threadIdx.x", etc. with special nodes in the AST
@@ -22,7 +23,7 @@ public class ThreadIdReplacer extends FEReplacer {
     private CudaThreadBlockDim cudaBlockDim;
 
     public ThreadIdReplacer(final SketchOptions opts) {
-        this.cudaBlockDim = opts.cudaOpts.threadBlockDim;
+        this.cudaBlockDim = new CudaThreadBlockDim(2, 1, 1); // opts.cudaOpts.threadBlockDim;
     }
 
     @Override

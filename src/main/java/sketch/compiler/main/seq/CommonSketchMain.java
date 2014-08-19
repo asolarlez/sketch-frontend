@@ -36,6 +36,10 @@ public class CommonSketchMain {
             backendOptions.add("--bnd-angelic-arrsz");
             backendOptions.add("" + options.bndOpts.angelicArrsz);
         }
+
+        backendOptions.add("--boundmode");
+        backendOptions.add("" + options.bndOpts.boundMode);
+
         backendOptions.add("--verbosity");
         backendOptions.add(""+ options.debugOpts.verbosity);
         backendOptions.add("--print-version"); // run by default
@@ -43,6 +47,10 @@ public class CommonSketchMain {
         if (options.solverOpts.seed != 0) {
             backendOptions.add("--seed");
             backendOptions.add("" + options.solverOpts.seed);
+        }
+        if (options.solverOpts.simiters != 0) {
+            backendOptions.add("-simiters");
+            backendOptions.add("" + options.solverOpts.simiters);
         }
         if (options.debugOpts.cex) {
             backendOptions.add("--print-cex");

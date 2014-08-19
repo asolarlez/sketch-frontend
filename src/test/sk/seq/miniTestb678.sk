@@ -1,4 +1,5 @@
 pragma options "--bnd-cbits 8";
+pragma options "--bnd-bound-mode CALLSITE";
 pragma options "--bnd-unroll-amnt 3";
 pragma options "--bnd-inline-amnt 1";
 

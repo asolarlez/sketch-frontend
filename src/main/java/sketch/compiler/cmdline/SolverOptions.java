@@ -24,8 +24,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public SynthSolvers synth = SynthSolvers.NOT_SET;
-    @CliParameter(help = "Kills the solver after given number of minutes. " +
-    		"If there are minloops or a cost function, the default is 1 second")
+    @CliParameter(help = "Kills the solver after given number of minutes. ")
     public float timeout;
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
@@ -39,6 +38,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Performs lightweight verification instead of full bounded verification.")
     public boolean lightverif = false;
+
+    @CliParameter(help = "Maximum steps of random simulation to perform for every verification step.")
+    public int simiters = 4;
 
     public enum ReorderEncoding {
         exponential, quadratic

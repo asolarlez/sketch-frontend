@@ -265,7 +265,11 @@ public class NtsbVtype extends IntVtype {
     int funid = 0;
     public void funcall(Function fun, List<abstractValue> avlist, List<abstractValue> outSlist, abstractValue pathCond){
         ++funid;
-       
+        if (fun.isUninterp()) {
+            // Uninterpreted functions don't care about the path condition because they
+            // don't have assertions anyway.
+            pathCond = this.CONST(true);
+        }
         Iterator<abstractValue> actualParams = avlist.iterator();
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();

@@ -8,15 +8,15 @@ struct Node{
     Node f;
 }
 
-Node parse(int n, char[n] x, int inpos, ref int outpos, int rbnd){
+Node parse(int n, char[n] x, int inpos, ref int outpos){
     Node left = null;
     Node right = null;
     Node rv = null;
     generator void pgen(int bnd){        
         if(x[inpos]<=?? && x[inpos]>=??){
             
-            if(rbnd > 0 && ??){
-                {| left | right | rv |} = parse(n, x, inpos+??(2), outpos, rbnd - 1);
+            if(??){
+                {| left | right | rv |} = parse(n, x, inpos+??(2), outpos);
             }
             if(??){
                 {| left | right | rv |} = new Node(type=CONST);
@@ -45,7 +45,7 @@ Node parse(int n, char[n] x, int inpos, ref int outpos, int rbnd){
 harness void main(){    
     char[8] x = "(1+2)+3";
     int op=0;
-    Node n = parse(8, x, 0, op, 3);
+    Node n = parse(8, x, 0, op);
     assert n.type == PLUS;
     assert n.m.type == PLUS;
     assert n.f.type == CONST;
@@ -57,7 +57,7 @@ harness void main(){
 harness void main2(){
     char[8] x = "4+(3+2)";
     int op=0;
-    Node n = parse(8, x, 0, op, 3);
+    Node n = parse(8, x, 0, op);
     assert n.type == PLUS;
     assert n.m.type == CONST;
     assert n.f.type == PLUS;
@@ -68,7 +68,7 @@ harness void main2(){
 harness void main3(){
     char[8] x = "(1)+(2)";
     int op=0;
-    Node n = parse(8, x, 0, op, 3);
+    Node n = parse(8, x, 0, op);
     assert n.type == PLUS;
     assert n.m.type == CONST;
     assert n.f.type == CONST;

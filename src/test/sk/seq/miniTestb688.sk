@@ -6,3 +6,13 @@ void m2(double[10] a, double[10] b) implements m {
   assert(a[5]-b[5] == a[5] + -b[5]);
 
 }
+
+generator void gg(int x, int y){
+    assume x > y;
+}
+
+harness void foo(int n, double[n] x){
+    gg(n, 5);
+    assert x[3] + x[4] == x[3] - x[0] + x[4] + x[0];
+    
+}

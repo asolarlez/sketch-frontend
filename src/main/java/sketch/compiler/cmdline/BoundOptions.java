@@ -47,6 +47,15 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Bounds inlining to n levels of recursion, so each "
             + "function can appear at most n times in the stack.")
     public int inlineAmnt = 5;
+
+    @CliParameter(help = "Determine whether inline-amnt will bound the number of times a "
+            + "callsite will appear on the stack (CALLSITE) or the number of times a call name will appear on the stack (CALLNAME).")
+    public BoundMode boundMode = BoundMode.CALLNAME;
+
+    public enum BoundMode {
+        CALLSITE, CALLNAME
+    }
+
     @CliParameter(help = "The unroll ammount for loops.")
     public int unrollAmnt = 8;
     

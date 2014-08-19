@@ -65,7 +65,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     {
         super(null);
         this.varGen = varGen;
-        this.cudaBlockDim = opts.cudaOpts.threadBlockDim;
+        this.cudaBlockDim = new CudaThreadBlockDim(2, 1, 1); // opts.cudaOpts.threadBlockDim;
     }
 
     @Override

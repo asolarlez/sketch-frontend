@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
@@ -52,7 +52,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
         super(null);
         this.varGen = varGen;
         this.options = opts;
-        this.cudaBlockDim = opts.cudaOpts.threadBlockDim;
+        this.cudaBlockDim = new CudaThreadBlockDim(2, 1, 1); // opts.cudaOpts.threadBlockDim;
     }
 
     @Override

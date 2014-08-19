@@ -19,7 +19,7 @@ public class ReplaceBlockDimAndGridDim extends FEReplacer {
     protected CudaThreadBlockDim cudaBlockDim;
 
     public ReplaceBlockDimAndGridDim(SketchOptions opts) {
-        this.cudaBlockDim = opts.cudaOpts.threadBlockDim;
+        this.cudaBlockDim = new CudaThreadBlockDim(2, 1, 1); // opts.cudaOpts.threadBlockDim;
     }
 
     @Override

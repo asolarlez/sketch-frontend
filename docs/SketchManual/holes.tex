@@ -56,13 +56,11 @@ The harness imposes a constraint on the product of the two functions. The \C{imp
 
 
 \subsection{Assumptions}
-In some cases, we may want to require that the guarantees of the absence of assertion failures or of functional equivalence only hold for a subset of the inputs to the harness or specification. In \Sk{} you can specify this by using \C{assume} statements. In the presence of \C{assume}, sketch will only guarantee lack of assertion failures and functional equivalence for all inputs that satisfy the assumptions. Note that this means that even if the assertions occur before the assume statements are encountered, those assertions will be ignored for inputs that cause the assumptions to fail because those inputs will never be considered. Therefore, in order to avoid unexpected behavior, it is advised that \C{assume} be used only at the beginning of harnesses and specifications or implementations so that it is easy to identify the inputs that will be ignored by the synthesizer.
-
-When a function is called by another function, any assumptions in the callee become assertions from the point of view of the caller; \ie{} the caller must guarantee that the inputs and environment it passes to the callee satisfy the assumptions. 
+Starting in \Sk{} 1.6.7, the compiler not supports standard \C{assume} statements. The semantics of \C{assume $cond$;} dictate that when the condition $cond$ is false, execution stops and any subsequent assertions are ignored. When a function is called by another function, any assumptions in the callee become assertions from the point of view of the caller; \ie{} the caller must guarantee that the inputs and environment it passes to the callee satisfy the assumptions. \emph{Note that this is not true of generator functions (\secref{generators})}; as we will describe later, generators get inlined into their calling context, so any \C{assume} statement in the generator is an assume statement in the function that invokes the generator.
 
 Also, when a function implements a specification, its assumptions must be weaker than those of the specification. In other words, any input that is legal for the specification must be legal for the implementation. 
 
-\begin{Example}
+\begin{Example}{Assume and implements}
 \begin{lstlisting}
 harness int foo(int x){
 	assume x > 10;
@@ -220,9 +218,9 @@ void _main (int x, int y){
 
 \subsection{Recursive Generator Functions}
 
-Generators derive much of their expressive power from their ability to recursively define a space of expressions. 
+Generators derive much of their expressive power from their ability to recursively define a space of expressions. For example, the code below shows how to use a recursive generator to define a context free grammar of possible expressions.
 
-
+\begin{Example}{Recursive Generator}
 \begin{lstlisting}
 generator int rec(int x, int y, int z){
    int t = ??;
@@ -241,6 +239,78 @@ harness void sketch( int x, int y, int z ){
    assert rec(x,y, z) == (x + x) * (y - z);
 }
 \end{lstlisting}
+\end{Example}
+
+One must be careful when defining recursive generators, however, because the way the generator is defined can have a dramatic impact on the solution time of the resulting code. In particular, there are two aspects that the writer must keep in mind when writing a generator: recursion and symmetries. 
+
+
+\paragraph{Recursion control in generators}
+The compiler handles recursive generators by inlining them number of times as guided by the \C{bnd-inline-amnt} flag. This simple approach can cause problems if recursive generators are not written carefully. For example, an alternative way of writing the generator above is shown below.  
+
+\begin{Example}{Inefficient recursive generator}
+\begin{lstlisting}
+generator int rec(int x, int y, int z){
+   int t = ??;
+   if(t == 0){return x;}   
+   if(t == 1){return y;}
+   if(t == 2){return z;}
+   if(t == 3){return rec(x,y,z) * rec(x,y,z);}
+   if(t == 4){return rec(x,y,z) + rec(x,y,z);} 
+   if(t == 5){return rec(x,y,z) - rec(x,y,z);}   
+}
+harness void sketch( int x, int y, int z ){
+   assert rec(x,y, z) == (x + x) * (y - z);
+}
+\end{lstlisting}
+\end{Example}
+Both generators describe the same grammar, and therefore in principle the same space of possible expressions, but the second generator will cause problems because each recursive call to \C{rec} will be inlined independently, so each level of inlining will increase the size of the program by a factor of six, instead of only a factor of two. 
+
+Another potential issue with recursive generators is that the amount of inlining is controlled by the same flag used to control inlining of functions during analysis. This can be problematic because recursive functions in the program will often require much more inlining than generators. To address this problem, the user can take additional control over inlining by explicitly adding a bound parameter into the generator as shown below. 
+
+\begin{Example}{Generator with manual inlining control}
+\begin{lstlisting}
+generator int rec(int x, int y, int z, int bnd){
+   assert bnd >= 0;
+   int t = ??;
+   if(t == 0){return x;}   
+   if(t == 1){return y;}
+   if(t == 2){return z;}
+
+   int a = rec(x,y,z, bnd-1);
+   int b = rec(x,y,z, bnd-1);
+   ...
+}
+\end{lstlisting}
+\end{Example}
+
+The synthesizer performs partial evaluation in tandem with inlining, so if we call rec with a constant value for the \C{bnd} parameter, the synthesizer will stop inlining when it determines that this parameter will be less than zero. 
+
+\paragraph{Avoiding symmetries} 
+Another aspect to be careful with when defining recursive generators are symmetries. These happen when different assignments to unknown values can result in the exact same expression. An important source of symmetries are commutative and associative operations. For example, consider two generators shown below. 
+
+\begin{Example}{Effect of symmetries on generators}
+\begin{lstlisting}
+generator int sum(int x, int y, int z, int bnd){
+    assert bnd > 0;
+   generator int factor(){
+       return {| x | y | z|} * {| x | y | z | ?? |};
+   }
+   if(??){ return factor(); }
+   else{return sum(x,y,z, bnd-1) + sum(x,y,z, bnd-1);} 
+}
+
+generator int sumB(int x, int y, int z, int bnd){
+    assert bnd > 0;
+    generator int factor(){
+        return {| x | y | z|} * {| x | y | z | ?? |};
+    }
+    if(??){ return factor(); }
+    else{ return factor() + sumB(x,y,z, bnd-1);} 
+ }
+\end{lstlisting}
+\end{Example}
+
+Both represent the same space of expressions, but the generator \C{sumB} forces a right-associativity on the expression, whereas the generator \C{sum} can produce all possible associations, making the generator \C{sumB} more efficient than \C{sum}. Additionally, in \C{sumB} the \C{bnd} parameter has a clear meaning: it is the number of terms in the sum, whereas in generator \C{sum}, the parameter \C{bnd} is the depth of the AST, which is not as straightforward to map to something meaningful to the programmer. 
 
 
 \subsection{Regular Expression Generators}

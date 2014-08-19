@@ -1,8 +1,24 @@
-harness void main(){
-    int x = ??(2); // 2
-    int y = ??(3); // 3
-    assert x + y + 5 == 10;
-    assert x + 5 == 7;
-    
-    
+pragma options "--slv-lightverif --bnd-inline-amnt 16";
+
+generator int sum(int x, int y, int z, int bnd){
+    assert bnd > 0;
+   generator int factor(){
+       return {| x | y | z|} * {| x | y | z | ?? |};
+   }
+   if(??){ return factor(); }
+   else{return sum(x,y,z, bnd-1) + sum(x,y,z, bnd-1);} 
+}
+
+generator int sumB(int x, int y, int z, int bnd){
+    assert bnd > 0;
+    generator int factor(){
+        return {| x | y | z|} * {| x | y | z | ?? |};
+    }
+    if(??){ return factor(); }
+    else{ return factor() + sumB(x,y,z, bnd-1);} 
+ }
+
+
+harness void sketch( int x, int y, int z ){
+   assert sum(x,y, z, 5) == x*x + x + y + z*x;
 }
