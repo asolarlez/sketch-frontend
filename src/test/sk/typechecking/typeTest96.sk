@@ -1,0 +1,9 @@
+
+
+
+@inrange("y:10:20")
+harness void main(int x, int[x] y){ // TypeError
+    int t = x + ??;
+    assert t < 0;
+}
+

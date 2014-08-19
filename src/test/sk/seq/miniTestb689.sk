@@ -1,0 +1,7 @@
+
+
+@inrange("x:-10:-5")
+harness void main(int x){
+    int t = x + ??;
+    assert t < 0;
+}

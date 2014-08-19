@@ -423,7 +423,6 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         PrintStream out = ((NtsbVtype) this.vtype).out;
         out.println("{");
         if (func.isWrapper()) {
-            func.getName();
             String wname = func.getName();
             int ix = 0;
             do {
@@ -431,35 +430,43 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             } while (wname.indexOf("__Wrapper", ix + 1) >= 0);
             String hname = func.getName().substring(0, ix);
             Function tfun = nres.getFun(hname);
-            Vector<Annotation> annot = tfun.getAnnotation("inrange");
-            for(Annotation a : annot){
-                inRange ir = new inRange(a.contents(), tfun);
-                String pname = "";
-                boolean found = false;
-                Parameter thep = null;
-                for (Parameter p : func.getParams()) {
-                    pname = p.getName();
-                    if (pname.length() > ir.name.length()) {
-                        if (pname.substring(0, ir.name.length()).equals(ir.name)) {
-                            found = true;
-                            thep = p;
-                            break;
+            int ii = 0;
+            while (tfun == null && ii < 10) {
+                tfun = nres.getFun(hname + ii);
+                ++ii;
+            }
+            if (tfun != null) {
+                Vector<Annotation> annot = tfun.getAnnotation("inrange");
+                for (Annotation a : annot) {
+                    inRange ir = new inRange(a.contents(), tfun);
+                    String pname = "";
+                    boolean found = false;
+                    Parameter thep = null;
+                    for (Parameter p : func.getParams()) {
+                        pname = p.getName();
+                        if (pname.length() > ir.name.length()) {
+                            if (pname.substring(0, ir.name.length()).equals(ir.name)) {
+                                found = true;
+                                thep = p;
+                                break;
+                            }
                         }
                     }
+                    if (!found) {
+                        throw new ExceptionAtNode("Parameter " + ir.name +
+                                " from annotation " + a + " not found.", func);
+                    }
+                    if (!thep.getType().equals(TypePrimitive.inttype)) {
+                        throw new ExceptionAtNode(
+                                "inrange annotation only allowed for int parameters: " +
+                                        a, func);
+                    }
+                    abstractValue av = state.varValue(pname);
+                    state.setVarValue(pname, vtype.plus(av, vtype.CONST(ir.low)));
+                    vtype.Assume(vtype.le(state.varValue(pname), vtype.CONST(ir.high)),
+                            null);
+
                 }
-                if (!found) {
-                    throw new ExceptionAtNode("Parameter " + ir.name +
-                            " from annotation " + a + " not found.", func);
-                }
-                if (!thep.getType().equals(TypePrimitive.inttype)) {
-                    throw new ExceptionAtNode(
-                            "inrange annotation only allowed for int parameters: " + a,
-                            func);
-                }
-                abstractValue av = state.varValue(pname);
-                state.setVarValue(pname, vtype.plus(av, vtype.CONST(ir.low)));
-                vtype.Assume(vtype.le(state.varValue(pname), vtype.CONST(ir.high)),
-                        null);
             }
         } else {
             Vector<Annotation> annot = func.getAnnotation("inrange");
