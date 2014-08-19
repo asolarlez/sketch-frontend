@@ -469,11 +469,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 }
             }
         } else {
-            Vector<Annotation> annot = func.getAnnotation("inrange");
-            if (annot.size() > 0 && !func.isSketchHarness()) {
-                throw new ExceptionAtNode(
-                        "@inrange annotation only allowed in harness functions.", func);
-            }
+            /*
+             * Vector<Annotation> annot = func.getAnnotation("inrange"); if (annot.size()
+             * > 0 && !func.isSketchHarness()) { throw new ExceptionAtNode(
+             * "@inrange annotation only allowed in harness functions.", func); }
+             */
         }
         
 
