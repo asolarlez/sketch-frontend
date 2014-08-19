@@ -158,7 +158,8 @@ public class NtsbVtype extends IntVtype {
     }
     
     public void Assume(abstractValue val, StmtAssume stmt) {
-        String msg = stmt.getMsg();
+
+        String msg = stmt != null ? stmt.getMsg() : "auto assume";
         if (val.hasIntVal()) {
             if (val.getIntVal() == 0) {
                 DebugOut.printWarning(stmt.getCx() +

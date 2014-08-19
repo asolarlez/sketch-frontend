@@ -2,9 +2,13 @@ package sketch.compiler.dataflow.nodesToSB;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 
+import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
@@ -358,6 +362,39 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return sr;
     }
 
+    class inRange {
+        public final int low;
+        public final int high;
+        public final String name;
+
+        inRange(String annotation, Function f) {
+            int ls = annotation.indexOf(':');
+            int hs = annotation.indexOf(':', ls + 1);
+            if (ls > 0 && ls < hs && hs < annotation.length()) {
+                String lo = annotation.substring(ls + 1, hs);
+                String hi = annotation.substring(hs + 1, annotation.length());
+                try {
+                low = Integer.decode(lo);
+                high = Integer.decode(hi);
+                } catch (NumberFormatException nfe) {
+                    throw new ExceptionAtNode(
+                            "The syntax for inrange is @inrange(\"param:lower:upper\") where lower and upper are integers.",
+                            f);
+                }
+                name = annotation.substring(0, ls);
+            } else {
+                throw new ExceptionAtNode(
+                        "The syntax for inrange is @inrange(\"param:lower:upper\")", f);
+            }
+
+        }
+
+    }
+
+    boolean isMain(Function func) {
+        return mainfuns.contains(func.getName());
+    }
+
     public Object visitFunction(Function func)
     {
         if(tracing)
@@ -385,7 +422,56 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
         PrintStream out = ((NtsbVtype) this.vtype).out;
         out.println("{");
+        if (func.isWrapper()) {
+            func.getName();
+            String wname = func.getName();
+            int ix = 0;
+            do {
+                ix = wname.indexOf("__Wrapper", 0);
+            } while (wname.indexOf("__Wrapper", ix + 1) >= 0);
+            String hname = func.getName().substring(0, ix);
+            Function tfun = nres.getFun(hname);
+            Vector<Annotation> annot = tfun.getAnnotation("inrange");
+            for(Annotation a : annot){
+                inRange ir = new inRange(a.contents(), tfun);
+                String pname = "";
+                boolean found = false;
+                Parameter thep = null;
+                for (Parameter p : func.getParams()) {
+                    pname = p.getName();
+                    if (pname.length() > ir.name.length()) {
+                        if (pname.substring(0, ir.name.length()).equals(ir.name)) {
+                            found = true;
+                            thep = p;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    throw new ExceptionAtNode("Parameter " + ir.name +
+                            " from annotation " + a + " not found.", func);
+                }
+                if (!thep.getType().equals(TypePrimitive.inttype)) {
+                    throw new ExceptionAtNode(
+                            "inrange annotation only allowed for int parameters: " + a,
+                            func);
+                }
+                abstractValue av = state.varValue(pname);
+                state.setVarValue(pname, vtype.plus(av, vtype.CONST(ir.low)));
+                vtype.Assume(vtype.le(state.varValue(pname), vtype.CONST(ir.high)),
+                        null);
+            }
+        } else {
+            Vector<Annotation> annot = func.getAnnotation("inrange");
+            if (annot.size() > 0 && !func.isSketchHarness()) {
+                throw new ExceptionAtNode(
+                        "@inrange annotation only allowed in harness functions.", func);
+            }
+        }
+        
 
+        
+        
         for (String s : initStmts) {
             out.println(s);
         }
@@ -407,6 +493,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return func;
     }
 
+    Set<String> mainfuns = new HashSet<String>();
 
     public Object visitProgram(Program p) {
         PrintStream out = ((NtsbVtype) this.vtype).out;
@@ -422,6 +509,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                         out.print(printType(e.getType()) + " ");
                     }
                     out.println(")");
+                }
+            }
+            for (Function f : pkg.getFuncs()) {
+                if (f.getSpecification() != null) {
+                    mainfuns.add(f.getName());
+                    mainfuns.add(f.getSpecification());
                 }
             }
         }
