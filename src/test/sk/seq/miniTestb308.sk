@@ -17,7 +17,7 @@ harness void main(int x, int y, int[N] firstHalf, int[N] secondHalf){
         assert choice <=5;
     }    
     
-    if(exprBoolG(chose, 0, {})){
+    if(exprBoolG(chose, {})){
         assert firstHalf[x] < secondHalf[y];
     }else{
         assert x >= N || y >= N || (firstHalf[x] >= secondHalf[y]);

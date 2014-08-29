@@ -101,6 +101,10 @@ tokens {
     //ADT
     "extends";
 }
+{
+  public static String lastComment = null;
+
+}
 
 ARROW :	"->" ;
 LARROW :	"<-" ;
@@ -137,7 +141,7 @@ ML_COMMENT
 		|	~('*'|'\n')
 		)*
 		"*/"
-			{ $setType(Token.SKIP); }
+			{ lastComment = getText();  $setType(Token.SKIP); }
 	;
 
 LPAREN

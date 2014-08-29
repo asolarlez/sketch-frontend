@@ -1,24 +1,13 @@
-pragma options "--slv-lightverif --bnd-inline-amnt 16";
+bit[8] rnd_bits;
 
-generator int sum(int x, int y, int z, int bnd){
-    assert bnd > 0;
-   generator int factor(){
-       return {| x | y | z|} * {| x | y | z | ?? |};
-   }
-   if(??){ return factor(); }
-   else{return sum(x,y,z, bnd-1) + sum(x,y,z, bnd-1);} 
+int next_rnd(){
+    bit new_bit = rnd_bits[0] ^ rnd_bits[1];
+    rnd_bits[0::7] = rnd_bits[1::7];
+    rnd_bits[7] = new_bit;
+    return (int)rnd_bits;
 }
 
-generator int sumB(int x, int y, int z, int bnd){
-    assert bnd > 0;
-    generator int factor(){
-        return {| x | y | z|} * {| x | y | z | ?? |};
-    }
-    if(??){ return factor(); }
-    else{ return factor() + sumB(x,y,z, bnd-1);} 
- }
-
-
-harness void sketch( int x, int y, int z ){
-   assert sum(x,y, z, 5) == x*x + x + y + z*x;
+harness void main(){
+    assert next_rnd() < 256;
+    
 }

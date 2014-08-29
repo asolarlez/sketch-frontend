@@ -1189,8 +1189,25 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     Function createCall(final ExprFunCall efc, Function orig, final String nfn) {
 
+        List<Expression> existingArgs = efc.getParams();
+        List<Parameter> params = orig.getParams();
+        Iterator<Parameter> it = params.iterator();
+        int starti = 0;
+        if (params.size() != existingArgs.size()) {
+            while (starti < params.size()) {
+                if (!params.get(starti).isImplicit()) {
+                    break;
+                }
+                ++starti;
+                it.next();
+            }
+        }
+
+        if ((params.size() - starti) != existingArgs.size()) {
+            throw new ExceptionAtNode("Wrong number of parameters", efc);
+        }
+
         final String cpkg = nres.curPkg().getName();
-        Iterator<Parameter> it = orig.getParams().iterator();
         for (Expression actual : efc.getParams()) {
             Parameter formal = it.next();
             if (formal.getType() instanceof TypeFunction) {

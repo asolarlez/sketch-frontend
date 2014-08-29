@@ -52,7 +52,7 @@ int[N] MergeSort([int N], int[N] input)implements sort{
          assert choice <=6;
       }
       for(int i=0; i<N; ++i){         
-         if(exprBoolG(chose, 0, {})){
+         if(exprBoolG(chose, {})){
             output[i] = firstHalf[x]; x = x+1;
          }else{
             output[i] = secondHalf[y]; y = y+1;

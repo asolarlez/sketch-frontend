@@ -1,6 +1,6 @@
 //@Description Sketch to reverse a list.
 
-pragma options "--bnd-unroll-amnt 6 --debug-show-dag";
+pragma options "--bnd-unroll-amnt 6 --bnd-inline-amnt 6";
 int N = 6;
 
 struct node{

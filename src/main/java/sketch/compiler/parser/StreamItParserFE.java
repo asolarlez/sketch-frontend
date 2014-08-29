@@ -3158,7 +3158,7 @@ inputState.guessing--;
 			match(RPAREN);
 			if ( inputState.guessing==0 ) {
 				
-					an = Annotation.newAnnotation(getContext(atc), id.getText(), slit.getText());
+					an = Annotation.newAnnotation(getContext(atc), id.getText(), slit == null? "" : slit.getText());
 				
 			}
 		}

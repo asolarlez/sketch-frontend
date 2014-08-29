@@ -6,113 +6,13 @@ int TIMES=2;
 int DIV=3;
 int MOD=4;
 
-/**
- * 
- * Generate an expression based on the N operands and T operators
- * given.
- * 
- */
-generator int expr([int N, int T], int[N] pars, int[T] ops){
-    bit isb; int choice;
-    generator int tmp(ref int choice){
-        choice = ??;
-        return ?? ? pars[choice] : ??(2);
-    }
-    return exprb(tmp, T, ops, true, true, isb, choice);
-}
 
 /**
  * 
- * Generate an expression based on the N operands and T operators
- * given.
+ * Linear expression generator with coefficients between -2 and (2^cbits - 2) 
  * 
  */
-generator int expr_cost(int N, int[N] pars, int T, int[T] ops, ref int cost){
-    bit isb; int choice;
-    generator int tmp(ref int choice){
-        choice = ??;
-        return ?? ? pars[choice] : ??(2);
-    }
-    return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
-}
-
-/**
- * 
- * Generate an expression based on the N operands and T operators
- * given.
- * 
- */
-generator int expr_noc_cost(int N, int[N] pars, int T, int[T] ops, ref int cost){
-    bit isb; int choice;
-    generator int tmp(ref int choice){
-        choice = ??;
-        return pars[choice];
-    }
-    return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
-}
-
-/**
- * 
- * Generate an expression based on T operators and operands produced
- * by the generator choices.
- * given.
- * 
- */
-generator int exprG(fun choices, int T, int[T] ops){
-    bit isb; int choice;
-    return exprb(choices, T, ops, true, true, isb, choice);
-}
-
-//generator int exprGX(fun choices, int N, int[N] pars, int T, int[T] ops){
-//    generator int chose(int choice) {
-//        choice = ??;
-//        if (choice < N) { return pars[choice]; }
-//        assert choice <= N;
-//        int choice2;
-//        return choices(choice2);
-//    }
-//    return exprG(chose, T, ops);
-//}
-
-
-/**
- * 
- * Generate a boolean expression based on the N operands and T operators
- * given. 
- * 
- */
-generator bit exprBool(int N, int[N] pars, int T, int[T] ops){
-    generator int tmp(ref int choice){
-        choice = ??;
-        return ?? ? pars[choice] : ??(2);
-    }
-    return exprBoolG(tmp, T, ops);
-}
-
-
-generator bit exprBoolG(fun choices, int T, int[T] ops){
-    
-    if(??){            
-        bit xa = exprBoolG(choices, T, ops);
-        if(xa){
-            xa = exprBoolG(choices, T, ops);
-        }
-        if(??){
-            return xa;
-        }else{
-            return !xa;
-        }            
-    }
-    if(??){
-        bit a; int b;
-        int xa = exprb(choices, T, ops, true, true, a, b);
-        int xb = exprb(choices, T, ops, true, true, a, b);
-        return  {| xa (< | == | !=) xb |};
-    }
-}
-
-
-generator int linexp(int N, int[N] vals){
+generator int linexp([int N], int[N] vals){
     int[N+1] t;
     t[0]= (??-2)*vals[0];
     int i=1;
@@ -123,7 +23,12 @@ generator int linexp(int N, int[N] vals){
     return t[i-1];
 }
 
-generator int plinexp(int N, int[N] vals){
+/**
+ * 
+ * Linear expression generator with coefficients between 0 and (2^cbits) 
+ * 
+ */
+generator int plinexp([int N], int[N] vals){
     int[N+1] t;
     t[0]= (??)*vals[0];
     int i=1;
@@ -134,7 +39,110 @@ generator int plinexp(int N, int[N] vals){
     return t[i-1];
 }
 
+/**
+ * 
+ * Generate an integer expression based on the N operands and T operators. 
+ * 
+ */
+generator int expr([int N, int T], int[N] pars, int[T] ops){
+    bit isb; int gchoice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    return exprb(T, tmp, ops, true, true, isb, gchoice);
+}
 
+
+/**
+ * 
+ * Generate an integer expression based on choices provided by a generator chose and T operators.
+ * Chose should take a reference integer parameter and should set it to the choice id it picked. This will 
+ * help the generator avoid symmetries.  
+ * 
+ */
+generator int exprG([int T], fun chose, int[T] ops){
+    bit isb; int choice;    
+    return exprb(T, tmp, ops, true, true, isb, choice);
+}
+
+
+
+
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators. 
+ * The ref parameter cost will be set to a cost that is proportional to the size of the expression.
+ * 
+ */
+generator int expr_cost([int N, int T], int[N] pars, int[T] ops, ref int cost){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
+}
+
+/**
+ * 
+ * Generate an expression based on the N operands and T operators
+ * given.
+ * 
+ */
+generator int expr_noc_cost([int N], int[N] pars, int T, int[T] ops, ref int cost){
+    bit isb; int choice;
+    generator int tmp(ref int choice){
+        choice = ??;
+        return pars[choice];
+    }
+    return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
+}
+
+
+/**
+ * 
+ * Generate a boolean expression based on the N operands and T operators
+ * given as arrays. The operators are arithmetic expressions and the boolean 
+ * expression will be produced by generating boolean combinations of inequalities 
+ * built from those arithmetic expressions.
+ * 
+ */
+generator bit exprBool([int N, int T], int[N] pars, int[T] ops){
+    generator int tmp(ref int choice){
+        choice = ??;
+        return ?? ? pars[choice] : ??(2);
+    }
+    return exprBoolG(T, tmp, ops);
+}
+
+
+generator bit exprBoolG([int T], fun choices, int[T] ops){
+    
+    if(??){            
+        bit xa = exprBoolG(T, choices, ops);
+        if(xa){
+            xa = exprBoolG(T, choices, ops);
+        }
+        if(??){
+            return xa;
+        }else{
+            return !xa;
+        }            
+    }
+    if(??){
+        bit a; int b;
+        int xa = exprb(T, choices, ops, true, true, a, b);
+        int xb = exprb(T, choices, ops, true, true, a, b);
+        return  {| xa (< | == | !=) xb |};
+    }
+}
+
+
+
+
+@Private()
 generator int op(int ch, int a, int b, int N, int[N] ops, bit canplus, bit cantimes){
     int t = ch;
     int cop= ops[t];
@@ -159,27 +167,8 @@ generator int op(int ch, int a, int b, int N, int[N] ops, bit canplus, bit canti
 }
 
 
-generator int exprb(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice){
-    if(??){
-        assert T>0;
-        int ch = ??;
-        isbase = false;
-        bit lib, rib;
-        int lch; int rch;
-        int och = ops[ch];
-        int xa = exprb(chose, T, ops, och!=PLUS, och!=TIMES, lib, lch);
-        int xb = exprb(chose, T, ops, true, true, rib, rch);
-      if(lib && rib && 
-                (och ==PLUS || 
-                        och==TIMES)){ 
-            assert lch <= rch; } 
-        return op(ch, xa, xb, T, ops, canplus, cantimes);
-    }else{
-        isbase = true;
-        return chose(choice);        
-    }
-}
 
+@Private()
 generator int exprb_cost(fun chose, int T, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice, ref int cost){
     cost = cost+1;
     if(??){
@@ -204,3 +193,24 @@ generator int exprb_cost(fun chose, int T, int[T] ops, bit canplus, bit cantimes
 
 
 
+@Private()
+generator int exprb([int T], fun chose, int[T] ops, bit canplus, bit cantimes, ref bit isbase, ref int choice){
+    if(??){
+        assert T>0;
+        int ch = ??;
+        isbase = false;
+        bit lib, rib;
+        int lch; int rch;
+        int och = ops[ch];
+        int xa = exprb(T, chose, ops, och!=PLUS, och!=TIMES, lib, lch);
+        int xb = exprb(T, chose, ops, true, true, rib, rch);
+      if(lib && rib && 
+                (och ==PLUS || 
+                        och==TIMES)){ 
+            assert lch <= rch; } 
+        return op(ch, xa, xb, T, ops, canplus, cantimes);
+    }else{
+        isbase = true;
+        return chose(choice);        
+    }
+}

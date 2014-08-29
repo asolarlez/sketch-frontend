@@ -30,6 +30,9 @@ import antlr.SemanticException;
 
 public class StreamItLex extends antlr.CharScanner implements StreamItLexTokenTypes, TokenStream
  {
+
+  public static String lastComment = null;
+
 public StreamItLex(InputStream in) {
 	this(new ByteBuffer(in));
 }
@@ -786,7 +789,7 @@ tryAgain:
 		}
 		match("*/");
 		if ( inputState.guessing==0 ) {
-			_ttype = Token.SKIP;
+			lastComment = getText();  _ttype = Token.SKIP;
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);

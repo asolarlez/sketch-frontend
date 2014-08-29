@@ -18,11 +18,16 @@ package XX{
     struct A{int n;}
     struct B extends A{int[n] x;}
     struct C extends A{int[n] y;}
-    
+    void foo(int[3] x){
+            
+    }
+    void moo(A a){ }
     harness void main(int n){
+        foo({0,0,0});
         A a = new B(n=7, x = ??);
+        A q = new B(n=7, x = {0,0,1});
         A c = new C(n=7, y = ??);
-        
+        moo(q);
         assert ((C)c).y == ((B)a).x;
         
     }

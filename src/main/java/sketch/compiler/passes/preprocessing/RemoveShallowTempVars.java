@@ -16,10 +16,10 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.StructDef;
 
 /**
  * Simple pass to get rid of temporary variables that only pollute the output code. We
@@ -182,6 +182,13 @@ public class RemoveShallowTempVars extends FEReplacer {
         public Object visitStmtAssign(StmtAssign sa){
             if(sa.getLHS() instanceof ExprVar){
                 String name = sa.getLHS().toString();
+                isShallow.put(name, false);
+                if (dependsOn.containsKey(name)) {
+                    isShallow.put(dependsOn.get(name), false);
+                }
+            }
+            if (sa.getLHS() instanceof ExprArrayRange) {
+                String name = ((ExprArrayRange) sa.getLHS()).getAbsoluteBase().toString();
                 isShallow.put(name, false);
                 if (dependsOn.containsKey(name)) {
                     isShallow.put(dependsOn.get(name), false);

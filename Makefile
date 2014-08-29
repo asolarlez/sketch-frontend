@@ -147,8 +147,8 @@ light-distr:
 	cat LIGHT_README | sed 's/\\VER/$(VERSION)/g' > ../sketch-$(VERSION)/README
 	echo "-----------------------------------" >> ../sketch-$(VERSION)/README
 	echo "frontend version:" >> ../sketch-$(VERSION)/README
-	hg log -l 1 | head -n 4 >> ../sketch-$(VERSION)/README
+	hg summary | head -n 4 >> ../sketch-$(VERSION)/README
 	echo "backend version:" >> ../sketch-$(VERSION)/README
-	cd ../sketch-backend; hg log -l 1 | (head -n 4 >> ../sketch-$(VERSION)/README) | cd ../sketch-frontend	
+	cd ../sketch-backend; hg summary | (head -n 4 >> ../sketch-$(VERSION)/README) | cd ../sketch-frontend	
 	rm -rf ../sketch-$(VERSION)/sketch-backend/.hg
 	cd ../sketch-$(VERSION)/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend

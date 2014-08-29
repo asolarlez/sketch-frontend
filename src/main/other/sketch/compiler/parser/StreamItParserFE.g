@@ -437,7 +437,7 @@ annotation returns [Annotation an]{
 	an = null;
 }: atc:AT id:ID LPAREN (slit:STRING_LITERAL)? RPAREN
 {
-	an = Annotation.newAnnotation(getContext(atc), id.getText(), slit.getText());
+	an = Annotation.newAnnotation(getContext(atc), id.getText(), slit == null? "" : slit.getText());
 }
 ;
 

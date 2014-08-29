@@ -13,7 +13,7 @@ void foo(int x, ref int[x] y, int w, ref int[w] z, int[x] yy){
 
 void moo(int x, ref int[x] y, int w, ref int[w] z, int[x] yy) implements foo{
     y = yy;
-    if(exprBool(2, {w,x}, 0, {})){
+    if(exprBool({w,x}, {})){
         z = yy[0::w];
     }else{
         z = yy;

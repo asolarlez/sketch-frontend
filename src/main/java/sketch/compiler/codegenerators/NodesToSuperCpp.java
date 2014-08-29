@@ -688,8 +688,25 @@ public class NodesToSuperCpp extends NodesToJava {
                             Type tp = getType(pe.get(field));
                             if (tp instanceof TypeArray) {
                                 TypeArray t = (TypeArray) tp;
-                                res +=
-                                        pe.get(field).accept(this) + ", " +
+                                String originalParam =
+                                        (String) pe.get(field).accept(this);
+                                TypeArray fieldType = (TypeArray) ftype;
+                                if (!fieldType.getBase().equals(t.getBase())) {
+                                    String lenString =
+                                            (String) t.getLength().accept(this);
+                                    String nvar = newTempArray(fieldType, lenString);
+                                    String copy =
+                                            "CopyArr<" +
+                                                    convertType(fieldType.getBase()) +
+                                                    ">(" + nvar + "," + originalParam +
+                                                    ", " + lenString;
+                                    copy += ", " + lenString + ");\n";
+
+                                    addPreStmt(indent + copy);
+                                    originalParam = nvar;
+                                }
+
+                                res += originalParam + ", " +
                                                 t.getLength().accept(this);
                             } else {
                                 TypeArray tarr = (TypeArray) ftype;
@@ -990,12 +1007,14 @@ public class NodesToSuperCpp extends NodesToJava {
                 symtab.registerVar(newVar, new TypeStructRef(c, false));
                 Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
                 String body = (String) bodyStatement.accept(this);
+                /* this introduces a bug with complex case bodies.
                 int x = body.indexOf("{");
                 int y = body.lastIndexOf("}");
                 if (x != -1 && y != -1) {
                     result += body.substring(x + 1, y);
-                } else {
-                    result += body;
+                } else */
+                {
+                    result += body + ";";
                 }
                 result += indent + "break;\n";
                 result += indent + "}\n";
@@ -1006,13 +1025,13 @@ public class NodesToSuperCpp extends NodesToJava {
                 result += "{\n" + indent + indent;
 
                 String body = (String) stmt.getBody(c).accept(this);
-                int x = body.indexOf("{");
-                int y = body.lastIndexOf("}");
-
-                if (x != -1 && y != -1) {
-                    result += body.substring(x + 1, y);
-                } else {
-                    result += body;
+                // int x = body.indexOf("{");
+                // int y = body.lastIndexOf("}");
+                // if (x != -1 && y != -1) {
+                // result += body.substring(x + 1, y);
+                // } else
+                {
+                    result += body + ";";
                 }
                 result += indent + "break;\n";
                 result += indent + "}\n";
