@@ -1,4 +1,4 @@
-module streamit.frontend.parser.Regen;
+module sketch.compiler.parser.Regen;
 
 header {
 
@@ -6,27 +6,22 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 
-import streamit.frontend.nodes.ExprAlt;
-import streamit.frontend.nodes.ExprChoiceBinary;
-import streamit.frontend.nodes.ExprChoiceSelect;
-import streamit.frontend.nodes.ExprChoiceUnary;
-import streamit.frontend.nodes.ExprConstant;
-import streamit.frontend.nodes.ExprFunCall;
-import streamit.frontend.nodes.ExprNullPtr;
-import streamit.frontend.nodes.ExprParen;
-import streamit.frontend.nodes.ExprStar;
-import streamit.frontend.nodes.ExprTernary;
-import streamit.frontend.nodes.ExprVar;
-import streamit.frontend.nodes.Expression;
-import streamit.frontend.nodes.FEContext;
-import streamit.frontend.nodes.FENode;
-import streamit.frontend.nodes.ExprArrayRange;
-import streamit.frontend.nodes.ExprChoiceSelect.Select;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectChain;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectField;
-import streamit.frontend.nodes.ExprChoiceSelect.SelectOrr;
-import streamit.frontend.nodes.ExprChoiceSelect.Selector;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.Select;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.Selector;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import xtc.parser.Column;
 import xtc.parser.ParseError;
 import xtc.parser.ParserBase;
@@ -80,10 +75,36 @@ Expression ExprCond =
         { yyValue = new ExprTernary ("?:", a, b, c); }
     / ExprBin
     ;
-    
+ 
+Expression ExprNew = 
+	"new":Keyword structName:ID void:"(" l:ParamList void:")"
+		{ TypeStructRef t = new TypeStructRef(structName, false);
+		 yyValue = new ExprNew((FENode) null, t, l, false); }
+	/ "new":Keyword "??":s void:"(" l:ParamList void:")"
+		{ yyValue = new ExprNew((FENode) null, null, l, true); }
+	;
+	
+List<ExprNamedParam> ParamList = 
+	e1st:ExprNamed l:(void:"," ExprNamed)*
+		{
+			List<ExprNamedParam> paramList = new ArrayList<ExprNamedParam>();
+			paramList.add(e1st);
+			for (ExprNamedParam e: l) {
+				paramList.add(e);
+			}
+			yyValue = paramList;
+		}
+	/   {yyValue = new ArrayList<ExprNamedParam>(); }
+	;
+	
+ExprNamedParam ExprNamed =
+	fieldName:ID void:"=" right:Expr
+		{ yyValue = new ExprNamedParam((FENode) null, fieldName, right);}
+	;	
+	   
 Expression ExprFuncInvok =
 	funcName:ID	void:"("	l:ArgList	void:")"
-		{ yyValue = new ExprFunCall((FENode) null, funcName, l);
+		{ yyValue = new ExprFunCall((FENode) null, funcName, l); }
 	;
 	
 List<Expression> ArgList =
@@ -94,6 +115,7 @@ List<Expression> ArgList =
 			for (Expression e : l)
 				argList.add(e);
 			yyValue = argList;
+		}
 	/	 { yyValue = new LinkedList<Expression>(); }
 	;
 	
@@ -156,6 +178,7 @@ Expression Term =
     / base:Var void:"[":s  idx:Expr  void:"]":s
         {yyValue = new ExprArrayRange(base, idx); }
     / ExprFuncInvok
+    / ExprNew
     / Var
     / void:"(":s  e:Expr  void:")":s
         { yyValue = new ExprParen (e); }
@@ -230,6 +253,8 @@ Select SelChain =
 Select Sel =
     ".":s  id:Id
         { yyValue = new SelectField (id); }
+    / ".":s "??":s
+    	{ yyValue = new SelectField(""); }
     ;
 
 Expression Var =
@@ -245,6 +270,17 @@ Expression Literal =
         { yyValue = ExprConstInt.zero; } 
     /  "null":Keyword
         { yyValue = ExprNullPtr.nullPtr; }
+    /	"??":s void:"(" n1:ExprBin void:"," n2:ExprBin void:")"
+    	{
+    		int in1 = n1.getIValue();
+            int in2 = n2.getIValue();
+           	yyValue = new ExprStar(getCx(),in1, in2);
+        }
+    /	"??":s void:"(" n1:ExprBin void:")"	
+    	{
+    		int in1 = n1.getIValue();
+           	yyValue = new ExprStar(getCx(),in1);
+        }
     /  "??":s
         { yyValue = new ExprStar (getCx ()); }
     ;
@@ -305,11 +341,12 @@ transient String SYM =
 
 String Keyword = KW WS ;
 transient String KW =
-    "true" / "false" / "null"
+    "true" / "false" / "null" / "new"
     ;
+
 
 String Id = ID WS ;
 transient String ID = [a-zA-Z_] [a-zA-Z0-9_]* ;
 
 String Num = NUM WS ;
-transient String NUM = [0-9]+ ;
+transient String NUM = [0-9]+('.' [0-9]+ )? (('e' / 'E') ('+'/'-')? [0-9]+ )? ('i')? ;
