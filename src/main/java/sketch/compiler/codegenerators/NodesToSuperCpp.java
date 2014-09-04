@@ -989,14 +989,17 @@ public class NodesToSuperCpp extends NodesToJava {
                 symtab = new SymbolTable(oldSymTab);
                 symtab.registerVar(newVar, new TypeStructRef(c, false));
                 Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
-                String body = (String) bodyStatement.accept(this);
-                int x = body.indexOf("{");
-                int y = body.lastIndexOf("}");
-                if (x != -1 && y != -1) {
-                    result += body.substring(x + 1, y);
-                } else {
-                    result += body;
+                if (!bodyStatement.isBlock()) {
+                    bodyStatement = new StmtBlock(bodyStatement);
                 }
+                String body = (String) bodyStatement.accept(this);
+                // int x = body.indexOf("{");
+                // int y = body.lastIndexOf("}");
+                // if (x != -1 && y != -1) {
+                // result += body.substring(x + 1, y);
+                // } else {
+                result += body;
+                // }
                 result += indent + "break;\n";
                 result += indent + "}\n";
                 symtab = oldSymTab;
@@ -1004,16 +1007,19 @@ public class NodesToSuperCpp extends NodesToJava {
                 result += indent + c + ":\n" + indent + indent;
 
                 result += "{\n" + indent + indent;
-
-                String body = (String) stmt.getBody(c).accept(this);
-                int x = body.indexOf("{");
-                int y = body.lastIndexOf("}");
-
-                if (x != -1 && y != -1) {
-                    result += body.substring(x + 1, y);
-                } else {
-                    result += body;
+                Statement bodyStatement = stmt.getBody(c);
+                if (!bodyStatement.isBlock()) {
+                    bodyStatement = new StmtBlock(bodyStatement);
                 }
+                String body = (String) bodyStatement.accept(this);
+                // int x = body.indexOf("{");
+                // int y = body.lastIndexOf("}");
+
+                // if (x != -1 && y != -1) {
+                // result += body.substring(x + 1, y);
+                // } else {
+                result += body;
+                // }
                 result += indent + "break;\n";
                 result += indent + "}\n";
             }
