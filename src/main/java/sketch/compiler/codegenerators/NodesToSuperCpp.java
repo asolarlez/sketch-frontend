@@ -229,7 +229,8 @@ public class NodesToSuperCpp extends NodesToJava {
             Statement s = (Statement) iter.next();
             String line = indent;
             line += (String) s.accept(this);
-            if (!(s instanceof StmtIfThen || s instanceof StmtFor || s instanceof StmtWhile))
+            if (!(s instanceof StmtIfThen || s instanceof StmtFor ||
+                    s instanceof StmtWhile || s instanceof StmtSwitch))
             {
                 line += ";";
             }
@@ -1000,12 +1001,15 @@ public class NodesToSuperCpp extends NodesToJava {
                 result += "{\n" + indent + indent;
                 result +=
                         sd.getPkg() + "::" + c + "* " + newVar + " = (" + sd.getPkg() +
-                                "::" + c + "*)  " + var + ";" + indent;// semicolon
+                                "::" + c + "*)  " + var + ";\n";// semicolon
                 VarReplacer vr = new VarReplacer(var, newVar);
                 SymbolTable oldSymTab = symtab;
                 symtab = new SymbolTable(oldSymTab);
                 symtab.registerVar(newVar, new TypeStructRef(c, false));
                 Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
+                if (!bodyStatement.isBlock()) {
+                    bodyStatement = new StmtBlock(bodyStatement);
+                }
                 String body = (String) bodyStatement.accept(this);
                 /* this introduces a bug with complex case bodies.
                 int x = body.indexOf("{");
@@ -1016,24 +1020,27 @@ public class NodesToSuperCpp extends NodesToJava {
                 {
                     result += body + ";";
                 }
-                result += indent + "break;\n";
+                result += "\n" + indent + indent + "break;\n";
                 result += indent + "}\n";
                 symtab = oldSymTab;
             } else {
                 result += indent + c + ":\n" + indent + indent;
 
                 result += "{\n" + indent + indent;
-
-                String body = (String) stmt.getBody(c).accept(this);
-                // int x = body.indexOf("{");
-                // int y = body.lastIndexOf("}");
-                // if (x != -1 && y != -1) {
-                // result += body.substring(x + 1, y);
-                // } else
-                {
-                    result += body + ";";
+                Statement bodyStatement = stmt.getBody(c);
+                if (!bodyStatement.isBlock()) {
+                    bodyStatement = new StmtBlock(bodyStatement);
                 }
-                result += indent + "break;\n";
+                String body = (String) bodyStatement.accept(this);
+                int x = body.indexOf("{");
+                int y = body.lastIndexOf("}");
+
+                if (x != -1 && y != -1) {
+                    result += body.substring(x + 1, y);
+                } else {
+                    result += body;
+                }
+                result += "\n" + indent + indent + "break;\n";
                 result += indent + "}\n";
             }
 
