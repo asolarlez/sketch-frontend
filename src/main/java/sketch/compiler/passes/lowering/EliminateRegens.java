@@ -225,6 +225,23 @@ public class EliminateRegens extends SymbolTableVisitor {
             }
         }
         
+        private void structConstruct(ExprNew exp, List<ExprNamedParam> plist, int lidx,
+                List<ExprNamedParam> actuals, List<Expression> exprs)
+        {
+            if (plist.size() > lidx) {
+                ExprNamedParam cur = plist.get(lidx);
+                List<Expression> tmp = (List<Expression>) cur.getExpr().accept(this);
+                for (Expression e : tmp) {
+                    List<ExprNamedParam> nl = new ArrayList<ExprNamedParam>(actuals);
+                    nl.add(new ExprNamedParam(cur.getContext(), cur.getName(), e));
+                    structConstruct(exp, plist, lidx + 1, nl, exprs);
+                }
+            } else {
+                exprs.add(new ExprNew(exp, exp.getTypeToConstruct(), actuals,
+                        exp.isHole()));
+            }
+        }
+
         @Override
         public Object visitExprFunCall(ExprFunCall efc){
             List<Expression> plist = efc.getParams();
@@ -233,6 +250,14 @@ public class EliminateRegens extends SymbolTableVisitor {
             return exprs;
         }
         
+        @Override
+        public Object visitExprNew(ExprNew exp) {
+            List<ExprNamedParam> plist = exp.getParams();
+            List<Expression> exprs = new ArrayList<Expression>();
+            structConstruct(exp, plist, 0, new ArrayList<ExprNamedParam>(), exprs);
+            return exprs;
+        }
+
         public Object visitExprChoiceBinary (ExprChoiceBinary ecb) {
             List<Expression> lefts = (List<Expression>) ecb.getLeft ().accept (this);
             List<Expression> rights = (List<Expression>) ecb.getRight ().accept (this);
@@ -311,8 +336,9 @@ public class EliminateRegens extends SymbolTableVisitor {
                     exps.add (obj);
                 for (List<String> s : sf) {
                     Expression e = obj;
-                    for (String f : s)
-                        e = new ExprField(e, f);
+                    for (String f : s) {
+                        e = new ExprField(e, f, f.equals(""));
+                    }
                     exps.add (e);
                 }
             }
@@ -323,6 +349,12 @@ public class EliminateRegens extends SymbolTableVisitor {
         public Object visitExprConstInt (ExprConstInt exp) {
             List<Expression> exps = new ArrayList<Expression> ();
             exps.add (exp);
+            return exps;
+        }
+
+        public Object visitExprConstFloat(ExprConstFloat exp) {
+            List<Expression> exps = new ArrayList<Expression>();
+            exps.add(exp);
             return exps;
         }
 

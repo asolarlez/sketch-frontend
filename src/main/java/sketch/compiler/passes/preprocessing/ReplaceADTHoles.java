@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
@@ -35,9 +36,10 @@ public class ReplaceADTHoles extends SymbolTableVisitor{
         }
         return exp;
     }
-    private ExprNew getExprNew(FENode exp, TypeStructRef ts, int depth ){
+
+    private Expression getExprNew(FENode exp, TypeStructRef ts, int depth) {
         if (depth == 0) {
-            return null;
+            return new ExprNullPtr();
         } else {
             List<ExprNamedParam> paramList = getParams(exp, ts, depth);
             ExprStar star = new ExprStar(exp, 5, TypePrimitive.int32type);

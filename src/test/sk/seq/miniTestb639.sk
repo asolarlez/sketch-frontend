@@ -14,14 +14,14 @@ int sketch(int x){
 		return sketch(x-1)+sketch(x-2);
 	}else
 	if(x<20){
-		x = x-1;
+		x = x-2;
 		return sketch(x-1)+sketch(x-2)+sketch(x-3);
 	}else
 	if(x<30){
-		x=x-1;
+		x=x-3;
 		return sketch(x-1)+sketch(x-2)+sketch(x-3);
 	}else{
-		x = x-1;
+		x = x-4;
 		return sketch(x-1)+sketch(x-2)+sketch(x-3);
 	}
 		

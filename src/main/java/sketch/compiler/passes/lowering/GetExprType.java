@@ -174,7 +174,22 @@ public class GetExprType extends FENullVisitor
     		GetSelectType (StructDef base) { this.base = base; }
 
     		public Object visit (SelectField sf) {
-    			return base.getType (sf.getField ());
+                String f = sf.getField();
+                if (f.equals("")) {
+                    return new NotYetComputedType();
+                }
+                StructDef current = base;
+                boolean err = true;
+                while (current.getParentName() != null) {
+                    if (current.hasField(f)) {
+                        err = false;
+                        break;
+                    } else {
+                        current = nres.getStruct(current.getParentName());
+                    }
+                }
+
+                return current.getType(f);
     		}
 
     		public Object visit (SelectOrr so) {
@@ -381,10 +396,18 @@ public class GetExprType extends FENullVisitor
         // (Might not want to blindly assert ?:.)
         Type tb = (Type)exp.getB().accept(this);
         Type tc = (Type)exp.getC().accept(this);
-        Type lub = tb != null ? tb.leastCommonPromotion(tc, nres) : null;
+        Type lub;
+        if (tb != null && tc != null) {
+            lub = tb.leastCommonPromotion(tc, nres);
+            exp.assertTrue(lub != null, "incompatible types for '" + exp.getB() + "', '" +
+                    exp.getC() + "'");
+        } else if (tb != null) {
+            lub = tb;
+        } else {
+            lub = tc;
+        }
+        // what if both are null?
 
-        exp.assertTrue (lub != null,
-        		"incompatible types for '"+ exp.getB () +"', '"+ exp.getC () +"'");
         return lub;
     }
 
