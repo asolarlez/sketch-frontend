@@ -32,7 +32,7 @@ public class InteractiveSATBackend extends SATBackend {
 		if (!opts.contains(interactiveFlag)) {
 		    opts.add(interactiveFlag);
 		}
-		String[] commandLine = getBackendCommandline(options.getBackendOptions());
+        String[] commandLine = getBackendCommandline(0, options.getBackendOptions());
 		{
 			String cmdLine = "";
 			for (String a : commandLine)  cmdLine += a + " ";

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
@@ -45,13 +46,15 @@ public class SketchOptions {
     public Vector<String> backendArgs;
     protected String[] currentArgs;
     protected static SketchOptions _singleton;
-
+    int randomAppendage = 0;
     public SketchOptions(String[] inArgs) {
         this.inArgs = inArgs;
         preinit();
         SketchCliParser parser = new SketchCliParser(inArgs);
         parseCommandline(parser);
         _singleton = this;
+        Random r = new Random();
+        randomAppendage = r.nextInt();
     }
 
     /** let subclasses set different default values */
@@ -121,18 +124,18 @@ public class SketchOptions {
     }
 
     public String getTmpSketchFilename() {
-        return getTmpFilename("input.tmp");
+        return getTmpFilename("input" + randomAppendage + ".tmp");
     }
 
     private String getSolStringBase() {
-        return "solution-";
+        return "solution" + randomAppendage + "-";
     }
 
-    public String getSolutionsString() {
+    public String getSolutionsString(int i) {
         // return getTmpFilename("solution-%(num)s");
         // FIXME -- restore multiple solution generality
 
-        return getTmpFilename(getSolStringBase() + "0");
+        return getTmpFilename(getSolStringBase() + i);
     }
 
     public File[] getSolutionsFiles() {

@@ -1,4 +1,4 @@
-pragma options "--debug-show-dag --beopt:simiters 10000 --be:lightverif --fe-fpencoding AS_FFIELD --bnd-inbits 3 --bnd-cbits 4 --be:ufunSymmetry --beopt:simplifycex NOSIM";
+pragma options "--beopt:simiters 10000 --be:lightverif --fe-fpencoding AS_FFIELD --bnd-inbits 3 --bnd-cbits 4 --be:ufunSymmetry --beopt:simplifycex NOSIM";
 
 package sk_neohookean;
 

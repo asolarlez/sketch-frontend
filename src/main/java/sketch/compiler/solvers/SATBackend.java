@@ -54,13 +54,15 @@ public class SATBackend {
 	}
 	
 
-	public String[] getBackendCommandline(Vector<String> commandLineOptions_, String... additional){
+    public String[] getBackendCommandline(int i, Vector<String> commandLineOptions_,
+            String... additional)
+    {
         Vector<String> commandLineOptions = (Vector<String>) commandLineOptions_.clone();
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
         commandLineOptions.add("-o");
-        commandLineOptions.add(options.getSolutionsString());
+        commandLineOptions.add(options.getSolutionsString(i));
         commandLineOptions.addAll(Arrays.asList(additional));
         commandLineOptions.add(options.getTmpSketchFilename());
         String[] result = commandLineOptions.toArray(new String[0]);
@@ -270,7 +272,7 @@ public class SATBackend {
 			for(bits=1; bits<=maxBits; ++bits){
 				log ("TRYING SIZE " + bits);			
                 String[] commandLine =
-                        getBackendCommandline(backendOptions, "--bnd-cbits=" + bits);
+                        getBackendCommandline(0, backendOptions, "--bnd-cbits=" + bits);
 				boolean ret = runSolver(commandLine, bits, timeoutMins);
 				if(ret){
 					isSolved = true;
@@ -291,17 +293,23 @@ public class SATBackend {
         } else {
             String[] commandLine;
             if (hasMinimize) {
-                commandLine = getBackendCommandline(backendOptions, "--minvarHole");
+                commandLine = getBackendCommandline(0, backendOptions, "--minvarHole");
+                boolean ret = runSolver(commandLine, 0, timeoutMins);
+                if (!ret) {
+                    log(5, "Backend returned error code");
+                    // System.err.println(solverErrorStr);
+                    return false;
+                }
             } else {
-                commandLine = getBackendCommandline(backendOptions);
+                commandLine = getBackendCommandline(0, backendOptions);
+                boolean ret = runSolver(commandLine, 0, timeoutMins);
+                if (!ret) {
+                    log(5, "Backend returned error code");
+                    // System.err.println(solverErrorStr);
+                    return false;
+                }
             }
-            boolean ret = runSolver(commandLine, 0, timeoutMins);
 
-            if (!ret) {
-                log(5, "Backend returned error code");
-                // System.err.println(solverErrorStr);
-                return false;
-            }
         }
         return true;
 	}
