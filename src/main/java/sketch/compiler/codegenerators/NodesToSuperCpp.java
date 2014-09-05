@@ -229,7 +229,8 @@ public class NodesToSuperCpp extends NodesToJava {
             Statement s = (Statement) iter.next();
             String line = indent;
             line += (String) s.accept(this);
-            if (!(s instanceof StmtIfThen || s instanceof StmtFor || s instanceof StmtWhile))
+            if (!(s instanceof StmtIfThen || s instanceof StmtFor ||
+                    s instanceof StmtWhile || s instanceof StmtSwitch))
             {
                 line += ";";
             }
@@ -983,7 +984,7 @@ public class NodesToSuperCpp extends NodesToJava {
                 result += "{\n" + indent + indent;
                 result +=
                         sd.getPkg() + "::" + c + "* " + newVar + " = (" + sd.getPkg() +
-                                "::" + c + "*)  " + var + ";" + indent;// semicolon
+                                "::" + c + "*)  " + var + ";\n";// semicolon
                 VarReplacer vr = new VarReplacer(var, newVar);
                 SymbolTable oldSymTab = symtab;
                 symtab = new SymbolTable(oldSymTab);
@@ -993,14 +994,14 @@ public class NodesToSuperCpp extends NodesToJava {
                     bodyStatement = new StmtBlock(bodyStatement);
                 }
                 String body = (String) bodyStatement.accept(this);
-                // int x = body.indexOf("{");
-                // int y = body.lastIndexOf("}");
-                // if (x != -1 && y != -1) {
-                // result += body.substring(x + 1, y);
-                // } else {
-                result += body;
-                // }
-                result += indent + "break;\n";
+                int x = body.indexOf("{");
+                int y = body.lastIndexOf("}");
+                if (x != -1 && y != -1) {
+                    result += body.substring(x + 1, y);
+                } else {
+                    result += body;
+                }
+                result += "\n" + indent + indent + "break;\n";
                 result += indent + "}\n";
                 symtab = oldSymTab;
             } else {
@@ -1012,15 +1013,15 @@ public class NodesToSuperCpp extends NodesToJava {
                     bodyStatement = new StmtBlock(bodyStatement);
                 }
                 String body = (String) bodyStatement.accept(this);
-                // int x = body.indexOf("{");
-                // int y = body.lastIndexOf("}");
+                int x = body.indexOf("{");
+                int y = body.lastIndexOf("}");
 
-                // if (x != -1 && y != -1) {
-                // result += body.substring(x + 1, y);
-                // } else {
-                result += body;
-                // }
-                result += indent + "break;\n";
+                if (x != -1 && y != -1) {
+                    result += body.substring(x + 1, y);
+                } else {
+                    result += body;
+                }
+                result += "\n" + indent + indent + "break;\n";
                 result += indent + "}\n";
             }
 
