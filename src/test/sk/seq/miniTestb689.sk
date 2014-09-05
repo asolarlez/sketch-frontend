@@ -1,0 +1,33 @@
+//@Description Sketch that takes in an array of signed inputs and returns the maximum value of the sum of any contiguous subarray, in linear time.
+
+pragma options "--bnd-inline-amnt 5 --bnd-inbits 3 --bnd-cbits 2";
+
+int W = 4;
+
+int lss(int[W] in) {
+	for(int i=0; i<W; ++i){ in[i] = in[i] - 3; }
+	int sum = 0;
+	int maxsum = 0;
+	for(int i = 0;i<W; i++) {
+		sum = 0;
+		for(int j = i; j<W; j++) {
+			sum = sum + in[j];
+			if(sum > maxsum) maxsum = sum;
+		}
+	}
+	return maxsum;
+}
+
+int lssSketch(int[W] in) implements lss {
+	for(int i=0; i<W; ++i){ in[i] = in[i] - 3; }
+	int sum = 0;
+	int maxsum = 0;
+	int psum = 0;
+	for(int i = 0;i<W; i++) {
+		psum = sum;
+		sum = sum + in[i];
+		if({|  (sum | psum | ??) (+|-)  (sum | psum | ??)  <= ?? |}) sum = {|  (sum | psum | ??) (+|-)  (sum | psum | ??) |};
+		if(sum > maxsum) maxsum = sum;
+	}
+	return maxsum;
+}
