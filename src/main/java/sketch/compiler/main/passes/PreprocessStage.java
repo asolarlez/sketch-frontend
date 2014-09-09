@@ -47,7 +47,7 @@ public class PreprocessStage extends MetaStage {
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
-        //prog.debugDump("after expand ===");
+        // prog.debugDump("after expand ===");
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
