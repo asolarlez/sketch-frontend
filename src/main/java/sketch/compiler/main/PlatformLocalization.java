@@ -12,6 +12,7 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.exceptions.SketchSolverException;
 
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
@@ -72,15 +73,27 @@ public class PlatformLocalization {
         } catch (IOException e) {
             printError("error retriving localization properties");
         }
-
-        String homedir = System.getProperty("user.home");
-        usersketchdir = md(path(homedir, ".sketch"));
-        if (homedir == null) {
-            System.out.println("Java claims your home directory is: " +
-                    homedir +
-                    "\n but I can't write to it. This may be related to this bug in java: http://bugs.sun.com/view_bug.do?bug_id=4787931");
+        String argtmpdir = SketchOptions.getSingleton().feOpts.tempdir;
+        if (argtmpdir != null) {
+            usersketchdir = md(path(argtmpdir));
+            if (usersketchdir == null) {
+                System.out.println("You asked to use temp directory " + argtmpdir +
+                        " but I can't write to it.");
+            }
+        } else {
+            String homedir = System.getProperty("user.home");
+            usersketchdir = md(path(homedir, ".sketch"));
+            if (homedir == null || usersketchdir == null) {
+                System.out.println("Java claims your home directory is: " +
+                        homedir +
+                        "\n but I can't write to it. This may be related to this bug in java: http://bugs.sun.com/view_bug.do?bug_id=4787931");
+            }
         }
         tmpdir = md(path(usersketchdir, "tmp"));
+        if(tmpdir == null){
+            System.out.println("Can't create your temp file in " + usersketchdir);
+        }
+
     }
 
     public File get_jarpath() {
@@ -390,6 +403,10 @@ public class PlatformLocalization {
     }
 
     public File getTempPath(String... subpaths) {
+        if (tmpdir == null) {
+            System.out.println("null tmpdir. This should never happen!!!");
+            throw new SketchSolverException("null tmpdir. This should never happen!!!");
+        }
         return path(tmpdir, subpaths);
     }
 

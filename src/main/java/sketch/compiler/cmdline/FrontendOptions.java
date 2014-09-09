@@ -34,8 +34,12 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Keep intermediate files. Useful for debugging the compiler.")
     public boolean keepTmp;
-    @CliParameter(help = "Temporary output directory used to communicate with backend solver.")
+    @CliParameter(help = "Temporary output directory used to communicate with backend solver. This is a relative path relative to the sketch temp directory which is usually $HOME/.sketch/tmp")
     public String output = null;
+
+    @CliParameter(help = "Changes the default temp directory from $HOME/.sketch/tmp to a different value.")
+    public String tempdir = null;
+
     @CliParameter(help = "Use this flag if you want the compiler to produce C code.")
     public boolean outputCode;
 
