@@ -1,6 +1,13 @@
 //@Description This sketch derives the desugar function between two simple toy languages using interpreters.
 
-pragma options "--bnd-inbits 3 --bnd-inline-amnt 4";
+/**
+ * Command line arguments that help control the depth of inlining for recursive functions. 
+ */
+pragma options "--bnd-inline-amnt 4";
+
+/**
+ * Data definitions
+ */
 adt opcode{
 	Oplus{}
 	Ominus{}
@@ -30,9 +37,15 @@ adt dstAST{
 	BoolD {bit v;}
 }
 
+/**
+ * Function to synthesize
+ */
 dstAST desugar(srcAST s){ 
 	if(s == null){ return null; }
 
+	/**
+	 * This generator produces a destination AST with maximum depth bnd that uses dstAST nodes a, b and c 
+	 */
 	generator dstAST getPart(dstAST a, dstAST b, dstAST c, int bnd) {
 		if(??) return {| a|b|c|};
 		else if(bnd > 1){
@@ -47,14 +60,39 @@ dstAST desugar(srcAST s){
 			dstAST a = desugar(s.??);
 			dstAST b = desugar(s.??);
 			dstAST c = desugar(s.??);
-			return new ??(op={|s.?? | ??|}, a = getPart(a,b,c, 2), b = getPart(a,b,c, 2), c =getPart(a,b,c, 2),  val = {|s.??|??|},v=??);	
+			return new ??(op = {|s.?? | ??|}, 
+			               a = getPart(a,b,c, 2), 
+			               b = getPart(a,b,c, 2), 
+			               c = getPart(a,b,c, 2),  
+			             val = {|s.??|??|},
+			               v = ??);	
 		}
 	}
 }
 
-/*
-Interpreter for src language
-*/
+/**
+ * Test harness
+ */
+harness void main( int[30] arr){
+    int idx =0;
+    // produce generates a srcAST based on the non-deterministic array arr.
+    srcAST s = produce( arr, idx, 2);
+    srcAST c1 = interpretSrcAST(s);
+    // If c1 is null it means that the AST s is not well formed.
+    if(c1!=null){
+        dstAST c2  = desugar(s);
+        dstAST c3 = interpretDstAST(c2);
+        assert(c3!=null);
+        assert(equals(c1,c3));
+    }
+}
+
+
+
+
+/**
+ * Interpreter for src language is used by the test harnesses to check the equivalence of the source and destination ASTs 
+ */
 srcAST interpretSrcAST(srcAST s){
 	if(s==null) return null;
 	
@@ -239,9 +277,10 @@ srcAST interpretSrcAST(srcAST s){
 	}
 }
 	
-/*
-Interpreter for dst language
-*/
+
+/**
+ * Interpreter for dst language 
+ */
 dstAST interpretDstAST(dstAST s){
     if(s==null) return null;
 	switch(s){
@@ -389,6 +428,9 @@ dstAST interpretDstAST(dstAST s){
 	}
 }
 
+/**
+ * Checks that two srcAST and dstAST values represent the same value.
+ */
 bit equals(srcAST c1 ,dstAST c2){
 	switch(c1){
 		case NumS:
@@ -451,14 +493,3 @@ opcode intToOpcode (int op){
 	return new Ogt();
 }
 
-harness void main( int[30] arr){
-	int idx =0;
-	srcAST s = produce( arr, idx, 2);
-	srcAST c1 = interpretSrcAST(s);
-	if(c1!=null){
-		dstAST c2  = desugar(s);
-		dstAST c3 = interpretDstAST(c2);
-		assert(c3!=null);
-		assert(equals(c1,c3));
-	}
-}

@@ -1,5 +1,8 @@
 //@Description This sketch derives the desugar function between two simple toy languages.
 
+/**
+ * Data definitions
+ */
 adt srcAST {
 	NumS{ int v;}
 	PlusS{ srcAST a; srcAST b;}
@@ -19,16 +22,25 @@ adt opcode{
 	MinusOp{}
 }
 
+/**
+ * Function to synthesize
+ */
 dstAST desugar(srcAST src){
 	if (src == null) return null;
 	switch(src) {
 		repeat_case: {
-			return new ??( a= desugar(src.??), b= desugar(src.??),
-			 op= ??, v=src.??, val=??);
+			return new ??(  a = desugar(src.??), 
+			                b = desugar(src.??),
+			               op = ??, 
+			                v = src.??, 
+			              val = ??);
 		}
 	}
 }
 
+/**
+ * Test harnesses
+ */
 harness void main4() {
 	srcAST in = new FalseS();
 	dstAST out  = desugar(in);

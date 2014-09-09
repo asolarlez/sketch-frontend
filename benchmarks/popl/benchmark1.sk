@@ -14,8 +14,9 @@ BinaryTree insertNode(BinaryTree tree, int x) {
 		{
 			minrepeat{
 				if ({| 1| x (<|>|<=|>=) tree.??|} ) { 
-					return new ??(value = {|x|tree.??|??|}, l = {|tree.??|insertNode(tree.??,x)|new ??(value = x)|},
-			 			r = {|tree.??|insertNode(tree.??,x)|new ??(value = x)|});
+					return new ??(value = {|x|tree.??|??|}, 
+					                  l = {|tree.??|insertNode(tree.??,x)|new ??(value = x)|},
+			 			              r = {|tree.??|insertNode(tree.??,x)|new ??(value = x)|});
 				}
 			}
 		}

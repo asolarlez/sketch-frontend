@@ -1,7 +1,17 @@
 //@Description This sketch derives the desugar function between complex toy languages using interpreters.
 
-pragma options "--bnd-inbits 2 --beopt:simiters 5 --beopt:-bndwrand 32";
 
+/**
+ * For this benchmark, the test harnesses only check 2-bit integers for 
+ * each of the 50 integer input values. 
+ * --bnd-int-range 32 means that all intermediate values can be assumed to be
+ * in the range [-32, 32].
+ */
+pragma options "--bnd-inbits 2 --bnd-int-range 32";
+
+/**
+ * Data definitions
+ */
 adt srcAST{
 	NumS {int val;}
 	VarS { int str;}
@@ -35,10 +45,18 @@ adt dstAST{
 	Prim2D {opcode op; dstAST a; dstAST b;}
 }
 
+/**
+ * Function to synthesize
+ */
 dstAST desugar(srcAST s, int bnd){
 	if(s == null){ return null; }
+	// bnd parameter is there just to have finer control over inlining during bounded model checking.
+	if(bnd <= 0 ){ return null; }
+	
 		
-	//generator for dstAST
+	/**
+     * This generator produces a destination AST with maximum depth bnd that uses dstAST nodes a, b and c 
+     */
 	generator dstAST getPart(dstAST c1, dstAST c2, dstAST c3, int bnd) {
 		dstAST var = new VarD(str =??);
 		if(??){
@@ -59,15 +77,71 @@ dstAST desugar(srcAST s, int bnd){
 		case LetS: return new LetD(str = s.str, a = desugar(s.a,bnd-1), b= desugar(s.b,bnd-1));
 		case Prim1S: return new Prim1D(op = s.op, a = desugar(s.a,bnd-1));
 		case Prim2S : return new Prim2D(op = s.op ,a = desugar(s.a,bnd-1), b=desugar(s.b,bnd-1));
+		// Synthesizer must discover desugaring for BetweenS case.
 		case BetweenS:
 		{
 			dstAST a = desugar(s.a,bnd-1);
 			dstAST b = desugar(s.b,bnd-1);
 			dstAST c = desugar(s.c,bnd-1);
- 			return new ??(op=??,a=getPart(a,b,c,1),b=getPart(a,b,c,4),str=??);
+			// In this case, we had to explicitly give a bigger bound to the second getPart because the
+			// b subexpression has to be much bigger than the a subexpression, but the solver is not 
+			// scalable enough to synthesize the solution if both have bound 4.
+ 			return new ??(op=??, a=getPart(a,b,c,1), b=getPart(a,b,c,4), str=??);
 		}
 	}
 }
+
+
+
+/**
+ * Concrete test case that tests the desugaring on a complex concrete AST.
+ */
+harness void main2(){
+ srcAST s =   new BetweenS(a = new LetS(str = 1,a= gN(1), b = gN(1)), b = new AssignS(str = 1, a= new Prim2S(op = new Oplus(), a = new VarS(str = 1), b= new NumS(val = 1))),c = gN(3)); 
+ 
+ for(int i = 0; i < size; i++){
+     smtStore[i] = null;
+ }
+ int zz = 0;
+ srcAST c1 = interpretSrcAST(s,zz,3);
+ 
+ if(c1 != null){
+     dstAST c2  = desugar(s,5);
+     for(int i = 0; i < size; i++){
+         cmtStore[i] = null;
+     }
+     dstAST c3 = interpretDstAST(c2,4);
+     assert(c3!=null);
+     assert(equals(c1,c3));
+ }
+}
+
+/**
+ * General test harness to exhaustively check all ASTs of depth 3.
+ */
+
+harness void main1(int[50] arr) {
+ int idx =0;
+ srcAST s = produce( arr, idx, 3);
+ 
+ for(int i = 0; i < size; i++){
+     smtStore[i] = null;
+ }
+ int z =0;
+ srcAST c1 = interpretSrcAST(s,z,2);
+ if(c1 != null){
+     dstAST c2  = desugar(s,3);
+     for(int i = 0; i < size; i++){
+         cmtStore[i] = null;
+     }
+     dstAST c3 = interpretDstAST(c2,4);
+     assert(c3!=null);
+     assert(equals(c1,c3));
+ }   
+}
+
+
+
 
 int size = 8;
 // An array to store variable bindings caused by LetS and AssignS constructs (array is indexed by the variable name).
@@ -561,44 +635,3 @@ srcAST gN(int n){
 	return new NumS( val=n);
 }
 
-// Specific harness for which the trivial BetweenS desugaring fails.
-harness void main2(){
-	srcAST s =   new BetweenS(a = new LetS(str = 1,a= gN(1), b = gN(1)), b = new AssignS(str = 1, a= new Prim2S(op = new Oplus(), a = new VarS(str = 1), b= new NumS(val = 1))),c = gN(3));	
-	
-	for(int i = 0; i < size; i++){
-		smtStore[i] = null;
-	}
-	int zz = 0;
-	srcAST c1 = interpretSrcAST(s,zz,3);
-	
-	if(c1 != null){
-		dstAST c2  = desugar(s,5);
-		for(int i = 0; i < size; i++){
-			cmtStore[i] = null;
-		}
-		dstAST c3 = interpretDstAST(c2,4);
-		assert(c3!=null);
-		assert(equals(c1,c3));
-	}
-}
-
-// A general harness for testing BetweenS.
-harness void main1(int[50] arr) {
-	int idx =0;
-	srcAST s = produce( arr, idx, 3);
-	
-	for(int i = 0; i < size; i++){
-		smtStore[i] = null;
-	}
-	int z =0;
-	srcAST c1 = interpretSrcAST(s,z,2);
-	if(c1 != null){
-		dstAST c2  = desugar(s,3);
-		for(int i = 0; i < size; i++){
-			cmtStore[i] = null;
-		}
-		dstAST c3 = interpretDstAST(c2,4);
-		assert(c3!=null);
-		assert(equals(c1,c3));
-	}	
-}
