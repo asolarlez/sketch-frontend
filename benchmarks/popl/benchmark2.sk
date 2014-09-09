@@ -1,3 +1,5 @@
+//@Description This sketch derives the desugar function between two simple toy languages.
+
 adt srcAST {
 	NumS{ int v;}
 	PlusS{ srcAST a; srcAST b;}
@@ -8,45 +10,46 @@ adt srcAST {
 
 adt dstAST{
 	NumD{ int v;}
-	BinopD{ apcode op; dstAST a; dstAST b;}
+	BinopD{ opcode op; dstAST a; dstAST b;}
 	BoolD{ bit val;}
 }
 
-adt apcode{
+adt opcode{
 	PlusOp{}
 	MinusOp{}
 }
 
-dstAST desugar(srcAST src){ 
+dstAST desugar(srcAST src){
 	if (src == null) return null;
 	switch(src) {
-		repeat_case:
+		repeat_case: {
 			return new ??( a= desugar(src.??), b= desugar(src.??),
 			 op= ??, v=src.??, val=??);
-		
+		}
 	}
 }
+
 harness void main4() {
 	srcAST in = new FalseS();
-	dstAST out = new BoolD(val = 0);
-	dstAST outB  = desugar(in);
-	assert out === outB;
+	dstAST out  = desugar(in);
+	dstAST exp = new BoolD(val = 0);
+	assert exp === out;
 }
 harness void main3() {
 	srcAST in = new TrueS();
-	dstAST out = new BoolD(val = 1);
-	dstAST outB  = desugar(in);
-	assert out === outB;
+	dstAST out  = desugar(in);
+	dstAST exp = new BoolD(val = 1);
+	assert exp === out;
 }
 harness void main2(int x1, int x2) {
 	srcAST in = new MinusS(a=new NumS(v=x1), b=new NumS(v=x2));
-	dstAST out = new BinopD( op = new MinusOp(), a=new NumD(v=x1), b=new NumD(v=x2)); 
-	dstAST outB = desugar(in);
-	assert out === outB;
+	dstAST out = desugar(in);
+	dstAST exp = new BinopD( op = new MinusOp(), a=new NumD(v=x1), b=new NumD(v=x2)); 
+	assert exp === out;
 }
 harness void main1(int x1, int x2) {
 	srcAST in = new PlusS(a=new NumS(v=x1), b=new NumS(v=x2));
-	dstAST out = new BinopD( op = new PlusOp(), a=new NumD(v=x1), b=new NumD(v=x2)); 
-	dstAST outB = desugar(in);
-	assert out === outB;
+	dstAST out = desugar(in);
+	dstAST exp = new BinopD( op = new PlusOp(), a=new NumD(v=x1), b=new NumD(v=x2)); 
+	assert exp === out;
 }
