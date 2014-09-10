@@ -73,6 +73,9 @@ public class PlatformLocalization {
         } catch (IOException e) {
             printError("error retriving localization properties");
         }
+    }
+
+    public void setTempDirs() {
         String argtmpdir = SketchOptions.getSingleton().feOpts.tempdir;
         if (argtmpdir != null) {
             usersketchdir = md(path(argtmpdir));
@@ -93,7 +96,6 @@ public class PlatformLocalization {
         if(tmpdir == null){
             System.out.println("Can't create your temp file in " + usersketchdir);
         }
-
     }
 
     public File get_jarpath() {
