@@ -1,5 +1,8 @@
 //@Description This sketch synthesizes an algorithm to produce type constraints for Lambda Calculus ASTs.
 
+/**
+ * Data definitions
+ */
 adt E{
 	Num{int val;}
 	Var{int name;}
@@ -18,13 +21,20 @@ adt Constraint {
 	And{Constraint a; Constraint b;}
 }
 
-// Generate constraints for [[envt -> e : t ]] 
+/**
+ * Function to synthesize.
+ * Generates constraints for [[envt :: e : t ]] 
+ * Here, paramater id (which is incremented in each step of recursion ) is used for generating unique ids for Unknown types.
+ */
 Constraint getConstraints(E e, Type t, int bnd, Type[32] envt, ref int id) {
 	if(e == null || bnd < 0) return null;
 	int id1 = id++;
 	int id2 = id++;
 	generator int getId() { return {| id1 | id2|}; }
 	
+	/**
+	 * This generator produces a Type using the array of types given.
+	 */
 	generator Type getType([int n], Type[n] types, int bnd) { 
 		if(?? || bnd < 1 ) {
 			return types[??];
@@ -34,6 +44,9 @@ Constraint getConstraints(E e, Type t, int bnd, Type[32] envt, ref int id) {
 		return null;
 	}
 	
+	/**
+	 * This generator produces a Constraint using the array of types and array of constraints given.
+	 */
 	generator Constraint getConstraint ([int n, int m],  Type[n] types, Constraint[m] constraints, int bnd) { 
 		if (?? || bnd < 1) {
 			return {|constraints[??] | new Equals(l = getType(n, types,2), r = getType(n, types,2)) |}; 
@@ -56,6 +69,22 @@ Constraint getConstraints(E e, Type t, int bnd, Type[32] envt, ref int id) {
 				a = getConstraint({t ,t1}, {a, b},2), b = getConstraint({t, t1},{a, b},2));
 		}	
 	}	
+}
+
+/**
+ * Test Harnesses.
+ */
+
+// [[envt; y = T4 :: ((lambda x. 1) 2) : T0]] = (((Int = T2) ^ ( T3 -> T0 = T1 -> T2)) ^ (Int = T3))
+harness void main7() {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	envt[1] = new Unknown(id = 5);
+	int id =  1, id1 = ??, id2 = ??, id3 = ??;
+	assert(id1 != id2 && id2 != id3 && id1 != id3);
+	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Num(val = 1)), b = new Num(val = 2)),  new Unknown(id = 0), 2,envt,id) ;	
+	Constraint exp =new And(a= new And(a = new Equals( l = new Int(), r = new Unknown(id = id2)), b = new Equals(l = new Function(in = new Unknown(id = id3), out = new Unknown(id = 0)), r = new Function(in = new Unknown(id = id1), out = new Unknown(id = id2)))), b = new Equals(l = new Int(), r = new Unknown(id = id3))) ;
+	assert(exp === out);
 }
 
 // [[envt; y = T4 :: ((lambda x. x) y) : T0]] = (((T1 = T2) ^ ( T3 -> T0 = T1 -> T2)) ^ (T4 = T3))

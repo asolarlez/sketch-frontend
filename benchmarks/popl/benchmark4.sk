@@ -62,7 +62,10 @@ dstAST desugar(srcAST s, int bnd){
 		if(??){
 			return {|c1 | c2 |c3 | var|};
 		}else if (bnd > 1) {
-			return new ??(op=??,a=getPart(c1,c2,c3, bnd-1),b=getPart(c1,c2,c3, bnd-1),str=??);
+			return new ??(op=??,
+						  a=getPart(c1,c2,c3, bnd-1),
+						  b=getPart(c1,c2,c3, bnd-1),
+						  str=??);
 		}
 		return null;
 	}
@@ -86,7 +89,10 @@ dstAST desugar(srcAST s, int bnd){
 			// In this case, we had to explicitly give a bigger bound to the second getPart because the
 			// b subexpression has to be much bigger than the a subexpression, but the solver is not 
 			// scalable enough to synthesize the solution if both have bound 4.
- 			return new ??(op=??, a=getPart(a,b,c,1), b=getPart(a,b,c,4), str=??);
+ 			return new ??(op=??,
+ 			              a=getPart(a,b,c,1),
+ 			              b=getPart(a,b,c,4), 
+ 			              str=??);
 		}
 	}
 }
@@ -117,12 +123,12 @@ harness void main2(){
 }
 
 /**
- * General test harness to exhaustively check all ASTs of depth 3.
+ * General test harness to check ASTs rooted on BetweenS.
  */
 
 harness void main1(int[50] arr) {
  int idx =0;
- srcAST s = produce( arr, idx, 3);
+ srcAST s = new BetweenS(a =produce( arr, idx, 2), b = produce( arr, idx, 2),c =produce( arr, idx, 1));
  
  for(int i = 0; i < size; i++){
      smtStore[i] = null;
@@ -143,12 +149,13 @@ harness void main1(int[50] arr) {
 
 
 
-int size = 8;
-// An array to store variable bindings caused by LetS and AssignS constructs (array is indexed by the variable name).
+int size = 7;
 srcAST[size] smtStore;
 
 /*
  * Interpreter for srcAST
+ * This interpreter also has state (the array 'smtStore') which stores variable bindings caused by LetS and AssignS constructs.
+ * The 'smtStore' array is indexed by the variable name.
  */
 srcAST interpretSrcAST(srcAST s, ref int idx, int bnd){
 	if(s==null || bnd < 0) return null;
@@ -372,11 +379,12 @@ srcAST interpretSrcAST(srcAST s, ref int idx, int bnd){
 	}
 }
 
-// An array to store variable bindings caused by LetD and AssignD constructs (array is indexed by the variable name).
 dstAST[size] cmtStore;
 
 /*
  * Interpreter for dstAST
+ * This interpreter also has state (the array 'cmtStore') which stores variable bindings caused by LetD and AssignD constructs.
+ * The 'cmtStore' array is indexed by the variable name.
  */
 dstAST interpretDstAST(dstAST s, int bnd){
 	if(bnd<0) return null;
@@ -594,7 +602,9 @@ bit equals(srcAST c1 ,dstAST c2){
 	}
 }
 
-//Produces a srcAST from the encoding.
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
 srcAST produce( int[50] encoding, ref int idx, int bnd){
 	if(bnd <=1){ 
 		if(encoding[idx]==0){ ++idx; return new NumS(val=encoding[idx++]); }

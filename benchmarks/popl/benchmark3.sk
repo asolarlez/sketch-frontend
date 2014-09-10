@@ -49,7 +49,12 @@ dstAST desugar(srcAST s){
 	generator dstAST getPart(dstAST a, dstAST b, dstAST c, int bnd) {
 		if(??) return {| a|b|c|};
 		else if(bnd > 1){
-			return new ??(op=??, a = getPart(a,b,c, bnd-1), b = getPart(a,b,c, bnd-1), c =getPart(a,b,c, bnd-1), val = ??,v=??);
+			return new ??(op=??, 
+			              a = getPart(a,b,c, bnd-1), 
+			              b = getPart(a,b,c, bnd-1), 
+			              c =getPart(a,b,c, bnd-1), 
+			              val = ??,
+			              v=??);
 		}
 		return null;
 	}
@@ -458,7 +463,9 @@ bit equals(srcAST c1 ,dstAST c2){
 	}
 }
 
-//Produces a srcAST from the encoding.
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
 srcAST produce(int[30] encoding, ref int idx, int bnd){
 	if(bnd <= 1 ){ 
         if(encoding[idx]==0){ ++idx; return new NumS(val=encoding[idx++]); }

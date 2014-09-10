@@ -1,8 +1,15 @@
 //@Description This sketch synthesizes the Church encodings for AND, NOT, and OR constructs.
 
-pragma options "--bnd-inbits 3 --bnd-mbits 3  --beopt:simiters 5 --bnd-inline-amnt 3";
+/**
+ * Command line arguments that help control the depth of inlining for recursive functions. 
+ * For this benchmark, the test harnesses only check 3-bit integers for 
+ * each of the 20 integer input values.
+ */
+pragma options "--bnd-inbits 3 --bnd-inline-amnt 3";
 
-//srcAST language - lambda calculus + boolean + operations on boolean
+/**
+ * Data definitions
+ */
 adt srcAST{
 	VarS { int name;}
 	AbsS { VarS var; srcAST a;}
@@ -14,13 +21,15 @@ adt srcAST{
 	FalseS {}
 }
 
-//core language - lambda calculus
 adt dstAST {
 	VarD { int name;}
 	AbsD { VarD var; dstAST a;}
 	AppD { dstAST a; dstAST b;}
 }	
 
+/**
+ * Function to synthesize
+ */
 dstAST desugar(srcAST s){ 
 	if(s == null) return null; 
 		
@@ -29,14 +38,23 @@ dstAST desugar(srcAST s){
 		else return new VarD(name = {|var.name | ?? |});
 	}
 	
+	/**
+	 * This generator produces a destination AST with maximum depth bnd that uses dstAST nodes c1 and c2 
+	 */
 	generator dstAST getPart(dstAST c1, dstAST c2, int bnd) {
 		dstAST z = new VarD(name = ??);
+		//This is one of the tricks used to scale this benchmark. The encodings for True and False are used repeatedly
+		// in the desugaring. Hence, by making getPart use them directly, we can reduce the depth of recursion for getPart
+		// and reduce the solution space.
 		dstAST True = new AbsD(var = new VarD(name = 0), a = new AbsD(var =new VarD(name =1), a = new VarD(name = 0)));
 		dstAST False =  new AbsD(var = new VarD(name = 0), a = new AbsD(var = new VarD(name = 1), a = new VarD(name = 1)));
 		if(??){
 			return {| c1|c2|True|False|z|};
 		}else if(bnd > 1){
-				return 	new ??( a = getPart(c1,c2,bnd-1), b =getPart(c1,c2,bnd-1), name = ??,var = new VarD(name = ??));
+				return 	new ??( a = getPart(c1,c2,bnd-1), 
+				                b =getPart(c1,c2,bnd-1), 
+				                name = ??,
+				                var = new VarD(name = ??));
 		}
 		
 		return null;
@@ -47,12 +65,50 @@ dstAST desugar(srcAST s){
 		{
 			dstAST v1 = desugar(s.??);
 			dstAST v2 = desugar(s.??);
-			return 	new ??(a = getPart(v1, v2, 2), b =getPart(v1, v2, 2), name = {|s.?? | ?? |},var = getVar(s.??));
+			return 	new ??(a = getPart(v1, v2, 2),
+					       b =getPart(v1, v2, 2), 
+					       name = {|s.?? | ?? |},
+					       var = getVar(s.??));
 		}
 	}
 }
 
-//interpreter srcAST
+
+
+/**
+ * General test harness to exhaustively check for all srcASTs of depth 2.
+ */
+harness void main1( int[20] arr){
+	int idx =0;
+	srcAST s = produce( arr, idx,2);
+	srcAST c1 = interpretSrcAST(s);
+	if(c1!=null){
+		dstAST c2  = desugar(s);
+		dstAST c3 = interpretDstAST(c2);
+		assert(c3!=null);
+		assert(equals(c1,c3));
+	}
+}
+
+/**
+ * A concrete harness to assert equivalence of AppS and AppD.
+ */
+harness  void main2(int str, int str2){
+	srcAST s = new AppS(a = new AbsS(var = new VarS(name = str), a= new VarS(name = str)), b = new VarS(name=str2));
+	srcAST c1 = interpretSrcAST(s);
+	if(c1!=null){
+		dstAST c2 = desugar(s);
+		dstAST c3 = interpretDstAST(c2);
+		VarD c4 = (VarD) c3;
+		assert(c4.name == str2);
+		assert(c3!=null);
+		assert(equals(c1,c3));
+	}	
+}
+
+/**
+ * Interpreter for src language is used by the test harnesses to check the equivalence of the source and destination ASTs 
+ */
 srcAST interpretSrcAST(srcAST s){
 	if(s==null) return null;
 	
@@ -154,7 +210,12 @@ srcAST interpretSrcAST(srcAST s){
 		}
 }
 
-int count = 32;
+// This variable count is used to generate new variables while substituting below.
+// All other variables in this sketch (including generated ones) are guaranteed to have str < 35.
+int count = 35;
+/**
+ * Function that performs the following transformation (λx.E_a) E_b → E_a[E_b /x] on source language.
+ */
 srcAST substituteS(VarS x, srcAST E_a, srcAST E_b){
 	if (E_a ==null || E_b == null || x ==null) return null;
 	
@@ -191,9 +252,8 @@ srcAST substituteS(VarS x, srcAST E_a, srcAST E_b){
 	}
 }
 
-
-/*
- * Interpretor for dstAST
+/**
+ * Interpreter for dst language 
  */
 dstAST interpretDstAST(dstAST s){
 	if(s== null) return null;
@@ -220,6 +280,9 @@ dstAST interpretDstAST(dstAST s){
 	return null;
 }
 
+/**
+ * Function that performs the following transformation (λx.E_a) E_b → E_a[E_b /x] on destination language.
+ */
 dstAST substitute(VarD x, dstAST E_a, dstAST E_b){ // E_a[E_b/var]
 	if (E_a ==null || E_b == null || x ==null) return null;
 	
@@ -261,7 +324,9 @@ AppS sApp(srcAST a , srcAST b){
 	return new AppS(a = a, b = b);
 }
 
-//produce symbolic srcAST ASTs
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
 srcAST produce(int[20] encoding, ref int idx, int bnd){
 	
 	if(bnd <=1 ){ 
@@ -278,9 +343,12 @@ srcAST produce(int[20] encoding, ref int idx, int bnd){
    	else { ++idx; return new NotS( a = produce(encoding, idx, bnd-1)); }
 }
 
+/**
+ * Checks that two srcAST and dstAST values represent the same value.
+ */
 bit equals(srcAST c1 ,dstAST c2){
-	AbsD True = new AbsD(var = new VarD(name = 10), a = new AbsD(var = new VarD(name =11), a = new VarD(name=10)));
-	AbsD False =  new AbsD(var = new VarD(name = 10), a = new AbsD(var = new VarD(name = 11), a = new VarD(name=11)));
+	AbsD True = new AbsD(var = new VarD(name = 32), a = new AbsD(var = new VarD(name =33), a = new VarD(name=32)));
+	AbsD False =  new AbsD(var = new VarD(name = 32), a = new AbsD(var = new VarD(name = 33), a = new VarD(name=33)));
 	if(c1==null) return true;
 	if(c2 == null) return false;
 	switch(c1){
@@ -320,6 +388,10 @@ bit equals(srcAST c1 ,dstAST c2){
 	}
 }
 
+/**
+ * Checks that two dstAST values represent the same value.
+ * We use this function instead === because of substitions in lambda abstraction constructs.
+ */
 bit equalsDstAST(dstAST c1, dstAST c2){
 	assert(c1!=null);
 	if(c2==null) return false;
@@ -348,28 +420,3 @@ bit equalsDstAST(dstAST c1, dstAST c2){
 	}
 }
 
-harness  void main2(int str, int str2){
-	srcAST s = new AppS(a = new AbsS(var = new VarS(name = str), a= new VarS(name = str)), b = new VarS(name=str2));
-	srcAST c1 = interpretSrcAST(s);
-	if(c1!=null){
-		dstAST c2 = desugar(s);
-		dstAST c3 = interpretDstAST(c2);
-		VarD c4 = (VarD) c3;
-		assert(c4.name == str2);
-		assert(c3!=null);
-		assert(equals(c1,c3));
-	}
-	
-}
-
-harness void main1( int[20] arr){
-	int idx =0;
-	srcAST s = produce( arr, idx,2);
-	srcAST c1 = interpretSrcAST(s);
-	if(c1!=null){
-		dstAST c2  = desugar(s);
-		dstAST c3 = interpretDstAST(c2);
-		assert(c3!=null);
-		assert(equals(c1,c3));
-	}
-}

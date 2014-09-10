@@ -1,7 +1,14 @@
 //@Description This sketch synthesizes the Church encodings for List variants Cons, First, Rest and Nil.
 
-pragma options "--bnd-inbits 2 --beopt:simiters 3";
+/**
+ * For this benchmark, the test harnesses only check 2-bit integers for 
+ * each of the 10 integer input values.
+ */
+pragma options "--bnd-inbits 2";
 
+/**
+ * Data definitions
+ */
 adt dstAST{
 	VarD { int name;}
 	AbsD { VarD var; dstAST a;}
@@ -17,21 +24,32 @@ adt srcAST{
 	RestS {srcAST a;}
 }
 
+/**
+ * Function to synthesize
+ */
 dstAST desugar(srcAST s, int bnd){
 	if(s == null){ return null; }
 	if(bnd <= 0){ return null; }
 		
-	generator int getConst(int c){return {| c|??|};}
-	
+	/**
+	 * This generator produces a destination AST with maximum depth bnd that uses dstAST nodes c1 and c2 
+	 */
 	generator dstAST getPart(dstAST c1, dstAST c2, int bnd) {
 		dstAST z = new VarD(name = ??);
+		//This is one of the tricks used to scale this benchmark. The encodings for True and False are used repeatedly
+		// in the desugaring. Hence, by making getPart use them directly, we can reduce the depth of recursion for getPart
+		// and reduce the solution space.
 		dstAST True = new AbsD(var = new VarD(name = 0), a = new AbsD(var = new VarD(name =1), a = new VarD(name =0)));
 		dstAST False =  new AbsD(var = new VarD(name = 0), a = new AbsD(var = new VarD(name =1), a = new VarD(name = 1)));
 	
 		if(??){
 			return {| c1|c2|z|True|False|};
 		}else if(bnd > 1){
-				return 	new ??( a = getPart(c1,c2,bnd-1), b =getPart(c1,c2, bnd -1), name = ??, val = ??,var = new VarD(name = ??));
+				return 	new ??( a = getPart(c1,c2,bnd-1), 
+				                b =getPart(c1,c2, bnd -1), 
+				                name = ??, 
+				                val = ??,
+				                var = new VarD(name = ??));
 		}
 		return null;
 	}
@@ -40,14 +58,90 @@ dstAST desugar(srcAST s, int bnd){
 		{
 			dstAST v1 = desugar(s.??, bnd-1);
 			dstAST v2 = desugar(s.??, bnd-1);
-			return 	new ??( a = getPart(v1,v2, 3), b =getPart(v1,v2, 1), name = {|s.??|??|},var = new VarD(name = ??), val = {|s.??|??|});
+			return 	new ??( a = getPart(v1,v2, 3),
+						    b =getPart(v1,v2, 1), 
+						    name = {|s.??|??|},
+						    var = new VarD(name = ??), 
+						    val = {|s.??|??|});
 		}
 	}
 }
 
+/**
+ * Test harnesses
+ */
 
-/*
- * Intepreter for srcAST.
+// First(Rest(Cons(x, Cons(y, Nil)) = y
+harness void main4(int x , int y){
+	int idx =0;
+	srcAST s = new FirstS( a= new RestS( a = new ConsS(a = new NumS(val = x), b = new ConsS(a = new NumS(val =y), b = new NilS()))));
+	srcAST c1 = new NumS(val = y);
+	if(c1!=null){
+		dstAST c2  = desugar(s,5);
+		dstAST c3 = interpretDstAST(c2,6);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+}
+
+// Rest(Cons(x, Cons(y, Nil)) = Cons(y, Nil)
+harness void main3(int x , int y){
+	srcAST s =  new RestS( a = new ConsS(a = new NumS(val = x), b = new ConsS(a = new NumS(val =y), b = new NilS())));
+	dstAST c  = desugar(s,4);
+	dstAST i = interpretDstAST(c,3);
+	srcAST s1 = new ConsS(a = new NumS(val =y), b = new NilS());
+	dstAST c1 = desugar(s1, 3);
+	dstAST i1=  interpretDstAST(c1, 1);	
+	assert(equalsDstAST(i1,i,4));
+}
+
+// Rest(Cons(x,Nil)) = Nil
+harness void main2(int x){
+	srcAST s = new RestS( a = new ConsS(a = new NumS(val = x), b = new NilS()));
+	srcAST c1 = new NilS();
+	if(c1!=null){
+		dstAST c2  = desugar(s,3);
+		int sbnd = 3;
+		dstAST c3 = interpretDstAST(c2,3);
+		assert(c3!=null);
+		assert(equals(c1,c3,1));
+	}
+
+}
+
+// First( Cons(x, Nil)) = x
+harness void main1(int x ){
+	srcAST s = new FirstS( a = new ConsS(a = new NumS(val = x), b = new NilS()));
+	srcAST c1 = new NumS(val = x);
+	if(c1!=null){
+		dstAST c2  = desugar(s,3);
+		int sbnd = 3;
+		dstAST c3 = interpretDstAST(c2,3);
+		assert(c3!=null);
+		
+		assert(equals(c1,c3,1));
+	}
+
+}
+
+/**
+ * General harness that checks srcASTs to depth 2.
+ */
+harness void main( int[10] arr){
+	int idx =0;
+	srcAST s = produce( arr, idx, 2);
+	srcAST c1 = interpretSrcAST(s,1);
+	if(c1!=null){
+		dstAST c2  = desugar(s,2);
+		int sbnd = 1;
+		dstAST c3 = interpretDstAST(c2,1);
+		assert(c3!=null);
+		assert(equals(c1,c3,3));
+	}
+}
+
+/**
+ * Interpreter for src language is used by the test harnesses to check the equivalence of the source and destination ASTs 
  */
 srcAST interpretSrcAST(srcAST s, int bnd){
 	if(bnd <1 || s==null) return null;
@@ -94,7 +188,10 @@ srcAST interpretSrcAST(srcAST s, int bnd){
 	}	
 }
 
-int count = 32;
+int count = 35;
+/**
+ * Function that performs the following transformation (λx.E_a) E_b → E_a[E_b /x] on source language.
+ */
 srcAST substituteS(SVar x, srcAST E_a, srcAST E_b, int bnd){
 	if (bnd <1 || E_a ==null || E_b == null || x ==null) return null;
 	
@@ -108,27 +205,25 @@ srcAST substituteS(SVar x, srcAST E_a, srcAST E_b, int bnd){
 	}
 }
 
-dstAST interpretDstAST(dstAST s, int bnd, ref int sbnd){
+/**
+ * Interpreter for dst language 
+ */
+dstAST interpretDstAST(dstAST s, int bnd){
 	if(bnd<0 || s== null) return null;
 	
 	switch(s){
 		case AppD: {
 			if(bnd<1) return null;
 			else{
-				dstAST s_a = interpretDstAST(s.a, bnd-1,sbnd);
+				dstAST s_a = interpretDstAST(s.a, bnd-1);
 				dstAST s_b = s.b;
 				if(s_a==null||s_b == null) return null;
 	 			switch(s_a){
 					case AbsD:{
-						if ( sbnd <=0 ) return null;
-						else{
-						sbnd--;
-						
 						dstAST s_new =  substitute(s_a.var, s_a.a, s_b, bnd);
 						if(s_new == null) return null;
+						return interpretDstAST(s_new, bnd-1);
 						
-						return interpretDstAST(s_new, bnd-1,sbnd);
-						}
 					}
 					case AppD: return new AppD(a = s_a, b = s_b);
 					case VarD: return new AppD(a = s_a, b= s_b);
@@ -141,6 +236,9 @@ dstAST interpretDstAST(dstAST s, int bnd, ref int sbnd){
 	return null;
 }
 
+/**
+ * Function that performs the following transformation (λx.E_a) E_b → E_a[E_b /x] on destination language.
+ */
 dstAST substitute(VarD x, dstAST E_a, dstAST E_b, int bnd){ 
 	assert(bnd >= 0);
 	if (bnd <0 || E_a ==null || E_b == null || x ==null) return null;
@@ -180,6 +278,9 @@ dstAST substitute(VarD x, dstAST E_a, dstAST E_b, int bnd){
 	return null;
 }
 
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
 srcAST produce(int[70] encoding, ref int idx, int bnd){
 	if(bnd <=1 ){ 
 		if(encoding[idx]==0){ ++idx; return new NumS(val=encoding[idx++]); }
@@ -193,8 +294,11 @@ srcAST produce(int[70] encoding, ref int idx, int bnd){
     else {++idx; return new RestS(a = produce(encoding,idx,bnd-1));}
 }
 
+/**
+ * Checks that two srcAST and dstAST values represent the same value.
+ */
 bit equals(srcAST c1 ,dstAST c2, int bnd){
-	AbsD False =  new AbsD(var = new VarD(name = 10), a = new AbsD(var = new VarD(name = 11), a = new VarD(name = 11)));
+	AbsD False =  new AbsD(var = new VarD(name = 32), a = new AbsD(var = new VarD(name = 33), a = new VarD(name = 33)));
 	assert(bnd >=0 );
 	if(bnd <0 ) return false;
 	if(c1==null) return true;
@@ -203,8 +307,7 @@ bit equals(srcAST c1 ,dstAST c2, int bnd){
 		case ConsS:
 		{
 			dstAST c_2  = desugar(c1,4);
-			int sbnd = 1;
-			dstAST c_3=  interpretDstAST(c_2, 1,sbnd);
+			dstAST c_3=  interpretDstAST(c_2, 1);
 			if(c_2 != null)
 				return (equalsDstAST(c_3,c2,4));
 		}
@@ -221,6 +324,10 @@ bit equals(srcAST c1 ,dstAST c2, int bnd){
 	}
 }
 
+/**
+ * Checks that two dstAST values represent the same value.
+ * We use this function instead === because of substitions in lambda abstraction constructs.
+ */
 bit equalsDstAST(dstAST c1, dstAST c2, int bnd){
 	assert(bnd >=0);
 	if(bnd < 0 ) return false;
@@ -266,73 +373,3 @@ bit equalsDstAST(dstAST c1, dstAST c2, int bnd){
 	}
 }
 
-// First(Rest(Cons(x, Cons(y, Nil)) = y
-harness void main4(int x , int y){
-	int idx =0;
-	srcAST s = new FirstS( a= new RestS( a = new ConsS(a = new NumS(val = x), b = new ConsS(a = new NumS(val =y), b = new NilS()))));
-	srcAST c1 = new NumS(val = y);
-	if(c1!=null){
-		dstAST c2  = desugar(s,5);
-		int sbnd = 6;
-		dstAST c3 = interpretDstAST(c2,6,sbnd);
-		assert(c3!=null);
-		assert(equals(c1,c3,1));
-	}
-}
-
-// Rest(Cons(x, Cons(y, Nil)) = Cons(y, Nil)
-harness void main3(int x , int y){
-	srcAST s =  new RestS( a = new ConsS(a = new NumS(val = x), b = new ConsS(a = new NumS(val =y), b = new NilS())));
-	NumS a = new NumS(val = y);
-	srcAST c_1 = new ConsS(a = new NumS(val =y), b = new NilS());
-	dstAST c_2 = desugar(c_1, 3);
-	dstAST c2  = desugar(s,4);
-	int sbnd1 = 1;
-	dstAST c_3=  interpretDstAST(c_2, 1,sbnd1);
-	int sbnd2 = 3;
-	dstAST c3 = interpretDstAST(c2,3,sbnd2);
-	assert(equalsDstAST(c_3,c3,4));
-}
-
-// Rest(Cons(x,Nil)) = Nil
-harness void main2(int x){
-	srcAST s = new RestS( a = new ConsS(a = new NumS(val = x), b = new NilS()));
-	srcAST c1 = new NilS();
-	if(c1!=null){
-		dstAST c2  = desugar(s,3);
-		int sbnd = 3;
-		dstAST c3 = interpretDstAST(c2,3,sbnd);
-		assert(c3!=null);
-		assert(equals(c1,c3,1));
-	}
-
-}
-
-// First( Cons(x, Nil)) = x
-harness void main1(int x ){
-	srcAST s = new FirstS( a = new ConsS(a = new NumS(val = x), b = new NilS()));
-	srcAST c1 = new NumS(val = x);
-	if(c1!=null){
-		dstAST c2  = desugar(s,3);
-		int sbnd = 3;
-		dstAST c3 = interpretDstAST(c2,3,sbnd);
-		assert(c3!=null);
-		
-		assert(equals(c1,c3,1));
-	}
-
-}
-
-// General harness that checks srcASTs to depth 2.
-harness void main( int[10] arr){
-	int idx =0;
-	srcAST s = produce( arr, idx, 2);
-	srcAST c1 = interpretSrcAST(s,1);
-	if(c1!=null){
-		dstAST c2  = desugar(s,2);
-		int sbnd = 1;
-		dstAST c3 = interpretDstAST(c2,1,sbnd);
-		assert(c3!=null);
-		assert(equals(c1,c3,3));
-	}
-}

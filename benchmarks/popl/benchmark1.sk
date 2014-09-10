@@ -1,11 +1,17 @@
 //@Description This sketch inserts a node into an immutable binary tree.
 
+/**
+ * Data definitions
+ */
 adt BinaryTree {
 	Branch { int value; BinaryTree l; BinaryTree r; }
 	Leaf {int value;}
 	Empty {}
 }
 
+/**
+ * Function to synthesize
+ */
 BinaryTree insertNode(BinaryTree tree, int x) {
 	if (tree == null) return null;
 
@@ -22,6 +28,10 @@ BinaryTree insertNode(BinaryTree tree, int x) {
 		}
 	}
 }
+
+/**
+ * Test harnesses
+ */
 
 /*
  *  2             2
