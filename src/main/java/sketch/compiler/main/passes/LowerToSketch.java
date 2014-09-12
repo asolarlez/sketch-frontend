@@ -43,7 +43,6 @@ public class LowerToSketch extends MetaStage {
         if (true) {
             prog = (Program) prog.accept(new CollectFunCallsToCombine());
         }
-        prog.debugDump("After combine");
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
         // prog.debugDump("aa");
@@ -69,9 +68,9 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new MakeBodiesBlocks());
 
 
-
-        prog = stencilTransform.visitProgram(prog);
-
+        if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
+            prog = stencilTransform.visitProgram(prog);
+        }
 
 
         prog = (Program) prog.accept(new ExtractComplexFunParams(varGen));

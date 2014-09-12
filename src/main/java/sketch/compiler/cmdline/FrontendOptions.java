@@ -34,6 +34,10 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Keep intermediate files. Useful for debugging the compiler.")
     public boolean keepTmp;
+
+    @CliParameter(help = "Turn off all typechecking, as well as stencils. Useful to reduce overhead when using sketch as a backend for other tools.")
+    public boolean lowOverhead = false;
+
     @CliParameter(help = "Temporary output directory used to communicate with backend solver.")
     public String output = null;
     @CliParameter(help = "Use this flag if you want the compiler to produce C code.")

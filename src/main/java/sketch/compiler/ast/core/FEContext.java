@@ -73,20 +73,6 @@ public class FEContext
         String lfile = fileName;
         if (lfile == null){
         	lfile = "<unknown>";
-        }else{
-        	if(lfile.length() > 15){
-        		int ls=lfile.lastIndexOf("/");
-        		{
-	        		int lb=lfile.lastIndexOf("\\");
-	        		if(ls<0 || lb>ls) ls=lb;
-        		}
-        		if(ls>=0) lfile = lfile.substring(ls+1);
-                if (lfile.length() > 17) {
-                    lfile =
-                            lfile.substring(0, 7) + ".." +
-                                    lfile.substring(lfile.length() - 9);
-            	}
-        	}
         }
         if (line >= 0){
         	file =  lfile + ":" + line;
