@@ -73,17 +73,13 @@ import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
 import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
-import sketch.compiler.passes.structure.ContainsCudaCode;
-import sketch.compiler.passes.structure.ContainsStencilFunction;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
-import sketch.util.exceptions.LastGoodProgram;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
-import sketch.util.exceptions.UnsupportedSketchException;
 
 import static sketch.util.DebugOut.printError;
 
@@ -257,6 +253,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
 
     public LowLevelCStage getIRStage2_LLC(Program prog) {
+        /*
         if (new ContainsStencilFunction().run(prog)) {
             if ((new ContainsCudaCode()).run(prog)) {
                 final UnsupportedSketchException exception =
@@ -267,6 +264,7 @@ public class SequentialSketchMain extends CommonSketchMain
                 throw exception;
             }
         }
+        */
 //            return new LowLevelCStage();
 //        } else {
             // return new CudaLowLevelCStage();
@@ -510,11 +508,16 @@ public class SequentialSketchMain extends CommonSketchMain
             throw new ProgramParseException("Semantic check failed");
         }
 
-        prog = (getBeforeSemanticCheckStage()).run(prog);
+        prog = (Program) prog.accept(new MinimizeFcnCall());
 
-	    ParallelCheckOption parallelCheck = isParallel() ? ParallelCheckOption.PARALLEL : ParallelCheckOption.SERIAL;
-        (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
+        // prog = (getBeforeSemanticCheckStage()).run(prog);
 
+        if (!options.feOpts.lowOverhead) {
+            ParallelCheckOption parallelCheck =
+                    isParallel() ? ParallelCheckOption.PARALLEL
+                            : ParallelCheckOption.SERIAL;
+            (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
+        }
 
         prog = preprocessProgram(prog, true); // perform prereq
 
@@ -606,7 +609,6 @@ public class SequentialSketchMain extends CommonSketchMain
         ErrorHandling.checkJavaVersion(1, 6);
         // TODO -- change class names so this is clear
         final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
-        PlatformLocalization.getLocalization().setTempDirs();
         try {
             sketchmain.run();
         } catch (SketchException e) {
