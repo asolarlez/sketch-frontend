@@ -609,6 +609,7 @@ public class SequentialSketchMain extends CommonSketchMain
         ErrorHandling.checkJavaVersion(1, 6);
         // TODO -- change class names so this is clear
         final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
+        PlatformLocalization.getLocalization().setTempDirs();
         try {
             sketchmain.run();
         } catch (SketchException e) {

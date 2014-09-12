@@ -38,8 +38,12 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Turn off all typechecking, as well as stencils. Useful to reduce overhead when using sketch as a backend for other tools.")
     public boolean lowOverhead = false;
 
-    @CliParameter(help = "Temporary output directory used to communicate with backend solver.")
+    @CliParameter(help = "Temporary output directory used to communicate with backend solver. This is a relative path relative to the sketch temp directory which is usually $HOME/.sketch/tmp")
     public String output = null;
+
+    @CliParameter(help = "Changes the default temp directory from $HOME/.sketch/tmp to a different value.")
+    public String tempdir = null;
+
     @CliParameter(help = "Use this flag if you want the compiler to produce C code.")
     public boolean outputCode;
 
