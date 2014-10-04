@@ -11,11 +11,6 @@ bit[N] sort(bit[N] input){
 	if( !input[0] && !input[1] ){ output[0] = 0; output[1] = 0;   };
 	return output;
 }
-
-
-
-
-
 bit[N] mergeSort(bit[N] input)implements sort{
 	bit[N] output={1,1};
 	int k=0;

@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -1186,11 +1187,24 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
             public Object visit(SelectField sf) {
                 String f = sf.getField();
-                if (!base.hasField(f)) {
+                if (f.equals("")) {
+                    return new NotYetComputedType();
+                }
+                StructDef current = base;
+                boolean err = true;
+                while (current.getParentName() != null) {
+                    if (current.hasField(f)) {
+                        err = false;
+                        break;
+                    } else {
+                        current = nres.getStruct(current.getParentName());
+                    }
+                }
+                if (err && !current.hasField(f)) {
                     report(e, "struct " + base.getName() + " has no field '" + f + "'");
                     throw new ControlFlowException("selcheck");
                 }
-                return base.getType(f);
+                return current.getType(f);
             }
 
             public Object visit(SelectOrr so) {

@@ -124,7 +124,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
 
 
-    public PartialEvaluator(abstractValueType vtype, TempVarGen varGen,  boolean isReplacer, int maxUnroll, RecursionControl rcontrol) {
+    public PartialEvaluator(abstractValueType vtype, TempVarGen varGen,
+            boolean isReplacer, int maxUnroll, RecursionControl rcontrol)
+    {
         super(null);
         this.MAX_UNROLL = maxUnroll;
         this.rcontrol = rcontrol;
@@ -675,10 +677,12 @@ public class PartialEvaluator extends SymbolTableVisitor {
         List<abstractValue> outSlist = new ArrayList<abstractValue>();
         // Function nfun = fun.creator().params(nplist).create();
         try {
-            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true));
+            vtype.funcall(fun, avlist, outSlist, state.pathCondition(true), state,
+                    exp.getClusterId());
         } catch (SketchException se) {
             throw new ExceptionAtNode(se.getMessage(), exp);
         }
+
 
         assert outSlist.size() == tempLHSVs.size() : "The funcall in vtype should populate the outSlist with 1 element per output parameter";
 
@@ -705,6 +709,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 isReplacer = tmpir;
             }
         }
+
 
 
         //assert !isReplacer : "A replacer should really do something different with function calls.";

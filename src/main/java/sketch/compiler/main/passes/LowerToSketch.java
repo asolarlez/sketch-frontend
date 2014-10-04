@@ -40,9 +40,9 @@ public class LowerToSketch extends MetaStage {
             prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
         }
 
-        // if (true) {
-        // prog = (Program) prog.accept(new CollectFunCallsToCombine());
-        // }
+        if (true) {
+            prog = (Program) prog.accept(new CollectFunCallsToCombine());
+        }
 
         prog = (Program) prog.accept(new AddArraySizeAssertions());
         // prog.debugDump("aa");

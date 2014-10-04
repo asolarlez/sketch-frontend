@@ -1,169 +1,136 @@
- pragma options "--bnd-inbits 3 --bnd-mbits 3  --beopt:simiters 5";
+//@Description This sketch synthesizes the Church encodings for AND, NOT, and OR constructs.
 
-//source language - lambda calculus + boolean + operations on boolean
-adt source{
-	SVar { int name;}
-	SAbs { SVar var; source a;}
-	SApp { source a; source b;}
-	SAnd { source a; source b;}
-	SOr { source a; source b;}
-	SNot { source a;}
-	STrue {}
-	SFalse {}
+/**
+ * Command line arguments that help control the depth of inlining for recursive functions. 
+ * For this benchmark, the test harnesses only check 3-bit integers for 
+ * each of the 20 integer input values.
+ */
+pragma options "--bnd-inbits 3 --bnd-inline-amnt 3";
+
+/**
+ * Data definitions
+ */
+adt srcAST{
+	VarS { int name;}
+	AbsS { VarS var; srcAST a;}
+	AppS { srcAST a; srcAST b;}
+	AndS { srcAST a; srcAST b;}
+	OrS { srcAST a; srcAST b;}
+	NotS { srcAST a;}
+	TrueS {}
+	FalseS {}
 }
 
-//core language - lambda calculus
-adt E {
-	LVar { int name;}
-	LAbs { LVar var; E a;}
-	LApp { E a; E b;}
+adt dstAST {
+	VarD { int name;}
+	AbsD { VarD var; dstAST a;}
+	AppD { dstAST a; dstAST b;}
 }	
 
-
-E desugar(source s, int bnd){
+/**
+ * Function to synthesize
+ */
+dstAST desugar(srcAST s){ 
 	if(s == null) return null; 
-	if(bnd <= 0) return null; 
 		
-	generator int getConst(int c){return {| c|??|};}
+	generator VarD getVar(VarS var) {
+		if (var == null) return new VarD(name = ??);
+		else return new VarD(name = {|var.name | ?? |});
+	}
 	
-	//generator for E in lambda calculus
-	generator E getPart(E c1, E c2, int bnd) {
-		assert bnd > 0;
-		int c = ??;
-		LVar z = new LVar(name = c);
-		E _z = new LVar(name = c);
-		
-		LVar x  = new LVar(name = 0);
-		LVar y = new LVar(name = 1);
-		E _x = x;
-		//definition for true
-		E True = new LAbs(var = x, a = new LAbs(var =y, a = x));
-		//definition for false;
-		E False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
-		
+	/**
+	 * This generator produces a destination AST with maximum depth bnd that uses dstAST nodes c1 and c2 
+	 */
+	generator dstAST getPart(dstAST c1, dstAST c2, int bnd) {
+		dstAST z = new VarD(name = ??);
+		//This is one of the tricks used to scale this benchmark. The encodings for True and False are used repeatedly
+		// in the desugaring. Hence, by making getPart use them directly, we can reduce the depth of recursion for getPart
+		// and reduce the solution space.
+		dstAST True = new AbsD(var = new VarD(name = 0), a = new AbsD(var =new VarD(name =1), a = new VarD(name = 0)));
+		dstAST False =  new AbsD(var = new VarD(name = 0), a = new AbsD(var = new VarD(name = 1), a = new VarD(name = 1)));
 		if(??){
-			return {| c1|c2|True|False|_z|};
-		}else{
-			if(bnd > 1){
-				E a = getPart(c1,c2,bnd-1);
-				E b = getPart(c1,c2, bnd-1);
-				int t = ??;
-				LVar v  = new LVar(name = t);
-				return 	new ??( a = a, b =b, name = getConst(1),var = {|x|z|v|});
-			}
+			return {| c1|c2|True|False|z|};
+		}else if(bnd > 1){
+				return 	new ??( a = getPart(c1,c2,bnd-1), 
+				                b =getPart(c1,c2,bnd-1), 
+				                name = ??,
+				                var = new VarD(name = ??));
 		}
+		
 		return null;
 	}
-	generator E[2] desugarFields([int n],  source[n] fields){
-		E[2] out;
-		int i=0;
-		repeat(n){
-			out[i] = desugar(fields[i],bnd-1); ++i;
-		}
-		return out;
-	} 
 	
 	switch(s){
 		repeat_case:
 		{
-			int[1] op = s.{int};
-			E v1 = desugar(s.??, bnd-1);
-			E v2 = desugar(s.??, bnd-1);
-			E a = getPart(v1, v2, 2);
-			E b = getPart(v1, v2, 2);
-			
-			
-			int val = op[0];
-			int t = getConst(val);
-			SVar[1] svar = s.{SVar};
-			if(svar[0]!=null){
-				t = getConst(svar[0].name);
-			}
-			LVar var  = new LVar(name = t);
-			if(??) return {|a|b|};
-			else
-			return 	new ??(a = a, b =b, name = getConst(op[0]),var = var);
-			
+			dstAST v1 = desugar(s.??);
+			dstAST v2 = desugar(s.??);
+			return 	new ??(a = getPart(v1, v2, 2),
+					       b =getPart(v1, v2, 2), 
+					       name = {|s.?? | ?? |},
+					       var = getVar(s.??));
 		}
-	}
-}
-int count = 32;
-source substituteS(SVar x, source E_a, source E_b, int bnd){
-	if (bnd <1 || E_a ==null || E_b == null || x ==null) return null;
-	
-	switch(E_a){
-		
-		case SApp:
-		{
-			return new SApp(a = substituteS(x, E_a.a, E_b, bnd -1), b = substituteS(x, E_a.b, E_b,bnd -1));  
-		}
-		case SAbs:
-		{
-			
-			SVar v = E_a.var;
-			if(v.name == x.name) {return E_a;}
-			else {
-			//E_a = Lambda y. E1
-				//create a new var z
-				SVar z = new SVar(name = count++);
-				
-				//substitute y in E1 with z
-				source e1 = substituteS(v,E_a.a, z, bnd-1);
-				
-				//Then substitute x with E_b
-				source e2 = substituteS(x, e1, E_b,bnd-1);
-				
-				return new SAbs(var = z, a = e2);
-				
-			}
-		}
-		case SVar:
-		{	
-			if (E_a.name == x.name) {return E_b;}
-			else {return E_a;}
-		}
-		
-		case SNot:
-		{
-			return new SNot( a = substituteS(x, E_a.a, E_b, bnd-1));
-		}
-		case SAnd:
-		{
-			return new SAnd( a = substituteS(x,E_a.a,E_b, bnd-1), b = substituteS(x, E_a.b, E_b, bnd-1));
-		}
-		case SOr:
-		{
-			return new SOr(a = substituteS(x, E_a.a, E_b,bnd-1), b = substituteS(x, E_a.b, E_b, bnd -1 ));
-		}
-		default: return E_a;
 	}
 }
 
 
-//interpret source
-source interpretSource(source s, int bnd){
-	if(bnd <1 || s==null) return null;
+
+/**
+ * General test harness to exhaustively check for all srcASTs of depth 2.
+ */
+harness void main1( int[20] arr){
+	int idx =0;
+	srcAST s = produce( arr, idx,2);
+	srcAST c1 = interpretSrcAST(s);
+	if(c1!=null){
+		dstAST c2  = desugar(s);
+		dstAST c3 = interpretDstAST(c2);
+		assert(c3!=null);
+		assert(equals(c1,c3));
+	}
+}
+
+/**
+ * A concrete harness to assert equivalence of AppS and AppD.
+ */
+harness  void main2(int str, int str2){
+	srcAST s = new AppS(a = new AbsS(var = new VarS(name = str), a= new VarS(name = str)), b = new VarS(name=str2));
+	srcAST c1 = interpretSrcAST(s);
+	if(c1!=null){
+		dstAST c2 = desugar(s);
+		dstAST c3 = interpretDstAST(c2);
+		VarD c4 = (VarD) c3;
+		assert(c4.name == str2);
+		assert(c3!=null);
+		assert(equals(c1,c3));
+	}	
+}
+
+/**
+ * Interpreter for src language is used by the test harnesses to check the equivalence of the source and destination ASTs 
+ */
+srcAST interpretSrcAST(srcAST s){
+	if(s==null) return null;
 	
 	switch(s){
-	
-		case SApp:
+		case AppS:
 		{
-			source s_a = interpretSource(s.a, bnd-1);
-			source s_b = s.b;
+			srcAST s_a = interpretSrcAST(s.a);
+			srcAST s_b = s.b;
 			if(s_a ==null) return null;
 			if(s_b == null) return null;
 			switch(s_a){
-				case SAbs:{
-					source s_new = substituteS(s_a.var, s_a.a, s_b, bnd-1);
+				case AbsS:{
+					srcAST s_new = substituteS(s_a.var, s_a.a, s_b);
 					if (s_new == null) return null;
-					return interpretSource(s_new, bnd-1);
+					return interpretSrcAST(s_new);
 					
 				}
-				case SApp:{
-					return new SApp(a = s_a, b = s_b);
+				case AppS:{
+					return new AppS(a = s_a, b = s_b);
 				}
-				case SVar:{
-					return new SApp(a = s_a, b= s_b);
+				case VarS:{
+					return new AppS(a = s_a, b= s_b);
 				}
 				
 				default: 
@@ -172,113 +139,173 @@ source interpretSource(source s, int bnd){
 				}
 			}
 		}
-		case SNot:
+		case NotS:
 		{
-			source s_a = interpretSource(s.a,bnd-1);
+			srcAST s_a = interpretSrcAST(s.a);
 			if(s_a==null) return null;
 			switch(s_a){
-				case SFalse:{ return new STrue();}
-				case STrue:{ return new SFalse();}
+				case FalseS:{ return new TrueS();}
+				case TrueS:{ return new FalseS();}
 				default: {return null;}
 			}
 		}
-		
-		case SAnd:
+		case AndS:
 		{
 			bit a, b;
 			bit simplified = true;
-			source s_a = interpretSource(s.a,bnd-1);
+			srcAST s_a = interpretSrcAST(s.a);
 			if(s_a==null) return null;
 			switch(s_a){
-				case SAbs: return null;
-				case SApp: return null;
-				case STrue: a = 1;
-				case SFalse: a = 0;
+				case AbsS: return null;
+				case AppS: return null;
+				case TrueS: a = 1;
+				case FalseS: a = 0;
 				default: simplified = false;
 			}
-			source s_b = interpretSource(s.b,bnd-1);
+			srcAST s_b = interpretSrcAST(s.b);
 			if(s_b==null) return null;
 			switch(s_b){
-				case SAbs: return null;
-				case SApp: return null;
-				case STrue: b = 1;
-				case SFalse: b=0;
+				case AbsS: return null;
+				case AppS: return null;
+				case TrueS: b = 1;
+				case FalseS: b=0;
 				default: simplified = false;
 			}
 			if(simplified){
-				if(a&&b) return new STrue();
-				else return new SFalse();
+				if(a&&b) return new TrueS();
+				else return new FalseS();
 			}
-			else return new SAnd( a = s_a, b = s_b);
+			else return new AndS( a = s_a, b = s_b);
 		}
-		case SOr:
+		case OrS:
 		{
 			bit a, b;
 			bit simplified = true;
-			source s_a = interpretSource(s.a,bnd-1);
+			srcAST s_a = interpretSrcAST(s.a);
 			if(s_a==null) return null;
 			switch(s_a){
-				case SAbs: return null;
-				case SApp: return null;
-				case STrue: a = 1;
-				case SFalse: a = 0;
+				case AbsS: return null;
+				case AppS: return null;
+				case TrueS: a = 1;
+				case FalseS: a = 0;
 				default: simplified = false;
 			}
-			source s_b = interpretSource(s.b,bnd-1);
+			srcAST s_b = interpretSrcAST(s.b);
 			if(s_b==null) return null;
 			switch(s_b){
-				case SAbs: return null;
-				case SApp: return null;
-				case STrue: b = 1;
-				case SFalse: b=0;
+				case AbsS: return null;
+				case AppS: return null;
+				case TrueS: b = 1;
+				case FalseS: b=0;
 				default: simplified = false;
 			}
 			if(simplified){
-				if(a||b) return new STrue();
-				else return new SFalse();
+				if(a||b) return new TrueS();
+				else return new FalseS();
 			}
-			else return new SOr(a = s_a, b = s_b);
+			else return new OrS(a = s_a, b = s_b);
 							
 		}
 		default: return s;
 		}
 }
 
-E substitute(LVar x, E E_a, E E_b, int bnd){ // E_a[E_b/var]
-	assert(bnd >= 0);
-	if (bnd <0 || E_a ==null || E_b == null || x ==null) return null;
+// This variable count is used to generate new variables while substituting below.
+// All other variables in this sketch (including generated ones) are guaranteed to have str < 35.
+int count = 35;
+/**
+ * Function that performs the following transformation (λx.E_a) E_b → E_a[E_b /x] on source language.
+ */
+srcAST substituteS(VarS x, srcAST E_a, srcAST E_b){
+	if (E_a ==null || E_b == null || x ==null) return null;
+	
+	switch(E_a){
+		case AppS: return new AppS(a = substituteS(x, E_a.a, E_b), b = substituteS(x, E_a.b, E_b));  
+		case AbsS:
+		{
+			VarS v = E_a.var;
+			if(v.name == x.name) {return E_a;}
+			else {
+			//E_a = Lambda y. E1
+				//create a new var z
+				VarS z = new VarS(name = count++);
+				
+				//substitute y in E1 with z
+				srcAST e1 = substituteS(v,E_a.a, z);
+				
+				//Then substitute x with E_b
+				srcAST e2 = substituteS(x, e1, E_b);
+				
+				return new AbsS(var = z, a = e2);
+			}
+		}
+		case VarS:
+		{	
+			if (E_a.name == x.name) {return E_b;}
+			else {return E_a;}
+		}
+		
+		case NotS: return new NotS( a = substituteS(x, E_a.a, E_b));
+		case AndS: return new AndS( a = substituteS(x,E_a.a,E_b), b = substituteS(x, E_a.b, E_b));
+		case OrS: return new OrS(a = substituteS(x, E_a.a, E_b), b = substituteS(x, E_a.b, E_b));
+		default: return E_a;
+	}
+}
+
+/**
+ * Interpreter for dst language 
+ */
+dstAST interpretDstAST(dstAST s){
+	if(s== null) return null;
+	switch(s){
+		case AppD:
+		{
+			dstAST s_a = interpretDstAST(s.a);
+			dstAST s_b = s.b;
+			if(s_a==null||s_b == null) return null;
+ 			switch(s_a){
+				case AbsD:{
+					dstAST s_new =  substitute(s_a.var, s_a.a, s_b);
+					if(s_new == null) return null;
+					
+					return interpretDstAST(s_new);
+				}
+				case AppD: return new AppD(a = s_a, b = s_b);
+				case VarD: return new AppD(a = s_a, b= s_b);
+				default: return null;
+ 			}
+		}
+		default: return s;
+	}
+	return null;
+}
+
+/**
+ * Function that performs the following transformation (λx.E_a) E_b → E_a[E_b /x] on destination language.
+ */
+dstAST substitute(VarD x, dstAST E_a, dstAST E_b){ // E_a[E_b/var]
+	if (E_a ==null || E_b == null || x ==null) return null;
 	
 	switch(E_a){
 		
-		case LApp:
-		{
-			if(bnd <1) return null;
-			else
-			return new LApp(a = substitute(x, E_a.a, E_b, bnd -1), b = substitute(x, E_a.b, E_b, bnd -1));  
-		}
-		case LAbs:
-		{
-			LVar v = E_a.var;
+		case AppD: return new AppD(a = substitute(x, E_a.a, E_b), b = substitute(x, E_a.b, E_b));  
+		case AbsD: {
+			VarD v = E_a.var;
 			if(v.name == x.name) {return E_a;}
 			else {
-			
-			if(bnd <1) return null;
-			else{
-			//E_a = Lambda y. E1
+				//E_a = Lambda y. E1
 				//create a new var z
-				LVar z = new LVar(name = count++);
+				VarD z = new VarD(name = count++);
 				//substitute y in E1 with z
-				E e1 = substitute(v,E_a.a, z, bnd -1);
+				dstAST e1 = substitute(v,E_a.a, z);
 				
 				//Then substitute x with E_b
-				E e2 = substitute(x, e1, E_b, bnd -1);
+				dstAST e2 = substitute(x, e1, E_b);
 				
-				return new LAbs(var = z, a = e2);
-				
-			}
+				return new AbsD(var = z, a = e2);
 			}
 		}
-		case LVar:
+		case VarD:
 		{	
 			if (E_a.name == x.name) { return E_b;}
 			else {return E_a;}
@@ -287,252 +314,109 @@ E substitute(LVar x, E E_a, E E_b, int bnd){ // E_a[E_b/var]
 	return null;
 }
 
-//interpret core lambda calculus
-E interpretLambda(E s, int bnd, ref int sbnd){
-	if(bnd<0 || s== null) return null;
-	switch(s){
-	
-		case LApp:
-		{
-			if(bnd<1) return null;
-			else{
-			E s_a = interpretLambda(s.a, bnd-1,sbnd);
-			E s_b = s.b;
-			if(s_a==null||s_b == null) return null;
- 			switch(s_a){
-				case LAbs:{
-					if ( sbnd <=0 ) return null;
-					else{
-					sbnd--;
-					
-					E s_new =  substitute(s_a.var, s_a.a, s_b, bnd);
-					if(s_new == null) return null;
-					
-					return interpretLambda(s_new, bnd-1,sbnd);
-					}
-					
-				}
-				case LApp:{
-					return new LApp(a = s_a, b = s_b);
-				}
-				case LVar: {
-					return new LApp(a = s_a, b= s_b);
-				}
-				
-				default: 
-				{
-					return null;
-				}
-			}
-			}
-		}
-		default: return s;
-	}
-	return null;
-	
-	
+VarS sVar(int name){
+	return new VarS(name = name);
 }
-SVar sVar(int name){
-	return new SVar(name = name);
+AbsS sAbs(VarS var, srcAST a){
+	return new AbsS(var = var ,a =a);
 }
-SAbs sAbs(SVar var, source a){
-	return new SAbs(var = var ,a =a);
-}
-SApp sApp(source a , source b){
-	return new SApp(a = a, b = b);
+AppS sApp(srcAST a , srcAST b){
+	return new AppS(a = a, b = b);
 }
 
-//produce symbolic source ASTs
-source produce(int[20] encoding, ref int idx, int bnd){
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
+srcAST produce(int[20] encoding, ref int idx, int bnd){
 	
-	if(bnd <=0 ){ 
-		if(encoding[idx] ==0){
-			idx++;
-        	return new SVar(name = encoding[idx++]); 
-        }      
-        if(encoding[idx]==1){ ++idx; return new SFalse(); }else{ ++idx; return new STrue(); }    
-     }
-     if(encoding[idx] ==0){
-     	 ++idx; 
-    	 return new SVar(name = encoding[idx++]); 
-   	} else 
-    if(encoding[idx]==1){ ++idx; return new SFalse(); }
-    else if(encoding[idx] == 2){ ++idx; return new STrue(); }    
-  	else if(encoding[idx]==3){
-        ++idx;
-        return sApp(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); 
-    }else
-    if(encoding[idx]==4){
-        ++idx;
-          SVar v = new SVar(name = encoding[idx++]);
-        return sAbs(v, produce(encoding, idx, bnd-1)); 
-    }else
-    if(encoding[idx]==5){
-    	++idx;
-        return new SAnd(a = produce(encoding, idx, bnd-1), b = produce(encoding, idx, bnd-1)); 
-    }else
-    if(encoding[idx]==6){
-    	++idx;
-    	return new SOr(a = produce(encoding, idx, bnd-1), b = produce(encoding,idx, bnd-1));
+	if(bnd <=1 ){ 
+		if(encoding[idx] ==0){ idx++; return new VarS(name = encoding[idx++]); }      
+        if(encoding[idx]==1){ ++idx; return new FalseS(); }else{ ++idx; return new TrueS(); }    
     }
-   	else {
-    	++idx;
-    	return new SNot( a = produce(encoding, idx, bnd-1));
-    }
+    if(encoding[idx] ==0){ ++idx; return new VarS(name = encoding[idx++]);}
+    else if(encoding[idx]==1){ ++idx; return new FalseS(); }
+    else if(encoding[idx] == 2){ ++idx; return new TrueS(); }    
+  	else if(encoding[idx]==3){ ++idx; return sApp(produce(encoding, idx, bnd-1), produce(encoding, idx, bnd-1)); }
+  	else if(encoding[idx]==4){ ++idx; return sAbs(new VarS(name = encoding[idx++]), produce(encoding, idx, bnd-1)); }
+  	else if(encoding[idx]==5){ ++idx; return new AndS(a = produce(encoding, idx, bnd-1), b = produce(encoding, idx, bnd-1)); }
+  	else if(encoding[idx]==6){ ++idx; return new OrS(a = produce(encoding, idx, bnd-1), b = produce(encoding,idx, bnd-1)); }
+   	else { ++idx; return new NotS( a = produce(encoding, idx, bnd-1)); }
 }
 
-
-LVar lVar(int name){
-	return new LVar(name = name);
-}
-LAbs lAbs(LVar var, E a ){
-	return new LAbs(var = var ,a =a);
-}
-LApp lApp(E a , E b){
-	return new LApp(a = a, b = b);
-}
-
-
-bit equalsDef(E c1, E c2, int bnd){
-	assert(bnd >=0);
-	if(bnd < 0 ) return false;
-	assert(c1!=null);
-	if(c2==null) return false;
-	switch(c1){
-		case LApp:
-		{
-			switch(c2){
-				case LApp:
-				{
-					if(bnd<1) return false;
-					else
-					return equalsDef(c1.a, c2.a,bnd-1)&& equalsDef(c1.b, c2.b,bnd-1) ;
-				}
-				default:
-				{
-					return false;
-				}
-			}
-		}
-		case LAbs:
-		{
-			switch(c2){
-				case LAbs:
-				{
-					if(bnd<1) return false;
-					else
-					return equalsDef(c1.a , substitute(c2.var, c2.a, c1.var,bnd-1),bnd-1);
-				}
-				default:
-				{
-					return false;
-				}
-			}
-		}
-		case LVar:
-		{
-			switch(c2){
-				case LVar:
-				{
-					return c1.name == c2.name;
-				}
-				default:
-				{
-					return false;
-				}
-			}
-		}
-	}
-}
-
-bit equals(source c1 ,E c2, int bnd){
-	LVar x  = new LVar(name = 0);
-	LVar y = new LVar(name = 1);
-	//define true
-	LAbs True = new LAbs(var = x, a = new LAbs(var =y, a = x));
-	//define false;
-	LAbs False =  new LAbs(var = x, a = new LAbs(var = y, a = y));
-	assert(bnd >=0 );
-	if(bnd <0 ) return false;
+/**
+ * Checks that two srcAST and dstAST values represent the same value.
+ */
+bit equals(srcAST c1 ,dstAST c2){
+	AbsD True = new AbsD(var = new VarD(name = 32), a = new AbsD(var = new VarD(name =33), a = new VarD(name=32)));
+	AbsD False =  new AbsD(var = new VarD(name = 32), a = new AbsD(var = new VarD(name = 33), a = new VarD(name=33)));
 	if(c1==null) return true;
 	if(c2 == null) return false;
 	switch(c1){
-		case SVar:
+		case VarS:
 		{
 			switch(c2){
-				case LVar:return c1.name == c2.name;
+				case VarD:return c1.name == c2.name;
 				default: return false;
 			}
 		}
-		case SApp:
+		case AppS:
 		{
-			
 			switch(c2){
-				
-				case LApp: {if (bnd <1) return false; else return equals(c1.a, c2.a, bnd -1)  &&  equals(c1.b, c2.b, bnd-1);}
+				case AppD: return equals(c1.a, c2.a)  &&  equals(c1.b, c2.b);
 				default: return false;
 			}
 		}
-		case SAbs:
+		case AbsS:
 		{
 			switch(c2){
-				case LAbs: {
-				SVar sv = c1.var;
-				LVar v = new LVar(name = sv.name);
-				source e = c1.a;
-				if(bnd <1) return false;
-				else{
+				case AbsD: {
+				VarS sv = c1.var;
+				VarD v = new VarD(name = sv.name);
+				srcAST e = c1.a;
 				switch(e){
-					case STrue: {return equals(c1.a, c2.a, bnd-1);}
-					case SFalse:{ return equals(c1.a, c2.a, bnd-1);}
-					default:  {return equals(c1.a , substitute(c2.var, c2.a, v,1), bnd-1);}
-				
-				}
+					case TrueS: return equals(c1.a, c2.a);
+					case FalseS: return equals(c1.a, c2.a);
+					default: return equals(c1.a , substitute(c2.var, c2.a, v));
 				}
 				}
 				default: return false;
 			}
 		}
-		case STrue:
-		{
-			
-			 return equalsDef(True, c2,2);
-		}
-		case SFalse:
-		{
-			
-			return equalsDef(False, c2,2);
-		}
-		
-		
+		case TrueS: return equalsDstAST(True, c2);
+		case FalseS: return equalsDstAST(False, c2);
 		default: return true;
 	}
-	
 }
-harness  void main1(int str, int str2){
-	source s = new SApp(a = new SAbs(var = new SVar(name = str), a= new SVar(name = str)), b = new SVar(name=str2));
-	source c1 = interpretSource(s,3);
-	if(c1!=null){
-		E c2 = desugar(s,3);
-		int sbnd = 2;
-		E c3 = interpretLambda(c2,3,sbnd);
-		LVar c4 = (LVar) c3;
-		assert(c4.name == str2);
-		assert(c3!=null);
-		assert(equals(c1,c3,1));
-	}
-	
-}
-harness void main( int[20] arr){
-	int idx =0;
-	source s = produce( arr, idx, 1);
-	source c1 = interpretSource(s,2);
-	if(c1!=null){
-		E c2  = desugar(s,2);
-		int sbnd = 2;
-		E c3 = interpretLambda(c2,2,sbnd);
-		assert(c3!=null);
-		assert(equals(c1,c3,1));
+
+/**
+ * Checks that two dstAST values represent the same value.
+ * We use this function instead === because of substitions in lambda abstraction constructs.
+ */
+bit equalsDstAST(dstAST c1, dstAST c2){
+	assert(c1!=null);
+	if(c2==null) return false;
+	switch(c1){
+		case AppD:
+		{
+			switch(c2){
+				case AppD: return equalsDstAST(c1.a, c2.a)&& equalsDstAST(c1.b, c2.b) ;
+				default: return false;
+			}
+		}
+		case AbsD:
+		{
+			switch(c2){
+				case AbsD: return equalsDstAST(c1.a , substitute(c2.var, c2.a, c1.var));
+				default: return false;
+			}
+		}
+		case VarD:
+		{
+			switch(c2){
+				case VarD: return c1.name == c2.name;
+				default: return false;
+			}
+		}
 	}
 }
 
