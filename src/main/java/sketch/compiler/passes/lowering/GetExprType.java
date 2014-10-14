@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.passes.lowering;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import sketch.compiler.ast.core.FENullVisitor;
@@ -38,6 +40,7 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
+import sketch.compiler.passes.lowering.SymbolTableVisitor.TypeRenamer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -347,37 +350,29 @@ public class GetExprType extends FENullVisitor
     	try
     	{
             Function fn = nres.getFun(exp.getName(), exp);
+            Type retType = fn.getReturnType();
+            if (!fn.getTypeParams().isEmpty() &&
+                    !(fn.getReturnType() instanceof TypePrimitive))
+            {
+                List<Type> lt = new ArrayList<Type>();
+                for (Expression ep : exp.getParams()) {
+                    lt.add((Type) ep.accept(this));
+                }
+                TypeRenamer tr = SymbolTableVisitor.getRenaming(fn, lt);
+                retType = tr.rename(retType);
+            }
+
             if (fn.getReturnType() instanceof TypeStructRef) {
-                TypeStructRef tsr = (TypeStructRef) fn.getReturnType();
+                TypeStructRef tsr = (TypeStructRef) retType;
                 return tsr.addDefaultPkg(fn.getPkg(), nres);
             }
-    		return fn.getReturnType();
+            return retType;
     	} catch (UnrecognizedVariableException e) {
     		// ignore
     	}
 
-    	// "abs" returns a float.  We should probably insert other
-    	// special cases here for built-in functions, but I'm not
-    	// exactly sure which ones have a constant return type and
-    	// which ones are polymorphic.  --BFT
-    	if (exp.getName().equals("abs")) {
-    		return TypePrimitive.floattype;
-    	}
 
-    	// Otherwise, we can assume that the only function calls are
-    	// calls to built-in functions in the absence of helper
-    	// function support in the parser.  These by and large have a
-    	// signature like
-    	//
-    	//   template<T> T foo(T);
-    	//
-    	// So, if there's any arguments, return the type of the first
-    	// argument; otherwise, return float as a default.
-    	List params = exp.getParams();
-    	if (params.isEmpty()) {
-    		return TypePrimitive.floattype;
-    	}
-    	return ((Expression)params.get(0)).accept(this);
+    	return null;
     }
 
     public Object visitExprParen (ExprParen ep) {

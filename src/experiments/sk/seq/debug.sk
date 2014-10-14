@@ -2,8 +2,8 @@
 
 include "generators.skh";
 
-harness int avg(int x, int y){
-    
+harness 
+int avg(int x, int y){    
     int t = expr({x/2, y/2, x%2, y%2, 2 }, {PLUS, DIV});
     assert t == (x+y)/2;
     return t;    

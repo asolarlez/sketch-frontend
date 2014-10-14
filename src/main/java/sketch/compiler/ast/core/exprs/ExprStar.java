@@ -48,6 +48,7 @@ public class ExprStar extends Expression
 	private boolean isFixed;
 	private Type type;
 	public int INT_SIZE=5;
+    public final boolean isGlobal;
     protected String starName = "ANON";
     public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
@@ -62,12 +63,29 @@ public class ExprStar extends Expression
 	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
 	public void extendName(String ext){ starName += ext; } 
 	
+    public ExprStar(ExprStar old, boolean isGlobal) {
+        super(old);
+        size = old.size;
+        isFixed = old.isFixed;
+        type = old.type;
+        this.isGlobal = isGlobal;
+        INT_SIZE = old.INT_SIZE;
+        vectorSize = old.vectorSize;
+        rangelow = old.rangelow;
+        rangehigh = old.rangehigh;
+        hasrange = old.hasrange;
+        this.starName = old.starName;
+        this.kind = old.kind;
+
+    }
+
 	public ExprStar(ExprStar old)
     {
         super(old);
         size = old.size;
         isFixed = old.isFixed;
         type = old.type;
+        isGlobal = old.isGlobal;
         INT_SIZE = old.INT_SIZE;
         vectorSize = old.vectorSize;
         rangelow = old.rangelow;
@@ -76,7 +94,6 @@ public class ExprStar extends Expression
         this.starName = old.starName;
         this.kind = old.kind;
         // this.exprMax = old.exprMax;
-        // TODO: add tests with repeat and generators
     }
 
     /** Create a new ExprConstInt with a specified value. */
@@ -96,6 +113,7 @@ public class ExprStar extends Expression
     {
         super(context);
         size = 1;
+        isGlobal = false;
         isFixed = false;
         this.kind = kind;
         // this.exprMax = max;
@@ -120,6 +138,7 @@ public class ExprStar extends Expression
     public ExprStar(FENode context, int rstart, int rend) {
         super(context);
         size = 1;
+        isGlobal = false;
         isFixed = true;
         rangelow = rstart;
         rangehigh = rend;
@@ -143,6 +162,7 @@ public class ExprStar extends Expression
     {
         super(context);
         isFixed = true;
+        isGlobal = false;
         this.size = size;
         this.kind = kind;
         // this.exprMax = max;
@@ -159,6 +179,7 @@ public class ExprStar extends Expression
     public ExprStar(FEContext context, int rstart, int rend) {
         super(context);
         isFixed = true;
+        isGlobal = false;
         this.size = 1;
         rangelow = rstart;
         rangehigh = rend;
@@ -169,6 +190,7 @@ public class ExprStar extends Expression
     @Deprecated
     public ExprStar(FEContext ctx, Type typ, int domainsize) {
         super(ctx);
+        isGlobal = false;
         this.type = typ;
         this.size = domainsize;// (int) Math.ceil(Math.log(domainsize) / Math.log(2));
         isFixed = true;

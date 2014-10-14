@@ -3,10 +3,15 @@ package sketch.compiler.ast.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.Type;
+import sketch.util.datastructures.HashmapList;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
@@ -26,7 +31,16 @@ public class NameResolver {
 
     final Map<String, Function> funMap = new HashMap<String, Function>();
     final Map<String, FieldDecl> varMap = new HashMap<String, FieldDecl>();
+    Stack<Set<String>> tempStructNames = new Stack<Set<String>>();
     Package pkg;
+
+    public void pushTempTypes(List<String> tempTypes) {
+        tempStructNames.push(new HashSet(tempTypes));
+    }
+
+    public void popTempTypes() {
+        tempStructNames.pop();
+    }
 
     public Package curPkg() {
         return pkg;
@@ -174,6 +188,11 @@ public class NameResolver {
     }
 
     public String getStructName(String name) {
+        for (Set<String> sts : tempStructNames) {
+            if (sts.contains(name)) {
+                return name;
+            }
+        }
         return getStructName(name, this.pkg.getName());
     }
 
@@ -204,7 +223,15 @@ public class NameResolver {
         return getFunName(name, this.pkg.getName());
     }
 
+    public final StructDef template = StructDef.creator(null, "__TEMPLATE__", null,
+            false, new ArrayList<String>(), new ArrayList<Type>(),
+            new HashmapList<String, Annotation>()).create();
     public StructDef getStruct(String name) {
+        for (Set<String> sts : tempStructNames) {
+            if (sts.contains(name)) {
+                return template;
+            }
+        }
         String full = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
         if (full == null) {
             return null;

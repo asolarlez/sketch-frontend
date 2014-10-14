@@ -1,0 +1,26 @@
+adt Foo{
+    A{}
+    B{}
+}
+
+void forall<T>([int n], fun f, T[n] x){
+    for(int i=0; i<n; ++i){
+        f(x[i]);
+    }
+}
+
+harness void main(){
+    Foo x = new A();
+    Foo y = new B();
+    int sum=0;
+    void tt(Foo f){
+        
+    }
+    void add(int x){
+        sum += x;
+    }
+    forall(add, {1,2,3,4,5});
+    forall(tt, {x,y});
+    assert sum == ??;    
+}
+

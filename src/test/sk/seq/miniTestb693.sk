@@ -1,0 +1,11 @@
+
+struct A{}
+struct B extends A{}
+struct C extends A{}
+
+harness void main(){
+        
+    A[3] a = {new B(), new C()}; 
+    
+    
+}

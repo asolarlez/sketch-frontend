@@ -226,8 +226,8 @@ program	 returns [Program p]
 }
 	:	(  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
                      TK_generator |  TK_stencil | TK_model)*
-                    return_type ID LPAREN) => f=function_decl { funcs.add(f); }
-           |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
+                    return_type ID  (type_params)? LPAREN) => f=function_decl { funcs.add(f); }
+           |    (return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
@@ -277,8 +277,8 @@ pkgbody returns [Package pk]
 	LCURLY
   (  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
                      TK_generator |  TK_stencil | TK_model)*
-                    return_type ID LPAREN) => f=function_decl { funcs.add(f); }
-           |    (return_type ID LPAREN) => f=function_decl { funcs.add(f); } 
+                    return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); }
+           |    (return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
@@ -480,6 +480,10 @@ annotation_list returns [HashmapList<String, Annotation>  amap] {
 		( an=annotation {if(amap==null){amap = new HashmapList<String, Annotation>();} amap.append(an.tag, an); })*
 	;
 
+type_params returns [List<String> ls] { ls = new ArrayList<String>(); } 
+:
+LESS_THAN id1:ID { ls.add(id1.getText()); } (COMMA id:ID { ls.add(id.getText()); } )* MORE_THAN ;
+
 function_decl returns [Function f] {
     Type rt;
     List l;
@@ -495,6 +499,7 @@ function_decl returns [Function f] {
     boolean isSerial = false;
     boolean isStencil = false;
     boolean isModel = false;
+    List<String> tp=null;
 }
 	:
 	amap=annotation_list
@@ -508,13 +513,14 @@ function_decl returns [Function f] {
         )*
 	rt=return_type
 	id:ID
+	(tp=type_params)?
 	l=param_decl_list
 	(TK_implements impl:ID)?
 	( s=block
 	{
             assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
             Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
-                rt).params(l).body(s).annotations(amap);
+                rt).params(l).body(s).annotations(amap).typeParams(tp);
 
             // function type
             if (isGenerator) {

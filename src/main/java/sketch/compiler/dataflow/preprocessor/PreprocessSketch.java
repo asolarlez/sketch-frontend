@@ -49,7 +49,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 
     public Object visitExprStar(ExprStar star) {
         Object obj = super.visitExprStar(star);
-        if(!inlineStatics){
+        if (!inlineStatics && !star.isGlobal) {
             ExprStar old = (ExprStar)exprRV;
             ExprStar n = new ExprStar(old);
             n.extendName(rcontrol.callStack());

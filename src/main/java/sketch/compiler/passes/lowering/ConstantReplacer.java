@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -24,6 +25,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.GetAssignLHS;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -83,11 +85,11 @@ public class ConstantReplacer extends FEReplacer {
         shadows.add(vname);
     }
 
-    protected HashMap<String, Integer> constants;
+    protected HashMap<String, Expression> constants;
     protected HashSet<String> constVars;
 
-	public ConstantReplacer(Map<String, Integer> subs) {
-		constants=new HashMap<String,Integer>();
+    public ConstantReplacer(Map<String, Expression> subs) {
+        constants = new HashMap<String, Expression>();
 		if(subs != null){
 			constants.putAll(subs);
 		}
@@ -101,9 +103,18 @@ public class ConstantReplacer extends FEReplacer {
             if (!constVars.contains(name)) {
                 return false;
             }
-			constants.put(name,((ExprConstInt)init).getVal());
+            constants.put(name, init);
 			return true;
 		}
+        if (type.equals(TypePrimitive.inttype) && init instanceof ExprStar) {
+            if (constants.get(name) != null)
+                return false;
+            if (!constVars.contains(name)) {
+                return false;
+            }
+            constants.put(name, new ExprStar((ExprStar) init, true));
+            return true;
+        }
 		return false;
 	}
 
@@ -132,19 +143,14 @@ public class ConstantReplacer extends FEReplacer {
 		return new FieldDecl(field,types,names,inits);
 	}
 
-    /** can be overridden by subclasses */
-    public Expression replaceConstantExpr(ExprVar exp, int val) {
-        return new ExprConstInt(exp, val);
-    }
 
 	public Object visitExprVar(ExprVar exp) {
-		// TODO we should not be rewritign l-values right?  Add the code below?
-		// if (exp.isLValue()) return exp;
-		Integer val=constants.get(exp.getName());
+
+        Expression val = constants.get(exp.getName());
         if (val == null || shadows.contains(exp.getName())) {
             return exp;
         } else {
-            return replaceConstantExpr(exp, val);
+            return val;
         }
 	}
 

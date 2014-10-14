@@ -1,0 +1,32 @@
+
+package A{
+int x = 92;
+int y = ??;
+int z = 3;
+
+generator int gety(){
+    return y;
+}
+
+@Native("{ assert(t==10); } ")
+int checky(int t);
+int tt = ??;
+
+int[tt] foo(int[tt] x){
+    return x;
+}
+
+harness void main1(){
+    assert gety() == 10;
+    checky(gety());
+    {
+        int y;
+        y = ??;
+        y = y + 90;
+        assert y == 95;
+    }
+    checky(gety());
+    int[3] v = foo({1,2,3});
+}
+
+}

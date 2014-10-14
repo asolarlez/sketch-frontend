@@ -16,8 +16,11 @@
 
 package sketch.compiler.passes.lowering;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -40,6 +43,7 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
@@ -68,6 +72,77 @@ public class SymbolTableVisitor extends FEReplacer
     protected SymbolTable symtab;
 
 
+    public static class TypeRenamer extends FEReplacer {
+        public Map<String, Type> tmap = new HashMap<String, Type>();
+
+        public TypeRenamer() {}
+
+        @Override
+        public Object visitTypeStructRef(TypeStructRef tr) {
+            if (tmap.containsKey(tr.getName())) {
+                return tmap.get(tr.getName());
+            }
+            return tr;
+        }
+
+        public Type rename(Type t) {
+            if (tmap.isEmpty()) {
+                return t;
+            }
+            return (Type) t.accept(this);
+        }
+    }
+
+    private static final TypeRenamer emptyrenamer = new TypeRenamer();
+
+    public static TypeRenamer getRenaming(Function f, List<Type> efcTypes) {
+        List<String> tps = f.getTypeParams();
+        if (tps.isEmpty()) {
+            return emptyrenamer;
+        }
+        TypeRenamer rv = new TypeRenamer();
+        Set<String> st = new HashSet<String>(tps);
+
+        Iterator<Parameter> paramIt = f.getParams().iterator();
+        int dif = f.getParams().size() - efcTypes.size();
+        if (dif != 0) {
+            if (dif < 0) {
+                throw new ExceptionAtNode("Wrong number of parameters", null);
+            }
+            for (int i = 0; i < dif; ++i) {
+                Parameter p = paramIt.next();
+                if (!p.isImplicit()) {
+                    throw new ExceptionAtNode("Wrong number of parameters", null);
+                }
+            }
+        }
+        for (Type actual : efcTypes) {
+            Parameter p = paramIt.next();
+            Type ptype = p.getType();
+            // The idea is that if I expect A[] and the user gives int[]
+            // then A should be int, but if I expect A[][] and the user gives int[]
+            // then A should also be int. On the other hand, if I expect A[]
+            // and the user gives int[][][], then A should be int[][]
+            Type tact = actual;
+            while (ptype instanceof TypeArray) {
+                TypeArray ta = (TypeArray) ptype;
+                ptype = ta.getBase();
+                if (tact instanceof TypeArray) {
+                    tact = ((TypeArray) actual).getBase();
+                }
+            }
+            String tn = ptype.toString();
+            if (st.contains(tn)) {
+                if (tact instanceof TypeArray) {
+                    throw new ExceptionAtNode(
+                            "Generics not allowed to resolve to an array type " + tn +
+                                    "->" + tact, null);
+                }
+                rv.tmap.put(tn, tact);
+            }
+        }
+        return rv;
+    }
 
     public void setSymtab(SymbolTable symtab) {
         this.symtab = symtab;
@@ -224,7 +299,14 @@ public class SymbolTableVisitor extends FEReplacer
     {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
+        boolean hadTPs = !func.getTypeParams().isEmpty();
+        if (hadTPs) {
+            nres.pushTempTypes(func.getTypeParams());
+        }
         Object result = super.visitFunction(func);
+        if (hadTPs) {
+            nres.popTempTypes();
+        }
         symtab = oldSymTab;
         return result;
     }

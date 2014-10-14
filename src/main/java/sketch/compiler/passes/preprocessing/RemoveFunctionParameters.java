@@ -501,6 +501,89 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     }
 
+    class FixPolymorphism extends SymbolTableVisitor {
+        TypeRenamer tren;
+        Set<String> namesset;
+        Set<String> elimset;
+
+        public FixPolymorphism() {
+            super(null);
+        }
+
+        public Object visitFunction(Function f) {
+            if (f.getTypeParams().isEmpty()) {
+                return f;
+            }
+            tren = new TypeRenamer();
+            namesset = new HashSet<String>(f.getTypeParams());
+            elimset = new HashSet<String>();
+
+            Function fout = (Function) super.visitFunction(f);
+            List<String> nl = new ArrayList<String>();
+            for (String s : f.getTypeParams()) {
+                if (elimset.contains(s)) {
+                    continue;
+                }
+                nl.add(s);
+            }
+            return fout.creator().typeParams(nl).create().accept(tren);
+        }
+
+        public Object visitExprFunCall(ExprFunCall efc) {
+            Function f = nres.getFun(efc.getName());
+            Set<String> calleenamesset = new HashSet<String>(f.getTypeParams());
+            if (f == null) {
+                throw new ExceptionAtNode("Function not defined", efc);
+            }
+
+            Iterator<Parameter> pit = f.getParams().iterator();
+            if (f.getParams().size() != efc.getParams().size()) {
+                int dif = f.getParams().size() - efc.getParams().size();
+                for (int i = 0; i < dif; ++i) {
+                    Parameter p = pit.next();
+                    if (!p.isImplicit()) {
+                        throw new ExceptionAtNode("Bad param number", efc);
+                    }
+                }
+            }
+            for (Expression actual : efc.getParams()) {
+                Type atype = getType(actual);
+                Parameter p = pit.next();
+                Type ptype = p.getType();
+                while (atype instanceof TypeArray) {
+                    atype = ((TypeArray) atype).getBase();
+                    ptype = ((TypeArray) ptype).getBase();
+                }
+                Type ptypebase = ptype;
+                while (ptypebase instanceof TypeArray) {
+                    ptypebase = ((TypeArray) ptypebase).getBase();
+                }
+                String aname = atype.toString();
+                if (namesset.contains(aname)) {
+                    // This means the argument is polymorphic; if the
+                    // callee is not polymorphic, it means that when we specialized the
+                    // call we should have restricted the polymorphism, so we have to add
+                    // now.
+                    if (!calleenamesset.contains(ptypebase.toString())) {
+                        elimset.add(aname);
+                        if (ptype instanceof TypeArray) {
+                            throw new ExceptionAtNode(
+                                    "Generics can not resolve to an array type " + aname +
+                                            "->" + ptype, f);
+                        }
+                        if (tren.tmap.containsKey(aname)) {
+                            Type lcp =
+                                    tren.tmap.get(aname).leastCommonPromotion(ptype, nres);
+                        } else {
+                            tren.tmap.put(aname, ptype);
+                        }
+                    }
+                }
+            }
+            return super.visitExprFunCall(efc);
+        }
+    }
+
     /**
      * Hoist out inner functions, and extract the information about which inner function
      * used what variables defined in its containing function (the "closure"). This
@@ -1087,7 +1170,8 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
         Program np = p.creator().streams(newPkges).create();
 
-        return np.accept(new ThreadClosure());
+        Program aftertc = (Program) np.accept(new ThreadClosure());
+        return aftertc.accept(new FixPolymorphism());
 
     }
 
