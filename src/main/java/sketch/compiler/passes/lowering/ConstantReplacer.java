@@ -113,7 +113,8 @@ public class ConstantReplacer extends FEReplacer {
                 return false;
             }
             constants.put(name, new ExprStar((ExprStar) init, true));
-            return true;
+            // If it is ExprStar, we want to keep around the global variable
+            return false;
         }
 		return false;
 	}
