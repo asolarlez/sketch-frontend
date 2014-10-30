@@ -382,7 +382,7 @@ public class GetExprType extends FENullVisitor
 
     // TODO: deal with packages
     public Object visitExprGet(ExprGet exp) {
-        return new TypeStructRef(exp.getName(), false);
+        return null;
     }
 
     public Object visitExprParen (ExprParen ep) {

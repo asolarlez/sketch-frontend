@@ -709,8 +709,8 @@ func_call returns [Expression x] { x = null; List l; }
 	;
 
 expr_get returns [Expression x] { x = null; List l; }
-	: TK_get LPAREN name:ID l = func_call_params n:NUMBER RPAREN
-		{ x = new ExprGet(getContext(name), name.getText(), l, Integer.parseInt(n.getText())); }
+	: t:TK_get LPAREN l = func_call_params n:NUMBER RPAREN
+		{ x = new ExprGet(getContext(t), l, Integer.parseInt(n.getText())); }
 	;
 func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN

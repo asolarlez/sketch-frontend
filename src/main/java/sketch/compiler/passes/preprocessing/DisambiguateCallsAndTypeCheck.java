@@ -477,25 +477,6 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         return super.visitProgram(prog);
     }
 
-    public Object visitExprGet(ExprGet exp) {
-        StructDef t = nres.getStruct(exp.getName());
-        if (t == null) {
-            report(exp, "unknown struct " + exp.getName());
-        }
-
-        boolean hasChanged = false;
-        List<Expression> newParams = new ArrayList<Expression>();
-        for (Expression param : exp.getParams()) {
-            Expression newParam = doExpression(param);
-            newParams.add(newParam);
-            if (param != newParam)
-                hasChanged = true;
-        }
-        if (!hasChanged)
-            return exp;
-        return new ExprGet(exp, exp.getName(), newParams, exp.getDepth());
-    }
-
     public Object visitExprFunCall(ExprFunCall exp) {
         Function f;
         try {
@@ -564,8 +545,18 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         }
                     }
                     Expression newParam = doExpression(actual);
+                    boolean typeCheck = true;
+                    if (newParam instanceof ExprNew) {
+                        if (((ExprNew) newParam).isHole())
+                            typeCheck = false;
+                    }
+                    if (newParam instanceof ExprGet) {
+                        typeCheck = false;
+                    }
                     Type lt = getType(newParam);
-                    if (lt == null || !lt.promotesTo((formal.getType()), nres)) {
+                    if (typeCheck &&
+                            (lt == null || !lt.promotesTo((formal.getType()), nres)))
+                    {
                         report(exp, "Bad parameter type: Formal type=" + formal +
                                 "\n Actual type=" + lt + "  " + f);
                     }
@@ -588,23 +579,34 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                 }
 
-                Type lt = getType(newParam);
-                Type formalType = formal.getType();
-                formalType = formalType.addDefaultPkg(f.getPkg(), nres);
-                if (formalType instanceof TypeStructRef &&
-                        ((TypeStructRef) formalType).getName() == null)
-                {
-                    report(exp, "Bad parameter type: Formal type=" + formal +
-                            "\n Actual type=" + lt + "  " + f);
+                boolean typeCheck = true;
+                if (newParam instanceof ExprNew) {
+                    if (((ExprNew) newParam).isHole())
+                        typeCheck = false;
                 }
-                if (lt == null || !lt.promotesTo(formalType, nres)) {
-                    report(exp, "Bad parameter type: Formal type=" + formal +
-                            "\n Actual type=" + lt + "  " + f);
+                if (newParam instanceof ExprGet) {
+                    typeCheck = false;
+                }
+                if (typeCheck) {
+                    Type lt = getType(newParam);
+                    Type formalType = formal.getType();
+                    formalType = formalType.addDefaultPkg(f.getPkg(), nres);
+                    if (formalType instanceof TypeStructRef &&
+                            ((TypeStructRef) formalType).getName() == null)
+                    {
+                        report(exp, "Bad parameter type: Formal type=" + formal +
+                                "\n Actual type=" + lt + "  " + f);
+                    }
+                    if (lt == null || !lt.promotesTo(formalType, nres)) {
+                        report(exp, "Bad parameter type: Formal type=" + formal +
+                                "\n Actual type=" + lt + "  " + f);
+                    }
                 }
                 if (newParam instanceof ExprNamedParam) {
                     throw new ExceptionAtNode(
                             "Named function parameters not supported. ", newParam);
                 }
+
                 newParams.add(newParam);
                 if (param != newParam)
                     hasChanged = true;
@@ -1530,11 +1532,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (lhsExp instanceof ExprVar) {
             lhsn = ((ExprVar) lhsExp).getName();
         }
-        boolean isHole = false;
+        boolean typeCheck = true;
         if (newRHS instanceof ExprNew) {
-            isHole = ((ExprNew) newRHS).isHole();
+            if (((ExprNew) newRHS).isHole())
+                typeCheck = false;
         }
-        if (!isHole) {
+        if (newRHS instanceof ExprGet) {
+            typeCheck = false;
+        }
+        if (typeCheck) {
             matchTypes(stmt, lt, rt);
         }
         if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
@@ -1561,11 +1567,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             Expression ie = result.getInit(i);
             if (ie != null) {
                 Type rt = getType(ie);
-                boolean isHole = false;
+                boolean typeCheck = true;
                 if (ie instanceof ExprNew) {
-                    isHole = ((ExprNew) ie).isHole();
+                    if (((ExprNew) ie).isHole())
+                        typeCheck = false;
                 }
-                if (!isHole) {
+                if (ie instanceof ExprGet) {
+                    typeCheck = false;
+                }
+                if (typeCheck) {
                     matchTypes(result, (result.getType(i)), rt);
                 }
             }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import sketch.compiler.ast.core.exprs.ExprGet;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprStar;
@@ -19,6 +20,9 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
+/*
+ * Do relevant type inference for new ??() and ExprGet.
+ */
 
 public class ExpandADTHoles extends SymbolTableVisitor {
     TypeStructRef ts = null;
@@ -39,6 +43,14 @@ public class ExpandADTHoles extends SymbolTableVisitor {
             return new StmtAssign(s, s.getLHS(), newRight);
         }
         return s;
+    }
+
+    @Override
+    public Object visitExprGet(ExprGet exp) {
+        if (exp.getName() == null) {
+            exp.setName(ts.getName());
+        }
+        return exp;
     }
     @Override
     public Object visitExprNew(ExprNew exp){

@@ -325,7 +325,7 @@ public class FEReplacer implements FEVisitor
         }
         if (!hasChanged)
             return exp;
-        return new ExprGet(exp, exp.getName(), newParams, exp.getDepth());
+        return new ExprGet(exp, newParams, exp.getDepth());
     }
 
     public Object visitExprFunCall(ExprFunCall exp)

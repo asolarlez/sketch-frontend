@@ -3819,21 +3819,20 @@ inputState.guessing--;
 	public final Expression  expr_get() throws RecognitionException, TokenStreamException {
 		Expression x;
 		
-		Token  name = null;
+		Token  t = null;
 		Token  n = null;
 		x = null; List l;
 		
 		try {      // for error handling
+			t = LT(1);
 			match(TK_get);
 			match(LPAREN);
-			name = LT(1);
-			match(ID);
 			l=func_call_params();
 			n = LT(1);
 			match(NUMBER);
 			match(RPAREN);
 			if ( inputState.guessing==0 ) {
-				x = new ExprGet(getContext(name), name.getText(), l, Integer.parseInt(n.getText()));
+				x = new ExprGet(getContext(t), l, Integer.parseInt(n.getText()));
 			}
 		}
 		catch (RecognitionException ex) {

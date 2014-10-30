@@ -58,9 +58,6 @@ public class PreprocessStage extends MetaStage {
         // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
         prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
-        // prog.debugDump("Before remove expr get");
-        prog = (Program) prog.accept(new RemoveExprGet(varGen));
-        prog.debugDump("After remove expr get");
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
@@ -89,6 +86,12 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new ExpandADTHoles());
 
+        prog = (Program) prog.accept(new RemoveExprGet(varGen));
+        prog.debugDump("After remove expr get");
+        // Remove ExprGet will generate regens and adt holes
+        prog = (Program) prog.accept(new EliminateRegens(varGen));
+
+        prog = (Program) prog.accept(new ExpandADTHoles());
 
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
