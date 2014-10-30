@@ -1,4 +1,4 @@
-pragma options "--be:-minvarHole --bnd-mbits 3 --bnd-int-range 100 --bnd-inbits 4 --bnd-unroll-amnt 15 --bnd-arr-size 15";
+pragma options "--fe-low-overhead --be:-minvarHole --bnd-mbits 3 --bnd-int-range 100 --bnd-inbits 4 --bnd-unroll-amnt 15 --bnd-arr-size 15";
 
 int nchanges = 0;
 bit choiceAssign0 = ??;

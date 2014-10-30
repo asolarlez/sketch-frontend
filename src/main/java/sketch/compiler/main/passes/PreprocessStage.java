@@ -104,7 +104,7 @@ public class PreprocessStage extends MetaStage {
         //prog.debugDump("af");
         
         prog = (Program) prog.accept(new ReplaceADTHoles());
-        if (partialEval) {
+        if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
             prog.accept(new PerformFlowChecks());
         }
         // prog.debugDump("Before fun call");

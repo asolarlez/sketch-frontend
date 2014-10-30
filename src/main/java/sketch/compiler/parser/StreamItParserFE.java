@@ -67,7 +67,10 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
     private boolean preprocess;
     private List<String> cppDefs;
     private String currPkg;
-    private FEContext curPkgCx;
+    private FEContext curPkgCx;    
+    private FEContext lastCx=null;
+    private String lastFilename = null;
+    private String shortFilename = null;
     
      //ADT
     private List<String> parentStructNames = new ArrayList<String>();
@@ -100,9 +103,39 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 	{
 		int line = t.getLine();
 		if (line == 0) line = -1;
-		int col = t.getColumn();
-		if (col == 0) col = -1;
-		return new FEContext(getFilename(), line, col);
+		int col = -1;
+		String filename = getFilename();
+		
+		
+		if(lastCx != null){
+			if(line == lastCx.getLineNumber() && lastFilename != null && lastFilename.equals(filename)){
+				return lastCx;
+			}
+		}
+		
+		if(lastFilename == null || !lastFilename.equals(filename)){
+			lastFilename = filename;
+			String lfile = filename;
+			if(lfile.length() > 15){
+	    		int ls=lfile.lastIndexOf("/");
+	    		{
+	        		int lb=lfile.lastIndexOf("\\");
+	        		if(ls<0 || lb>ls) ls=lb;
+	    		}
+	    		if(ls>=0) lfile = lfile.substring(ls+1);
+	            if (lfile.length() > 17) {
+	                lfile =
+	                        lfile.substring(0, 7) + ".." +
+	                                lfile.substring(lfile.length() - 9);
+	        	}
+	    	}
+	    	shortFilename = lfile;	
+		}		
+		lastCx = new FEContext(shortFilename, line, col);	
+		return lastCx;
+		
+		// int col = t.getColumn();
+		// if (col == 0) col = -1;		
 	}
 
 	private boolean hasError = false;

@@ -40,23 +40,20 @@ public class OutputCCode extends MetaStage {
             return prog;
         }
 
-        String resultFile = SequentialSketchMain.getOutputFileName(options);
         final boolean tprintPyStyle = options.feOpts.tprintPython != null;
         
         Program pprog =
                 (Program) prog.accept(new EliminateMultiDimArrays(
                         !options.feOpts.killAsserts, new TempVarGen()));
         pprog = (Program) pprog.accept(new ChangeGlobalStateType());
-        String hcode = (String) pprog.accept(new NodesToSuperH(resultFile));
-        String ccode =
- (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile));
+
 
         if (!options.feOpts.outputCode && !options.feOpts.noOutputPrint) {
             prog.accept(new SimpleCodePrinter());
-            // System.out.println("+++++++++++ C Code ++++++++++");
-            // System.out.println(hcode);
-            // System.out.println(ccode);
         } else if (!options.feOpts.noOutputPrint) {
+            String resultFile = SequentialSketchMain.getOutputFileName(options);
+            String hcode = (String) pprog.accept(new NodesToSuperH(resultFile));
+            String ccode = (String) pprog.accept(new NodesToSuperCpp(varGen, resultFile));
             if (new ContainsCudaCode().run(prog)) {
                 String cucode =
                         (String) prog.accept(new NodesToCUDA(varGen,
