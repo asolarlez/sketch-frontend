@@ -49,10 +49,10 @@ public class EliminateStarStatic extends SymbolTableVisitor {
             TypeStructRef t = (TypeStructRef) exp.getTypeToConstruct();
             StructDef str = nres.getStruct(t.getName());
             String parentName = str.getFullName();
-            while (str.getParentName() != null) {
-                parentName = str.getParentName();
-                str = nres.getStruct(parentName);
-            }
+            // while (str.getParentName() != null) {
+            // parentName = str.getParentName();
+            // str = nres.getStruct(parentName);
+            // }
             if (!idsMap.containsKey(parentName)) {
 
                 HashMap<Integer, String> ids = new HashMap<Integer, String>();

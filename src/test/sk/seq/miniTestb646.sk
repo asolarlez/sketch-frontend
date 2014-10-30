@@ -6,12 +6,12 @@ struct C extends A{ A y;}
 struct D extends A{ A x; A z;}
 
 
-void checkEq(A a, A b){
-	if(a==null && b == null) return;
+bit checkEq(A a, A b){
+	if(a==null && b == null) return true;
 	switch(a){
-		case B :{ B bb = (B) b; checkEq(a.x, bb.x); }
-		case C :{ C bb = (C) b; checkEq(a.y, bb.y); }
-		case D :{ D bb = (D) b; checkEq(a.z, bb.z); }
+		case B :{ B bb = (B) b; return checkEq(a.x, bb.x); }
+		case C :{ C bb = (C) b; return checkEq(a.y, bb.y); }
+		case D :{ D bb = (D) b; return checkEq(a.x, bb.x) && checkEq(a.z, bb.z); }
 	}
 }
 
@@ -23,10 +23,10 @@ harness void main(){
 		return new ??(x = newGen(bnd-1), y = newGen(bnd -1), z = newGen(bnd -1));
 	}
 
-	A a = newGen(2);
-	A b = newGen(2);
+	A a = newGen(4);
+	A b = newGen(4);
 	
-	checkEq(a, b);
+	assert(checkEq(a, b));
 	
 
 }

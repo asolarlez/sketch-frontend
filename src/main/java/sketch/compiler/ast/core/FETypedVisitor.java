@@ -103,6 +103,10 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, exp);
     }
 
+    public T visitExprGet(ExprGet exp) {
+        throw new FEVisitorException(this, exp);
+    }
+
     public T visitExprLiteral(ExprLiteral exp) {
         throw new FEVisitorException(this, exp);
     }

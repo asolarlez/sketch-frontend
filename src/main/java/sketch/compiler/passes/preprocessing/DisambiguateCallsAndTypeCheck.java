@@ -477,6 +477,25 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         return super.visitProgram(prog);
     }
 
+    public Object visitExprGet(ExprGet exp) {
+        StructDef t = nres.getStruct(exp.getName());
+        if (t == null) {
+            report(exp, "unknown struct " + exp.getName());
+        }
+
+        boolean hasChanged = false;
+        List<Expression> newParams = new ArrayList<Expression>();
+        for (Expression param : exp.getParams()) {
+            Expression newParam = doExpression(param);
+            newParams.add(newParam);
+            if (param != newParam)
+                hasChanged = true;
+        }
+        if (!hasChanged)
+            return exp;
+        return new ExprGet(exp, exp.getName(), newParams, exp.getDepth());
+    }
+
     public Object visitExprFunCall(ExprFunCall exp) {
         Function f;
         try {

@@ -100,6 +100,7 @@ tokens {
     
     //ADT
     "extends";
+    "get";
 }
 {
   public static String lastComment = null;

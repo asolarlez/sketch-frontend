@@ -667,6 +667,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		return super.visitStmtLoop(stmt);
 	}
 
+    public Object visitExprGet(ExprGet exp) {
+        // Should not do this recursively
+        String tempVar = getNewOutID(exp.getName());
+        Type tt = new TypeStructRef(exp.getName(), false);
+
+        Statement decl = (new StmtVarDecl(exp, tt, tempVar, exp));
+        symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
+        ExprVar ev = new ExprVar(exp, tempVar);
+
+        addStatement(decl);
+        return ev;
+    }
+
 	public Object visitExprFunCall(ExprFunCall exp) {
         Expression tempcallLHS = callLHS;
         callLHS = null;

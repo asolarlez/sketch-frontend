@@ -314,6 +314,20 @@ public class FEReplacer implements FEVisitor
             return new ExprField(exp, left, exp.getName());
     }
 
+    public Object visitExprGet(ExprGet exp) {
+        boolean hasChanged = false;
+        List<Expression> newParams = new ArrayList<Expression>();
+        for (Expression param : exp.getParams()) {
+            Expression newParam = doExpression(param);
+            newParams.add(newParam);
+            if (param != newParam)
+                hasChanged = true;
+        }
+        if (!hasChanged)
+            return exp;
+        return new ExprGet(exp, exp.getName(), newParams, exp.getDepth());
+    }
+
     public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;

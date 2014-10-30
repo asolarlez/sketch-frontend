@@ -708,6 +708,10 @@ func_call returns [Expression x] { x = null; List l; }
 	
 	;
 
+expr_get returns [Expression x] { x = null; List l; }
+	: TK_get LPAREN name:ID l = func_call_params n:NUMBER RPAREN
+		{ x = new ExprGet(getContext(name), name.getText(), l, Integer.parseInt(n.getText())); }
+	;
 func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
 		(	x=expr_named_param { l.add(x); }
@@ -949,6 +953,7 @@ primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> 
 
 tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
+	|   (expr_get) => x = expr_get
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
 	|	x=var_expr

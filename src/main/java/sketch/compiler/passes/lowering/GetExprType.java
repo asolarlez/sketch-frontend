@@ -380,6 +380,11 @@ public class GetExprType extends FENullVisitor
     	return ((Expression)params.get(0)).accept(this);
     }
 
+    // TODO: deal with packages
+    public Object visitExprGet(ExprGet exp) {
+        return new TypeStructRef(exp.getName(), false);
+    }
+
     public Object visitExprParen (ExprParen ep) {
     	return ep.getExpr ().accept (this);
     }

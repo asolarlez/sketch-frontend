@@ -14,6 +14,7 @@ import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
 import sketch.compiler.passes.preprocessing.EliminateTripleEquals;
 import sketch.compiler.passes.preprocessing.ExpandADTHoles;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
+import sketch.compiler.passes.preprocessing.RemoveExprGet;
 import sketch.compiler.passes.preprocessing.ReplaceADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
 
@@ -57,6 +58,9 @@ public class PreprocessStage extends MetaStage {
         // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
         prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
+        // prog.debugDump("Before remove expr get");
+        prog = (Program) prog.accept(new RemoveExprGet(varGen));
+        prog.debugDump("After remove expr get");
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
