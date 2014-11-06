@@ -144,11 +144,11 @@ public class RemoveExprGet extends SymbolTableVisitor {
             queue.addAll(nres.getStructChildren(curName));
 
         }
-        // if (sd.isInstantiable()) {
-        // newStmts.add(new StmtAssign(ev, new ExprNew(context, tt, expParams, false)));
-        // } else {
+        if (sd.isInstantiable()) {
+            newStmts.add(new StmtAssign(ev, new ExprNew(context, tt, expParams, false)));
+        } else {
             newStmts.add(new StmtAssign(ev, new ExprNew(context, null, expParams, true)));
-        // }
+        }
     }
 
     private Map<Type, List<ExprVar>> findParamVars(String name, List<Statement> stmts,
@@ -232,9 +232,9 @@ public class RemoveExprGet extends SymbolTableVisitor {
         if (checkType(type)) {
             return new ExprStar(context);
         } else if (type instanceof TypeStructRef) {
-            // if (type.equals(oriType)) {
-            // return null;
-            // }
+            if (type.equals(oriType)) {
+                return null;
+            }
             TypeStructRef tt = (TypeStructRef) type;
 
             String tempVar = varGen.nextVar(tt.getName());
@@ -259,7 +259,6 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private List<Expression> getExprsOfType(List<Expression> params, Type tt) {
-        // TODO: Deal with the recursive case
         List<Expression> filteredExprs = new ArrayList<Expression>();
         for (Expression exp : params) {
             Type t = getType(exp);

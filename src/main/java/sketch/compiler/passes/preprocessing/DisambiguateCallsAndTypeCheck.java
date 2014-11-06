@@ -282,7 +282,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             Type curType = getType(newExpr);
             // Make sure that curType is a super type of castedType
             if (!castedType.promotesTo(curType, nres)) {
-                report(exp, "Invalid explicit typecasting");
+                return new ExprNullPtr();
+                // report(exp, "Invalid explicit typecasting");
             }
         }
         if (newExpr == exp.getExpr() && castedType == exp.getType())
