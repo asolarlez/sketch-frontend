@@ -660,15 +660,15 @@ switch_statement returns [Statement s]
 	:	u:TK_switch LPAREN name:ID RPAREN LCURLY
 	 
 		{x = new ExprVar(getContext(name), name.getText()); s= new StmtSwitch(getContext(u), x); }
-		((TK_case caseName:ID COLON b= pseudo_block
+		(TK_case caseName:ID COLON b= pseudo_block
 		{((StmtSwitch)s).addCaseBlock(caseName.getText(), b);}
 		)*
-		(TK_default COLON b = pseudo_block
+		((TK_default COLON b = pseudo_block
 		{((StmtSwitch)s).addCaseBlock("default",b);}
-		)?
+		)
 		|
-		TK_repeat_case COLON b = pseudo_block
-		{((StmtSwitch)s).addCaseBlock("repeat", b);})
+		(TK_repeat_case COLON b = pseudo_block
+		{((StmtSwitch)s).addCaseBlock("repeat", b);}))?
 		RCURLY
 		
 	;

@@ -58,27 +58,36 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
         if (stmt.getCaseConditions().size() == 0) {
             return stmt;
         }
-        String c = stmt.getCaseConditions().get(0);
-        if (c == "repeat") {
+        for(String c : stmt.getCaseConditions()) {
+            if (c == "repeat") {
 
-            while (!queue.isEmpty()) {
+                while (!queue.isEmpty()) {
 
-                String parent = queue.removeFirst();
-                List<String> children = nres.getStructChildren(parent);
-                if (children.isEmpty()) {
-                    Statement body = (Statement) stmt.getBody(c).accept(this);
-                    body = (Statement) (new CloneHoles()).process(body).accept(this);
-                    newStmt.addCaseBlock(parent.split("@")[0], body);
-                } else {
-                    queue.addAll(children);
+                    String parent = queue.removeFirst();
+                    String caseName = parent.split("@")[0];
+                    if (!newStmt.getCaseConditions().contains(caseName)) {
+                        List<String> children = nres.getStructChildren(parent);
+                        if (children.isEmpty()) {
+                            Statement body = (Statement) stmt.getBody(c).accept(this);
+                            body =
+                                    (Statement) (new CloneHoles()).process(body).accept(
+                                            this);
+                            newStmt.addCaseBlock(caseName, body);
+                        } else {
+                            queue.addAll(children);
 
+                        }
+                    }
                 }
-            }
 
-            return newStmt;
-        } else {
-            return stmt;
+                return newStmt;
+            } else {
+                Statement body = (Statement) stmt.getBody(c).accept(this);
+                body = (Statement) (new CloneHoles()).process(body).accept(this);
+                newStmt.addCaseBlock(c, body);
+            }
         }
+        return newStmt;
 
     }
 
