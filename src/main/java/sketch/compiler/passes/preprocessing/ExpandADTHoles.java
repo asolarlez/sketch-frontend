@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprGet;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
@@ -19,6 +22,8 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
+import sketch.util.fcns.ZipIdxEnt;
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 
 /*
  * Do relevant type inference for new ??() and ExprGet.
@@ -43,6 +48,24 @@ public class ExpandADTHoles extends SymbolTableVisitor {
             return new StmtAssign(s, s.getLHS(), newRight);
         }
         return s;
+    }
+
+    @Override
+    public Object visitExprFunCall(ExprFunCall exp) {
+        TypeStructRef ori = ts;
+        exp = (ExprFunCall) super.visitExprFunCall(exp);
+        Function callee = nres.getFun(exp.getName());
+        for (ZipIdxEnt<Expression> arg : zipwithindex(exp.getParams())) {
+            Expression actual = arg.entry;
+            Parameter p = callee.getParams().get(arg.idx);
+            Type t = p.getType();
+            if (t.isStruct()) {
+                ts = (TypeStructRef) t;
+            }
+            doExpression(actual);
+        }
+        ts = ori;
+        return exp;
     }
 
     @Override

@@ -402,7 +402,11 @@ public class GetExprType extends FENullVisitor
         Type tb = (Type)exp.getB().accept(this);
         Type tc = (Type)exp.getC().accept(this);
         Type lub;
-        if (tb != null && tc != null) {
+        if (tb.equals(new NotYetComputedType())) {
+            lub = tc;
+        } else if (tc.equals(new NotYetComputedType())) {
+            lub = tb;
+        } else if (tb != null && tc != null) {
             lub = tb.leastCommonPromotion(tc, nres);
             exp.assertTrue(lub != null, "incompatible types for '" + exp.getB() + "', '" +
                     exp.getC() + "'");

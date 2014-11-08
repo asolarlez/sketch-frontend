@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprGet;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
@@ -44,6 +45,22 @@ class Clone extends FEReplacer {
     public Expression process(Expression e) {
         return (Expression) e.accept(this);
     }
+
+    public Object visitExprNew(ExprNew exp) {
+        ExprNew nexp = (ExprNew) super.visitExprNew(exp);
+        if (nexp.isHole()) {
+            ExprStar newStar = (ExprStar) nexp.getStar().accept(this);
+        }
+        return nexp;
+    }
+
+    public Object visitExprField(ExprField exp) {
+        if (exp.isHole()) {
+            return new ExprField(exp, exp.getLeft(), exp.getName(), true);
+        }
+        return exp;
+    }
+
 }
 
 public class RemoveExprGet extends SymbolTableVisitor {
@@ -68,7 +85,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private Expression processExprGet(ExprGet exp, List<Statement> newStmts) {
-        String tempVar = varGen.nextVar(exp.getName());
+        String tempVar = varGen.nextVar(exp.getName().split("@")[0]);
         Type tt = new TypeStructRef(exp.getName(), false);
 
         Statement decl = (new StmtVarDecl(exp, tt, tempVar, null));
@@ -176,7 +193,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 int c = count.get(t);
                 List<ExprVar> varsForType = map.get(t);
                 if (c >= varsForType.size()) {
-                    String tempVar = varGen.nextVar(e.getName());
+                    String tempVar = varGen.nextVar(e.getName().split("@")[0]);
                     Statement decl = (new StmtVarDecl(context, t, tempVar, null));
                     stmts.add(decl);
                     symtab.registerVar(tempVar, t, decl, SymbolTable.KIND_LOCAL);
@@ -237,7 +254,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             }
             TypeStructRef tt = (TypeStructRef) type;
 
-            String tempVar = varGen.nextVar(tt.getName());
+            String tempVar = varGen.nextVar(tt.getName().split("@")[0]);
             Statement decl = (new StmtVarDecl(context, tt, tempVar, null));
             stmts.add(decl);
             symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
