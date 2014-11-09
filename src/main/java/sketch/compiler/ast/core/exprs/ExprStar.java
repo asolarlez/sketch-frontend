@@ -154,6 +154,19 @@ public class ExprStar extends Expression
     }
 
     
+    public ExprStar(FENode context, int size, boolean isGlobal) {
+        super(context);
+        isFixed = true;
+        this.isGlobal = isGlobal;
+        this.size = size;
+        this.kind = Kind.NORMAL;
+        // this.exprMax = max;
+        if (kind == Kind.COUNTER) {
+            this.starName = HOLE_BASE;
+        } else {
+            this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+        }
+    }
     
     /**
      * @deprecated
