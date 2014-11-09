@@ -5,12 +5,9 @@ import java.util.List;
 
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
@@ -49,11 +46,6 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
                     return matchedFields.get(0);
                 } else {
                     ExprStar expStar = new ExprStar(exp, 5, TypePrimitive.int32type);
-                    Expression cond =
-                            new ExprBinary(exp, ExprBinary.BINOP_LT, expStar,
-                                    new ExprConstInt(matchedFields.size()));
-                    addStatement(new StmtAssert(exp, cond, "Field selection constraint",
-                            StmtAssert.UBER));
                     return new ExprArrayRange(exp, new ExprArrayInit(exp.getContext(),
                             matchedFields), expStar);
                 }
