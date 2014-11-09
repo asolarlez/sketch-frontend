@@ -117,16 +117,19 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
         exp = (ExprArrayRange) super.visitExprArrayRange(exp);
-        Expression ind = exp.getOffset();
-        Expression base = exp.getBase();
-        if (base instanceof ExprArrayInit) {
-            int len = ((ExprArrayInit) base).getElements().size();
-            // Add an assertion for ind < len
-            Expression cond =
-                    new ExprBinary(exp, ExprBinary.BINOP_LT, ind, new ExprConstInt(len));
-            addStatement(new StmtAssert(exp, cond, "Field selection constraint",
-                    StmtAssert.UBER));
+        if (exp.hasSingleIndex()) {
+            Expression ind = exp.getSingleIndex();
+            Expression base = exp.getBase();
+            if (base instanceof ExprArrayInit) {
+                int len = ((ExprArrayInit) base).getElements().size();
+                // Add an assertion for ind < len
+                Expression cond =
+                        new ExprBinary(exp, ExprBinary.BINOP_LT, ind, new ExprConstInt(
+                                len));
+                addStatement(new StmtAssert(exp, cond, "Field selection constraint",
+                        StmtAssert.UBER));
 
+            }
         }
         return exp;
     }
