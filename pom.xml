@@ -104,8 +104,8 @@
         </dependency>
         <dependency>
             <groupId>org.anarres</groupId>
-            <artifactId>cpp</artifactId>
-            <version>1.2.6</version>
+            <artifactId>jcpp</artifactId>
+            <version>1.4.7</version>
         </dependency>
         <dependency>
             <groupId>org.swinglabs</groupId>
