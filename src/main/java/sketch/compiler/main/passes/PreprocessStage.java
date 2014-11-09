@@ -80,7 +80,6 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-        prog.debugDump("AFTER FPE");
 
 
         prog = (Program) prog.accept(new ExpandADTHoles());
