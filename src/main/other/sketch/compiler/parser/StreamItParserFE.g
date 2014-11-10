@@ -742,9 +742,18 @@ func_call returns [Expression x] { x = null; List l; }
 	;
 
 expr_get returns [Expression x] { x = null; List l; }
-	: t:TK_get LPAREN l = func_call_params n:NUMBER RPAREN
+	: t:NDVAL2 LPAREN n:NUMBER COMMA l = expr_get_params  RPAREN
 		{ x = new ExprGet(getContext(t), l, Integer.parseInt(n.getText())); }
 	;
+	
+expr_get_params returns [List l] { l = new ArrayList(); Expression x; }
+	:	LCURLY
+		(	x=expr_named_param { l.add(x); }
+			(COMMA x=expr_named_param { l.add(x); })*
+		)?
+		RCURLY
+	;
+	
 func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
 		(	x=expr_named_param { l.add(x); }
