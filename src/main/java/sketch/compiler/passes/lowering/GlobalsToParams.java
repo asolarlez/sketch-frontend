@@ -133,6 +133,11 @@ public class GlobalsToParams extends FEReplacer {
             for (Function f : pkg.getFuncs()) {
                 if (f.getSpecification() != null) {
                     Function spec = nres.getFun(f.getSpecification());
+
+                    if (f.isWrapper() || spec.isWrapper()) {
+                        continue;
+                    }
+
                     final HashMap<String, AddedParam> callerParams =
                             newParamsForCall.getCreate(f);
                     final HashMap<String, AddedParam> calleeParams =
