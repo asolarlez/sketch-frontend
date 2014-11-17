@@ -30,6 +30,7 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * Give a rigid ordering to operations such as ++, --. Do this by a post-order depth-first
@@ -174,6 +175,28 @@ public class DisambiguateUnaries extends SymbolTableVisitor
             newCond == stmt.getCond())
             return stmt;
         return new StmtIfThen(stmt, newCond, newCons, newAlt);
+    }
+
+    public Object visitStmtAssign(StmtAssign stmt) {
+        Expression newLHS = doExpression(stmt.getLHS());
+        Expression newRHS = doExpression(stmt.getRHS());
+        int op = stmt.getOp();
+        switch (op) {
+            case 0:
+                break;
+            case ExprBinary.BINOP_ADD:
+            case ExprBinary.BINOP_SUB:
+            case ExprBinary.BINOP_MUL:
+            case ExprBinary.BINOP_DIV:
+                newRHS = new ExprBinary(stmt, op, newLHS, newRHS);
+                break;
+            default:
+                throw new ExceptionAtNode("Bad operator", stmt);
+        }
+        op = 0;
+        if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
+            return stmt;
+        return new StmtAssign(stmt, newLHS, newRHS, op);
     }
 
     public Object visitStmtWhile(StmtWhile stmt)

@@ -1,0 +1,10 @@
+bit[3] main(bit[3] x, bit[3] y){
+    return x + y;
+}
+
+bit[3] mainB(bit[3] x, bit[3] y) implements main{
+    bit[3] a=0;
+    a += x;
+    a += y;
+    return a;
+}
