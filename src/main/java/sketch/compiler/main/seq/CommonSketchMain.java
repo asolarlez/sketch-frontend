@@ -87,11 +87,17 @@ public class CommonSketchMain {
         if (options.debugOpts.showDag) {
             backendOptions.add("-showDAG");
         }
+
         if (options.debugOpts.outputDag != null) {
             backendOptions.add("-writeDAG");
             backendOptions.add(options.debugOpts.outputDag);
         }
-        
+
+        if (options.bndOpts.dagSize > 0) {
+            backendOptions.add("--bnd-dag-size");
+            backendOptions.add("" + options.bndOpts.dagSize);
+        }
+
         if (options.solverOpts.olevel >= 0) {
             backendOptions.add("--olevel");
             backendOptions.add("" + options.solverOpts.olevel);
