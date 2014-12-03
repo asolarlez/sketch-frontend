@@ -255,7 +255,7 @@ public class NtsbVtype extends IntVtype {
             rval += "$[" + nidx.X + "])";
             return BOTTOM(rval);
         }else
-            return BOTTOM( "(" + arr + "[" + idx + "])" );
+            return BOTTOM("(" + arr + "[" + idx + "])");
     }
 
     int funid = 0;

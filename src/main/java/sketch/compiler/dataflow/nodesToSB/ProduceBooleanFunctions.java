@@ -312,6 +312,42 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
     }
 
+    private String printTupleType(Type type) {
+        if (type instanceof TypeArray) {
+            TypeArray array = (TypeArray) type;
+            String base = printType(array.getBase());
+            abstractValue iv;
+            if (array.getLength() instanceof ExprConstInt) {
+                iv = (abstractValue) array.getLength().accept(this);
+            } else {
+                iv = vtype.BOTTOM("FARRAY");
+            }
+
+            return base + "[*" + maxArrSize + "]";
+
+        }
+        if (type instanceof TypeStructRef) {
+            TypeStructRef ts = (TypeStructRef) type;
+            StructDef struct = nres.getStruct(ts.getName());
+            if (struct.immutable()) {
+                return struct.getName().toUpperCase() + "_" +
+                        struct.getPkg().toUpperCase();
+            }
+        }
+
+        if (type.equals(TypePrimitive.bittype)) {
+            return "bit";
+        } else {
+            if (type.equals(TypePrimitive.floattype) ||
+                    type.equals(TypePrimitive.doubletype))
+            {
+                return "float";
+            } else {
+                return "int";
+            }
+        }
+    }
+
     public void doOutParams(List<Parameter> params) {
         PrintStream out = ((NtsbVtype) this.vtype).out;
         Iterator<Integer> opsz = opsizes.iterator();
@@ -502,7 +538,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     out.print(t.getName().toUpperCase() + "_" + t.getPkg().toUpperCase() +
                             " ( ");
                     for (StructFieldEnt e : t.getFieldEntriesInOrder()) {
-                        out.print(printType(e.getType()) + " ");
+                        out.print(printTupleType(e.getType()) + " ");
                     }
                     out.println(")");
                 }

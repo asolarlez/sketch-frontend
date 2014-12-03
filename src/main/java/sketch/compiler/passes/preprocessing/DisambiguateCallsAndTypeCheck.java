@@ -135,11 +135,6 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 while (current != null) {
                     for (Entry<String, Type> entry : current) {
                         if (ts.immutable()) {
-                            //disallow arrays in immutable structs
-                            if(entry.getValue().isArray()){
-                                report(ts.getContext(),
-                                        "Arrays are not allowed in immutable structs");
-                            }
                             if (entry.getValue().isStruct()) {
                                 TypeStructRef tt = (TypeStructRef) entry.getValue();
                                 StructDef fieldStruct = nres.getStruct(tt.getName());
