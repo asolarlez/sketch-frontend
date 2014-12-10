@@ -492,11 +492,11 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
         boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
-        List<Type> actualTypes = new ArrayList();
+        List<Type> actualTypes = new ArrayList<Type>();
         for (Expression ap : exp.getParams()) {
             actualTypes.add(getType(ap));
         }
-        TypeRenamer tren = this.getRenaming(f, actualTypes);
+        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
         if (actSz != formSz) {

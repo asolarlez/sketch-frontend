@@ -143,6 +143,9 @@ public class ConstantReplacer extends FEReplacer {
     }
 
     private Expression toConditional(Expression which, List<Expression> exps, int i) {
+        return new ExprArrayRange(new ExprArrayInit(which, exps), which);
+        
+        /*
         if ((i + 1) == exps.size())
             return exps.get(i);
         else {
@@ -151,7 +154,7 @@ public class ConstantReplacer extends FEReplacer {
                             ExprConstant.createConstant(which, "" + i));
             return new ExprTernary("?:", cond, exps.get(i), toConditional(which, exps,
                     i + 1));
-        }
+        }*/
     }
 
     List<Expression> allConstants(ExprAlt choices, List<Expression> le) {

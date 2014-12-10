@@ -75,6 +75,14 @@ public class SymbolTableVisitor extends FEReplacer
     public static class TypeRenamer extends FEReplacer {
         public Map<String, Type> tmap = new HashMap<String, Type>();
 
+        String postfix() {
+            String rv = "";
+            for (Entry<String, Type> e : tmap.entrySet()) {
+                rv += e.getKey() + "$" + e.getValue();
+            }
+            return rv;
+        }
+
         public TypeRenamer() {}
 
         @Override
