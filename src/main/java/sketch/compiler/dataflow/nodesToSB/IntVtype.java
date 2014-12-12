@@ -267,7 +267,7 @@ public class IntVtype extends abstractValueType {
 
 	public abstractValue arracc(abstractValue arr, abstractValue idx, abstractValue len, boolean isUnchecked) {
 		if(  arr.isBottom()  ){
-            return BOTTOM("((" + arr + ")[" + idx + "])");
+            return BOTTOM("((" + arr + ")[|" + idx + "|])");
 		}
 		if(len != null){
             if (len.hasIntVal()) {
@@ -294,7 +294,7 @@ public class IntVtype extends abstractValueType {
     				return outOfBounds();
     			return arr.getVectValue().get(idx.getIntVal());
 			}else{
-                return BOTTOM("((" + arr + ")[" + idx + "])");
+                return BOTTOM("((" + arr + ")[|" + idx + "|])");
 			}
 		}else{
 			return rawArracc(arr, idx);
@@ -303,7 +303,7 @@ public class IntVtype extends abstractValueType {
 
 
 	protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
-        return BOTTOM("((" + arr + ")[" + idx + "])");
+        return BOTTOM("((" + arr + ")[|" + idx + "|])");
 	}
 
 	public abstractValue cast(abstractValue v1, Type type) {
