@@ -16,23 +16,34 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
         super("slv", "solver options");
     }
 
-    
     @CliParameter(help = "Sets the optimization level for the compiler.")
     public int olevel = -1;
+
     @CliParameter(help = "Seeds the random number generator. If set to zero, a random seed is used.")
     public int seed;
+
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public SynthSolvers synth = SynthSolvers.NOT_SET;
+
     @CliParameter(help = "Kills the solver after given number of minutes. ")
     public float timeout;
+
+    @CliParameter(help = "Runs backend in parallel")
+    public boolean parallel = false;
+
+    @CliParameter(help = "Numbers of parallel trails")
+    public int pTrials = -1;
+
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public VerifSolvers verif = VerifSolvers.NOT_SET;
+
     @CliParameter(help = "How reorder blocks should be rewritten. Options: "
             + "'exponential' to use 'insert' blocks, 'quadratic' to use a loop of switch "
             + "statements. Default value is exponential.")
     public ReorderEncoding reorderEncoding = ReorderEncoding.exponential;
+
     @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs")
     public boolean simpleInputs = false;
 
@@ -45,7 +56,6 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public enum ReorderEncoding {
         exponential, quadratic
     }
-
 
     public enum SynthSolvers {
         NOT_SET, ABC, MINI
