@@ -188,6 +188,10 @@ public class SATBackend {
                         Callable<Boolean> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
                         Future<Boolean> f = ces.submit(c);
                         futures.add(f);
+                        try {
+                          Thread.sleep(1);
+                        } catch (InterruptedException ignore) {
+                        }
                     }
                     // log("=== submitted parallel trials: " + nTrials + " ===");
                     // check tasks' results in the order of their completion
