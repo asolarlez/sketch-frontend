@@ -87,12 +87,14 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new RemoveExprGet(varGen));
         // prog.debugDump("After remove expr get");
 
-        prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-        // prog.debugDump();
-
         // Remove ExprGet will generate regens and adt holes
         prog = (Program) prog.accept(new EliminateRegens(varGen));
         // prog.debugDump();
+
+        prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
+        // prog.debugDump();
+
+
 
         prog = (Program) prog.accept(new ExpandADTHoles());
 
