@@ -162,7 +162,7 @@ abstract public class varState {
                 if (val.isBottom()) {
 					for(int i=0; i<lv ; ++i){                  
                         update(vtype.CONST(i),
-                                vtype.BOTTOM(val.toString() + "[" + i + "]"), vtype);
+                                vtype.BOTTOM(val.toString() + "[|" + i + "|]"), vtype);
 	                }
 				}else{
                     cv = null;

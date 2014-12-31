@@ -1,9 +1,21 @@
 package sketch.compiler.solvers;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 
@@ -103,6 +115,38 @@ public class SATBackend {
         }
     }
 
+    private boolean parallel_solved = false;
+
+    private Callable<Boolean> createWorker(final ValueOracle oracle, boolean hasMinimize,
+            float timeoutMins, final int fileIdx)
+    {
+        return new Callable<Boolean>() {
+            // main task per worker
+            public Boolean call() throws InterruptedException, IOException {
+                if (parallel_solved) {
+                    throw new InterruptedException("already solved by other workers");
+                }
+                String prefix = "=== parallel trial (" + fileIdx + ")";
+                log(prefix + " start ===");
+                boolean worker_ret = false;
+                try {
+                    worker_ret = solve(oracle, minimize, options.solverOpts.timeout, fileIdx);
+                } catch (SketchSolverException e) {
+                    e.setBackendTempPath(options.getTmpSketchFilename());
+                }
+                if (worker_ret) {
+                    log(prefix + " solved ===");
+                    parallel_solved = true;
+                } else {
+                    log(prefix + " failed ===");
+                    String failed_solution = options.getSolutionsString(fileIdx);
+                    Files.delete(Paths.get(failed_solution));
+                }
+                return worker_ret;
+            }
+        };
+    }
+
     public boolean partialEvalAndSolve(Program prog) {
         // prog.debugDump("Program before solving");
         oracle = new ValueOracle(new StaticHoleTracker(varGen));
@@ -110,18 +154,75 @@ public class SATBackend {
         // prog.accept(new SimpleCodePrinter());
         assert oracle != null;
 
-
-
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
         } else {
             options.cleanTemp();
             writeProgramToBackendFormat(preprocess(prog));
-            try {
-                worked = solve(oracle, minimize, options.solverOpts.timeout);
-            } catch (SketchSolverException e) {
-                e.setBackendTempPath(options.getTmpSketchFilename());
+
+            // parallel running
+            if (options.solverOpts.parallel) {
+                int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
+                int cpu = Math.max(1, three_q);
+                int pTrials = options.solverOpts.pTrials;
+                if (pTrials < 0) {
+                    pTrials = cpu * 32;
+                }
+
+                // generate worker pool and managed executor
+                ExecutorService es = Executors.newFixedThreadPool(cpu);
+                CompletionService<Boolean> ces =
+                        new ExecutorCompletionService<Boolean>(es);
+                // place to maintain future parallel tasks
+                List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>(pTrials);
+                try {
+                    // submit parallel tasks
+                    int nTrials = 0;
+                    for (nTrials = 0; nTrials < pTrials; nTrials++) {
+                        // while submitting tasks, check whether it's already solved
+                        if (parallel_solved) {
+                            es.shutdown(); // no more tasks accepted
+                            break;
+                        }
+                        Callable<Boolean> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
+                        Future<Boolean> f = ces.submit(c);
+                        futures.add(f);
+                        try {
+                          Thread.sleep(1);
+                        } catch (InterruptedException ignore) {
+                        }
+                    }
+                    // log("=== submitted parallel trials: " + nTrials + " ===");
+                    // check tasks' results in the order of their completion
+                    for (int i = 0; i < nTrials; i++) {
+                        try {
+                            Boolean r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
+                            // whenever found a worker that finishes the job
+                            if (r) {
+                                worked = true;
+                                es.shutdownNow(); // attempts to stop active tasks
+                                // break the iteration and go to finally block
+                                break;
+                            }
+                        } catch (InterruptedException ignore) {
+                        } catch (ExecutionException ignore) {
+                        } catch (TimeoutException ignore) {
+                        }
+                    }
+                } finally {
+                    // cancel any remaining tasks
+                    for (Future<Boolean> f : futures)
+                        f.cancel(true);
+                }
+            }
+            // normal, non-parallel running
+            else {
+                try {
+                    worked = solve(oracle, minimize, options.solverOpts.timeout);
+                } catch (SketchSolverException e) {
+                    e.setBackendTempPath(options.getTmpSketchFilename());
+                }
             }
         }
 
@@ -233,7 +334,6 @@ public class SATBackend {
         }
     }
 
-	
 	protected void extractOracleFromOutput(String fname){
 		try{		
 			File f = new File(fname);
@@ -255,65 +355,55 @@ public class SATBackend {
 		}		
 	}
 
-
-
-	
     private boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
+        return solve(oracle, hasMinimize, timeoutMins, 0);
+    }
+
+    private boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins,
+            int fileIdx)
+    {
         Vector<String> backendOptions = options.getBackendOptions();
         log("OFILE = " + options.feOpts.output);
-
-
+        boolean ret = false;
 
         // minimize
         if (options.bndOpts.incremental.isSet) {
 			boolean isSolved = false;
-			int bits=0;
+            int bits = 0;
 			int maxBits = options.bndOpts.incremental.value;
-			for(bits=1; bits<=maxBits; ++bits){
-				log ("TRYING SIZE " + bits);			
-                String[] commandLine =
-                        getBackendCommandline(0, backendOptions, "--bnd-cbits=" + bits);
-				boolean ret = runSolver(commandLine, bits, timeoutMins);
-				if(ret){
+            for (bits = 1; bits <= maxBits; ++bits) {
+                log("TRYING SIZE " + bits);
+                String[] commandLine = getBackendCommandline(fileIdx, backendOptions, "--bnd-cbits=" + bits);
+                ret = runSolver(commandLine, bits, timeoutMins);
+                if (ret) {
 					isSolved = true;
 					break;
-				}else{
-					log ("Size " + bits + " is not enough");
+                } else {
+                    log("Size " + bits + " is not enough");
 				}
 			}
-			if(!isSolved){
-				log (5, "The sketch cannot be resolved.");
-				// System.err.println(solverErrorStr);
-				return false;
-			}
-			log ("Succeded with " + bits + " bits for integers");
-			oracle.capStarSizes(bits);
-
-		// default
-        } else {
+            if (isSolved) {
+                log("Succeded with " + bits + " bits for integers");
+                oracle.capStarSizes(bits);
+            }
+        }
+        // default
+        else {
             String[] commandLine;
             if (hasMinimize) {
-                commandLine = getBackendCommandline(0, backendOptions, "--minvarHole");
-                boolean ret = runSolver(commandLine, 0, timeoutMins);
-                if (!ret) {
-                    log(5, "Backend returned error code");
-                    // System.err.println(solverErrorStr);
-                    return false;
-                }
+                commandLine = getBackendCommandline(fileIdx, backendOptions, "--minvarHole");
             } else {
-                commandLine = getBackendCommandline(0, backendOptions);
-                boolean ret = runSolver(commandLine, 0, timeoutMins);
-                if (!ret) {
-                    log(5, "Backend returned error code");
-                    // System.err.println(solverErrorStr);
-                    return false;
-                }
+                commandLine = getBackendCommandline(fileIdx, backendOptions);
             }
+            ret = runSolver(commandLine, 0, timeoutMins);
 
         }
-        return true;
+        if (!ret) {
+            log(5, "The sketch cannot be resolved.");
+            // System.err.println(solverErrorStr);
+        }
+        return ret;
 	}
-
 
 	protected void logCmdLine(String[] commandLine){
 		String cmdLine = "";
@@ -321,7 +411,7 @@ public class SATBackend {
 		log ("Launching: "+ cmdLine);
 	}
 
-    private boolean runSolver(String[] commandLine, int i, float timeoutMins) {
+    private boolean runSolver(String[] commandLine, int bits, float timeoutMins) {
         logCmdLine(commandLine);
 
         SynchronousTimedProcess proc;
