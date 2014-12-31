@@ -423,7 +423,8 @@ public class RemoveFunctionParameters extends FEReplacer {
             String name = nres.getFunName(fun.getName());
             if (funsToVisit.containsKey(name)) {
                 List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
-                pl.addAll(getAddedParams(name, fun.isGenerator()));
+                List<Parameter> newps = getAddedParams(name, fun.isGenerator());
+                pl.addAll(newps);
 
                 fun = fun.creator().params(pl).create();
             }
@@ -506,14 +507,23 @@ public class RemoveFunctionParameters extends FEReplacer {
         Set<String> namesset;
         Set<String> elimset;
 
+        Map<String, Function> doneFunctions = new HashMap<String, Function>();
+
         public FixPolymorphism() {
             super(null);
         }
+
 
         public Object visitFunction(Function f) {
             if (f.getTypeParams().isEmpty()) {
                 return f;
             }
+            if (doneFunctions.containsKey(f.getFullName())) {
+                return doneFunctions.get(f.getFullName());
+            }
+            TypeRenamer oldtren = tren;
+            Set<String> oldnamesset = namesset;
+            Set<String> oldelimset = elimset;
             tren = new TypeRenamer();
             namesset = new HashSet<String>(f.getTypeParams());
             elimset = new HashSet<String>();
@@ -526,11 +536,23 @@ public class RemoveFunctionParameters extends FEReplacer {
                 }
                 nl.add(s);
             }
-            return fout.creator().typeParams(nl).create().accept(tren);
+            Function rf = (Function) fout.creator().typeParams(nl).create().accept(tren);
+            tren = oldtren;
+            namesset = oldnamesset;
+            elimset = oldelimset;
+            doneFunctions.put(f.getFullName(), rf);
+            return rf;
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
             Function f = nres.getFun(efc.getName());
+
+            if (doneFunctions.containsKey(f.getFullName())) {
+                f = doneFunctions.get(f.getFullName());
+            } else {
+                f = (Function) f.accept(this);
+            }
+
             Set<String> calleenamesset = new HashSet<String>(f.getTypeParams());
             if (f == null) {
                 throw new ExceptionAtNode("Function not defined", efc);
@@ -1299,6 +1321,15 @@ public class RemoveFunctionParameters extends FEReplacer {
                 if (f == null) {
                     throw new ExceptionAtNode("Function " + actual + " does not exist",
                             efc);
+                }
+                Type t = f.getReturnType();
+                List<String> tps = f.getTypeParams();
+                for (String ct : tps) {
+                    if (ct.equals(t.toString())) {
+                        throw new ExceptionAtNode(
+                                "Functions with generic return types cannot be passed as function parameters: " +
+                                        f, efc);
+                    }
                 }
             }
 

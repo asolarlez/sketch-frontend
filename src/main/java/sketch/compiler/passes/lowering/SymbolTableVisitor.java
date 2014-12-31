@@ -78,7 +78,7 @@ public class SymbolTableVisitor extends FEReplacer
         String postfix() {
             String rv = "";
             for (Entry<String, Type> e : tmap.entrySet()) {
-                rv += e.getKey() + "$" + e.getValue();
+                rv += "_" + e.getValue().toString().replace('@', '_');
             }
             return rv;
         }
@@ -99,6 +99,10 @@ public class SymbolTableVisitor extends FEReplacer
             }
             return (Type) t.accept(this);
         }
+
+        public String toString() {
+            return tmap.toString();
+        }
     }
 
     private static final TypeRenamer emptyrenamer = new TypeRenamer();
@@ -110,17 +114,26 @@ public class SymbolTableVisitor extends FEReplacer
         }
         TypeRenamer rv = new TypeRenamer();
         Set<String> st = new HashSet<String>(tps);
-
+        List<Parameter> formals = f.getParams();
         Iterator<Parameter> paramIt = f.getParams().iterator();
         int dif = f.getParams().size() - efcTypes.size();
         if (dif != 0) {
             if (dif < 0) {
                 throw new ExceptionAtNode("Wrong number of parameters", null);
             }
+            boolean alloutputs = true;
             for (int i = 0; i < dif; ++i) {
-                Parameter p = paramIt.next();
-                if (!p.isImplicit()) {
-                    throw new ExceptionAtNode("Wrong number of parameters", null);
+                Parameter p = formals.get(formals.size() - 1 - i);
+                if (!p.isParameterOutput()) {
+                    alloutputs = false;
+                }
+            }
+            if (!alloutputs) {
+                for (int i = 0; i < dif; ++i) {
+                    Parameter p = paramIt.next();
+                    if (!p.isImplicit()) {
+                        throw new ExceptionAtNode("Wrong number of parameters", null);
+                    }
                 }
             }
         }
@@ -287,6 +300,7 @@ public class SymbolTableVisitor extends FEReplacer
                     SymbolTable.KIND_GLOBAL);
         return super.visitFieldDecl(field);
     }
+
 
 
     @Override

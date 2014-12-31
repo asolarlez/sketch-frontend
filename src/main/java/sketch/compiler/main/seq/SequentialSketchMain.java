@@ -501,6 +501,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
+        prog.debugDump("After RemoveFunctionParameters");
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);

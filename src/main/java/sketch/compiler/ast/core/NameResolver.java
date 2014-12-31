@@ -184,6 +184,11 @@ public class NameResolver {
      * @return
      */
     public String getStructName(String name, String defPkg) {
+        for (Set<String> sts : tempStructNames) {
+            if (sts.contains(name)) {
+                return name;
+            }
+        }
         return getFullName(name, pkgForStruct, structMap, defPkg);
     }
 

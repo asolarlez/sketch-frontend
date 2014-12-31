@@ -377,6 +377,10 @@ public class Function extends FENode {
         return getFcnType() == FcnType.Wrapper;
     }
 
+    public boolean isGeneric() {
+        return typeParams.size() > 0;
+    }
+
     public boolean isModel() {
         return getFcnType() == FcnType.Model;
     }
