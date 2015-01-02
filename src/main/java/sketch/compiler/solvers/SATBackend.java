@@ -57,7 +57,7 @@ public class SATBackend {
 	        RecursionControl rcontrol, TempVarGen varGen)
 	{
 		this.options = options;
-		this.rcontrol =rcontrol;
+		this.rcontrol = rcontrol;
 		this.varGen = varGen;
 	}
 
@@ -116,15 +116,19 @@ public class SATBackend {
     }
 
     private boolean parallel_solved = false;
+    private List<Process> cegiss;
+    private Object lock = new Object();
 
     private Callable<Boolean> createWorker(final ValueOracle oracle, boolean hasMinimize,
             float timeoutMins, final int fileIdx)
     {
         return new Callable<Boolean>() {
             // main task per worker
-            public Boolean call() throws InterruptedException, IOException {
-                if (parallel_solved) {
-                    throw new InterruptedException("already solved by other workers");
+            public Boolean call() {
+                synchronized(lock) {
+                    if (parallel_solved) {
+                        return false;
+                    }
                 }
                 String prefix = "=== parallel trial (" + fileIdx + ")";
                 log(prefix + " start ===");
@@ -136,11 +140,17 @@ public class SATBackend {
                 }
                 if (worker_ret) {
                     log(prefix + " solved ===");
-                    parallel_solved = true;
+                    synchronized(lock) {
+                        parallel_solved = true;
+                    }
                 } else {
                     log(prefix + " failed ===");
                     String failed_solution = options.getSolutionsString(fileIdx);
-                    Files.delete(Paths.get(failed_solution));
+                    try {
+                        Files.delete(Paths.get(failed_solution));
+                    } catch (IOException e) {
+                        System.err.println(prefix + " can't delete " + failed_solution);
+                    }
                 }
                 return worker_ret;
             }
@@ -167,7 +177,11 @@ public class SATBackend {
                 int cpu = Math.max(1, three_q);
                 int pTrials = options.solverOpts.pTrials;
                 if (pTrials < 0) {
-                    pTrials = cpu * 32;
+                    pTrials = cpu * 32 * 3;
+                }
+
+                synchronized(lock) {
+                    cegiss = new ArrayList<Process>();
                 }
 
                 // generate worker pool and managed executor
@@ -181,15 +195,17 @@ public class SATBackend {
                     int nTrials = 0;
                     for (nTrials = 0; nTrials < pTrials; nTrials++) {
                         // while submitting tasks, check whether it's already solved
-                        if (parallel_solved) {
-                            es.shutdown(); // no more tasks accepted
-                            break;
+                        synchronized(lock) {
+                            if (parallel_solved) {
+                                es.shutdown(); // no more tasks accepted
+                                break;
+                            }
                         }
                         Callable<Boolean> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
                         Future<Boolean> f = ces.submit(c);
                         futures.add(f);
                         try {
-                          Thread.sleep(1);
+                            Thread.sleep(1000); // one sec
                         } catch (InterruptedException ignore) {
                         }
                     }
@@ -200,6 +216,7 @@ public class SATBackend {
                             Boolean r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
                             // whenever found a worker that finishes the job
                             if (r) {
+                                log("=== resolved within " + (i+1) + " complete parallel trial(s)");
                                 worked = true;
                                 es.shutdownNow(); // attempts to stop active tasks
                                 // break the iteration and go to finally block
@@ -211,9 +228,20 @@ public class SATBackend {
                         }
                     }
                 } finally {
+                    // terminate any alive CEGIS processes
+                    synchronized(lock) {
+						for (Process p : cegiss) {
+							try {
+								p.exitValue();
+							} catch (IllegalThreadStateException e) {
+								p.destroy(); // if still running, kill the process
+							}
+						}
+                    }
                     // cancel any remaining tasks
-                    for (Future<Boolean> f : futures)
+                    for (Future<Boolean> f : futures) {
                         f.cancel(true);
+                    }
                 }
             }
             // normal, non-parallel running
@@ -420,6 +448,12 @@ public class SATBackend {
         } catch (IOException e) {
             throw new SketchSolverException(
                     "Could not instantiate solver (CEGIS) process.", e);
+        }
+
+        if (options.solverOpts.parallel) {
+            synchronized(lock) {
+                cegiss.add(proc.getProc());
+            }
         }
 
         final ProcessStatus status = proc.run(false);
