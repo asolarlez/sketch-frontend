@@ -26,14 +26,20 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public SynthSolvers synth = SynthSolvers.NOT_SET;
 
-    @CliParameter(help = "Kills the solver after given number of minutes. ")
+    @CliParameter(help = "Kills the solver after given number of minutes.")
     public float timeout;
 
-    @CliParameter(help = "Runs backend in parallel")
+    @CliParameter(help = "Runs backend in parallel.")
     public boolean parallel = false;
 
-    @CliParameter(help = "Numbers of parallel trails")
+    @CliParameter(help = "Numbers of parallel trails.")
     public int pTrials = -1;
+
+    @CliParameter(help = "Concretize high-impact holes.")
+    public boolean randassign = false;
+
+    @CliParameter(help = "Degree of randomness for hole concretization.")
+    public int randdegree = 0;
 
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
@@ -44,7 +50,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
             + "statements. Default value is exponential.")
     public ReorderEncoding reorderEncoding = ReorderEncoding.exponential;
 
-    @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs")
+    @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs.")
     public boolean simpleInputs = false;
 
     @CliParameter(help = "Performs lightweight verification instead of full bounded verification.")

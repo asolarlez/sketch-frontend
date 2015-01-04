@@ -52,6 +52,13 @@ public class CommonSketchMain {
             backendOptions.add("-simiters");
             backendOptions.add("" + options.solverOpts.simiters);
         }
+        if (options.solverOpts.randassign) {
+            backendOptions.add("-randassign");
+        }
+        if (options.solverOpts.randdegree > 0) {
+            backendOptions.add("-randdegree");
+            backendOptions.add("" + options.solverOpts.randdegree);
+        }
         if (options.debugOpts.cex) {
             backendOptions.add("--print-cex");
         }
