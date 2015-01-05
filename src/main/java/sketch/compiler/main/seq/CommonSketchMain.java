@@ -45,8 +45,11 @@ public class CommonSketchMain {
         backendOptions.add("--print-version"); // run by default
 
         if (options.solverOpts.seed != 0) {
-            backendOptions.add("--seed");
-            backendOptions.add("" + options.solverOpts.seed);
+            // parallel running will use its own seeds systematically
+            if (!options.solverOpts.parallel) {
+                backendOptions.add("--seed");
+                backendOptions.add("" + options.solverOpts.seed);
+            }
         }
         if (options.solverOpts.simiters != 0) {
             backendOptions.add("-simiters");

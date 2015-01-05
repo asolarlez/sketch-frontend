@@ -20,7 +20,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public int olevel = -1;
 
     @CliParameter(help = "Seeds the random number generator. If set to zero, a random seed is used.")
-    public int seed;
+    public int seed = 0;
 
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")

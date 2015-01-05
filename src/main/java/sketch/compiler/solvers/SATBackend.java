@@ -65,7 +65,6 @@ public class SATBackend {
 		tracing = true;
 	}
 	
-
     public String[] getBackendCommandline(int i, Vector<String> commandLineOptions_,
             String... additional)
     {
@@ -73,10 +72,19 @@ public class SATBackend {
 	    PlatformLocalization pl = PlatformLocalization.getLocalization();
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
+
+        if (options.solverOpts.parallel) {
+            commandLineOptions.add("--seed");
+            // negative integer, e.g., "-1", may look like an option
+            int abs_seed = Math.abs(options.solverOpts.seed + i);
+            commandLineOptions.add("" + abs_seed);
+        }
+
         commandLineOptions.add("-o");
         commandLineOptions.add(options.getSolutionsString(i));
         commandLineOptions.addAll(Arrays.asList(additional));
         commandLineOptions.add(options.getTmpSketchFilename());
+
         String[] result = commandLineOptions.toArray(new String[0]);
         if (options.debugOpts.verbosity > 4) {
             String cmdLine = (new ScRichString(" ")).join(result);
@@ -173,6 +181,12 @@ public class SATBackend {
 
             // parallel running
             if (options.solverOpts.parallel) {
+                // if seed is given (to reproduce certain experiments, use it as-is
+                // otherwise, use a random seed
+                if (options.solverOpts.seed == 0) {
+                    options.solverOpts.seed = (int)(System.currentTimeMillis());
+                }
+
                 int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
                 int cpu = Math.max(1, three_q);
                 int pTrials = options.solverOpts.pTrials;
@@ -204,10 +218,6 @@ public class SATBackend {
                         Callable<Boolean> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
                         Future<Boolean> f = ces.submit(c);
                         futures.add(f);
-                        try {
-                            Thread.sleep(1000); // one sec
-                        } catch (InterruptedException ignore) {
-                        }
                     }
                     // log("=== submitted parallel trials: " + nTrials + " ===");
                     // check tasks' results in the order of their completion
