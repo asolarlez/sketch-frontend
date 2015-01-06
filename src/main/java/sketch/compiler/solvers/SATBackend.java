@@ -139,7 +139,7 @@ public class SATBackend {
                     }
                 }
                 String prefix = "=== parallel trial (" + fileIdx + ")";
-                log(prefix + " start ===");
+                plog(prefix + " start ===");
                 boolean worker_ret = false;
                 try {
                     worker_ret = solve(oracle, minimize, options.solverOpts.timeout, fileIdx);
@@ -147,12 +147,12 @@ public class SATBackend {
                     e.setBackendTempPath(options.getTmpSketchFilename());
                 }
                 if (worker_ret) {
-                    log(prefix + " solved ===");
+                    plog(prefix + " solved ===");
                     synchronized(lock) {
                         parallel_solved = true;
                     }
                 } else {
-                    log(prefix + " failed ===");
+                    plog(prefix + " failed ===");
                     String failed_solution = options.getSolutionsString(fileIdx);
                     try {
                         Files.delete(Paths.get(failed_solution));
@@ -219,14 +219,14 @@ public class SATBackend {
                         Future<Boolean> f = ces.submit(c);
                         futures.add(f);
                     }
-                    // log("=== submitted parallel trials: " + nTrials + " ===");
+                    // plog("=== submitted parallel trials: " + nTrials + " ===");
                     // check tasks' results in the order of their completion
                     for (int i = 0; i < nTrials; i++) {
                         try {
                             Boolean r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
                             // whenever found a worker that finishes the job
                             if (r) {
-                                log("=== resolved within " + (i+1) + " complete parallel trial(s)");
+                                plog("=== resolved within " + (i+1) + " complete parallel trial(s)");
                                 worked = true;
                                 es.shutdownNow(); // attempts to stop active tasks
                                 // break the iteration and go to finally block
@@ -563,13 +563,19 @@ public class SATBackend {
 		return options.debugOpts.verbosity >= 3;
 	}
 
-	// TODO: duplication is absurd now, need to use the Logger class
-	protected void log (String msg) {  log (3, msg);  }
-	protected void log (int level, String msg) {
-		if (options.debugOpts.verbosity >= level)
-			System.out.println ("[SATBackend] "+ msg);
-	}
+    // TODO: duplication is absurd now, need to use the Logger class
+    protected void log(String msg) {
+        log(3, msg);
+    }
 
+    protected void plog(String msg) {
+        log(options.debugOpts.verbosity, msg);
+    }
+
+    protected void log(int level, String msg) {
+        if (options.debugOpts.verbosity >= level)
+            System.out.println ("[SATBackend] "+ msg);
+    }
 
 	/**
 	 * @param oracle the oracle to set
@@ -577,10 +583,6 @@ public class SATBackend {
 	public void setOracle(ValueOracle oracle) {
 		this.oracle = oracle;
 	}
-
-
-
-
 
 	/**
 	 * @return the oracle
