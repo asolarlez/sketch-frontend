@@ -25,15 +25,17 @@ import sketch.util.exceptions.SketchSolverException;
 
 public class ParallelBackend extends SATBackend {
 
+    private boolean parallel_solved = false;
+    private List<Process> cegiss;
+    private Object lock;
+
     public ParallelBackend(SketchOptions options, RecursionControl rcontrol,
             TempVarGen varGen)
     {
         super(options, rcontrol, varGen);
+        lock = new Object();
+        cegiss = new ArrayList<Process>();
     }
-
-    private boolean parallel_solved = false;
-    private List<Process> cegiss;
-    private Object lock = new Object();
 
     private Callable<Boolean> createWorker(final ValueOracle oracle, boolean hasMinimize,
             float timeoutMins, final int fileIdx)
@@ -41,12 +43,13 @@ public class ParallelBackend extends SATBackend {
         return new Callable<Boolean>() {
             // main task per worker
             public Boolean call() {
+                String prefix = "=== parallel trial (" + fileIdx + ")";
                 synchronized (lock) {
                     if (parallel_solved) {
+                        plog(prefix + " aborted ===");
                         return false;
                     }
                 }
-                String prefix = "=== parallel trial (" + fileIdx + ")";
                 plog(prefix + " start ===");
                 boolean worker_ret = false;
                 try {
@@ -82,15 +85,11 @@ public class ParallelBackend extends SATBackend {
             options.solverOpts.seed = (int) (System.currentTimeMillis());
         }
 
-        int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.83);
+        int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
         int cpu = Math.max(1, three_q);
         int pTrials = options.solverOpts.pTrials;
         if (pTrials < 0) {
             pTrials = cpu * 32 * 3;
-        }
-
-        synchronized (lock) {
-            cegiss = new ArrayList<Process>();
         }
 
         // generate worker pool and managed executor
@@ -118,10 +117,9 @@ public class ParallelBackend extends SATBackend {
             for (int i = 0; i < nTrials; i++) {
                 try {
                     Boolean r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
-                    // whenever found a worker that finishes the job
+                    // found a worker that finishes the job
                     if (r) {
-                        plog("=== resolved within " + (i + 1) +
-                                " complete parallel trial(s)");
+                        plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
                         worked = true;
                         es.shutdownNow(); // attempts to stop active tasks
                         // break the iteration and go to finally block
@@ -133,20 +131,12 @@ public class ParallelBackend extends SATBackend {
                 }
             }
         } finally {
-            // terminate any alive CEGIS processes
-            synchronized (lock) {
-                for (Process p : cegiss) {
-                    try {
-                        p.exitValue();
-                    } catch (IllegalThreadStateException e) {
-                        p.destroy(); // if still running, kill the process
-                    }
-                }
-            }
             // cancel any remaining tasks
             for (Future<Boolean> f : futures) {
                 f.cancel(true);
             }
+            // terminate any alive CEGIS processes
+            terminateSubprocesses();
         }
         return worked;
     }
@@ -160,4 +150,16 @@ public class ParallelBackend extends SATBackend {
         }
     }
 
+    public void terminateSubprocesses() {
+        synchronized (lock) {
+            for (Process p : cegiss) {
+                try {
+                    p.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    plog("destroying " + p);
+                    p.destroy(); // if still running, kill the process
+                }
+            }
+        }
+    }
 }

@@ -268,13 +268,13 @@ public class SATBackend {
 		}		
 	}
 
-    public boolean incrementalSolve(ValueOracle oracle, boolean hasMinimize,
+    protected boolean incrementalSolve(ValueOracle oracle, boolean hasMinimize,
             float timeoutMins)
     {
         return incrementalSolve(oracle, hasMinimize, timeoutMins, 0);
     }
 
-    public boolean incrementalSolve(ValueOracle oracle, boolean hasMinimize,
+    protected boolean incrementalSolve(ValueOracle oracle, boolean hasMinimize,
             float timeoutMins, int fileIdx)
     {
         Vector<String> backendOptions = options.getBackendOptions();
