@@ -1,14 +1,23 @@
 package sketch.compiler.solvers.parallel;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.solvers.SATSolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.Misc;
 
 public class StrategicalBackend extends ParallelBackend {
+
+    enum STAGE {
+        LEARNING, TESTING
+    };
+
+    STAGE stage;
 
     IStrategy strategy;
 
@@ -30,6 +39,7 @@ public class StrategicalBackend extends ParallelBackend {
                 strategy = new WilcoxonStrategy(options);
                 break;
         }
+        stage = STAGE.LEARNING;
     }
 
     final static float test_timeout = 1; // 1min
@@ -56,6 +66,10 @@ public class StrategicalBackend extends ParallelBackend {
             while (strategy.hasNextDegree()) {
                 // ask it what degree to test next
                 int next_d = strategy.nextDegreeToTry();
+                if (next_d < 0) {
+                    plog(strategy.getName() + " tries a strange degree: " + next_d);
+                    break;
+                }
                 // test that degree
                 List<SATSolutionStatistics> results =
                         runTrials(oracle, hasMinimize, next_d);
@@ -72,6 +86,35 @@ public class StrategicalBackend extends ParallelBackend {
             plog(strategy.getName() + " degree choice: " + d);
             options.solverOpts.randdegree = d;
         }
+        stage = STAGE.TESTING;
         return super.solve(oracle, hasMinimize, timeoutMins);
+    }
+
+    @Override
+    protected SATSolutionStatistics parseStats(String out) {
+        SATSolutionStatistics stat = super.parseStats(out);
+        // parsing holes' range and calculate search space might be expensive
+        // so, do the calculation only if it is in the learning phase
+        if (stage == STAGE.LEARNING) {
+            stat.searchSpace = 1;
+
+            Map<String, Integer> holes = new HashMap<String, Integer>();
+
+            List<String> res;
+            res = Misc.search(out, "(H__\\S+) < \\((\\d+)\\)");
+            if (res != null) {
+                for (int i = 0; i < res.size(); i += 2) {
+                    String hole = res.get(i);
+                    int range = Integer.parseInt(res.get(i + 1));
+                    if (range <= 0)
+                        continue;
+                    if (!holes.containsKey(hole)) {
+                        holes.put(hole, range);
+                        stat.searchSpace *= range;
+                    }
+                }
+            }
+        }
+        return stat;
     }
 }

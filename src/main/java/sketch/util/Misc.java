@@ -111,20 +111,21 @@ public class Misc extends AssertedClass
         }
     }
 
-	/** Returns null if the pattern wasn't found, otherwise returns a list
-	 * of the matched groups. */
-	public static List<String> search (String S, String regex) {
-		Matcher m = Pattern.compile (regex, Pattern.MULTILINE).matcher (S);
-		List<String> groups = null;
+    /** Returns null if the pattern wasn't found, otherwise returns a list
+      * of the matched groups. */
+    public static List<String> search (String S, String regex) {
+        Matcher m = Pattern.compile(regex, Pattern.MULTILINE).matcher(S);
+        List<String> groups = new ArrayList<String>();
 
-		if (m.find ()) {
-			groups = new ArrayList<String> ();
-			for (int i = 1; i <= m.groupCount (); ++i)
-				groups.add (m.group (i));
+        while (m.find()) {
+            for (int i = 1; i <= m.groupCount(); ++i)
+                groups.add(m.group(i));
 		}
 
-		return groups;
-	}
+        if (groups.isEmpty()) // pattern wasn't found
+            return null;
+        return groups;
+    }
 	
 	public static <T> T nonnull(T obj) {
 	    assert obj != null : "nonnull assert";

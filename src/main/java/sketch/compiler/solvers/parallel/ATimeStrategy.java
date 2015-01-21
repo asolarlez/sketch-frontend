@@ -35,7 +35,11 @@ public abstract class ATimeStrategy implements IStrategy {
     }
 
     public int nextDegreeToTry() {
-        return degrees.remove(0);
+        if (!degrees.isEmpty()) {
+            return degrees.remove(0);
+        } else {
+            return -1;
+        }
     }
 
     public void pushInfo(int degree, List<SATSolutionStatistics> trials) {
@@ -43,12 +47,11 @@ public abstract class ATimeStrategy implements IStrategy {
             return;
 
         StringBuilder buf = new StringBuilder();
-        buf.append(getName() + " pushed info: degree " + degree + " ");
+        buf.append(getName() + " pushed info: degree " + degree + System.lineSeparator());
         double sum = 0;
         for (SATSolutionStatistics stat : trials) {
             sum += stat.elapsedTimeMs();
-            buf.append(stat.elapsedTimeMs());
-            buf.append(' ');
+            buf.append(stat.elapsedTimeMs() + " ");
         }
         if (options.debugOpts.verbosity >= 5) {
             System.out.println(buf.toString());
