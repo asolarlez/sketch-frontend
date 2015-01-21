@@ -41,6 +41,13 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Degree of randomness for hole concretization.")
     public int randdegree = 0;
 
+    @CliParameter(help = "Strategy for parallel-running.")
+    public Strategies strategy = Strategies.NOT_SET;
+
+    public enum Strategies {
+        NOT_SET, MIN_TIME, MAX_TIME, WILCOXON
+    }
+
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public VerifSolvers verif = VerifSolvers.NOT_SET;

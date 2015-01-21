@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.solvers.SATBackend;
+import sketch.compiler.solvers.SATSolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.SynchronousTimedProcess;
 import sketch.util.exceptions.SketchSolverException;
@@ -29,35 +30,45 @@ public class ParallelBackend extends SATBackend {
     private List<Process> cegiss;
     private Object lock;
 
+    protected int cpu;
+
     public ParallelBackend(SketchOptions options, RecursionControl rcontrol,
             TempVarGen varGen)
     {
         super(options, rcontrol, varGen);
         lock = new Object();
         cegiss = new ArrayList<Process>();
+        int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
+        cpu = Math.max(1, three_q);
+
+        // if seed is given (to reproduce certain experiments, use it as-is
+        // otherwise, use a random seed
+        if (options.solverOpts.seed == 0) {
+            options.solverOpts.seed = (int) (System.currentTimeMillis());
+        }
     }
 
-    private Callable<Boolean> createWorker(final ValueOracle oracle, boolean hasMinimize,
-            float timeoutMins, final int fileIdx)
+    protected Callable<SATSolutionStatistics> createWorker(final ValueOracle oracle,
+            boolean hasMinimize, float timeoutMins, final int fileIdx)
     {
-        return new Callable<Boolean>() {
+        return new Callable<SATSolutionStatistics>() {
             // main task per worker
-            public Boolean call() {
+            public SATSolutionStatistics call() {
                 String prefix = "=== parallel trial (" + fileIdx + ")";
                 synchronized (lock) {
                     if (parallel_solved) {
                         plog(prefix + " aborted ===");
-                        return false;
+                        return null;
                     }
                 }
                 plog(prefix + " start ===");
-                boolean worker_ret = false;
+                SATSolutionStatistics worker_stat = null;
                 try {
-                    worker_ret = incrementalSolve(oracle, minimize, options.solverOpts.timeout, fileIdx);
+                    worker_stat = incrementalSolve(oracle, minimize, options.solverOpts.timeout, fileIdx);
                 } catch (SketchSolverException e) {
                     e.setBackendTempPath(options.getTmpSketchFilename());
                 }
-                if (worker_ret) {
+                if (worker_stat != null && worker_stat.successful()) {
                     plog(prefix + " solved ===");
                     synchronized (lock) {
                         parallel_solved = true;
@@ -71,36 +82,28 @@ public class ParallelBackend extends SATBackend {
                         System.err.println(prefix + " can't delete " + failed_solution);
                     }
                 }
-                return worker_ret;
+                return worker_stat;
             }
         };
     }
 
-    @Override
-    protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
-        boolean worked = false;
-        // if seed is given (to reproduce certain experiments, use it as-is
-        // otherwise, use a random seed
-        if (options.solverOpts.seed == 0) {
-            options.solverOpts.seed = (int) (System.currentTimeMillis());
-        }
-
-        int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
-        int cpu = Math.max(1, three_q);
-        int pTrials = options.solverOpts.pTrials;
-        if (pTrials < 0) {
-            pTrials = cpu * 32 * 3;
-        }
+    // will be reused by strategy-based parallel running
+    protected List<SATSolutionStatistics> parallel_solve(ValueOracle oracle,
+            boolean hasMinimize, float timeoutMins, int max_trials)
+    {
+        List<SATSolutionStatistics> results = new ArrayList<SATSolutionStatistics>();
 
         // generate worker pool and managed executor
         ExecutorService es = Executors.newFixedThreadPool(cpu);
-        CompletionService<Boolean> ces = new ExecutorCompletionService<Boolean>(es);
+        CompletionService<SATSolutionStatistics> ces =
+                new ExecutorCompletionService<SATSolutionStatistics>(es);
         // place to maintain future parallel tasks
-        List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>(pTrials);
+        List<Future<SATSolutionStatistics>> futures =
+                new ArrayList<Future<SATSolutionStatistics>>(max_trials);
         try {
             // submit parallel tasks
             int nTrials = 0;
-            for (nTrials = 0; nTrials < pTrials; nTrials++) {
+            for (nTrials = 0; nTrials < max_trials; nTrials++) {
                 // while submitting tasks, check whether it's already solved
                 synchronized (lock) {
                     if (parallel_solved) {
@@ -108,19 +111,19 @@ public class ParallelBackend extends SATBackend {
                         break;
                     }
                 }
-                Callable<Boolean> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
-                Future<Boolean> f = ces.submit(c);
+                Callable<SATSolutionStatistics> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
+                Future<SATSolutionStatistics> f = ces.submit(c);
                 futures.add(f);
             }
             // plog("=== submitted parallel trials: " + nTrials + " ===");
             // check tasks' results in the order of their completion
             for (int i = 0; i < nTrials; i++) {
                 try {
-                    Boolean r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
+                    SATSolutionStatistics r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
+                    results.add(r);
                     // found a worker that finishes the job
-                    if (r) {
+                    if (r != null && r.successful()) {
                         plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
-                        worked = true;
                         es.shutdownNow(); // attempts to stop active tasks
                         // break the iteration and go to finally block
                         break;
@@ -132,13 +135,24 @@ public class ParallelBackend extends SATBackend {
             }
         } finally {
             // cancel any remaining tasks
-            for (Future<Boolean> f : futures) {
+            for (Future<SATSolutionStatistics> f : futures) {
                 f.cancel(true);
             }
             // terminate any alive CEGIS processes
             terminateSubprocesses();
         }
-        return worked;
+        return results;
+    }
+
+    @Override
+    protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
+        int pTrials = options.solverOpts.pTrials;
+        if (pTrials < 0) {
+            pTrials = cpu * 32 * 3;
+        }
+
+        parallel_solve(oracle, hasMinimize, timeoutMins, pTrials);
+        return parallel_solved;
     }
 
     @Override
@@ -160,6 +174,7 @@ public class ParallelBackend extends SATBackend {
                     p.destroy(); // if still running, kill the process
                 }
             }
+            cegiss.clear();
         }
     }
 }

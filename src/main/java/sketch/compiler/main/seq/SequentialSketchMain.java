@@ -76,7 +76,7 @@ import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
-import sketch.compiler.solvers.parallel.ParallelBackend;
+import sketch.compiler.solvers.parallel.StrategicalBackend;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
@@ -290,7 +290,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
             SATBackend solver;
             if (options.solverOpts.parallel) {
-                solver = new ParallelBackend(options, internalRControl(), varGen);
+                solver = new StrategicalBackend(options, internalRControl(), varGen);
             } else {
                 solver = new SATBackend(options, internalRControl(), varGen);
             }

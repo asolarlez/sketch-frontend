@@ -33,32 +33,32 @@ import static sketch.util.DebugOut.printDebug;
 public class SATBackend {
 
     String solverErrorStr;
-	final RecursionControl rcontrol;
+    final RecursionControl rcontrol;
     protected final TempVarGen varGen;
-	protected ValueOracle oracle;
-	private boolean tracing = false;
-	private SATSolutionStatistics lastSolveStats;
+    protected ValueOracle oracle;
+    private boolean tracing = false;
+    private SATSolutionStatistics lastSolveStats;
     public final SketchOptions options;
     protected boolean minimize = false;
 
-	public SATBackend(SketchOptions options, 
-	        RecursionControl rcontrol, TempVarGen varGen)
-	{
-		this.options = options;
-		this.rcontrol = rcontrol;
-		this.varGen = varGen;
-	}
+    public SATBackend(SketchOptions options,
+            RecursionControl rcontrol, TempVarGen varGen)
+    {
+        this.options = options;
+        this.rcontrol = rcontrol;
+        this.varGen = varGen;
+    }
 
-	public void activateTracing(){
-		tracing = true;
-	}
-	
+    public void activateTracing(){
+        tracing = true;
+    }
+
     @SuppressWarnings("unchecked")
     public String[] getBackendCommandline(int i, Vector<String> commandLineOptions_,
             String... additional)
     {
         Vector<String> commandLineOptions = (Vector<String>) commandLineOptions_.clone();
-	    PlatformLocalization pl = PlatformLocalization.getLocalization();
+        PlatformLocalization pl = PlatformLocalization.getLocalization();
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
 
@@ -114,13 +114,13 @@ public class SATBackend {
 
     // will be overridden to run the back-end differently, e.g., in parallel
     protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
-        boolean worked = false;
+        SATSolutionStatistics stat = null;
         try {
-            worked = incrementalSolve(oracle, minimize, options.solverOpts.timeout);
+            stat = incrementalSolve(oracle, minimize, options.solverOpts.timeout);
         } catch (SketchSolverException e) {
             e.setBackendTempPath(options.getTmpSketchFilename());
         }
-        return worked;
+        return stat != null && stat.success;
     }
 
     public boolean partialEvalAndSolve(Program prog) {
@@ -193,9 +193,9 @@ public class SATBackend {
             writeProgramToBackendFormat((Program) costFcnAssert.visitProgram(prog));
 
             // actually run the solver
-            boolean currResult = incrementalSolve(oracle, false, timeout);
-            worked |= currResult;
-            if (!currResult) {
+            SATSolutionStatistics currResult = incrementalSolve(oracle, false, timeout);
+            worked |= currResult.success;
+            if (!currResult.success) {
                 // didn't work. explore the upper interval, and explore more if we
                 // haven't
                 // found any solution yet
@@ -247,56 +247,58 @@ public class SATBackend {
         }
     }
 
-	protected void extractOracleFromOutput(String fname){
-		try{		
-			File f = new File(fname);
-			FileInputStream fis = new FileInputStream(f);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
-			oracle.loadFromStream(lir);
-			fis.close();
-			java.io.File fd = new File(fname);
+    protected void extractOracleFromOutput(String fname){
+        try {
+            File f = new File(fname);
+            FileInputStream fis = new FileInputStream(f);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
+            oracle.loadFromStream(lir);
+            fis.close();
+            java.io.File fd = new File(fname);
             if (fd.exists() && !(options.feOpts.keepTmp || options.debugOpts.fakeSolver))
             {
-				fd.delete();
-			}
-		}
-		catch (java.io.IOException e)
-		{
-			//e.printStackTrace(System.err);
-			throw new RuntimeException(e);
-		}		
-	}
+                fd.delete();
+            }
+        }
+        catch (java.io.IOException e)
+        {
+            //e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
+    }
 
-    protected boolean incrementalSolve(ValueOracle oracle, boolean hasMinimize,
+    protected SATSolutionStatistics incrementalSolve(ValueOracle oracle,
+            boolean hasMinimize,
             float timeoutMins)
     {
         return incrementalSolve(oracle, hasMinimize, timeoutMins, 0);
     }
 
-    protected boolean incrementalSolve(ValueOracle oracle, boolean hasMinimize,
+    protected SATSolutionStatistics incrementalSolve(ValueOracle oracle,
+            boolean hasMinimize,
             float timeoutMins, int fileIdx)
     {
         Vector<String> backendOptions = options.getBackendOptions();
         log("OFILE = " + options.feOpts.output);
-        boolean ret = false;
+        SATSolutionStatistics ret = null;
 
         // minimize
         if (options.bndOpts.incremental.isSet) {
-			boolean isSolved = false;
+            boolean isSolved = false;
             int bits = 0;
-			int maxBits = options.bndOpts.incremental.value;
+            int maxBits = options.bndOpts.incremental.value;
             for (bits = 1; bits <= maxBits; ++bits) {
                 log("TRYING SIZE " + bits);
                 String[] commandLine = getBackendCommandline(fileIdx, backendOptions, "--bnd-cbits=" + bits);
                 ret = runSolver(commandLine, bits, timeoutMins);
-                if (ret) {
-					isSolved = true;
-					break;
+                if (ret != null && ret.success) {
+                    isSolved = true;
+                    break;
                 } else {
                     log("Size " + bits + " is not enough");
-				}
-			}
+                }
+            }
             if (isSolved) {
                 log("Succeded with " + bits + " bits for integers");
                 oracle.capStarSizes(bits);
@@ -311,27 +313,28 @@ public class SATBackend {
                 commandLine = getBackendCommandline(fileIdx, backendOptions);
             }
             ret = runSolver(commandLine, 0, timeoutMins);
-
         }
-        if (!ret) {
+        if (ret != null && !ret.success) {
             log(5, "The sketch cannot be resolved.");
             // System.err.println(solverErrorStr);
         }
         return ret;
-	}
+    }
 
-	protected void logCmdLine(String[] commandLine){
-		String cmdLine = "";
-		for (String a : commandLine)  cmdLine += a + " ";
-		log ("Launching: "+ cmdLine);
-	}
+    protected void logCmdLine(String[] commandLine){
+        String cmdLine = "";
+        for (String a : commandLine)  cmdLine += a + " ";
+        log ("Launching: "+ cmdLine);
+    }
 
     // will be overridden by parallel version
     protected void beforeRunSolver(SynchronousTimedProcess proc) {
         // utilize CEGIS process information here
     }
 
-    private boolean runSolver(String[] commandLine, int bits, float timeoutMins) {
+    private SATSolutionStatistics runSolver(String[] commandLine, int bits,
+            float timeoutMins)
+    {
         logCmdLine(commandLine);
 
         SynchronousTimedProcess proc;
@@ -365,80 +368,91 @@ public class SATBackend {
             }
         } else if (status.exception instanceof IOException) {
             System.err.println("Warning: lost some output from backend because of timeout.");
-            return false;
+            SATSolutionStatistics err_stat = new SATSolutionStatistics();
+            err_stat.success = false;
+            return err_stat;
         }
 
-        lastSolveStats = parseStats(status.out);
-        lastSolveStats.success = (0 == status.exitCode) && !status.killedByTimeout;
+        SATSolutionStatistics be_stat = parseStats(status.out);
+        be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
+        lastSolveStats = be_stat;
         log(2, "Stats for last run:\n" + lastSolveStats);
 
         solverErrorStr = status.err;
         log("Solver exit value: " + status.exitCode);
 
-        return lastSolveStats.success;
+        return be_stat;
     }
 
-	protected SATSolutionStatistics parseStats (String out) {
-		SATSolutionStatistics s = new SATSolutionStatistics ();
-		List<String> res;
-		String NL = "(?:\\r\\n|\\n|\\r)";
+    protected SATSolutionStatistics parseStats (String out) {
+        SATSolutionStatistics s = new SATSolutionStatistics ();
+        List<String> res;
+        String NL = "(?:\\r\\n|\\n|\\r)";
 
-		// XXX: using max virtual mem; maybe resident or private is better
-		res = Misc.search (out,
-				"Total elapsed time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
-				"Model building time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
-				"Solution time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
-				"Max virtual mem \\(bytes\\):\\s+(\\d+)");		
-		if(res != null){
-			s.elapsedTimeMs = (long) (Float.parseFloat (res.get (0)));
-			s.modelBuildingTimeMs = (long) (Float.parseFloat (res.get (1)));
-			s.solutionTimeMs = (long) (Float.parseFloat (res.get (2)));
-			s.maxMemUsageBytes = Long.parseLong (res.get (3));
-		}else{
-			s.elapsedTimeMs = -1; 
-			s.modelBuildingTimeMs = -1; 
-			s.solutionTimeMs = -1; 
-			s.maxMemUsageBytes = -1; 
-		}
+        // XXX: using max virtual mem; maybe resident or private is better
+        res = Misc.search (out,
+                "Total elapsed time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
+                "Model building time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
+                "Solution time \\(ms\\):\\s+(\\d+(?:\\.\\d+)?)"+ NL +
+                "Max virtual mem \\(bytes\\):\\s+(\\d+)");
+        if (res != null) {
+            s.elapsedTimeMs = (long) (Float.parseFloat (res.get (0)));
+            s.modelBuildingTimeMs = (long) (Float.parseFloat (res.get (1)));
+            s.solutionTimeMs = (long) (Float.parseFloat (res.get (2)));
+            s.maxMemUsageBytes = Long.parseLong (res.get (3));
+        } else {
+            s.elapsedTimeMs = -1;
+            s.modelBuildingTimeMs = -1;
+            s.solutionTimeMs = -1;
+            s.maxMemUsageBytes = -1;
+        }
 
-		res = Misc.search (out, "SKETCH nodes = (\\d+)");
-		if(res != null){
-			s.numNodesInitial = Long.parseLong (res.get (0));
-		}else{
-			s.numNodesInitial = -1;
-		}
+        // even failed case, we need elapsed time
+        if (s.elapsedTimeMs < 0) {
+            res = Misc.search(out, "FIND TIME \\S+ CHECK TIME \\S+ TOTAL TIME (\\S+)");
+            if (res != null) {
+                s.elapsedTimeMs = (long) (Float.parseFloat(res.get(0)));
+            }
+        }
 
-		res = Misc.search (out, "Final Problem size: Problem nodes = (\\d+)");
-		if( null != res ){
-			s.numNodesFinal = Long.parseLong (res.get (0));
-		}else{
-			s.numNodesFinal = -1;
-		}
+        res = Misc.search (out, "SKETCH nodes = (\\d+)");
+        if (res != null) {
+            s.numNodesInitial = Long.parseLong (res.get (0));
+        } else {
+            s.numNodesInitial = -1;
+        }
 
-		res = Misc.search (out, "# OF CONTROLS:\\s+(\\d+)");
-		if(null != res){
-			s.numControls = Long.parseLong (res.get (0));
-		}else{
-			s.numControls = -1;
-		}
+        res = Misc.search (out, "Final Problem size: Problem nodes = (\\d+)");
+        if (null != res) {
+            s.numNodesFinal = Long.parseLong (res.get (0));
+        } else {
+            s.numNodesFinal = -1;
+        }
 
-		res = Misc.search (out, "ctrlSize = (\\d+)");
-		if(null != res){
-			s.numControlBits = Long.parseLong (res.get (0));
-		}else{
-			s.numControlBits = -1;
-		}
+        res = Misc.search (out, "# OF CONTROLS:\\s+(\\d+)");
+        if (null != res) {
+            s.numControls = Long.parseLong (res.get (0));
+        } else {
+            s.numControls = -1;
+        }
 
-		return s;
-	}
+        res = Misc.search (out, "ctrlSize = (\\d+)");
+        if (null != res) {
+            s.numControlBits = Long.parseLong (res.get (0));
+        } else {
+            s.numControlBits = -1;
+        }
 
-	public SolutionStatistics getLastSolutionStats () {
-		return lastSolveStats;
-	}
+        return s;
+    }
 
-	protected boolean verbose () {
-		return options.debugOpts.verbosity >= 3;
-	}
+    public SolutionStatistics getLastSolutionStats () {
+        return lastSolveStats;
+    }
+
+    protected boolean verbose () {
+        return options.debugOpts.verbosity >= 3;
+    }
 
     // TODO: duplication is absurd now, need to use the Logger class
     protected void log(String msg) {
@@ -454,18 +468,18 @@ public class SATBackend {
             System.out.println ("[SATBackend] "+ msg);
     }
 
-	/**
-	 * @param oracle the oracle to set
-	 */
-	public void setOracle(ValueOracle oracle) {
-		this.oracle = oracle;
-	}
+    /**
+     * @param oracle the oracle to set
+     */
+    public void setOracle(ValueOracle oracle) {
+        this.oracle = oracle;
+    }
 
-	/**
-	 * @return the oracle
-	 */
-	public ValueOracle getOracle() {
-		return oracle;
-	}
+    /**
+     * @return the oracle
+     */
+    public ValueOracle getOracle() {
+        return oracle;
+    }
 
 }
