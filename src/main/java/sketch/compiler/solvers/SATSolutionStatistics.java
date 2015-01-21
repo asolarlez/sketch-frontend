@@ -19,7 +19,7 @@ public class SATSolutionStatistics extends SolutionStatistics {
 	protected long numControls;
 	protected long numControlBits;
 
-    public long searchSpace;
+    public double probability;
 
 	public long elapsedTimeMs () 	   {  return elapsedTimeMs;  }
 	public long maxMemoryUsageBytes () {  return maxMemUsageBytes;  }

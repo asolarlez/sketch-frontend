@@ -411,7 +411,10 @@ public class SATBackend {
         if (s.elapsedTimeMs < 0) {
             res = Misc.search(out, "FIND TIME \\S+ CHECK TIME \\S+ TOTAL TIME (\\S+)");
             if (res != null) {
-                s.elapsedTimeMs = (long) (Float.parseFloat(res.get(0)));
+                s.elapsedTimeMs = 0;
+                for (int i = 0; i < res.size(); i++) {
+                    s.elapsedTimeMs += (long) (Float.parseFloat(res.get(i)));
+                }
             }
         }
 

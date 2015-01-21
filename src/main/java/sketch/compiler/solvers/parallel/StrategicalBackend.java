@@ -1,8 +1,6 @@
 package sketch.compiler.solvers.parallel;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -50,7 +48,9 @@ public class StrategicalBackend extends ParallelBackend {
         options.solverOpts.randdegree = d;
 
         int old_v = options.debugOpts.verbosity;
-        options.debugOpts.verbosity = 10; // to see detailed back-end output
+        if (old_v < 5) {
+            options.debugOpts.verbosity = 5; // to see hole concretization info
+        }
 
         List<SATSolutionStatistics> stats =
                 parallel_solve(oracle, hasMinimize, test_timeout, test_trial_max);
@@ -96,22 +96,15 @@ public class StrategicalBackend extends ParallelBackend {
         // parsing holes' range and calculate search space might be expensive
         // so, do the calculation only if it is in the learning phase
         if (stage == STAGE.LEARNING) {
-            stat.searchSpace = 1;
-
-            Map<String, Integer> holes = new HashMap<String, Integer>();
-
+            stat.probability = 1.0;
             List<String> res;
-            res = Misc.search(out, "(H__\\S+) < \\((\\d+)\\)");
+            res = Misc.search(out, "(H__\\S+): replacing with value \\d+ bnd= (\\d+)");
             if (res != null) {
                 for (int i = 0; i < res.size(); i += 2) {
                     String hole = res.get(i);
-                    int range = Integer.parseInt(res.get(i + 1));
-                    if (range <= 0)
-                        continue;
-                    if (!holes.containsKey(hole)) {
-                        holes.put(hole, range);
-                        stat.searchSpace *= range;
-                    }
+                    int bound = Integer.parseInt(res.get(i + 1));
+                    if (bound <= 1) continue;
+                    stat.probability /= bound;
                 }
             }
         }

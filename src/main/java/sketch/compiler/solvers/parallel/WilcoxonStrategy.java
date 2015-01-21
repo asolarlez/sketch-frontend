@@ -51,21 +51,21 @@ public class WilcoxonStrategy implements IStrategy {
             return;
 
         // calculate distribution: time / p
-        // estimated p: 1 / search space, assuming there is only one solution
-        // so, distribution: time * mean(search space)
         double[] dist = new double[trials.size()];
-        Mean sspace = new Mean();
+        Mean sp = new Mean();
         StringBuilder buf = new StringBuilder();
         buf.append(getName() + " pushed info: degree " + degree + System.lineSeparator());
         for (int i = 0; i < dist.length; i++) {
             SATSolutionStatistics stat = trials.get(i);
             dist[i] = stat.elapsedTimeMs();
-            sspace.increment(stat.searchSpace);
+            sp.increment(stat.probability);
+            buf.append("(" + stat.elapsedTimeMs() + ", " + stat.probability + ")");
         }
-        buf.append(getName() + " mean(search space): " + sspace.getResult());
         buf.append(System.lineSeparator());
+        buf.append(getName() + " mean(p): " + sp.getResult() + System.lineSeparator());
+        buf.append(getName() + " dist: ");
         for (int i = 0; i < dist.length; i++) {
-            dist[i] *= sspace.getResult();
+            dist[i] /= sp.getResult();
             buf.append(dist[i] + " ");
         }
         if (options.debugOpts.verbosity >= 5) {
