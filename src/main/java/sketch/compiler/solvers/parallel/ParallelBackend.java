@@ -134,6 +134,10 @@ public class ParallelBackend extends SATBackend {
                 }
             }
         } finally {
+            // double-check the thread pool has been shut down
+            // if *all* trials failed, it wasn't shut down
+            if (!es.isShutdown())
+                es.shutdownNow();
             // cancel any remaining tasks
             for (Future<SATSolutionStatistics> f : futures) {
                 f.cancel(true);
