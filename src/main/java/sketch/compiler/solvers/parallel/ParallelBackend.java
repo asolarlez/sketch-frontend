@@ -1,6 +1,7 @@
 package sketch.compiler.solvers.parallel;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -61,27 +62,36 @@ public class ParallelBackend extends SATBackend {
                         return null;
                     }
                 }
-                plog(prefix + " start ===");
                 SATSolutionStatistics worker_stat = null;
                 try {
                     worker_stat = incrementalSolve(oracle, minimize, options.solverOpts.timeout, fileIdx);
                 } catch (SketchSolverException e) {
                     e.setBackendTempPath(options.getTmpSketchFilename());
                 }
+                PrintStream out = new PrintStream(System.out, false);
                 if (worker_stat != null && worker_stat.successful()) {
-                    plog(prefix + " solved ===");
                     synchronized (lock) {
                         parallel_solved = true;
                     }
+                    synchronized (lock) {
+                        plog(out, prefix + " start ===");
+                        out.println(worker_stat.out);
+                        plog(out, prefix + " solved ===");
+                    }
                 } else {
-                    plog(prefix + " failed ===");
                     String failed_solution = options.getSolutionsString(fileIdx);
                     try {
                         Files.delete(Paths.get(failed_solution));
                     } catch (IOException e) {
                         System.err.println(prefix + " can't delete " + failed_solution);
                     }
+                    synchronized (lock) {
+                        plog(out, prefix + " start ===");
+                        out.println(worker_stat.out);
+                        plog(out, prefix + " failed ===");
+                    }
                 }
+                out.flush();
                 return worker_stat;
             }
         };

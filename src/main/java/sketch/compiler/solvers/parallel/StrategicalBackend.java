@@ -62,6 +62,7 @@ public class StrategicalBackend extends ParallelBackend {
     @Override
     protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
         if (strategy != null) {
+            plog(strategy.getName() + " degree searching...");
             // until the strategy has a fixed degree
             while (strategy.hasNextDegree()) {
                 // ask it what degree to test next
@@ -76,6 +77,7 @@ public class StrategicalBackend extends ParallelBackend {
                 // check if we're too lucky: found a solution while test runs
                 for (SATSolutionStatistics stat : results) {
                     if (stat.successful()) {
+                        plog(strategy.getName() + " found a solution while testing with degree " + next_d);
                         return true;
                     }
                 }

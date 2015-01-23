@@ -386,6 +386,8 @@ public class SATBackend {
 
     protected SATSolutionStatistics parseStats (String out) {
         SATSolutionStatistics s = new SATSolutionStatistics ();
+        s.out = out;
+
         List<String> res;
         String NL = "(?:\\r\\n|\\n|\\r)";
 
@@ -463,12 +465,20 @@ public class SATBackend {
     }
 
     protected void plog(String msg) {
-        log(options.debugOpts.verbosity, msg);
+        plog(System.out, msg);
+    }
+
+    protected void plog(PrintStream out, String msg) {
+        log(out, options.debugOpts.verbosity, msg);
     }
 
     protected void log(int level, String msg) {
+        log(System.out, level, msg);
+    }
+
+    protected void log(PrintStream out, int level, String msg) {
         if (options.debugOpts.verbosity >= level)
-            System.out.println ("[SATBackend] "+ msg);
+            out.println("[SATBackend] " + msg);
     }
 
     /**

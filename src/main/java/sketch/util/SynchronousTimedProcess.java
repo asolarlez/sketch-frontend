@@ -4,6 +4,7 @@
 package sketch.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,6 +23,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
  */
 public class SynchronousTimedProcess {
     protected final Process proc;
+    protected File tmpFile = null;
     protected float timeoutMins;
     protected long startMs;
     public static final AtomicBoolean wasKilled = new AtomicBoolean(false);
@@ -42,11 +44,19 @@ public class SynchronousTimedProcess {
         this.cmdLine = cmdLine;
         for (String s : cmdLine)
             assert s != null : "Null elt of command: '" + cmdLine + "'";
-        if (SketchOptions.getSingleton().debugOpts.verbosity > 2) {
+        SketchOptions options = SketchOptions.getSingleton();
+        if (options.debugOpts.verbosity > 2) {
             System.err.println("starting command line: " + cmdLine.toString());
         }
         ProcessBuilder pb = new ProcessBuilder (cmdLine);
-        pb.directory (new File (workDir));
+        File f_workDir = new File(workDir);
+        pb.directory(f_workDir);
+        if (options.solverOpts.parallel) {
+            String strategy = options.solverOpts.strategy.toString();
+            tmpFile = File.createTempFile(strategy, null, f_workDir);
+            tmpFile.deleteOnExit();
+            pb.redirectOutput(ProcessBuilder.Redirect.to(tmpFile));
+        }
         startMs = System.currentTimeMillis ();
         proc = pb.start ();
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -92,10 +102,16 @@ public class SynchronousTimedProcess {
                 killer = new ProcessKillerThread(proc, timeoutMins);
                 killer.start();
             }
-
-            status.out = Misc.readStream(proc.getInputStream(), logAllOutput, null);
-            status.err = Misc.readStream(proc.getErrorStream(), true, System.err);
+            // wait for subprocess exit first
             status.exitCode = proc.waitFor();
+
+            // then read streams
+            if (tmpFile != null) {
+                status.out = Misc.readStream(new FileInputStream(tmpFile), true, null);
+            } else {
+                status.out = Misc.readStream(proc.getInputStream(), logAllOutput, null);
+            }
+            status.err = Misc.readStream(proc.getErrorStream(), true, System.err);
             status.execTimeMs = System.currentTimeMillis() - startMs;
 
         } catch (InterruptedException e) {

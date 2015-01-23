@@ -11,7 +11,7 @@ import sketch.compiler.solvers.SATSolutionStatistics;
 
 public class WilcoxonStrategy implements IStrategy {
 
-    final static String name = "Wilcoxon";
+    final static String name = "[wilcoxon]";
     SketchOptions options;
     List<Integer> degrees;
 

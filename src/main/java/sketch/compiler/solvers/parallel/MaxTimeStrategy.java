@@ -5,7 +5,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 public class MaxTimeStrategy extends ATimeStrategy {
 
     public MaxTimeStrategy(SketchOptions options) {
-        super(options, "max(time)");
+        super(options, "[max(time)]");
     }
 
     @Override

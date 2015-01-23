@@ -5,7 +5,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 public class MinTimeStrategy extends ATimeStrategy {
 
     public MinTimeStrategy(SketchOptions options) {
-        super(options, "min(time)");
+        super(options, "[min(time)]");
     }
 
     @Override
