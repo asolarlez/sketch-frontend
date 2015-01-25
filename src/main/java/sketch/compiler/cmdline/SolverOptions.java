@@ -32,8 +32,11 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Runs backend in parallel.")
     public boolean parallel = false;
 
-    @CliParameter(help = "Numbers of parallel trails.")
+    @CliParameter(help = "Number of parallel trails.")
     public int pTrials = -1;
+
+    @CliParameter(help = "Number of cores to use.")
+    public int pCPUs = -1;
 
     @CliParameter(help = "Concretize high-impact holes.")
     public boolean randassign = false;
