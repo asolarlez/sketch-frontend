@@ -228,7 +228,6 @@ public class ParallelBackend extends SATBackend {
         return stat;
     }
 
-    final static float test_timeout = 1; // 1min
     final static int test_trial_max = 10;
 
     protected List<SATSolutionStatistics> runTrials(ValueOracle oracle,
@@ -249,7 +248,7 @@ public class ParallelBackend extends SATBackend {
         }
 
         List<SATSolutionStatistics> stats =
-                parallel_solve(oracle, hasMinimize, test_timeout, n);
+                parallel_solve(oracle, hasMinimize, options.solverOpts.pTimeout, n);
 
         options.solverOpts.randdegree = old_d;
         options.debugOpts.verbosity = old_v;

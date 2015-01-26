@@ -32,6 +32,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Runs backend in parallel.")
     public boolean parallel = false;
 
+    @CliParameter(help = "Kills test trials after given number of minutes.")
+    public float pTimeout = (float) 2.55; // 153 seconds
+
     @CliParameter(help = "Number of parallel trails.")
     public int pTrials = -1;
 
