@@ -121,7 +121,7 @@ public class SATBackend {
     protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
         SATSolutionStatistics stat = null;
         try {
-            stat = incrementalSolve(oracle, minimize, options.solverOpts.timeout);
+            stat = incrementalSolve(oracle, minimize, timeoutMins);
         } catch (SketchSolverException e) {
             e.setBackendTempPath(options.getTmpSketchFilename());
         }

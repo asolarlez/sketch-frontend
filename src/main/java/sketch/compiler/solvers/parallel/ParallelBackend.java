@@ -55,7 +55,7 @@ public class ParallelBackend extends SATBackend {
     }
 
     protected Callable<SATSolutionStatistics> createWorker(final ValueOracle oracle,
-            boolean hasMinimize, float timeoutMins, final int fileIdx)
+            boolean hasMinimize, final float timeoutMins, final int fileIdx)
     {
         return new Callable<SATSolutionStatistics>() {
             // main task per worker
@@ -69,7 +69,8 @@ public class ParallelBackend extends SATBackend {
                 }
                 SATSolutionStatistics worker_stat = null;
                 try {
-                    worker_stat = incrementalSolve(oracle, minimize, options.solverOpts.timeout, fileIdx);
+                    worker_stat =
+                            incrementalSolve(oracle, minimize, timeoutMins, fileIdx);
                 } catch (SketchSolverException e) {
                     e.setBackendTempPath(options.getTmpSketchFilename());
                 }
@@ -126,7 +127,8 @@ public class ParallelBackend extends SATBackend {
                         break;
                     }
                 }
-                Callable<SATSolutionStatistics> c = createWorker(oracle, minimize, options.solverOpts.timeout, nTrials);
+                Callable<SATSolutionStatistics> c =
+                        createWorker(oracle, minimize, timeoutMins, nTrials);
                 Future<SATSolutionStatistics> f = ces.submit(c);
                 futures.add(f);
             }
@@ -134,7 +136,8 @@ public class ParallelBackend extends SATBackend {
             // check tasks' results in the order of their completion
             for (int i = 0; i < nTrials; i++) {
                 try {
-                    SATSolutionStatistics r = ces.take().get((long) options.solverOpts.timeout, TimeUnit.MINUTES);
+                    SATSolutionStatistics r =
+                            ces.take().get((long) timeoutMins, TimeUnit.MINUTES);
                     results.add(r);
                     // found a worker that finishes the job
                     if (r != null && r.successful()) {
