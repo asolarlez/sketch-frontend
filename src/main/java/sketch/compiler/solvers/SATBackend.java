@@ -69,6 +69,11 @@ public class SATBackend {
             commandLineOptions.add("" + abs_seed);
         }
 
+        if (options.solverOpts.randdegree > 0) {
+            commandLineOptions.add("-randdegree");
+            commandLineOptions.add("" + options.solverOpts.randdegree);
+        }
+
         commandLineOptions.add("-o");
         commandLineOptions.add(options.getSolutionsString(i));
         commandLineOptions.addAll(Arrays.asList(additional));

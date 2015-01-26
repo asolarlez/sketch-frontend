@@ -22,6 +22,7 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SATSolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.util.Misc;
 import sketch.util.SynchronousTimedProcess;
 import sketch.util.exceptions.SketchSolverException;
 
@@ -195,4 +196,61 @@ public class ParallelBackend extends SATBackend {
             cegiss.clear();
         }
     }
+
+    protected enum STAGE {
+        LEARNING, TESTING
+    };
+
+    protected STAGE stage;
+
+    @Override
+    protected SATSolutionStatistics parseStats(String out) {
+        SATSolutionStatistics stat = super.parseStats(out);
+        // parsing holes' range and calculate search space might be expensive
+        // so, do the calculation only if it is in the learning phase
+        if (stage == STAGE.LEARNING) {
+            stat.probability = 1.0;
+            List<String> res;
+            res = Misc.search(out, "(H__\\S+): replacing with value \\d+ bnd= (\\d+)");
+            if (res != null) {
+                for (int i = 0; i < res.size(); i += 2) {
+                    // String hole = res.get(i);
+                    int bound = Integer.parseInt(res.get(i + 1));
+                    if (bound <= 1)
+                        continue;
+                    stat.probability /= bound;
+                }
+            }
+        }
+        return stat;
+    }
+
+    final static float test_timeout = 1; // 1min
+    final static int test_trial_max = 10;
+
+    protected List<SATSolutionStatistics> runTrials(ValueOracle oracle,
+            boolean hasMinimize, int d)
+    {
+        return runTrials(oracle, hasMinimize, d, test_trial_max);
+    }
+
+    protected List<SATSolutionStatistics> runTrials(ValueOracle orcle,
+            boolean hasMinimize, int d, int n)
+    {
+        int old_d = options.solverOpts.randdegree;
+        options.solverOpts.randdegree = d;
+
+        int old_v = options.debugOpts.verbosity;
+        if (old_v < 5) {
+            options.debugOpts.verbosity = 5; // to see hole concretization info
+        }
+
+        List<SATSolutionStatistics> stats =
+                parallel_solve(oracle, hasMinimize, test_timeout, n);
+
+        options.solverOpts.randdegree = old_d;
+        options.debugOpts.verbosity = old_v;
+        return stats;
+    }
+
 }
