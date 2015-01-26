@@ -618,6 +618,7 @@ public class SequentialSketchMain extends CommonSketchMain
         // TODO -- change class names so this is clear
         final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
         PlatformLocalization.getLocalization().setTempDirs();
+        int exitCode = 0;
         try {
             sketchmain.run();
         } catch (SketchException e) {
@@ -626,7 +627,7 @@ public class SequentialSketchMain extends CommonSketchMain
                 throw e;
             } else {
                 // e.printStackTrace();
-                System.exit(1);
+                exitCode = 1;
             }
         } catch (java.lang.Error e) {
             ErrorHandling.handleErr(e);
@@ -634,7 +635,7 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
-                System.exit(1);
+                exitCode = 1;
             }
         } catch (RuntimeException e) {
             ErrorHandling.handleErr(e);
@@ -644,9 +645,13 @@ public class SequentialSketchMain extends CommonSketchMain
                 if (sketchmain.options.debugOpts.verbosity > 3) {
                     e.printStackTrace();
                 }
-                System.exit(1);
+                exitCode = 1;
             }
+        } finally {
+            System.out.println("Total time = " + (System.currentTimeMillis() - beg));
         }
-        System.out.println("Total time = " + (System.currentTimeMillis() - beg));
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
     }
 }
