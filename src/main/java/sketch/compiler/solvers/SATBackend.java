@@ -373,15 +373,14 @@ public class SATBackend {
             }
         } else if (status.exception instanceof IOException) {
             System.err.println("Warning: lost some output from backend because of timeout.");
-            SATSolutionStatistics err_stat = new SATSolutionStatistics();
-            if (options.solverOpts.parallel) {
-                err_stat.elapsedTimeMs = (long) (options.solverOpts.pTimeout * 60 * 1000);
-            }
+            SATSolutionStatistics err_stat = parseStats(status.out);
+            err_stat.elapsedTimeMs = (long) (timeoutMins * 60 * 1000);
             err_stat.success = false;
             return err_stat;
         }
 
         SATSolutionStatistics be_stat = parseStats(status.out);
+        be_stat.elapsedTimeMs = status.execTimeMs;
         be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
         lastSolveStats = be_stat;
         log(2, "Stats for last run:\n" + lastSolveStats);
@@ -426,11 +425,6 @@ public class SATBackend {
                     s.elapsedTimeMs += (long) (Float.parseFloat(res.get(i)));
                 }
             }
-        }
-
-        // if it's still below 0, this means (short) time out trial
-        if (s.elapsedTimeMs <= 0) {
-            s.elapsedTimeMs = (long) (options.solverOpts.pTimeout * 60 * 1000);
         }
 
         res = Misc.search (out, "SKETCH nodes = (\\d+)");

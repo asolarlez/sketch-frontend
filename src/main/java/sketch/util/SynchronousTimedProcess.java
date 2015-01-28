@@ -105,24 +105,28 @@ public class SynchronousTimedProcess {
             // wait for subprocess exit first
             status.exitCode = proc.waitFor();
 
-            // then read streams
-            if (tmpFile != null) {
-                status.out = Misc.readStream(new FileInputStream(tmpFile), true, null);
-            } else {
-                status.out = Misc.readStream(proc.getInputStream(), logAllOutput, null);
-            }
-            status.err = Misc.readStream(proc.getErrorStream(), true, System.err);
             status.execTimeMs = System.currentTimeMillis() - startMs;
 
         } catch (InterruptedException e) {
             status.exception = e;
             proc.destroy();
-        } catch (IOException e) {
-            status.exception = e;
         } finally {
             if (null != killer) {
                 killer.abort();
                 status.killedByTimeout = killer.didKill();
+            }
+            if (status.killedByTimeout) {
+                status.execTimeMs = (long) (timeoutMins * 60 * 1000);
+            }
+            try {
+                if (tmpFile != null) {
+                    status.out = Misc.readStream(new FileInputStream(tmpFile), true, null);
+                } else {
+                    status.out = Misc.readStream(proc.getInputStream(), logAllOutput, null);
+                }
+                status.err = Misc.readStream(proc.getErrorStream(), true, System.err);
+            } catch (IOException e) {
+                status.exception = e;
             }
         }
 
