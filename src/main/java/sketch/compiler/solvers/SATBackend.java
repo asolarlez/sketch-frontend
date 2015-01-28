@@ -425,6 +425,11 @@ public class SATBackend {
             }
         }
 
+        // if it's still below 0, this means (short) time out trial
+        if (s.elapsedTimeMs <= 0) {
+            s.elapsedTimeMs = (long) (options.solverOpts.pTimeout * 60 * 1000);
+        }
+
         res = Misc.search (out, "SKETCH nodes = (\\d+)");
         if (res != null) {
             s.numNodesInitial = Long.parseLong (res.get (0));

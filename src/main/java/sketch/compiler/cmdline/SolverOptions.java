@@ -33,7 +33,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public boolean parallel = false;
 
     @CliParameter(help = "Kills test trials after given number of minutes.")
-    public float pTimeout = (float) 2.55; // 153 seconds
+    public float pTimeout = (float) 1.53; // 91.8s
 
     @CliParameter(help = "Number of parallel trails.")
     public int pTrials = -1;
