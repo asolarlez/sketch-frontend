@@ -62,6 +62,11 @@ public class SATBackend {
         String cegisScript = pl.getCegisPath();
         commandLineOptions.insertElementAt(cegisScript, 0);
 
+        if (options.solverOpts.memLimit > 0) {
+            commandLineOptions.add("-memory-limit");
+            commandLineOptions.add("" + options.solverOpts.memLimit);
+        }
+
         if (options.solverOpts.parallel) {
             commandLineOptions.add("--seed");
             // negative integer, e.g., "-1", may look like an option

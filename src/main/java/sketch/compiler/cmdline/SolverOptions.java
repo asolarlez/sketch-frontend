@@ -29,6 +29,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Kills the solver after given number of minutes.")
     public float timeout;
 
+    @CliParameter(help = "Kills the solver if its memory usage exceeds the bound (bytes).")
+    public long memLimit = -1;
+
     @CliParameter(help = "Runs backend in parallel.")
     public boolean parallel = false;
 

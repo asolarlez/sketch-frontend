@@ -242,6 +242,9 @@ public class ParallelBackend extends SATBackend {
         int old_d = options.solverOpts.randdegree;
         options.solverOpts.randdegree = d;
 
+        long old_m = options.solverOpts.memLimit;
+        options.solverOpts.memLimit = 4 * 1024 * 1024 * 1024; // 4G
+
         int old_v = options.debugOpts.verbosity;
         if (old_v < 5) {
             options.debugOpts.verbosity = 5; // to see hole concretization info
@@ -251,6 +254,7 @@ public class ParallelBackend extends SATBackend {
                 parallel_solve(oracle, hasMinimize, options.solverOpts.pTimeout, n);
 
         options.solverOpts.randdegree = old_d;
+        options.solverOpts.memLimit = old_m;
         options.debugOpts.verbosity = old_v;
         return stats;
     }
