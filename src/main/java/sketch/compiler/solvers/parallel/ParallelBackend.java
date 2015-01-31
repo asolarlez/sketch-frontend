@@ -228,12 +228,10 @@ public class ParallelBackend extends SATBackend {
         return stat;
     }
 
-    final static int test_trial_max = 10;
-
     protected List<SATSolutionStatistics> runTrials(ValueOracle oracle,
             boolean hasMinimize, int d)
     {
-        return runTrials(oracle, hasMinimize, d, test_trial_max);
+        return runTrials(oracle, hasMinimize, d, cpu);
     }
 
     protected List<SATSolutionStatistics> runTrials(ValueOracle orcle,
