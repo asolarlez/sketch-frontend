@@ -12,8 +12,33 @@ import sketch.util.cli.CliParameter;
  *          make changes, please consider contributing back!
  */
 public class SolverOptions extends CliAnnotatedOptionGroup {
+
+    private Object pTimeoutLock;
+
+    // will be called by backend killer thread
+    // to check whether it sleeps enough or not
+    // this method will return additional amounts it needs to sleep
+    public float checkPTimeout(float pTimeout) {
+        float diff = 0;
+        synchronized (pTimeoutLock) {
+            if (this.pTimeout > pTimeout) {
+                diff = this.pTimeout - pTimeout;
+            }
+        }
+        return diff;
+    }
+
+    // will be called by parallel manager
+    public float extendPTimeout() {
+        synchronized (pTimeoutLock) {
+            pTimeout = pTimeout * 2;
+        }
+        return pTimeout;
+    }
+
     public SolverOptions() {
         super("slv", "solver options");
+        pTimeoutLock = new Object();
     }
 
     @CliParameter(help = "Sets the optimization level for the compiler.")
@@ -36,7 +61,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public boolean parallel = false;
 
     @CliParameter(help = "Kills test trials after given number of minutes.")
-    public float pTimeout = (float) 1.53; // 91.8s
+    public float pTimeout = (float) 1; // 1m -> 2m -> ...
 
     @CliParameter(help = "Number of parallel trails.")
     public int pTrials = -1;

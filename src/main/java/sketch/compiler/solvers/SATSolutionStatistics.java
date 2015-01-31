@@ -19,6 +19,7 @@ public class SATSolutionStatistics extends SolutionStatistics {
 	protected long numControls;
 	protected long numControlBits;
 
+    public boolean killedByTimeout;
     public double probability;
     public String out;
 

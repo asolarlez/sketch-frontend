@@ -135,12 +135,18 @@ public class ParallelBackend extends SATBackend {
                 futures.add(f);
             }
             // plog("=== submitted parallel trials: " + nTrials + " ===");
+            float adaptiveTimeoutMins = timeoutMins;
             // check tasks' results in the order of their completion
             for (int i = 0; i < nTrials; i++) {
                 try {
                     SATSolutionStatistics r =
-                            ces.take().get((long) timeoutMins, TimeUnit.MINUTES);
+                            ces.take().get((long) adaptiveTimeoutMins, TimeUnit.MINUTES);
                     results.add(r);
+                    // if timed out during the learning phase, extend it
+                    if (r.killedByTimeout && stage == STAGE.LEARNING) {
+                        adaptiveTimeoutMins = options.solverOpts.extendPTimeout();
+                        plog("=== timeout extended to " + adaptiveTimeoutMins);
+                    }
                     // found a worker that finishes the job
                     if (r != null && r.successful()) {
                         plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
@@ -202,11 +208,11 @@ public class ParallelBackend extends SATBackend {
         }
     }
 
-    protected enum STAGE {
+    public enum STAGE {
         LEARNING, TESTING
     };
 
-    protected STAGE stage;
+    public static STAGE stage;
 
     @Override
     protected SATSolutionStatistics parseStats(String out) {

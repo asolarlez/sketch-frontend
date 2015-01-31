@@ -379,12 +379,14 @@ public class SATBackend {
         } else if (status.exception instanceof IOException) {
             System.err.println("Warning: lost some output from backend because of timeout.");
             SATSolutionStatistics err_stat = parseStats(status.out);
+            err_stat.killedByTimeout = true;
             err_stat.elapsedTimeMs = (long) (timeoutMins * 60 * 1000);
             err_stat.success = false;
             return err_stat;
         }
 
         SATSolutionStatistics be_stat = parseStats(status.out);
+        be_stat.killedByTimeout = false;
         be_stat.elapsedTimeMs = status.execTimeMs;
         be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
         lastSolveStats = be_stat;
