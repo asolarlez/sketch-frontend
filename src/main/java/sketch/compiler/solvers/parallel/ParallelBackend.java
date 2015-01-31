@@ -33,6 +33,7 @@ public class ParallelBackend extends SATBackend {
     private Object lock;
 
     protected int cpu;
+    protected int test_trial_max;
 
     public ParallelBackend(SketchOptions options, RecursionControl rcontrol,
             TempVarGen varGen)
@@ -46,6 +47,7 @@ public class ParallelBackend extends SATBackend {
         } else {
             cpu = Math.max(1, options.solverOpts.pCPUs);
         }
+        test_trial_max = Math.max(8, cpu);
 
         // if seed is given (to reproduce certain experiments, use it as-is
         // otherwise, use a random seed
@@ -231,7 +233,7 @@ public class ParallelBackend extends SATBackend {
     protected List<SATSolutionStatistics> runTrials(ValueOracle oracle,
             boolean hasMinimize, int d)
     {
-        return runTrials(oracle, hasMinimize, d, cpu);
+        return runTrials(oracle, hasMinimize, d, test_trial_max);
     }
 
     protected List<SATSolutionStatistics> runTrials(ValueOracle orcle,

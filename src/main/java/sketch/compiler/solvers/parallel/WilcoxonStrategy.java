@@ -108,7 +108,7 @@ public class WilcoxonStrategy extends ParallelBackend {
         plog(buf.toString());
     }
 
-    int sampleBound = cpu * 3;
+    int sampleBound = test_trial_max * 3;
     double pValue = 0.17;
 
     int compareDegree(int degree_a, int degree_b) throws Lucky {
