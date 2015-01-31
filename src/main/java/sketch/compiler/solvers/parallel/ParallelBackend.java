@@ -141,6 +141,7 @@ public class ParallelBackend extends SATBackend {
                 try {
                     SATSolutionStatistics r =
                             ces.take().get((long) adaptiveTimeoutMins, TimeUnit.MINUTES);
+                    if (r == null) continue; // means, aborted
                     results.add(r);
                     // if timed out during the learning phase, extend it
                     if (r.killedByTimeout && stage == STAGE.LEARNING) {
