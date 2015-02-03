@@ -76,6 +76,7 @@ import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
+import sketch.compiler.solvers.parallel.StrategicalBackend;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
@@ -287,7 +288,12 @@ public class SequentialSketchMain extends CommonSketchMain
         // sketchProg.result.debugDump("");
         if (prog.hasFunctions()) {
 
-            SATBackend solver = new SATBackend(options, internalRControl(), varGen);
+            SATBackend solver;
+            if (options.solverOpts.parallel) {
+                solver = new StrategicalBackend(options, internalRControl(), varGen);
+            } else {
+                solver = new SATBackend(options, internalRControl(), varGen);
+            }
 
             if (options.debugOpts.trace) {
                 solver.activateTracing();
@@ -612,6 +618,7 @@ public class SequentialSketchMain extends CommonSketchMain
         // TODO -- change class names so this is clear
         final SequentialSketchMain sketchmain = new SequentialSketchMain(args);
         PlatformLocalization.getLocalization().setTempDirs();
+        int exitCode = 0;
         try {
             sketchmain.run();
         } catch (SketchException e) {
@@ -620,7 +627,7 @@ public class SequentialSketchMain extends CommonSketchMain
                 throw e;
             } else {
                 // e.printStackTrace();
-                System.exit(1);
+                exitCode = 1;
             }
         } catch (java.lang.Error e) {
             ErrorHandling.handleErr(e);
@@ -628,7 +635,7 @@ public class SequentialSketchMain extends CommonSketchMain
             if (isTest) {
                 throw e;
             } else {
-                System.exit(1);
+                exitCode = 1;
             }
         } catch (RuntimeException e) {
             ErrorHandling.handleErr(e);
@@ -638,9 +645,13 @@ public class SequentialSketchMain extends CommonSketchMain
                 if (sketchmain.options.debugOpts.verbosity > 3) {
                     e.printStackTrace();
                 }
-                System.exit(1);
+                exitCode = 1;
             }
+        } finally {
+            System.out.println("Total time = " + (System.currentTimeMillis() - beg));
         }
-        System.out.println("Total time = " + (System.currentTimeMillis() - beg));
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
     }
 }
