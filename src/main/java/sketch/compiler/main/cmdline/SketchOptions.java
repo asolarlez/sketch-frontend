@@ -43,6 +43,7 @@ public class SketchOptions {
     /** nice name of the sketch */
     public String sketchName;
     public Vector<String> backendArgs;
+    public Vector<String> nativeArgs;
     protected String[] currentArgs;
     protected static SketchOptions _singleton;
     int randomAppendage = 0;
@@ -84,6 +85,7 @@ public class SketchOptions {
         // this.cudaOpts.parse(parser);
         args = solverOpts.parse(parser).get_args();
         this.backendArgs = parser.backendArgs;
+        this.nativeArgs = parser.nativeArgs;
         if (args.length < 1 || args[0].equals("")) {
             parser.printHelpAndExit("no files specified");
         }

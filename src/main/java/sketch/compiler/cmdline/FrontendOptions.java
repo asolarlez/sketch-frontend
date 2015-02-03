@@ -66,6 +66,10 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     public String outputDir = "./";
     @CliParameter(help = "Produce also a harness to test the generated C code.")
     public boolean outputTest;
+
+    @CliParameter(help = "Produce compilation script even if output-test was not used.")
+    public boolean outputScript;
+
     // @CliParameter(help = "Enable Fortran output")
     // public boolean outputFortran;
     @CliParameter(shortname="n", help = "Do not print out code (useful when using printfcn's")
