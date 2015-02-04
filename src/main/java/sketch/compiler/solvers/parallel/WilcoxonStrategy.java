@@ -133,8 +133,8 @@ public class WilcoxonStrategy extends ParallelBackend {
             long t = stat.elapsedTimeMs();
             //dist_tp.add((double) t / stat.probability);
             dist_t.add((double) t);
-            buf.append(t + " ");
             p.increment(stat.probability);
+            buf.append("(" + t + ", " + stat.probability + ") ");
         }
         buf.append("\n");
         buf.append(name + " degree " + degree + " probability: ");
