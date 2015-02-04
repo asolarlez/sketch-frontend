@@ -25,16 +25,29 @@ public class WilcoxonStrategy extends ParallelBackend {
     {
         super(options, rcontrol, varGen);
         tester = new WilcoxonSignedRankTest();
+        //dMap = new HashMap<Integer, List<Double>>();
         tMap = new HashMap<Integer, List<Double>>();
         pMap = new HashMap<Integer, Mean>();
     }
 
     WilcoxonSignedRankTest tester;
 
+    //Map<Integer, List<Double>> dMap;
     Map<Integer, List<Double>> tMap;
     Map<Integer, Mean> pMap;
 
     double[] computeDist(int degree) {
+        /*
+        if (!dMap.containsKey(degree)) {
+            return null;
+        }
+        List<Double> dist_tp = dMap.get(degree);
+        double[] dist = new double[dist_tp.size()];
+        for (int i = 0; i < dist_tp.size(); i++) {
+            dist[i] = dist_tp.get(i);
+        }
+        return dist;
+        */
         if (!tMap.containsKey(degree)) {
             return null;
         }
@@ -58,6 +71,17 @@ public class WilcoxonStrategy extends ParallelBackend {
     }
 
     double computeMean(int degree) {
+        /*
+        if (!dMap.containsKey(degree)) {
+            return 0;
+        }
+        List<Double> dist_tp = dMap.get(degree);
+        Mean m = new Mean();
+        for (Double tp : dist_tp) {
+            m.increment(tp);
+        }
+        return m.getResult();
+        */
         if (!tMap.containsKey(degree)) {
             return 0;
         }
@@ -78,14 +102,23 @@ public class WilcoxonStrategy extends ParallelBackend {
     }
 
     void sample(int degree) throws Lucky {
-        List<Double> dist;
+        //List<Double> dist_tp;
+        List<Double> dist_t;
         Mean p;
+        /*
+        if (dMap.containsKey(degree)) {
+            dist_tp = dMap.get(degree);
+        } else {
+            dist_tp = new ArrayList<Double>();
+            dMap.put(degree, dist_tp);
+        }
+        */
         if (tMap.containsKey(degree)) {
-            dist = tMap.get(degree);
+            dist_t = tMap.get(degree);
             p = pMap.get(degree);
         } else {
-            dist = new ArrayList<Double>();
-            tMap.put(degree, dist);
+            dist_t = new ArrayList<Double>();
+            tMap.put(degree, dist_t);
             p = new Mean();
             pMap.put(degree, p);
         }
@@ -98,7 +131,8 @@ public class WilcoxonStrategy extends ParallelBackend {
                 throw new Lucky(name + " lucky (degree: " + degree + ")");
             }
             long t = stat.elapsedTimeMs();
-            dist.add((double) t);
+            //dist_tp.add((double) t / stat.probability);
+            dist_t.add((double) t);
             buf.append(t + " ");
             p.increment(stat.probability);
         }
