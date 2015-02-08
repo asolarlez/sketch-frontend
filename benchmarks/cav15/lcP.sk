@@ -1,0 +1,212 @@
+//@Description This sketch synthesizes the Church encodings for Pair variants Pair, First, and Rest.
+
+/**
+ * Command line arguments that help control the depth of inlining for recursive functions. 
+ */
+pragma options "--bnd-inline-amnt 4";
+
+/**
+ * Data definitions
+ */
+adt srcAST{
+	NumS { int val;}
+	PairS { srcAST a; srcAST b;}
+	FirstS {srcAST a;}
+	SecondS {srcAST a;}
+}
+
+adt dstAST{
+	VarD { int name;}
+	AbsD { VarD var; dstAST a;}
+	AppD { dstAST a; dstAST b;}
+	NumD { int val;}
+}
+
+/**
+ * Function to synthesize
+ */
+dstAST desugar(srcAST s){
+	if(s == null){ return null; }
+	
+	switch(s){
+		repeat_case:
+		{
+			dstAST v1 = desugar(s.??);
+			dstAST v2 = desugar(s.??);
+			VarD var = new VarD(name = ??);
+			return ??(4, {v1, v2, var, s.??});
+		}
+	}
+}
+
+/**
+ * Test harness that checks symbolic srcASTs to depth 3.
+ */
+harness void main( int[20] arr){
+	int idx =0;
+	srcAST s = produce( arr, idx, 3);
+	srcAST c1 = interpretSrcAST(s);
+	if(c1!=null){
+		dstAST c2  = desugar(s);
+		dstAST c3 = interpretDstAST(c2);
+		assert(c3!=null);
+		assert(equals(c1,c3));
+	}
+}
+
+/////////////////////////
+// Helper functions
+/////////////////////////
+
+/**
+ * Interpreter for src language is used by the test harnesses to check the equivalence of the source and destination ASTs 
+ */
+srcAST interpretSrcAST(srcAST s){
+	if(s==null) return null;
+	
+	switch(s){
+		case FirstS:
+		{
+			srcAST pair = interpretSrcAST(s.a);
+			if(pair == null) return null;
+			switch(pair){
+				case PairS: return pair.a;
+				default: return null;
+			}
+		}
+		case SecondS:
+		{
+			srcAST pair = interpretSrcAST(s.a);
+			if(pair == null) return null;
+			switch(pair){
+				case PairS: return pair.b;
+				default: return null;
+			}
+		}
+		case PairS:
+		{
+			srcAST s_a = interpretSrcAST(s.a);
+			if(s_a ==null) return null;
+			bit valid = true;
+			switch(s_a){
+				case NumS: {}
+				default: valid = false;
+			}
+			srcAST s_b = interpretSrcAST(s.b);
+			if(s_b == null )return null;
+			switch(s_b){
+				case NumS: {}
+				default: valid = false;
+			}
+			if(valid) return new PairS(a = s_a, b = s_b);
+			else return null;
+		}
+		default: return s;	
+	}	
+}
+
+/**
+ * Interpreter for dst language 
+ */
+dstAST interpretDstAST(dstAST s){
+	if(s== null) return null;
+	
+	switch(s){
+		case AppD: {
+			dstAST s_a = interpretDstAST(s.a);
+			dstAST s_b = s.b;
+			if(s_a==null||s_b == null) return null;
+ 			switch(s_a){
+				case AbsD:{
+					dstAST s_new =  substitute(s_a.var, s_a.a, s_b);
+					if(s_new == null) return null;
+					return interpretDstAST(s_new);
+					
+				}
+				case AppD: return new AppD(a = s_a, b = s_b);
+				default: return null;
+			}
+			
+		}
+		case AbsD: {
+			if (s.var == null) return null;
+			return s;
+		}
+		default: return s;
+	}
+	return null;
+}
+
+// This variable count is used to generate new variables while substituting below.
+// All other variables in this sketch (including generated ones) are guaranteed to have str < 35.
+int count = 35;
+
+/**
+ * Function that performs the following transformation (\Lambda x.E_a) E_b -> E_a[E_b /x] on destination language.
+ */
+dstAST substitute(VarD x, dstAST E_a, dstAST E_b){ 
+	if (E_a ==null || E_b == null || x ==null) return null;
+	switch(E_a){
+		case AppD:
+		{
+			return new AppD(a = substitute(x, E_a.a, E_b), b = substitute(x, E_a.b, E_b));  
+		}
+		case AbsD:
+		{
+			VarD v = E_a.var;
+			if(v.name == x.name) {return E_a;}
+			else {
+				//E_a = Lambda y. E1
+				//create a new var z
+				VarD z = new VarD(name = count++);
+				//substitute y in E1 with z
+				dstAST e1 = substitute(v,E_a.a, z);
+				assert(e1!=null);
+				//Then substitute x with E_b
+				dstAST e2 = substitute(x, e1, E_b);
+				return new AbsD(var = z, a = e2);
+			}
+		}
+		case VarD:
+		{	
+			if (E_a.name == x.name) { return E_b;}
+			else {return E_a;}
+		}
+		case NumD: return E_a;
+	}
+	return null;
+}
+
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
+srcAST produce(int[20] encoding, ref int idx, int bnd){
+	if(bnd <=1 ){ 
+		 return new NumS(val=encoding[idx++]);  
+    }
+    
+    if(encoding[idx] == 0){ ++idx; return new NumS(val=encoding[idx++]); }
+ 	else if(encoding[idx] ==1){++idx; return new PairS(a = produce(encoding, idx, bnd-1), b = produce(encoding, idx, bnd-1));}
+    else if(encoding[idx] ==2){++idx; return new FirstS(a = produce(encoding,idx,bnd-1));}
+    else {++idx; return new SecondS(a = produce(encoding,idx,bnd-1));}
+}
+
+/**
+ * Checks that two srcAST and dstAST values represent the same value.
+ */
+bit equals(srcAST c1 ,dstAST c2){
+	if(c1==null) return true;
+	if(c2 == null) return false;
+	switch(c1){
+		case NumS:
+		{
+			switch(c2){
+				case NumD: return c1.val == c2.val;
+				default: return false;
+			}
+		}
+		
+		default: return true;
+	}
+}
+
