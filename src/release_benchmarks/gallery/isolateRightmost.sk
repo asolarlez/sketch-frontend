@@ -1,6 +1,5 @@
 //@Description Sketch to isolate the rightmost 0 index using only bit-vector operations.
 
-
 int W = 32;
 
 bit[W] isolate0 (bit[W] x) {     
