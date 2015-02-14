@@ -488,6 +488,11 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
         boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
+        List<Type> actualTypes = new ArrayList<Type>();
+        for (Expression ap : exp.getParams()) {
+            actualTypes.add(getType(ap));
+        }
+        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
         if (actSz != formSz) {
@@ -498,6 +503,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             int implSz = formSz - actSz;
             Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
             Iterator<Expression> actIt = exp.getParams().iterator();
+
             for (Parameter formal : f.getParams()) {
                 if (formal.isImplicit()) {
                     pm.put(formal.getName(), newParams.size());
@@ -512,7 +518,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         throw new ExceptionAtNode(
                                 "Named function parameters not supported. ", actual);
                     }
-                    Type ftt = formal.getType();
+                    Type formalType = tren.rename(formal.getType());
+                    Type ftt = formalType;
                     Type att = getType(actual);
                     while (ftt instanceof TypeArray) {
                         TypeArray ta = (TypeArray) ftt;
@@ -550,9 +557,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         typeCheck = false;
                     }
                     Type lt = getType(newParam);
-                    if (typeCheck &&
-                            (lt == null || !lt.promotesTo((formal.getType()), nres)))
-                    {
+
+                    if (typeCheck && (lt == null || !lt.promotesTo((formalType), nres))) {
                         report(exp, "Bad parameter type: Formal type=" + formal +
                                 "\n Actual type=" + lt + "  " + f);
                     }
@@ -583,9 +589,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 if (newParam instanceof ExprGet) {
                     typeCheck = false;
                 }
+
                 if (typeCheck) {
                     Type lt = getType(newParam);
-                    Type formalType = formal.getType();
+                    Type formalType = tren.rename(formal.getType());
                     formalType = formalType.addDefaultPkg(f.getPkg(), nres);
                     if (formalType instanceof TypeStructRef &&
                             ((TypeStructRef) formalType).getName() == null)
@@ -651,6 +658,11 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitFunction: " +
         // func.getName());
 
+        boolean hadTPs = !func.getTypeParams().isEmpty();
+        if (hadTPs) {
+            nres.pushTempTypes(func.getTypeParams());
+        }
+        try {
         curcx = func.getCx();
         currentFunctionReturn = func.getReturnType();
 
@@ -770,6 +782,11 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     func.getReturnType());
         }
         return tmp;
+        } finally {
+            if (hadTPs) {
+                nres.popTempTypes();
+            }
+        }
     }
 
     public boolean hasReturn;

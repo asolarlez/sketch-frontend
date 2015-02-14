@@ -1,4 +1,4 @@
-#include "edgeDetector.h"
+#include "HFILE"
 
 #include <cstring>
 

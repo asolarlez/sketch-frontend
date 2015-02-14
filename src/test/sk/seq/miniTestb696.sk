@@ -1,0 +1,30 @@
+
+int tt = ??;
+int qq = {| 3 | 4 | 7 | 12 | 66 |};
+
+
+harness void main0(int in, int an){
+    if(tt==7){
+        assert false;
+    }
+    assert qq > 13;
+}
+
+harness void main1(int in, int an){
+    if(tt==12){
+        in = in*2;
+        an = an*2;
+    }
+    if(tt==11){
+        in = in*3;
+        an = an*5;
+    }
+    
+    assert in % 3 == 0 && an % 5 == 0;    
+}
+
+harness void main2(int in, int an){
+    if(tt==4){
+        assert false;
+    }
+}

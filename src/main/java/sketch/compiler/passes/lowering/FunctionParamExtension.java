@@ -697,6 +697,14 @@ public class FunctionParamExtension extends SymbolTableVisitor
         VarReplacer vrep = new VarReplacer(pmap);
 		
 		int psz = 0;
+        List<Type> lt = new ArrayList<Type>();
+        if (!fun.getTypeParams().isEmpty()) {
+            for (Expression actual : exp.getParams()) {
+                lt.add(getType(actual));
+            }
+        }
+        TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt);
+
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
 			int ptype = p.getPtype();
@@ -711,7 +719,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			 args.add(oldArg);
              pmap.put(p.getName(), oldArg);
             } else {
-                Type tt = (Type) p.getType().accept(vrep);
+                Type tt = tr.rename((Type) p.getType().accept(vrep));
                 /*
                  * This looked like a nice optimization; the idea is that
                  * rather than creating a temporary for the output parameter,

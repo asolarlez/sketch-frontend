@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
@@ -53,8 +52,8 @@ public class SketchOptions {
         SketchCliParser parser = new SketchCliParser(inArgs);
         parseCommandline(parser);
         _singleton = this;
-        Random r = new Random();
-        randomAppendage = r.nextInt();
+        // Random r = new Random();
+        randomAppendage = 0; // r.nextInt();
     }
 
     /** let subclasses set different default values */

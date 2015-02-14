@@ -125,6 +125,39 @@ public class GlobalsToParams extends FEReplacer {
             }
         }
 
+
+        // Make sure specs and sketches get the same parameters even if they don't use the
+        // same globals.
+        for (Package pkg : prog.getPackages()) {
+            nres.setPackage(pkg);
+            for (Function f : pkg.getFuncs()) {
+                if (f.getSpecification() != null) {
+                    Function spec = nres.getFun(f.getSpecification());
+
+                    if (f.isWrapper() || spec.isWrapper()) {
+                        continue;
+                    }
+
+                    final HashMap<String, AddedParam> callerParams =
+                            newParamsForCall.getCreate(f);
+                    final HashMap<String, AddedParam> calleeParams =
+                            newParamsForCall.getCreate(spec);
+                    for (AddedParam calleeParam : calleeParams.values()) {
+                        if (!callerParams.containsKey(calleeParam.globalVar)) {
+                            callerParams.put(calleeParam.globalVar, new AddedParam(
+                                    calleeParam.globalVar, calleeParam.typ));
+                        }
+                    }
+                    for (AddedParam callerParam : callerParams.values()) {
+                        if (!calleeParams.containsKey(callerParam.globalVar)) {
+                            calleeParams.put(callerParam.globalVar, new AddedParam(
+                                    callerParam.globalVar, callerParam.typ));
+                        }
+                    }
+                }
+            }
+        }
+
         // add all initialization functions
         for (String fldName : this.fldNames.getFieldNames()) {
             final Expression fieldInit = fldNames.getFieldInit(fldName);
@@ -148,8 +181,10 @@ public class GlobalsToParams extends FEReplacer {
                 if (f.getSpecification() != null) {
                     Function spec = nres.getFun(f.getSpecification());
                     if (spec.getParams().size() != f.getParams().size()) {
+                        System.out.println(spec);
+                        System.out.println(f);
                         String msg =
-                                "The following global variables are not being updated by spec and sketch in the same way: ";
+                                "Some variables are not being updated by spec and sketch in the same way:";
                         Iterator<Parameter> p1 = spec.getParams().iterator();
                         Iterator<Parameter> p2 = f.getParams().iterator();
                         while (p1.hasNext() || p2.hasNext()) {

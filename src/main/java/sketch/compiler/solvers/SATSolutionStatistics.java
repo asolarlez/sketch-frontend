@@ -19,6 +19,10 @@ public class SATSolutionStatistics extends SolutionStatistics {
 	protected long numControls;
 	protected long numControlBits;
 
+    public boolean killedByTimeout;
+    public double probability;
+    public String out;
+
 	public long elapsedTimeMs () 	   {  return elapsedTimeMs;  }
 	public long maxMemoryUsageBytes () {  return maxMemUsageBytes;  }
 	public long modelBuildingTimeMs () {  return modelBuildingTimeMs;  }

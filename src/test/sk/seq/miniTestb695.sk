@@ -1,0 +1,16 @@
+struct shape{ }
+struct circle extends shape{  int x; }
+
+
+
+harness void main(){
+    shape sh(){
+        circle c = new circle(x=??);
+        assert c.x > 10;
+        return c;
+    }
+    
+    shape t = sh();
+    assert ((circle) t).x == 10;        
+    
+}

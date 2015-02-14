@@ -1168,8 +1168,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
             while (!vcond.isBottom() &&
  vcond.getIntVal() > 0 &&
-                    !state.rvflag.absVal.isBottom() &&
-                    state.rvflag.absVal.getIntVal() == 0)
+                    ((!state.rvflag.absVal.isBottom() && state.rvflag.absVal.getIntVal() == 0) || stmt.isCanonical()))
             {
                 ++iters;
                 stmt.getBody().accept(this);

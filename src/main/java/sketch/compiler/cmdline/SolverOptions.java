@@ -12,28 +12,86 @@ import sketch.util.cli.CliParameter;
  *          make changes, please consider contributing back!
  */
 public class SolverOptions extends CliAnnotatedOptionGroup {
-    public SolverOptions() {
-        super("slv", "solver options");
+
+    private Object pTimeoutLock;
+
+    // will be called by backend killer thread
+    // to check whether it sleeps enough or not
+    // this method will return additional amounts it needs to sleep
+    public float checkPTimeout(float pTimeout) {
+        float diff = 0;
+        synchronized (pTimeoutLock) {
+            if (this.pTimeout > pTimeout) {
+                diff = this.pTimeout - pTimeout;
+            }
+        }
+        return diff;
     }
 
-    
+    // will be called by parallel manager
+    public float extendPTimeout() {
+        synchronized (pTimeoutLock) {
+            pTimeout = pTimeout * 2;
+        }
+        return pTimeout;
+    }
+
+    public SolverOptions() {
+        super("slv", "solver options");
+        pTimeoutLock = new Object();
+    }
+
     @CliParameter(help = "Sets the optimization level for the compiler.")
     public int olevel = -1;
+
     @CliParameter(help = "Seeds the random number generator. If set to zero, a random seed is used.")
-    public int seed;
+    public int seed = 0;
+
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public SynthSolvers synth = SynthSolvers.NOT_SET;
-    @CliParameter(help = "Kills the solver after given number of minutes. ")
+
+    @CliParameter(help = "Kills the solver after given number of minutes.")
     public float timeout;
+
+    @CliParameter(help = "Kills the solver if its memory usage exceeds the bound (bytes).")
+    public long memLimit = -1;
+
+    @CliParameter(help = "Runs backend in parallel.")
+    public boolean parallel = false;
+
+    @CliParameter(help = "Kills test trials after given number of minutes.")
+    public float pTimeout = (float) 1; // 1m -> 2m -> ...
+
+    @CliParameter(help = "Number of parallel trails.")
+    public int pTrials = -1;
+
+    @CliParameter(help = "Number of cores to use.")
+    public int pCPUs = -1;
+
+    @CliParameter(help = "Concretize high-impact holes.")
+    public boolean randassign = false;
+
+    @CliParameter(help = "Degree of randomness for hole concretization.")
+    public int randdegree = 0;
+
+    @CliParameter(help = "Strategy for parallel-running.")
+    public Strategies strategy = Strategies.NOT_SET;
+
+    public enum Strategies {
+        NOT_SET, MIN_TIME, MAX_TIME, WILCOXON
+    }
+
     @CliParameter(help = "SAT solver to use for verification. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public VerifSolvers verif = VerifSolvers.NOT_SET;
+
     @CliParameter(help = "How reorder blocks should be rewritten. Options: "
             + "'exponential' to use 'insert' blocks, 'quadratic' to use a loop of switch "
             + "statements. Default value is exponential.")
     public ReorderEncoding reorderEncoding = ReorderEncoding.exponential;
-    @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs")
+
+    @CliParameter(help = "Helps performance on bitvector benchmarks. Avoids producing completely random inputs.")
     public boolean simpleInputs = false;
 
     @CliParameter(help = "Performs lightweight verification instead of full bounded verification.")
@@ -45,7 +103,6 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public enum ReorderEncoding {
         exponential, quadratic
     }
-
 
     public enum SynthSolvers {
         NOT_SET, ABC, MINI
