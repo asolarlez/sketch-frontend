@@ -43,7 +43,8 @@ Image* readImage(const string& s){
 	unsigned char* tb = new unsigned char[tempW];
 	for ( int y=0; y<height; y++){
 		fread(tb, 1, tempW, FU);		
-		for ( int x=0; x< tempW ; x+=1){				
+		for ( int x=0; x< width*3 ; x+=1){			
+
 			rv->im[y*width*3+x+0]= tb[x+0];
 			//rv->im[y*width*3+x+1]= tb[x+1];
 			//rv->im[y*width*3+x+2]= tb[x+2];
@@ -88,7 +89,7 @@ void writeImage(Image* im){
 	int tempW=(width * 3  + (4 - ((width*3) % 4))%4);
 	unsigned char* tb = new unsigned char[tempW];
 	for ( int y=0; y<height; y++){
-		for (int x=0; x< tempW ; x++){
+		for (int x=0; x< width*3 ; x++){
 			tb[x] = im->im[y*width*3+x]; 			
 		}
 		fwrite(tb, 1, tempW, FU);

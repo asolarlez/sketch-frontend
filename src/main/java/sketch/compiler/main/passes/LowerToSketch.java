@@ -36,7 +36,7 @@ public class LowerToSketch extends MetaStage {
         // prog.debugDump("afterMergeADT");
         prog = (Program) prog.accept(new EliminateGenerics());
 
-        prog.debugDump("after Generics");
+        // prog.debugDump("after Generics");
 
         if (false) {
             prog = (Program) prog.accept(new CombineFunctionCalls(varGen));

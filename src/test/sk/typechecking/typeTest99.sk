@@ -1,0 +1,18 @@
+package P2{
+    int foo<T>(fun f, T t){
+        return f(t);
+    }
+    Q moo<T, Q>(fun f, fun ff, T t, Q q){
+        return ff(foo(f,t), q);
+    }
+    T g<T>(T i){ 
+        return i;
+    }
+    harness void main(int q){        
+        int gg(int x, int y){
+            return x + y;
+        }
+        assert foo(g, q)==q; // TypeError: Functions passed as arguments cannot have polymorphic outputs.
+        assert moo(g, gg, q, q)==2*q;
+    }    
+}

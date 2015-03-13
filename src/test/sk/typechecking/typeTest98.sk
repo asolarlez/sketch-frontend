@@ -1,0 +1,17 @@
+package P2{
+    
+    T apply<T>(T t1, Q t2, fun f){//TypeError Q is undefined.
+        return f(t1, t2);
+    }
+    
+    T reduce<T>(T t1, T t2, T t3, fun add){
+        T tt = apply(t1, t2, add);
+        return apply(tt, t3, add);
+    }
+    harness void main(int q){        
+        int gg(int x, int y){
+            return x + y;
+        }
+        assert reduce(q, 5, 3, gg)==q+??;
+    }    
+}
