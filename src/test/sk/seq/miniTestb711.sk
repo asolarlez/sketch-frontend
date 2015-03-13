@@ -1,0 +1,15 @@
+int moo = {| 10 | 20 |};
+
+
+void foo(){
+    
+    moo = moo + 10;
+}
+
+harness void main(int i){
+    foo();
+    int x = i + moo;
+    assert x > i + 22;
+    
+    
+}

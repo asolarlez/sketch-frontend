@@ -1,0 +1,17 @@
+
+int[4] mo = {25, 12, 3, 4};
+int moo = mo[0]; //TypeError
+
+
+void foo(){
+    
+    moo = moo + 10;
+}
+
+harness void main(int i){
+    foo();
+    int x = i + moo;
+    assert x > i + 22;
+    
+    
+}

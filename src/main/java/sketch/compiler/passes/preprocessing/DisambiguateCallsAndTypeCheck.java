@@ -267,7 +267,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     public Object visitExprVar(ExprVar ev) {
         if (inFieldDecl) {
             report(ev,
-                    "You can not use non-final global variables as initializers to other global variables.");
+                    "Constant integers and regex choices of constant integers are the only global variables you can use as initializers to other global variables.");
         }
         return ev;
     }
