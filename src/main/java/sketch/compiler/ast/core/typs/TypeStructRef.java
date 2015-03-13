@@ -106,6 +106,27 @@ public class TypeStructRef extends Type
         return TypeComparisonResult.NEQ;
     }
 
+    public Type leastCommonPromotion(Type that, NameResolver nres) {
+        if (this.promotesTo(that, nres))
+            return that;
+        if (that.promotesTo(this, nres))
+            return this;
+        if ((that instanceof TypeStructRef)) {
+            TypeStructRef tsr = (TypeStructRef) that;
+            String name1 = nres.getStructName(tsr.name);
+            String name1parent = nres.getStructParentName(name1);
+
+            String name2 = nres.getStructName(name);
+            String name2parent = nres.getStructParentName(name2);
+
+            if (name1parent != null && name2parent != null) {
+                return (new TypeStructRef(name2parent, isUnboxed)).leastCommonPromotion(
+                        new TypeStructRef(name1parent, tsr.isUnboxed), nres);
+            }
+        }
+        return null;
+    }
+
     public boolean promotesTo(Type that, NameResolver nres) {
         if (super.promotesTo(that, nres))
             return true;

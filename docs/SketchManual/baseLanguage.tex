@@ -230,7 +230,7 @@ struct Array{
 Array filter(Array arr){
 	int outsz = 0;
 	int[arr.sz] out;
-	for(int i=0; i<N; ++i){
+	for(int i=0; i<arr.sz; ++i){
 		if(arr.A[i]%2 == 0){
 			out[outsz++] = arr.A[i];
 		}

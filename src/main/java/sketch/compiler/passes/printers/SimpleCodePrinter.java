@@ -305,7 +305,7 @@ public class SimpleCodePrinter extends CodePrinter
 	@Override
 	public Object visitFieldDecl(FieldDecl field)
 	{
-		printLine(field.toString());
+        printLine(field.toString() + ";");
 		return super.visitFieldDecl(field);
 	}
 

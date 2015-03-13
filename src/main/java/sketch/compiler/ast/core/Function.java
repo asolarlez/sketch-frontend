@@ -1,5 +1,6 @@
 package sketch.compiler.ast.core;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -132,6 +133,7 @@ public class Function extends FENode {
     private final String name; // or null
     private final Type returnType;
     private final List<Parameter> params;
+    private final List<String> typeParams;
     private final Statement body;
     private final String fImplements;
     private final FcnInfo fcnInfo;
@@ -151,6 +153,7 @@ public class Function extends FENode {
         private String pkg;
         private Type returnType;
         private List<Parameter> params;
+        private List<String> typeParams;
         private Statement body;
         private String implementsName;
         private FcnInfo fcnInfo;
@@ -167,6 +170,7 @@ public class Function extends FENode {
             this.implementsName = base.fImplements;
             this.annotations = base.annotations;
             this.fcnInfo = base.getInfo();
+            this.typeParams = base.typeParams;
         }
 
         public FunctionCreator(Object n) {
@@ -178,6 +182,7 @@ public class Function extends FENode {
             this.body = null;
             this.implementsName = null;
             this.fcnInfo = new FcnInfo(FcnType.Static);
+            this.typeParams = new ArrayList<String>();
         }
 
         public FunctionCreator name(final String name) {
@@ -187,6 +192,15 @@ public class Function extends FENode {
 
         public FunctionCreator pkg(final String pkg) {
             this.pkg = pkg;
+            return this;
+        }
+
+        public FunctionCreator typeParams(final List<String> tp) {
+            if (tp == null) {
+                this.typeParams = new ArrayList<String>();
+            } else {
+                this.typeParams = tp;
+            }
             return this;
         }
 
@@ -277,11 +291,11 @@ public class Function extends FENode {
         public Function create() {
             if (base == null || base instanceof FEContext) {
                 return new Function((FEContext) base, fcnInfo, name, pkg, returnType,
-                        params,
+                        params, typeParams,
                         implementsName, body, annotations);
             } else {
                 return new Function((FENode) base, fcnInfo, name, pkg, returnType,
-                        params,
+                        params, typeParams,
                         implementsName, body, annotations);
             }
         }
@@ -301,7 +315,8 @@ public class Function extends FENode {
 
     protected Function(FENode context, FcnInfo fcnInfo, String name, String pkg,
             Type returnType,
-            List<Parameter> params, String fImplements, Statement body,
+ List<Parameter> params, List<String> typeParams,
+            String fImplements, Statement body,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
@@ -310,6 +325,7 @@ public class Function extends FENode {
         this.pkg = pkg;
         this.returnType = returnType;
         this.params = params;
+        this.typeParams = typeParams;
         this.body = body;
         this.fImplements = fImplements;
         this.annotations = annotations;
@@ -319,7 +335,8 @@ public class Function extends FENode {
     @SuppressWarnings("deprecation")
     protected Function(FEContext context, FcnInfo fcnInfo, String name, String pkg,
             Type returnType,
-            List<Parameter> params, String fImplements, Statement body,
+ List<Parameter> params, List<String> typeParams,
+            String fImplements, Statement body,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
@@ -329,6 +346,7 @@ public class Function extends FENode {
         this.params = params;
         this.pkg = pkg;
         this.body = body;
+        this.typeParams = typeParams;
         this.fImplements = fImplements;
         this.annotations = annotations;
         assert annotations != null;
@@ -359,6 +377,10 @@ public class Function extends FENode {
         return getFcnType() == FcnType.Wrapper;
     }
 
+    public boolean isGeneric() {
+        return typeParams.size() > 0;
+    }
+
     public boolean isModel() {
         return getFcnType() == FcnType.Model;
     }
@@ -377,6 +399,10 @@ public class Function extends FENode {
      */
     public List<Parameter> getParams() {
         return Collections.unmodifiableList(params);
+    }
+
+    public List<String> getTypeParams() {
+        return typeParams;
     }
 
     /** Returns the return type of this function. */
@@ -424,11 +450,28 @@ public class Function extends FENode {
         return s;
     }
 
+    String printTypeParams() {
+        if (!typeParams.isEmpty()) {
+            String rv = "<";
+            boolean frst = true;
+            for (String s : typeParams) {
+                if (!frst) {
+                    rv += ", ";
+                }
+                rv += s;
+            }
+            return rv + ">";
+        }
+        return "";
+    }
+
     public String getSummary() {
         final String impl = fImplements != null ? " implements " + fImplements : "";
         return new ScRichString(" ").joinNonempty(fcnInfo.solveType.cCodeName,
                 fcnInfo.cudaType.cCodeName,
-                fcnInfo.fcnType.cCodeName, returnType, name, "(" + printParams() + ")", impl);
+ fcnInfo.fcnType.cCodeName, returnType,
+ name,
+                printTypeParams(), "(" + printParams() + ")", impl);
     }
 
     public String toString() {

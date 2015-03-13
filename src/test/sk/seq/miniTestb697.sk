@@ -1,0 +1,17 @@
+int MEM_SIZE = 4;
+int BIT_SIZE = 17;
+
+bit[BIT_SIZE][MEM_SIZE] spec(bit[BIT_SIZE][MEM_SIZE] mem) {
+    mem[0] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+    return mem;
+}
+
+bit[BIT_SIZE][MEM_SIZE] sketch(bit[BIT_SIZE][MEM_SIZE] mem) implements spec {
+     
+    // not okay
+    mem[??] = ??;
+
+    // okay
+    // mem[0] = ??;
+    return mem;
+}

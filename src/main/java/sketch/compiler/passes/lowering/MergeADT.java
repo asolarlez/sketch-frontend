@@ -76,6 +76,11 @@ public class MergeADT extends SymbolTableVisitor {
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
         StructDef sd = nres.getStruct(t.getName());
+
+        if (sd == nres.template) {
+            return t;
+        }
+
         String oldName = sd.getFullName();
 
         StructCombinedTracker tracker = structs.get(oldName);

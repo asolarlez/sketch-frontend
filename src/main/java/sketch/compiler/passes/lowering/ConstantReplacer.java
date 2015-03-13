@@ -11,21 +11,18 @@ import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprTypeCast;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.GetAssignLHS;
+import sketch.util.Misc;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
@@ -83,17 +80,19 @@ public class ConstantReplacer extends FEReplacer {
         shadows.add(vname);
     }
 
-    protected HashMap<String, Integer> constants;
+    protected HashMap<String, Expression> constants;
     protected HashSet<String> constVars;
 
-	public ConstantReplacer(Map<String, Integer> subs) {
-		constants=new HashMap<String,Integer>();
+    public ConstantReplacer(Map<String, Expression> subs) {
+        constants = new HashMap<String, Expression>();
 		if(subs != null){
 			constants.putAll(subs);
 		}
 	}
 
+    Expression replacement = null;
 	private boolean addConstant(Type type, String name, Expression init) {
+        replacement = null;
 		if(init==null) return false;
 		init=(Expression) init.accept(this);
 		if(init instanceof ExprConstInt) {
@@ -101,12 +100,93 @@ public class ConstantReplacer extends FEReplacer {
             if (!constVars.contains(name)) {
                 return false;
             }
-			constants.put(name,((ExprConstInt)init).getVal());
+            constants.put(name, init);
 			return true;
 		}
+        if (type.equals(TypePrimitive.inttype)) {
+            if (init instanceof ExprStar) {
+                if (constants.get(name) != null)
+                    return false;
+                if (!constVars.contains(name)) {
+                    return false;
+                }
+                constants.put(name, new ExprStar((ExprStar) init, true));
+                // If it is ExprStar, we want to keep around the global variable
+                return false;
+            }
+            if (init instanceof ExprRegen &&
+                    ((ExprRegen) init).getExpr() instanceof ExprAlt)
+            {
+                ExprAlt alts = (ExprAlt) ((ExprRegen) init).getExpr();
+                List<Expression> clist = new ArrayList<Expression>();
+                clist = allConstants(alts, clist);
+                if (clist == null) {
+                    return false;
+                }
+                if (constants.get(name) != null)
+                    return false;
+                if (!constVars.contains(name)) {
+                    return false;
+                }
+                replacement = newChoices(init, clist);
+                constants.put(name, replacement);
+                // If it is ExprStar, we want to keep around the global variable
+                return false;
+            }
+        }
 		return false;
 	}
 
+    Expression newChoices(Expression cx, List<Expression> clist) {
+        ExprStar es = new ExprStar(cx, Misc.nBitsBinaryRepr(clist.size()), true);
+        return toConditional(es, clist, 0);
+    }
+
+    private Expression toConditional(Expression which, List<Expression> exps, int i) {
+        return new ExprArrayRange(new ExprArrayInit(which, exps), which);
+        
+        /*
+        if ((i + 1) == exps.size())
+            return exps.get(i);
+        else {
+            Expression cond =
+                    new ExprBinary(which, "==",
+                            ExprConstant.createConstant(which, "" + i));
+            return new ExprTernary("?:", cond, exps.get(i), toConditional(which, exps,
+                    i + 1));
+        }*/
+    }
+
+    List<Expression> allConstants(ExprAlt choices, List<Expression> le) {
+        Expression e1 = choices.getThis();
+        if (e1 instanceof ExprConstInt) {
+            le.add(e1);
+        } else {
+            if (e1 instanceof ExprAlt) {
+                List<Expression> t = allConstants((ExprAlt) e1, le);
+                if (t == null) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        Expression e2 = choices.getThat();
+        if (e2 instanceof ExprConstInt) {
+            le.add(e2);
+        } else {
+            if (e2 instanceof ExprAlt) {
+                List<Expression> t = allConstants((ExprAlt) e2, le);
+                if (t == null) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+        return le;
+    }
 
 
 	@SuppressWarnings("unchecked")
@@ -123,6 +203,9 @@ public class ConstantReplacer extends FEReplacer {
 			Expression init=field.getInit(i);
 			if(!addConstant(type,name,init)) {
 			    // add it to a list to put back into the FieldDecls
+                if (replacement != null) {
+                    init = replacement;
+                }
 				types.add(type);
 				names.add(name);
 				inits.add(init);
@@ -132,19 +215,14 @@ public class ConstantReplacer extends FEReplacer {
 		return new FieldDecl(field,types,names,inits);
 	}
 
-    /** can be overridden by subclasses */
-    public Expression replaceConstantExpr(ExprVar exp, int val) {
-        return new ExprConstInt(exp, val);
-    }
 
 	public Object visitExprVar(ExprVar exp) {
-		// TODO we should not be rewritign l-values right?  Add the code below?
-		// if (exp.isLValue()) return exp;
-		Integer val=constants.get(exp.getName());
+
+        Expression val = constants.get(exp.getName());
         if (val == null || shadows.contains(exp.getName())) {
             return exp;
         } else {
-            return replaceConstantExpr(exp, val);
+            return val;
         }
 	}
 

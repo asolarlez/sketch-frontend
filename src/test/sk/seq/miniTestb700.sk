@@ -1,0 +1,14 @@
+
+int y;
+int z;
+int fi(int x){
+    if(y > 0 && z > 0){ 
+        return x;
+    }else{
+        return x;
+    }
+}
+
+int foo(int x) implements fi{
+    return x +z*??;
+}

@@ -1,0 +1,8 @@
+harness void main(int n){
+    assume n == 6;
+    int[n] tt = {1,2,3,4,5,6};
+    int x = tt[1];
+    tt[0::3] = tt[3::3];
+    tt[0] = x;
+    assert tt[0] == ??;    
+}

@@ -1,0 +1,20 @@
+
+T[n] nc<T>(T x, int n){
+    T[n] rv;
+    for(int i=0; i<n; ++i){
+        rv[i] = x;
+    }
+    return rv;
+}
+
+struct Some{
+    int x;
+}
+
+harness void main(){
+    int [5] x = nc(7, 5);
+    Some[2] y = nc(new Some(x=3), 2);
+    assert y[1].x == 3;
+    assert x[3] == 7;
+    
+}

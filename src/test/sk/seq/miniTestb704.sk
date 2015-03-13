@@ -1,65 +1,35 @@
-//@Description This sketch derives the desugar function between two simple toy languages.
 
-/**
- * Data definitions.
- */
-adt srcAST {
-	NumS{ int v;}
-	PlusS{ srcAST a; srcAST b;}
-	MinusS{ srcAST a; srcAST b;}
-	TrueS{}
-	FalseS{}
-}
-
-adt dstAST{
-	NumD{ int v;}
-	BinopD{ opcode op; dstAST a; dstAST b;}
-	BoolD{ bit val;}
-}
-
-adt opcode{
-	PlusOp{}
-	MinusOp{}
+package P2{
+    
+    T apply<T, Q>(T t1, Q t2, fun f){
+        return f(t1, t2);
+    }
+    
+    T reduce<T>(T t1, T t2, T t3, fun add){
+        T tt = apply(t1, t2, add);
+        return apply(tt, t3, add);
+    }
+    harness void main(int q){        
+        int gg(int x, int y){
+            return x + y;
+        }
+        assert reduce(q, 5, 3, gg)==q+??;
+    }    
 }
 
-/**
- * Function to synthesize.
- */
-dstAST desugar(srcAST src){
-	if (src == null) return null;
-	switch(src) {
-		repeat_case: {
-			return new ??( a= desugar(src.??), b= desugar(src.??),
-			 op= ??, v=src.??, val=??);
-		}
-	}
-}
-
-
-/**
- * Test harnesses
- */
-harness void main1() {
-	srcAST in = new FalseS();
-	dstAST out  = desugar(in);
-	dstAST exp = new BoolD(val = 0);
-	assert exp === out;
-}
-harness void main2() {
-	srcAST in = new TrueS();
-	dstAST out  = desugar(in);
-	dstAST exp = new BoolD(val = 1);
-	assert exp === out;
-}
-harness void main3(int x1, int x2) {
-	srcAST in = new MinusS(a=new NumS(v=x1), b=new NumS(v=x2));
-	dstAST out = desugar(in);
-	dstAST exp = new BinopD( op = new MinusOp(), a=new NumD(v=x1), b=new NumD(v=x2)); 
-	assert exp === out;
-}
-harness void main4(int x1, int x2) {
-	srcAST in = new PlusS(a=new NumS(v=x1), b=new NumS(v=x2));
-	dstAST out = desugar(in);
-	dstAST exp = new BinopD( op = new PlusOp(), a=new NumD(v=x1), b=new NumD(v=x2)); 
-	assert exp === out;
+package P1{
+        
+    T reduce<T>(T t1, T t2, T t3, fun add){
+        T doTwo(){
+            T tt = apply@P2(t1, t2, add);
+            return tt;
+        }
+        return apply@P2(doTwo(), t3, add);
+    }
+    int gg<T>(int x, T y){
+        return x;
+    }
+    harness void main(int q){                
+        assert reduce(q, 5, 3, gg)==q+??;
+    }    
 }

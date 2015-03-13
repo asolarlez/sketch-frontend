@@ -41,9 +41,14 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "(Deprecated) System will ignore this flag.")
     public int heapSize = 11;
+
+    @CliParameter(help = "Max size of DAG")
+    public int dagSize = -1;
+
     @CliParameter(help = "Tells the solver to incrementally grow the size of integer "
             + "holes from 1 to n bits.")
     public CliOptional<Integer> incremental = new CliOptional<Integer>(5);
+
     @CliParameter(help = "Bounds inlining to n levels of recursion, so each "
             + "function can appear at most n times in the stack.")
     public int inlineAmnt = 5;
