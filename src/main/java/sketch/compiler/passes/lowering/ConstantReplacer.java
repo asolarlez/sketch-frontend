@@ -96,18 +96,16 @@ public class ConstantReplacer extends FEReplacer {
         replacement = null;
 		if(init==null) return false;
 		init=(Expression) init.accept(this);
-		if(init instanceof ExprConstInt) {
-			if(constants.get(name)!=null) return false;
+        if (init instanceof ExprConstInt) {
             if (!isFinal(name)) {
                 return false;
             }
             constants.put(name, init);
+            replacement = init;
 			return true;
 		}
         if (type.equals(TypePrimitive.inttype)) {
             if (init instanceof ExprStar) {
-                if (constants.get(name) != null)
-                    return false;
                 if (!isFinal(name)) {
                     return false;
                 }
@@ -124,8 +122,6 @@ public class ConstantReplacer extends FEReplacer {
                 if (clist == null) {
                     return false;
                 }
-                if (constants.get(name) != null)
-                    return false;
                 if (!isFinal(name)) {
                     replacement = newChoices(init, clist);
                     return false;
@@ -193,7 +189,7 @@ public class ConstantReplacer extends FEReplacer {
 
 	@SuppressWarnings("unchecked")
 	public Object visitFieldDecl(FieldDecl field) {
-        System.out.println(field.toString() + '@' + currPkg);
+        System.out.print(field.toString() + '@' + currPkg);
 		field=(FieldDecl) super.visitFieldDecl(field);
 		//if it's statically computable (constant), store it in
 		//our hash table and remove it from the program
@@ -207,11 +203,16 @@ public class ConstantReplacer extends FEReplacer {
 			if(!addConstant(type,name,init)) {
 			    // add it to a list to put back into the FieldDecls
                 if (replacement != null) {
+                    System.out.print("  W Replacement ");
                     init = replacement;
                 }
 				types.add(type);
 				names.add(name);
 				inits.add(init);
+                System.out.println("  NOT CONST.");
+            } else {
+                System.out.println("  IS CONST.");
+
 			}
 		}
 		if(types.isEmpty()) return null;
@@ -351,6 +352,7 @@ public class ConstantReplacer extends FEReplacer {
         nres = constInfo.getNres();
         for (Package pk : prog.getPackages()) {
             currPkg = pk.getName();
+            nres.setPackage(pk);
             for (FieldDecl fd : pk.getVars()) {
                 fd.accept(this);
             }
@@ -513,12 +515,15 @@ public class ConstantReplacer extends FEReplacer {
             nres = new NameResolver(p);
             for (Package pk : p.getPackages()) {
                 currPkg = pk.getName();
+                nres.setPackage(pk);
                 for (FieldDecl fd : pk.getVars()) {
                     fd.accept(this);
                 }
             }
 
             for (Package pk : p.getPackages()) {
+                nres.setPackage(pk);
+                currPkg = pk.getName();
                 for (Function f : pk.getFuncs()) {
                     f.accept(this);
                 }

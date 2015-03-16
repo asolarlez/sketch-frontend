@@ -1,4 +1,4 @@
-bit N = 5;
+int N = 5;
 
 bit[N] spec(bit[N] in1, int in2){
 	if(in2<N){

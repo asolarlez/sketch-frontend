@@ -1,0 +1,23 @@
+
+package A{
+    int X = 2;
+    harness void main(int in){
+        X = X + 3;
+        assert in + X == in + ??;
+    }
+    
+}
+
+package B{
+    int X = 2;
+    harness void main(int in){
+        X = X + 1;
+        assert in + X < in + 4;
+    }    
+}
+
+package C{    
+    harness void main(int in){        
+        assert in + 2 < in + 4;
+    }    
+}

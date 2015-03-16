@@ -6,30 +6,16 @@ while(t>0){
            y = y-1;
            t = t-1;
 }
-Assert k <= k_0;
+Assert y <= k_0;
 
 */
-
-pragma options "--bnd-unroll-amnt 3";
-
+include "generators.skh";
+pragma options "--bnd-inline-amnt 3";
 
 bit inv(int y, int y_0, int k, int k_0, int t){
-	generator bit genexp(){
-		int lhs = {| (y | y_0 | k | k_0 | t | ??) |};
-		int rhs = {|  ((y | y_0 | k | k_0 | t | ??) (+ | -) (y | y_0 | k | k_0 | t | ??)) |};
-		rhs = {| rhs (+ | -) (y | y_0 | k | k_0 | t | ??) |};
-		return {| lhs (< | <= | == ) rhs |};
-	}
-    return genexp();
-    return rv;
+return exprBool({y, y_0, k, k_0, t}, {PLUS}); 
+    
 }
-
-
-/*
-bit inv(int y, int y_0, int k, int k_0, int t){
-	return y==y_0 + k_0 - t;
-}
-*/
 
 
 harness void main(int y, int y_0, int k, int k_0, int t,
@@ -46,3 +32,4 @@ harness void main(int y, int y_0, int k, int k_0, int t,
    }
 
 }
+
