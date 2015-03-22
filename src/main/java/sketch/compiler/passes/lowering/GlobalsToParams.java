@@ -219,6 +219,7 @@ public class GlobalsToParams extends FEReplacer {
 
     @Override
     public Object visitPackage(Package spec) {
+        callGraph.getNres().setPackage(spec);
         spec = (Package) super.visitPackage(spec);
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         for (Function fcn : this.fcnsToAdd) {
