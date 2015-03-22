@@ -188,8 +188,7 @@ public class ConstantReplacer extends FEReplacer {
 
 
 	@SuppressWarnings("unchecked")
-	public Object visitFieldDecl(FieldDecl field) {
-        System.out.print(field.toString() + '@' + currPkg);
+    public Object visitFieldDecl(FieldDecl field) {
 		field=(FieldDecl) super.visitFieldDecl(field);
 		//if it's statically computable (constant), store it in
 		//our hash table and remove it from the program

@@ -313,13 +313,20 @@ public class GlobalsToParams extends FEReplacer {
         return new ExprFunCall(callParam, callParam.getName(), fcnArgs);
     }
 
+    static String compName(String nm, String pkg) {
+        return nm + "__" + pkg;
+    }
+
     @Override
     public Object visitExprVar(ExprVar exp) {
-        if (fldNames.hasName(exp.getName()) && (enclosingFcn != null)) {
+        String pkgname = nres.curPkg().getName();
+        if (fldNames.hasName(exp.getName(), pkgname) &&
+                (enclosingFcn != null))
+        {
             final TreeMap<String, AddedParam> fcnGlbls =
                     newParamsForCall.get(enclosingFcn);
             assert fcnGlbls != null : "no key for function " + enclosingFcn;
-            final AddedParam paramvar = fcnGlbls.get(exp.getName());
+            final AddedParam paramvar = fcnGlbls.get(compName(exp.getName(), pkgname));
             assert paramvar != null : "no parameter variable for " + exp.getName();
             return new ExprVar(exp, paramvar.paramName);
         } else {
@@ -442,23 +449,25 @@ public class GlobalsToParams extends FEReplacer {
         @Override
         public Object visitFieldDecl(FieldDecl field) {
             String pkg = nres.curPkg().getName();
-            this.getFieldNames().addAll(field.getNames());
             int i = 0;
             for (Type ft : field.getTypes()) {
                 if (ft instanceof TypeStructRef) {
                     ft = ((TypeStructRef) ft).addDefaultPkg(pkg, nres);
                 }
-                fieldTypes.put(field.getName(i), ft);
+                String fldName = compName(field.getName(i), pkg);
+                fieldTypes.put(fldName, ft);
+                fieldInits.put(fldName, field.getInit(i));
+                fieldNames.add(fldName);
                 ++i;
             }
-            fieldInits.addZipped(field.getNames(), field.getInits());
+
             return field;
         }
 
-        public boolean hasName(String name) {
+        public boolean hasName(String name, String pkg) {
             if (shadows.contains(name))
                 return false;
-            return fieldNames.contains(name);
+            return fieldNames.contains(compName(name, pkg));
         }
 
         public AddedParam createParam(String globalVar) {
@@ -482,18 +491,20 @@ public class GlobalsToParams extends FEReplacer {
     public class GlobalExprs extends FEReplacer {
         TreemapSet<Function, String> globalVarRefs = new TreemapSet<Function, String>();
         protected Function enclosing;
-
+        String pkg;
         @Override
         public Object visitFunction(Function func) {
             this.enclosing = func;
+            pkg = func.getPkg();
             return super.visitFunction(func);
         }
 
         @Override
         public Object visitExprVar(ExprVar exp) {
-            if (fldNames.getFieldNames().contains(exp.getName())) {
+
+            if (fldNames.getFieldNames().contains(compName(exp.getName(), pkg))) {
                 // System.err.println("adding global var ref " + exp.getName());
-                globalVarRefs.add(enclosing, exp.getName());
+                globalVarRefs.add(enclosing, compName(exp.getName(), pkg));
             }
             return super.visitExprVar(exp);
         }

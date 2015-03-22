@@ -1,4 +1,4 @@
-pragma options "--bnd-inline-amnt 3 --debug-show-dag";
+pragma options "--bnd-inline-amnt 3";
 
 int ff(int x, int y){
     if(y>0){
