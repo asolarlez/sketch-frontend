@@ -1,4 +1,4 @@
-pragma options "--bnd-unroll-amnt 5  --bnd-arr-size 5 --bnd-inbits 2 --debug-show-dag ";
+pragma options "--bnd-unroll-amnt 5  --bnd-arr-size 5 --bnd-inbits 2 ";
 
 int[n] foo(int n, int[n] x);
 

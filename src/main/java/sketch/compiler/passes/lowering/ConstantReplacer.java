@@ -202,17 +202,12 @@ public class ConstantReplacer extends FEReplacer {
 			if(!addConstant(type,name,init)) {
 			    // add it to a list to put back into the FieldDecls
                 if (replacement != null) {
-                    System.out.print("  W Replacement ");
                     init = replacement;
                 }
 				types.add(type);
 				names.add(name);
-				inits.add(init);
-                System.out.println("  NOT CONST.");
-            } else {
-                System.out.println("  IS CONST.");
-
-			}
+                inits.add(init);
+            }
 		}
 		if(types.isEmpty()) return null;
 		return new FieldDecl(field,types,names,inits);
