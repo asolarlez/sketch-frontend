@@ -1,0 +1,70 @@
+void getConstraints (E e, Type t, Type[32] envt_0, ref int id, ref Constraint _out)/*tcEx.sk:29*/
+{
+  _out = null;
+  Type[32] envt = envt_0;
+  if(e == (null))/*tcEx.sk:30*/
+  {
+    _out = null;
+    return;
+  }
+  int uo_s3096 = id;
+  id = id + 1;
+  int uo_s3097 = id;
+  id = id + 1;
+  switch(e){/*tcEx.sk:34*/
+    case Num:
+    {
+      Type Type_s3102 = new Unknown@ANONYMOUS(id=21);
+      Constraint@ANONYMOUS a_s3413 = null;
+      getConstraints(null, Type_s3102, envt_0, id, a_s3413);
+      Type Type_s3106 = new Int@ANONYMOUS();
+      Constraint@ANONYMOUS b_s3415 = null;
+      getConstraints(null, Type_s3106, envt_0, id, b_s3415);
+      Type Type_s3118 = new Int@ANONYMOUS();
+      _out = new Equals@ANONYMOUS(l=Type_s3118, r=t);
+      return;
+      }
+    case Var:
+    {
+      Type t1 = envt_0[e.name];
+      Type Type_s3148 = new Unknown@ANONYMOUS(id=8);
+      Constraint@ANONYMOUS a_s3417 = null;
+      getConstraints(null, Type_s3148, envt_0, id, a_s3417);
+      Type Type_s3152 = new Unknown@ANONYMOUS(id=16);
+      Constraint@ANONYMOUS b_s3419 = null;
+      getConstraints(null, Type_s3152, envt_0, id, b_s3419);
+      _out = new Equals@ANONYMOUS(l=t1, r=t);
+      return;
+    }
+    case Abs:
+    {
+      Type Type_s3190 = new Unknown(id=uo_s3096);
+      envt[e.var] = Type_s3190;
+      Type Type_s3194 = new Unknown@ANONYMOUS(id=uo_s3097);
+      Constraint@ANONYMOUS a_s3421 = null;
+      getConstraints(e.a, Type_s3194, envt, id, a_s3421);
+      Type Type_s3198 = new Unknown(id=uo_s3097);
+      Constraint@ANONYMOUS b_s3423 = null;
+      getConstraints(e.a, Type_s3198, envt, id, b_s3423);
+      Type in_s3203 = new Unknown(id=uo_s3096);
+      Type out_s3204 = new Unknown(id=uo_s3097);
+      Type Type_s3202 = new Function@ANONYMOUS(in=in_s3203, out=out_s3204);
+      Constraint Constraint_s3227 = new Equals@ANONYMOUS(l=t, r=Type_s3202);
+      _out = new And@ANONYMOUS(a=b_s3423, b=Constraint_s3227);
+      return;
+    }
+    case App:
+    {
+      Type in_s3241 = new Unknown(id=uo_s3096);
+      Type Type_s3240 = new Function@ANONYMOUS(in=in_s3241, out=t);
+      Constraint@ANONYMOUS a_s3425 = null;
+      getConstraints(e.a, Type_s3240, envt, id, a_s3425);
+      Type Type_s3244 = new Unknown(id=uo_s3096);
+      Constraint@ANONYMOUS b_s3427 = null;
+      getConstraints(e.b, Type_s3244, envt, id, b_s3427);
+      _out = new And@ANONYMOUS(a=a_s3425, b=b_s3427);
+      return;
+    }
+  }
+}
+      

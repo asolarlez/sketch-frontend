@@ -126,8 +126,8 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
                 Expression cond =
                         new ExprBinary(exp, ExprBinary.BINOP_LT, ind, new ExprConstInt(
                                 len));
-                addStatement(new StmtAssert(exp, cond, "Field selection constraint",
-                        StmtAssert.UBER));
+                // addStatement(new StmtAssert(exp, cond, "Field selection constraint",
+                // StmtAssert.UBER));
 
             }
         }
