@@ -1,0 +1,15 @@
+pragma options "--debug-show-dag";
+
+struct moo{
+    moo[10] mama;    
+}
+
+harness void main(int i){
+    if(i>8){ i=8; }
+    moo m = new moo();
+    moo t = new moo();
+    m.mama[0] = t;
+    m.mama[1] = t;
+    m.mama[2] = t;
+    assert m.mama[(??+i)%5 + 3] == null;
+}
