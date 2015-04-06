@@ -16,7 +16,6 @@ import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
@@ -84,10 +83,12 @@ public class RemoveExprGet extends SymbolTableVisitor {
     TempVarGen varGen;
     FENode context;
     TypeStructRef oriType;
+    int maxArrSize;
 
-    public RemoveExprGet(TempVarGen varGen) {
+    public RemoveExprGet(TempVarGen varGen, int arrSize) {
         super(null);
         this.varGen = varGen;
+        this.maxArrSize = arrSize;
     }
 
     @Override
@@ -280,33 +281,16 @@ public class RemoveExprGet extends SymbolTableVisitor {
         if (checkType(type)) {
             if (type.isArray()) {
                 TypeArray ta = (TypeArray) type;
+                List<Expression> arrelems = new ArrayList<Expression>();
+                Expression length = ta.getLength();
+                int size = length.isConstant() ? length.getIValue() : maxArrSize;
+                // TODO: is there a better way of dealing with this
+                for (int i = 0; i < size; i++) {
+                    arrelems.add(getGeneralExprOfType(ta.getBase(), params, stmts));
+                }
 
-                // type tmp;
-                // for (int i = 0; i < len; i++) {
-                // tmp[i] = ??;
-                // }
-
-                String tmpVar = varGen.nextVar();
-                Statement decl = (new StmtVarDecl(context, type, tmpVar, null));
-                stmts.add(decl);
-                symtab.registerVar(tmpVar, type, decl, SymbolTable.KIND_LOCAL);
-                ExprVar ev = new ExprVar(context, tmpVar);
-                String i = varGen.nextVar();
-                ExprVar ivar = new ExprVar(context, i);
-                Statement init = new StmtVarDecl(context, TypePrimitive.inttype, i, ExprConstInt.zero);
-                Expression cond = new ExprBinary(ExprBinary.BINOP_LT, ivar, ta.getLength());
-                Statement incr =
-                        new StmtAssign(ivar, ExprConstInt.one, ExprBinary.BINOP_ADD);
-
-                List<Statement> newStmts = new ArrayList<Statement>();
-                Expression newHole = getGeneralExprOfType(ta.getBase(), params, newStmts);
-                Statement body = new StmtAssign(new ExprArrayRange(ev, ivar), newHole);
-                newStmts.add(body);
-                Statement forLoop =
-                        new StmtFor(context, init, cond, incr, new StmtBlock(newStmts),
-                                true);
-                stmts.add(forLoop);
-                return ev;
+                return new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
+                        new ExprArrayRange.RangeLen(ExprConstInt.zero, length));
 
             } else {
                 return new ExprStar(context);
