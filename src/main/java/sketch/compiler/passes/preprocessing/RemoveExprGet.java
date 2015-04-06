@@ -5,25 +5,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprGet;
-import sketch.compiler.ast.core.exprs.ExprNamedParam;
-import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
-import sketch.compiler.ast.core.exprs.ExprStar;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
@@ -63,6 +56,30 @@ class Clone extends FEReplacer {
 
 }
 
+class ArrayTypeReplacer extends SymbolTableVisitor {
+    Map<String, ExprVar> varMap;
+
+    public ArrayTypeReplacer(Map<String, ExprVar> varMap) {
+        super(null);
+        this.varMap = varMap;
+    }
+
+    @Override
+    public Object visitExprVar(ExprVar exp) {
+        String name = exp.getName();
+        assert (varMap.containsKey(name));
+        return varMap.get(name);
+    }
+
+    @Override
+    public Object visitTypeArray(TypeArray ta) {
+        Type base = ta.getBase();
+        base = (Type) base.accept(this);
+
+        Expression length = (Expression) ta.getLength().doExpr(this);
+        return new TypeArray(base, length);
+    }
+}
 public class RemoveExprGet extends SymbolTableVisitor {
     TempVarGen varGen;
     FENode context;
@@ -124,13 +141,13 @@ public class RemoveExprGet extends SymbolTableVisitor {
             List<Statement> newStmts, int depth, boolean recursive)
     {
         Map<Type, List<ExprVar>> exprVarsMap =
-                findParamVars(tt.getName(), newStmts, tt, recursive);
+                findParamVars(tt.getName(), newStmts, tt, depth, recursive, params);
 
-        for (Entry<Type, List<ExprVar>> list : exprVarsMap.entrySet()) {
-            for (ExprVar e : list.getValue()) {
-                getExpr(e, list.getKey(), params, newStmts, depth - 1);
-            }
-        }
+        //for (Entry<Type, List<ExprVar>> list : exprVarsMap.entrySet()) {
+        //    for (ExprVar e : list.getValue()) {
+        //        getExpr(e, list.getKey(), params, newStmts, depth - 1);
+        //    }
+        //}
 
         // Create a new adt with the exprvars above
         String name = tt.getName();
@@ -142,9 +159,13 @@ public class RemoveExprGet extends SymbolTableVisitor {
             String curName = queue.pop();
             StructDef cur = nres.getStruct(curName);
             Map<Type, Integer> count = new HashMap<Type, Integer>();
+            Map<String, ExprVar> varMap = new HashMap<String, ExprVar>();
             for (StructFieldEnt e : cur.getFieldEntriesInOrder()) {
                 Type t = e.getType();
-
+                if (t.isArray()) {
+                    TypeArray ta = (TypeArray) t;
+                    t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
+                }
                 if (!count.containsKey(t)) {
                     count.put(t, 0);
                 }
@@ -156,6 +177,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 if (c >= varsForType.size())
                     assert (false);
                 expParams.add(new ExprNamedParam(context, e.getName(), varsForType.get(c)));
+                varMap.put(e.getName().split("@")[0], varsForType.get(c));
                 count.put(t, ++c);
             }
             queue.addAll(nres.getStructChildren(curName));
@@ -169,7 +191,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private Map<Type, List<ExprVar>> findParamVars(String name, List<Statement> stmts,
-            Type type, boolean recursive)
+            Type type, int depth, boolean recursive, List<Expression> params)
     {
         Map<Type, List<ExprVar>> map = new HashMap<Type, List<ExprVar>>();
         LinkedList<String> queue = new LinkedList<String>();
@@ -178,11 +200,16 @@ public class RemoveExprGet extends SymbolTableVisitor {
             String curName = queue.pop();
             StructDef cur = nres.getStruct(curName);
             Map<Type, Integer> count = new HashMap<Type, Integer>();
+            Map<String, ExprVar> varMap = new HashMap<String, ExprVar>();
             for (StructFieldEnt e : cur.getFieldEntriesInOrder()) {
                 Type t = e.getType();
                 if (!recursive && t.promotesTo(type, nres)) {
                     // ignore recursive fields
                     continue;
+                }
+                if (t.isArray()) {
+                    TypeArray ta = (TypeArray) t;
+                    t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
                 }
                 if (!count.containsKey(t)) {
                     count.put(t, 0);
@@ -199,7 +226,11 @@ public class RemoveExprGet extends SymbolTableVisitor {
                     symtab.registerVar(tempVar, t, decl, SymbolTable.KIND_LOCAL);
                     ExprVar ev = new ExprVar(context, tempVar);
                     varsForType.add(ev);
+
+
+                    getExpr(ev, t, params, stmts, depth - 1);
                 }
+                varMap.put(e.getName().split("@")[0], varsForType.get(c));
                 count.put(t, ++c);
             }
             queue.addAll(nres.getStructChildren(curName));
@@ -247,7 +278,39 @@ public class RemoveExprGet extends SymbolTableVisitor {
             List<Expression> params, List<Statement> stmts)
     {
         if (checkType(type)) {
-            return new ExprStar(context);
+            if (type.isArray()) {
+                TypeArray ta = (TypeArray) type;
+
+                // type tmp;
+                // for (int i = 0; i < len; i++) {
+                // tmp[i] = ??;
+                // }
+
+                String tmpVar = varGen.nextVar();
+                Statement decl = (new StmtVarDecl(context, type, tmpVar, null));
+                stmts.add(decl);
+                symtab.registerVar(tmpVar, type, decl, SymbolTable.KIND_LOCAL);
+                ExprVar ev = new ExprVar(context, tmpVar);
+                String i = varGen.nextVar();
+                ExprVar ivar = new ExprVar(context, i);
+                Statement init = new StmtVarDecl(context, TypePrimitive.inttype, i, ExprConstInt.zero);
+                Expression cond = new ExprBinary(ExprBinary.BINOP_LT, ivar, ta.getLength());
+                Statement incr =
+                        new StmtAssign(ivar, ExprConstInt.one, ExprBinary.BINOP_ADD);
+
+                List<Statement> newStmts = new ArrayList<Statement>();
+                Expression newHole = getGeneralExprOfType(ta.getBase(), params, newStmts);
+                Statement body = new StmtAssign(new ExprArrayRange(ev, ivar), newHole);
+                newStmts.add(body);
+                Statement forLoop =
+                        new StmtFor(context, init, cond, incr, new StmtBlock(newStmts),
+                                true);
+                stmts.add(forLoop);
+                return ev;
+
+            } else {
+                return new ExprStar(context);
+            }
         } else if (type instanceof TypeStructRef) {
             if (type.equals(oriType)) {
                 return null;
@@ -269,7 +332,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
     private boolean checkType(Type type) {
         if (type.isArray()) {
             TypeArray t = (TypeArray) type;
-            return t.getBase().promotesTo(TypePrimitive.inttype, nres);
+            return checkType(t.getBase());
         } else {
             return type.promotesTo(TypePrimitive.inttype, nres);
         }
