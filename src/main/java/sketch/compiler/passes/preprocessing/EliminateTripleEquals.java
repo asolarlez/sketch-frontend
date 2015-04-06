@@ -6,6 +6,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
@@ -15,16 +16,34 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.util.exceptions.ExceptionAtNode;
 
+class ArrayTypeReplacer1 extends SymbolTableVisitor {
+
+    Expression parentStruct;
+
+    public ArrayTypeReplacer1(Expression varMap) {
+        super(null);
+        this.parentStruct = varMap;
+    }
+
+    @Override
+    public Object visitExprVar(ExprVar exp) {
+        String name = exp.getName();
+        return new ExprField(parentStruct, name);
+    }
+}
 public class EliminateTripleEquals extends SymbolTableVisitor {
     final int DEPTH = 5;
     TempVarGen varGen;
@@ -43,7 +62,10 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             TypeStructRef rt = (TypeStructRef) getType(right);
             TypeStructRef parent;
             if (lt.promotesTo(rt, nres)) parent = rt;
-            else parent = lt;
+            else if (rt.promotesTo(lt, nres))
+                parent = lt;
+            else
+                throw new ExceptionAtNode("=== Types don't match", expr);
             StructDef struct = nres.getStruct(parent.getName());
             String structName = struct.getFullName();
             List<Statement> stmts = new ArrayList<Statement>();
@@ -91,18 +113,9 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             for (StructFieldEnt e : struct.getFieldEntriesInOrder()) {
                 Expression l = new ExprField(left, e.getName());
                 Expression r = new ExprField(right, e.getName());
-                Expression fieldEq;
                 Type t = e.getType();
-                if (t.isStruct()) {
-                    TypeStructRef ts = (TypeStructRef) t;
-                    StructDef fieldStruct = nres.getStruct(ts.getName());
-                    String name = fieldStruct.getFullName();
-                    List<Statement> iStmts = new ArrayList<Statement>();
-                    fieldEq = expandTripleEquals(context, l, r, name, pkgName, depth-1, iStmts);
-                    stmts.addAll(iStmts);
-                } else {
-                    fieldEq = new ExprBinary(ExprBinary.BINOP_EQ, l, r);
-                }
+                Expression fieldEq =
+                        checkFieldEqual(context, l, r, t, stmts, pkgName, depth, left);
                 
                 eq = new ExprBinary(ExprBinary.BINOP_AND, eq, fieldEq);
                 
@@ -111,6 +124,60 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         }
     }
     
+    private Expression checkFieldEqual(FENode context, Expression l, Expression r,
+            Type t, List<Statement> stmts, String pkgName, int depth, Expression lorig)
+    {
+        if (t.isStruct()) {
+            TypeStructRef ts = (TypeStructRef) t;
+            StructDef fieldStruct = nres.getStruct(ts.getName());
+            String name = fieldStruct.getFullName();
+            List<Statement> iStmts = new ArrayList<Statement>();
+            Expression fe =
+                    expandTripleEquals(context, l, r, name, pkgName, depth - 1, iStmts);
+            stmts.addAll(iStmts);
+            return fe;
+        } else {
+            if (t.isArray()) {
+                // bit x = true;
+                // for (int i = 0; i < sz; i++) {
+                // x = x && (l[i] == r[i])
+                // }
+                TypeArray ta = (TypeArray) t;
+                Expression length =
+                        (Expression) ta.getLength().doExpr(new ArrayTypeReplacer1(lorig));
+                String tmp = varGen.nextVar();
+                ExprVar fe = new ExprVar(context, tmp);
+                stmts.add(new StmtVarDecl(context, TypePrimitive.bittype, tmp,
+                        ExprConstInt.one));
+                String i = varGen.nextVar();
+                ExprVar ivar = new ExprVar(context, i);
+                Statement init =
+                        new StmtVarDecl(context, TypePrimitive.inttype, i,
+                                ExprConstInt.zero);
+                Expression cond =
+ new ExprBinary(ExprBinary.BINOP_LT, ivar, length);
+                Statement incr =
+                        new StmtAssign(ivar, ExprConstInt.one, ExprBinary.BINOP_ADD);
+
+                List<Statement> newStmts = new ArrayList<Statement>();
+                Expression recEquals =
+                        checkFieldEqual(context, new ExprArrayRange(l, ivar),
+                                new ExprArrayRange(r, ivar), ta.getBase(), newStmts,
+                                pkgName, depth, lorig);
+                Statement body =
+                        new StmtAssign(fe, new ExprBinary(ExprBinary.BINOP_AND, fe,
+                                recEquals));
+                newStmts.add(body);
+                Statement forLoop =
+                        new StmtFor(context, init, cond, incr, new StmtBlock(newStmts),
+                                true);
+                stmts.add(forLoop);
+                return fe;
+            }
+            return new ExprBinary(ExprBinary.BINOP_EQ, l, r);
+        }
+    }
+
     private List<String> getCases(String structName) {
         List<String> cases = new ArrayList<String>();
         String current = structName;
@@ -139,18 +206,10 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         for (StructFieldEnt e : struct.getFieldEntriesInOrder()) {
             Expression l = new ExprField(left, e.getName());
             Expression r = new ExprField(right, e.getName());
-            Expression fieldEq;
             Type type = e.getType();
-            if (type.isStruct()) {
-                TypeStructRef ts = (TypeStructRef) type;
-                StructDef fieldStruct = nres.getStruct(ts.getName());
-                String name = fieldStruct.getFullName();
-                List<Statement> stmts = new ArrayList<Statement>();
-                fieldEq = expandTripleEquals(context, l, r, name, pkgName, depth-1, stmts);
-                caseBody.addAll(stmts);
-            } else {
-                fieldEq = new ExprBinary(ExprBinary.BINOP_EQ, l, r);
-            }
+            Expression fieldEq =
+                    checkFieldEqual(context, l, r, type, caseBody, pkgName, depth, left);
+
             if (first) {
                 eq = fieldEq;
                 first = false;
