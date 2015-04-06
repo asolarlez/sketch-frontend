@@ -249,11 +249,13 @@ public class RemoveExprGet extends SymbolTableVisitor {
             // if (e instanceof ExprGet) {
             // e = processExprGet((ExprGet) e, stmts);
             // }
+            String tmp = varGen.nextVar();
+            stmts.add(new StmtVarDecl(context, type, tmp, e));
             if (first) {
-                curExp = e;
+                curExp = new ExprVar(context, tmp);
                 first = false;
             } else {
-                curExp = new ExprAlt(context, curExp, e);
+                curExp = new ExprAlt(context, curExp, new ExprVar(context, tmp));
             }
         }
 
@@ -288,9 +290,10 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 for (int i = 0; i < size; i++) {
                     arrelems.add(getGeneralExprOfType(ta.getBase(), params, stmts));
                 }
-
-                return new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
-                        new ExprArrayRange.RangeLen(ExprConstInt.zero, length));
+                String tmp = varGen.nextVar();
+                stmts.add(new StmtVarDecl(context, ta,tmp, new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
+                        new ExprArrayRange.RangeLen(ExprConstInt.zero, length))));
+                return new ExprVar(context, tmp);
 
             } else {
                 return new ExprStar(context);
