@@ -106,7 +106,7 @@ public class ParallelBackend extends SATBackend {
     }
 
     // will be reused by strategy-based parallel running
-    protected List<SATSolutionStatistics> parallel_solve(ValueOracle oracle,
+    protected List<SATSolutionStatistics> sync_parallel_solve(ValueOracle oracle,
             boolean hasMinimize, float timeoutMins, int max_trials)
     {
         List<SATSolutionStatistics> results = new ArrayList<SATSolutionStatistics>();
@@ -182,7 +182,7 @@ public class ParallelBackend extends SATBackend {
             pTrials = cpu * 32 * 3;
         }
 
-        parallel_solve(oracle, hasMinimize, timeoutMins, pTrials);
+        sync_parallel_solve(oracle, hasMinimize, timeoutMins, pTrials);
         return parallel_solved;
     }
 
@@ -237,13 +237,13 @@ public class ParallelBackend extends SATBackend {
         return stat;
     }
 
-    protected List<SATSolutionStatistics> runTrials(ValueOracle oracle,
+    protected List<SATSolutionStatistics> runSyncTrials(ValueOracle oracle,
             boolean hasMinimize, int d)
     {
-        return runTrials(oracle, hasMinimize, d, test_trial_max);
+        return runSyncTrials(oracle, hasMinimize, d, test_trial_max);
     }
 
-    protected List<SATSolutionStatistics> runTrials(ValueOracle orcle,
+    protected List<SATSolutionStatistics> runSyncTrials(ValueOracle orcle,
             boolean hasMinimize, int d, int n)
     {
         int old_d = options.solverOpts.randdegree;
@@ -258,7 +258,7 @@ public class ParallelBackend extends SATBackend {
         }
 
         List<SATSolutionStatistics> stats =
-                parallel_solve(oracle, hasMinimize, options.solverOpts.pTimeout, n);
+                sync_parallel_solve(oracle, hasMinimize, options.solverOpts.pTimeout, n);
 
         options.solverOpts.randdegree = old_d;
         options.solverOpts.memLimit = old_m;

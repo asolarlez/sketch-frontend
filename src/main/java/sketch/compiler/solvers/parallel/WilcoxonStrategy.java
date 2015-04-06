@@ -123,7 +123,7 @@ public class WilcoxonStrategy extends ParallelBackend {
             pMap.put(degree, p);
         }
 
-        List<SATSolutionStatistics> stats = runTrials(oracle, hasMinimize, degree);
+        List<SATSolutionStatistics> stats = runSyncTrials(oracle, hasMinimize, degree);
         StringBuilder buf = new StringBuilder();
         buf.append(name + " degree " + degree + " sample: ");
         for (SATSolutionStatistics stat : stats) {

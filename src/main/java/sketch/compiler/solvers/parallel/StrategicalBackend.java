@@ -53,7 +53,7 @@ public class StrategicalBackend extends ParallelBackend {
                 }
                 // test that degree
                 List<SATSolutionStatistics> results =
-                        runTrials(oracle, hasMinimize, next_d);
+                        runSyncTrials(oracle, hasMinimize, next_d);
                 // check if we're too lucky: found a solution while test runs
                 for (SATSolutionStatistics stat : results) {
                     if (stat.successful()) {
