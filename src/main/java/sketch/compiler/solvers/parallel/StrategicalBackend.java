@@ -27,7 +27,8 @@ public class StrategicalBackend extends ParallelBackend {
                 strategy = new MaxTimeStrategy(options);
                 break;
             case WILCOXON:
-                proxy = new WilcoxonStrategy(options, rcontrol, varGen);
+                // proxy = new WilcoxonStrategy(options, rcontrol, varGen);
+                proxy = new AsyncWilcoxonStrategy(options, rcontrol, varGen);
                 break;
         }
     }
