@@ -28,9 +28,9 @@ import sketch.util.exceptions.SketchSolverException;
 
 public class ParallelBackend extends SATBackend {
 
-    private boolean parallel_solved = false;
+    protected boolean parallel_solved = false;
     private List<Process> cegiss;
-    private Object lock;
+    protected Object lock;
 
     protected int cpu;
     protected int test_trial_max;
@@ -62,7 +62,9 @@ public class ParallelBackend extends SATBackend {
         return new Callable<SATSolutionStatistics>() {
             // main task per worker
             public SATSolutionStatistics call() {
-                String prefix = "=== parallel trial (" + fileIdx + ")";
+                String prefix =
+                        "=== parallel trial w/ degree " + options.solverOpts.randdegree +
+                                " (" + fileIdx + ")";
                 synchronized (lock) {
                     if (parallel_solved) {
                         plog(prefix + " aborted ===");
@@ -189,7 +191,7 @@ public class ParallelBackend extends SATBackend {
     @Override
     protected void beforeRunSolver(SynchronousTimedProcess proc) {
         // maintain CEGIS process, to terminate it directly
-        // (when another worker already found a solution
+        // when another worker already found a solution
         synchronized (lock) {
             cegiss.add(proc.getProc());
         }
