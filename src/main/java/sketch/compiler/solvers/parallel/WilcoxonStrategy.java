@@ -156,7 +156,7 @@ public class WilcoxonStrategy extends ParallelBackend {
             }
             if (pvalue <= pValue) // confident enough
                 break;
-            if (len_a == sampleBound && len_b == sampleBound) // too many samples
+            if (len_a >= sampleBound && len_b >= sampleBound) // too many samples
                 break;
 
             // need more samplings

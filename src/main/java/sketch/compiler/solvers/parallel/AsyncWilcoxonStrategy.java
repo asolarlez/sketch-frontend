@@ -276,15 +276,17 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
             }
             if (pvalue <= pValue) // confident enough
                 break;
-            if (len_a == sampleBound && len_b == sampleBound) // too many samples
+            if (len_a >= sampleBound && len_b >= sampleBound) // too many samples
                 break;
 
             req_a = sampleRequested(degree_a);
             req_b = sampleRequested(degree_b);
-            if (req_a <= req_b) {
+            if (req_a >= sampleBound && req_b >= sampleBound) // too many samples
+                break;
+            if (req_a <= req_b && req_a < sampleBound) {
                 sample(degree_a);
             }
-            if (req_a >= req_b) {
+            if (req_a >= req_b && req_b < sampleBound) {
                 sample(degree_b);
             }
             waitUntilSampledEnough();
