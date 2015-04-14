@@ -107,6 +107,8 @@ public class ParallelBackend extends SATBackend {
         };
     }
 
+    float adaptiveTimeoutMins;
+
     // will be reused by strategy-based parallel running
     protected List<SATSolutionStatistics> sync_parallel_solve(ValueOracle oracle,
             boolean hasMinimize, float timeoutMins, int max_trials)
@@ -137,7 +139,7 @@ public class ParallelBackend extends SATBackend {
                 futures.add(f);
             }
             // plog("=== submitted parallel trials: " + nTrials + " ===");
-            float adaptiveTimeoutMins = timeoutMins;
+            adaptiveTimeoutMins = timeoutMins;
             // check tasks' results in the order of their completion
             for (int i = 0; i < nTrials; i++) {
                 try {

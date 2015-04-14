@@ -105,6 +105,15 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
 
     // call-back when one back-end task has been done
     public void notifyWorkerDone(SATSolutionStatistics stat, int degree) {
+        if (stat == null) // aborted task
+            return;
+
+        // if timed out during the learning phase, extend it
+        if (stat.killedByTimeout && stage == STAGE.LEARNING) {
+            adaptiveTimeoutMins = options.solverOpts.extendPTimeout();
+            plog("=== timeout extended to " + adaptiveTimeoutMins);
+        }
+
         // update statistics without regard to active degrees
         List<Double> dist_tp;
         if (dMap.containsKey(degree)) {
@@ -141,7 +150,8 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
                 }
             }
             AsyncWorker worker =
-                    new AsyncWorker(this, oracle, hasMinimize, timeoutMins, nTrial, d);
+                    new AsyncWorker(this, oracle, hasMinimize, adaptiveTimeoutMins,
+                            nTrial, d);
             Future<SATSolutionStatistics> f = ces.submit(worker);
             futures.add(f);
         }
@@ -309,8 +319,6 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
         return res;
     }
 
-    float timeoutMins;
-
     ExecutorService es;
     CompletionService<SATSolutionStatistics> ces;
     List<Future<SATSolutionStatistics>> futures;
@@ -338,7 +346,7 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
 
     @Override
     protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
-        this.timeoutMins = timeoutMins;
+        adaptiveTimeoutMins = options.solverOpts.pTimeout;
 
         // generate worker pool and managed executor
         es = Executors.newFixedThreadPool(cpu);
