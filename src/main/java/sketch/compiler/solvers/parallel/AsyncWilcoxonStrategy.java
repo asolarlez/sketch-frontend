@@ -79,10 +79,15 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
 
     @Override
     protected double[] computeDist(int degree) {
-        if (!dMap.containsKey(degree)) {
-            return new double[0];
+        synchronized (lock) {
+            if (!dMap.containsKey(degree)) {
+                return new double[0];
+            }
         }
-        List<Double> dist_tp = dMap.get(degree);
+        List<Double> dist_tp;
+        synchronized (lock) {
+            dist_tp = dMap.get(degree);
+        }
         double[] dist = new double[dist_tp.size()];
         for (int i = 0; i < dist_tp.size(); i++) {
             dist[i] = dist_tp.get(i);
@@ -92,10 +97,15 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
 
     @Override
     protected double computeMean(int degree) {
-        if (!dMap.containsKey(degree)) {
-            return 0;
+        synchronized (lock) {
+            if (!dMap.containsKey(degree)) {
+                return 0;
+            }
         }
-        List<Double> dist_tp = dMap.get(degree);
+        List<Double> dist_tp;
+        synchronized (lock) {
+            dist_tp = dMap.get(degree);
+        }
         Mean m = new Mean();
         for (Double tp : dist_tp) {
             m.increment(tp);
@@ -115,15 +125,17 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
         }
 
         // update statistics without regard to active degrees
-        List<Double> dist_tp;
-        if (dMap.containsKey(degree)) {
-            dist_tp = dMap.get(degree);
-        } else {
-            dist_tp = new ArrayList<Double>();
-            dMap.put(degree, dist_tp);
-        }
         long t = stat.elapsedTimeMs();
-        dist_tp.add((double) t / stat.probability);
+        List<Double> dist_tp;
+        synchronized (lock) {
+            if (dMap.containsKey(degree)) {
+                dist_tp = dMap.get(degree);
+            } else {
+                dist_tp = new ArrayList<Double>();
+                dMap.put(degree, dist_tp);
+            }
+            dist_tp.add((double) t / stat.probability);
+        }
 
         // check whether this output came from the degree we're looking for
         boolean is_active = false;
