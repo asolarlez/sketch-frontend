@@ -48,6 +48,7 @@ tokens {
 	"reorder";
 	
 	"assume";
+	"hassert";
 
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";

@@ -352,6 +352,7 @@ statement returns [Statement s] { s = null; }
 	|	s=assume_statement SEMI
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
+	|   s=hassert_statement SEMI
 	|(annotation_list (TK_device | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil | TK_model)*
                     return_type ID LPAREN) =>s=fdecl_statement  
@@ -648,6 +649,19 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 		}
 		s = new StmtAssert(cx, x, msg, t2!=null); }	
 	;
+
+hassert_statement returns [StmtAssert s] { s = null; Expression x; }
+	:	(t1:TK_hassert) x=right_expr (COLON ass:STRING_LITERAL)?{
+		String msg = null;
+		Token t = t1;
+		FEContext cx =getContext(t); 
+		if(ass!=null){
+			String ps = ass.getText();
+	        ps = ps.substring(1, ps.length()-1);
+			msg = cx + "   "+ ps;	
+		}
+		s = new StmtAssert(cx, x, msg, false, true); }	
+	;
 	
 assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
 :	t:TK_assert_max (defer: BACKSLASH)? cond=right_expr (COLON ass:STRING_LITERAL)? { 
@@ -797,10 +811,9 @@ right_expr_not_agmax returns [Expression x] { x = null; }
 	;
 right_expr returns [Expression x] { x = null; }
 	:	x=right_expr_not_agmax
-	|   x=agmax_expr
 	;
 
-agmax_expr returns [Expression x] { x = null; }
+/*agmax_expr returns [Expression x] { x = null; }
  	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)?
     	{
     		if (n != null) {
@@ -809,7 +822,7 @@ agmax_expr returns [Expression x] { x = null; }
     			x = new ExprStar(getContext(t), Kind.ANGELIC);
     		}
     	} 
-	;
+	;*/
 	
 /*
 TODO we don't add exprMax now
@@ -1091,6 +1104,8 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	  x = new ExprStar(getContext(t2)); 
             	}
             }
+    |	t3:NDANGELIC
+			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
     ;
 
 adt_decl returns [List<StructDef> adtList]

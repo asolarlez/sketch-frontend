@@ -79,7 +79,7 @@ public class NtsbVtype extends IntVtype {
                     rval += ((ExprSpecialStar) node).name;
                 }
 
-                String head = star.isAngelicMax() ? "<**" : "<";
+                String head = "<";
 
                 if (star.getSize() > 1 && !star.isCounter())
                     rval += head + cvar + "  " + star.getSize() + isFixed;
@@ -88,7 +88,7 @@ public class NtsbVtype extends IntVtype {
                 if (star.isCounter()) {
                     rval += " %";
                 }
-                rval += "> ";
+                rval += star.isAngelicMax() ? " +> " : "> ";
                 nv = new NtsbValue(rval, true);
                 if(avlist != null) avlist.add(nv);
             }

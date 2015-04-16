@@ -1518,7 +1518,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             throw e;
         }
         return isReplacer ? new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
-                stmt.getAssertMax()) : stmt;
+                stmt.getAssertMax(), stmt.isHard) : stmt;
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {

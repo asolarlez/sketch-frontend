@@ -685,7 +685,7 @@ public class FEReplacer implements FEVisitor
         if (newValue == stmt.getCond()) {
             return stmt;
         }
-        return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper());
+        return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper(), stmt.isHard);
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {
