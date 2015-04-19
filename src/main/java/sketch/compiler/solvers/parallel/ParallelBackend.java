@@ -42,12 +42,14 @@ public class ParallelBackend extends SATBackend {
         lock = new Object();
         cegiss = new ArrayList<Process>();
         if (options.solverOpts.pCPUs < 0) {
+            // to not exhaust the system, use three quarters of available cores
             int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
             cpu = Math.max(1, three_q);
         } else {
             cpu = Math.max(1, options.solverOpts.pCPUs);
         }
-        test_trial_max = Math.max(8, cpu);
+        // at least 8 samples per round
+        test_trial_max = Math.max(8, (cpu / 2));
 
         // if seed is given (to reproduce certain experiments, use it as-is
         // otherwise, use a random seed
