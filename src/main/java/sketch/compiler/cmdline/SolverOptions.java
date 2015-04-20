@@ -52,7 +52,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public SynthSolvers synth = SynthSolvers.NOT_SET;
 
     @CliParameter(help = "Kills the solver after given number of minutes.")
-    public float timeout;
+    public float timeout = 0;
 
     @CliParameter(help = "Kills the solver if its memory usage exceeds the bound (bytes).")
     public long memLimit = -1;

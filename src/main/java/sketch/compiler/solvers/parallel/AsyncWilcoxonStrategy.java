@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 
@@ -164,8 +165,13 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
             AsyncWorker worker =
                     new AsyncWorker(this, oracle, hasMinimize, adaptiveTimeoutMins,
                             nTrial, d);
-            Future<SATSolutionStatistics> f = aw_ces.submit(worker);
-            aw_futures.add(f);
+            try {
+                Future<SATSolutionStatistics> f = aw_ces.submit(worker);
+                aw_futures.add(f);
+            } catch (RejectedExecutionException e) {
+                plog("failed to submit the task (" + nTrial + ")");
+                break;
+            }
         }
     }
 

@@ -6,15 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -111,6 +103,10 @@ public class ParallelBackend extends SATBackend {
 
     float adaptiveTimeoutMins;
 
+    ExecutorService es;
+    CompletionService<SATSolutionStatistics> ces;
+    List<Future<SATSolutionStatistics>> futures;
+
     // will be reused by strategy-based parallel running
     protected List<SATSolutionStatistics> sync_parallel_solve(ValueOracle oracle,
             boolean hasMinimize, float timeoutMins, int max_trials)
@@ -118,16 +114,14 @@ public class ParallelBackend extends SATBackend {
         List<SATSolutionStatistics> results = new ArrayList<SATSolutionStatistics>();
 
         // generate worker pool and managed executor
-        ExecutorService es = Executors.newFixedThreadPool(cpu);
-        CompletionService<SATSolutionStatistics> ces =
-                new ExecutorCompletionService<SATSolutionStatistics>(es);
+        es = Executors.newFixedThreadPool(cpu);
+        ces = new ExecutorCompletionService<SATSolutionStatistics>(es);
         // place to maintain future parallel tasks
-        List<Future<SATSolutionStatistics>> futures =
-                new ArrayList<Future<SATSolutionStatistics>>(max_trials);
+        futures = new ArrayList<Future<SATSolutionStatistics>>(max_trials);
         try {
             // submit parallel tasks
-            int nTrials = 0;
-            for (nTrials = 0; nTrials < max_trials; nTrials++) {
+            int nTrial = 0;
+            for (nTrial = 0; nTrial < max_trials; nTrial++) {
                 // while submitting tasks, check whether it's already solved
                 synchronized (lock) {
                     if (parallel_solved) {
@@ -136,14 +130,22 @@ public class ParallelBackend extends SATBackend {
                     }
                 }
                 Callable<SATSolutionStatistics> c =
-                        createWorker(oracle, minimize, timeoutMins, nTrials);
-                Future<SATSolutionStatistics> f = ces.submit(c);
-                futures.add(f);
+                        createWorker(oracle, minimize, timeoutMins, nTrial);
+                try {
+                    Future<SATSolutionStatistics> f = ces.submit(c);
+                    futures.add(f);
+                } catch (RejectedExecutionException e) {
+                    plog("failed to submit the task (" + nTrial + ")");
+                    break;
+                }
             }
             // plog("=== submitted parallel trials: " + nTrials + " ===");
             adaptiveTimeoutMins = timeoutMins;
             // check tasks' results in the order of their completion
-            for (int i = 0; i < nTrials; i++) {
+            for (int i = 0; i < nTrial; i++) {
+                // could be shut down by the timeout monitor
+                if (es.isShutdown() || es.isTerminated())
+                    break;
                 try {
                     SATSolutionStatistics r =
                             ces.take().get((long) adaptiveTimeoutMins, TimeUnit.MINUTES);
@@ -161,34 +163,89 @@ public class ParallelBackend extends SATBackend {
                         // break the iteration and go to finally block
                         break;
                     }
-                } catch (InterruptedException ignore) {
-                } catch (ExecutionException ignore) {
-                } catch (TimeoutException ignore) {
+                } catch (CancellationException e) {
+                    plog(e.toString());
+                } catch (ExecutionException e) {
+                    plog(e.toString());
+                } catch (InterruptedException e) {
+                    plog(e.toString());
+                } catch (TimeoutException e) {
+                    plog(e.toString());
                 }
             }
         } finally {
-            // double-check the thread pool has been shut down
-            // if *all* trials failed, it wasn't shut down
-            if (!es.isShutdown())
-                es.shutdownNow();
-            // cancel any remaining tasks
-            for (Future<SATSolutionStatistics> f : futures) {
-                f.cancel(true);
-            }
-            // terminate any alive CEGIS processes
-            terminateSubprocesses();
+            cleanUpPool();
         }
         return results;
+    }
+
+    void cleanUpPool() {
+        // double-check the thread pool has been shut down
+        // if *all* trials failed, it wasn't shut down
+        if (!es.isShutdown())
+            es.shutdownNow();
+        // cancel any remaining tasks
+        for (Future<SATSolutionStatistics> f : futures) {
+            f.cancel(true);
+        }
+        // terminate any alive CEGIS processes
+        terminateSubprocesses();
+    }
+
+    class TimeoutMonitor extends Thread {
+        ParallelBackend mainThread;
+        float timeoutMins;
+        boolean aborted;
+
+        TimeoutMonitor(ParallelBackend mainThread, float timeoutMins) {
+            this.mainThread = mainThread;
+            this.timeoutMins = timeoutMins;
+            this.aborted = false;
+        }
+
+        boolean alive() {
+            synchronized (lock) {
+                return !aborted;
+            }
+        }
+
+        void abort() {
+            synchronized (lock) {
+                aborted = true;
+            }
+            interrupt();
+        }
+
+        public void run() {
+            try {
+                sleep((long) (timeoutMins * 60 * 1000));
+            } catch (InterruptedException e) {}
+            if (aborted)
+                return;
+            plog("Time limit exceeded!");
+            mainThread.cleanUpPool();
+        }
     }
 
     @Override
     protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
         int pTrials = options.solverOpts.pTrials;
-        if (pTrials < 0) {
+        TimeoutMonitor monitor = null;
+        // timeout precedes # of trials
+        // i.e., if timeout is set, run virtually infinitely
+        if (timeoutMins > 0) {
+            // shouldn't be that big due to OutOfMemoryError, heap space, etc.
+            pTrials = cpu * 32 * 32;
+            monitor = new TimeoutMonitor(this, timeoutMins);
+            monitor.start();
+        } else if (pTrials < 0) {
             pTrials = cpu * 32 * 3;
         }
 
         sync_parallel_solve(oracle, hasMinimize, timeoutMins, pTrials);
+        if (monitor != null && monitor.alive()) {
+            monitor.abort();
+        }
         return parallel_solved;
     }
 
