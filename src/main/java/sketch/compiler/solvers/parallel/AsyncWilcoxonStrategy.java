@@ -157,15 +157,15 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
             // while submitting tasks, check whether it's already solved
             synchronized (lock) {
                 if (parallel_solved) {
-                    es.shutdown(); // no more tasks accepted
+                    aw_es.shutdown(); // no more tasks accepted
                     break;
                 }
             }
             AsyncWorker worker =
                     new AsyncWorker(this, oracle, hasMinimize, adaptiveTimeoutMins,
                             nTrial, d);
-            Future<SATSolutionStatistics> f = ces.submit(worker);
-            futures.add(f);
+            Future<SATSolutionStatistics> f = aw_ces.submit(worker);
+            aw_futures.add(f);
         }
     }
 
@@ -331,17 +331,17 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
         return res;
     }
 
-    ExecutorService es;
-    CompletionService<SATSolutionStatistics> ces;
-    List<Future<SATSolutionStatistics>> futures;
+    ExecutorService aw_es;
+    CompletionService<SATSolutionStatistics> aw_ces;
+    List<Future<SATSolutionStatistics>> aw_futures;
 
     void cleanUpPool() {
         // double-check the thread pool has been shut down
         // if *all* trials failed, it wasn't shut down
-        if (!es.isShutdown())
-            es.shutdownNow();
+        if (!aw_es.isShutdown())
+            aw_es.shutdownNow();
         // cancel any remaining tasks
-        for (Future<SATSolutionStatistics> f : futures) {
+        for (Future<SATSolutionStatistics> f : aw_futures) {
             f.cancel(true);
         }
         // terminate any alive CEGIS processes
@@ -361,10 +361,10 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
         adaptiveTimeoutMins = options.solverOpts.pTimeout;
 
         // generate worker pool and managed executor
-        es = Executors.newFixedThreadPool(cpu);
-        ces = new ExecutorCompletionService<SATSolutionStatistics>(es);
+        aw_es = Executors.newFixedThreadPool(cpu);
+        aw_ces = new ExecutorCompletionService<SATSolutionStatistics>(aw_es);
         // place to maintain future parallel tasks
-        futures = new ArrayList<Future<SATSolutionStatistics>>(test_trial_max);
+        aw_futures = new ArrayList<Future<SATSolutionStatistics>>(test_trial_max);
 
         return super.solve(oracle, hasMinimize, timeoutMins);
     }
