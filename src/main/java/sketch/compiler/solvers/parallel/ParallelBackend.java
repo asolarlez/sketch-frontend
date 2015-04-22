@@ -33,7 +33,7 @@ public class ParallelBackend extends SATBackend {
         super(options, rcontrol, varGen);
         lock = new Object();
         cegiss = new ArrayList<Process>();
-        if (options.solverOpts.pCPUs < 0) {
+        if (options.solverOpts.pCPUs <= 0) {
             // to not exhaust the system, use three quarters of available cores
             int three_q = (int) (Runtime.getRuntime().availableProcessors() * 0.75);
             cpu = Math.max(1, three_q);
@@ -238,7 +238,7 @@ public class ParallelBackend extends SATBackend {
             pTrials = cpu * 32 * 32;
             monitor = new TimeoutMonitor(this, timeoutMins);
             monitor.start();
-        } else if (pTrials < 0) {
+        } else if (pTrials <= 0) {
             pTrials = cpu * 32 * 3;
         }
 

@@ -55,7 +55,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public float timeout = 0;
 
     @CliParameter(help = "Kills the solver if its memory usage exceeds the bound (bytes).")
-    public long memLimit = -1;
+    public long memLimit = 0;
 
     @CliParameter(help = "Runs backend in parallel.")
     public boolean parallel = false;
@@ -64,10 +64,10 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public float pTimeout = (float) 1; // 1m -> 2m -> ...
 
     @CliParameter(help = "Number of parallel trails.")
-    public int pTrials = -1;
+    public int pTrials = 0;
 
     @CliParameter(help = "Number of cores to use.")
-    public int pCPUs = -1;
+    public int pCPUs = 0;
 
     @CliParameter(help = "Concretize high-impact holes.")
     public boolean randassign = false;
@@ -76,7 +76,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public int randdegree = 0;
 
     @CliParameter(help = "Number of rounds on a single back-end invocation.")
-    public int ntimes = -1;
+    public int ntimes = 0;
 
     @CliParameter(help = "Strategy for parallel-running.")
     public Strategies strategy = Strategies.NOT_SET;
