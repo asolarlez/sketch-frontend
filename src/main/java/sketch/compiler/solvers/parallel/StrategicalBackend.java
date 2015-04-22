@@ -42,8 +42,11 @@ public class StrategicalBackend extends ParallelBackend {
         }
 
         if (strategy != null) {
+            int old_ntimes = options.solverOpts.ntimes;
+            options.solverOpts.ntimes = 0;
             stage = STAGE.LEARNING;
             plog(strategy.getName() + " degree searching...");
+
             // until the strategy has a fixed degree
             while (strategy.hasNextDegree()) {
                 // ask it what degree to test next
@@ -68,6 +71,8 @@ public class StrategicalBackend extends ParallelBackend {
             int d = strategy.getDegree();
             plog(strategy.getName() + " degree choice: " + d);
             options.solverOpts.randdegree = d;
+
+            options.solverOpts.ntimes = old_ntimes;
             stage = STAGE.TESTING;
         }
         return super.solve(oracle, hasMinimize, timeoutMins);

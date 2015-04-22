@@ -240,7 +240,10 @@ public class WilcoxonStrategy extends ParallelBackend {
     @Override
     protected boolean solve(ValueOracle oracle, boolean hasMinimize, float timeoutMins) {
         this.hasMinimize = hasMinimize;
+        int old_ntimes = options.solverOpts.ntimes;
+        options.solverOpts.ntimes = 0;
         stage = STAGE.LEARNING;
+
         try {
             Pair<Integer, Integer> range = climb();
             int degree_l = pow2(range.getFirst());
@@ -252,7 +255,9 @@ public class WilcoxonStrategy extends ParallelBackend {
             plog(e.getMessage());
             return true;
         }
+
         onStageChanged();
+        options.solverOpts.ntimes = old_ntimes;
         stage = STAGE.TESTING;
         return super.solve(oracle, hasMinimize, timeoutMins);
     }
