@@ -26,6 +26,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
@@ -1153,6 +1154,26 @@ public class RemoveFunctionParameters extends FEReplacer {
                     funsToVisit.add(nres.getFunName(fun.getName()));
                 }
             }
+            // Need to visit all functions in the special assert
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ExprFunCall f1 = sa.getFirstFun();
+                funsToVisit.add(nres.getFunName(f1.getName()));
+                for (Expression param : f1.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funsToVisit.add(nres.getFunName(pa.getName()));
+                    }
+                }
+
+                ExprFunCall f2 = sa.getSecondFun();
+                funsToVisit.add(nres.getFunName(f2.getName()));
+                for (Expression param : f2.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funsToVisit.add(nres.getFunName(pa.getName()));
+                    }
+                }
+            }
         }
 
         Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
@@ -1188,7 +1209,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         List<Package> newPkges = new ArrayList<Package>();
         for (Package pkg : p.getPackages()) {
             newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
-                    pkg.getVars(), nflistMap.get(pkg.getName())));
+                    pkg.getVars(), nflistMap.get(pkg.getName()), pkg.getSpAsserts()));
         }
         Program np = p.creator().streams(newPkges).create();
 

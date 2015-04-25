@@ -21,6 +21,7 @@ import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
@@ -238,6 +239,25 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
                         return exp;
                     }
                 });
+            }
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ExprFunCall f1 = sa.getFirstFun();
+                calledFunctions.add(nres.getFunName(f1.getName()));
+                for (Expression param : f1.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        calledFunctions.add(nres.getFunName(pa.getName()));
+                    }
+                }
+
+                ExprFunCall f2 = sa.getSecondFun();
+                calledFunctions.add(nres.getFunName(f2.getName()));
+                for (Expression param : f2.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        calledFunctions.add(nres.getFunName(pa.getName()));
+                    }
+                }
             }
         }
         return super.visitProgram(p);

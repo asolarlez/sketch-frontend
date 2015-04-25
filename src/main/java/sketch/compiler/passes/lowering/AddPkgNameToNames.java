@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -68,12 +69,14 @@ public class AddPkgNameToNames extends FEReplacer {
         nres = new NameResolver(prog);
         List<Function> lf = new ArrayList<Function>();
         List<StructDef> ts = new ArrayList<StructDef>();
+        List<StmtSpAssert> sa = new ArrayList<StmtSpAssert>();
         for (Package ssOrig : prog.getPackages()) {
             Package pkg = (Package) ssOrig.accept(this);
             lf.addAll(pkg.getFuncs());
             ts.addAll(pkg.getStructs());
+            sa.addAll(pkg.getSpAsserts());
         }
-            Package global = new Package(prog, GLOBALPKG, ts, new ArrayList(), lf);
+        Package global = new Package(prog, GLOBALPKG, ts, new ArrayList(), lf, sa);
 
         return prog.creator().streams(Collections.singletonList(global)).create();
         } else {

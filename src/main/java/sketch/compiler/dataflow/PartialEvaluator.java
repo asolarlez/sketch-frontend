@@ -1911,6 +1911,27 @@ nvarContext,
             String pkgName = pkg.getName();
             pkgs.put(pkgName, pkg);
             newfuns.put(pkgName, new ArrayList<Function>());
+            // Add functions in special assert to funcsToAnalyze
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ExprFunCall f1 = sa.getFirstFun();
+                funcsToAnalyze.add(nres.getFun(nres.getFunName(f1.getName())));
+                for (Expression param : f1.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funcsToAnalyze.add(nres.getFun(nres.getFunName(pa.getName())));
+                    }
+                }
+
+                ExprFunCall f2 = sa.getSecondFun();
+                funcsToAnalyze.add(nres.getFun(nres.getFunName(f2.getName())));
+                for (Expression param : f2.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funcsToAnalyze.add(nres.getFun(nres.getFunName(pa.getName())));
+                    }
+                }
+
+            }
         }
         if (funcsToAnalyze.size() == 0) {
             System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
@@ -1944,7 +1965,7 @@ nvarContext,
             String pkgName = pkg.getName();
             newfuns.get(pkgName).addAll(newPkg.getFuncs());
             newPkgs.add(new Package(newPkg, pkgName, newPkg.getStructs(),
-                    newPkg.getVars(), newfuns.get(pkgName)));
+                    newPkg.getVars(), newfuns.get(pkgName), newPkg.getSpAsserts()));
         }
 
         return p.creator().streams(newPkgs).create();
@@ -1991,7 +2012,7 @@ nvarContext,
 
         return isReplacer ? new Package(spec, spec.getName(), newStructs,
  newVars,
-                newFuncs) : spec;
+                newFuncs, spec.getSpAsserts()) : spec;
     }
 
     /**

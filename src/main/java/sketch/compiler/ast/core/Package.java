@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 
@@ -42,6 +43,7 @@ public class Package extends FENode
     private final List<FieldDecl> vars;
     private final List<Function> funcs;
     private final List<StructDef> structs;
+    private final List<StmtSpAssert> specialAsserts;
 
     public String toString(){
         String res = "package " + name + '\n';
@@ -70,13 +72,14 @@ public class Package extends FENode
      */
     public Package(FENode context, String name,
  List<StructDef> structs, List vars,
-            List<Function> funcs)
+            List<Function> funcs, List<StmtSpAssert> specialAsserts)
     {
         super(context);
         this.name = name;
         this.structs = structs;
         this.vars = vars;
         this.funcs = funcs;
+        this.specialAsserts = specialAsserts;
     }
 
     /**
@@ -99,7 +102,7 @@ public class Package extends FENode
     public Package(FEContext context, String name,
  List<StructDef> structs,
  List vars,
-            List<Function> funcs)
+            List<Function> funcs, List<StmtSpAssert> specialAsserts)
     {
         super(context);
 
@@ -108,6 +111,7 @@ public class Package extends FENode
         this.structs = structs;
         this.vars = vars;
         this.funcs = funcs;
+        this.specialAsserts = specialAsserts;
     }
 
 
@@ -173,7 +177,7 @@ public class Package extends FENode
     public Package newFromFcns(List<Function> fcns) {
         return new Package(this, this.getName(),
  structs, this.getVars(),
-                Collections.unmodifiableList(fcns));
+                Collections.unmodifiableList(fcns), specialAsserts);
     }
 
     public Package merge(Package s2) {
@@ -184,12 +188,18 @@ public class Package extends FENode
         fd.addAll(s2.vars);
         List<Function> fs = new ArrayList<Function>(funcs);
         fs.addAll(s2.funcs);
-        return new Package(this, name, ns, fd, fs);
+        List<StmtSpAssert> sa = new ArrayList<StmtSpAssert>(specialAsserts);
+        sa.addAll(s2.specialAsserts);
+        return new Package(this, name, ns, fd, fs, sa);
     }
 
     public Package newFromFcns(List<Function> fcns, List<StructDef> structs) {
         return new Package(this, this.getName(),
                 structs, this.getVars(),
-                Collections.unmodifiableList(fcns));
+                Collections.unmodifiableList(fcns), specialAsserts);
+    }
+
+    public List<StmtSpAssert> getSpAsserts() {
+        return specialAsserts;
     }
 }

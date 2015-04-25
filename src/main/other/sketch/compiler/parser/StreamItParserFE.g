@@ -223,6 +223,8 @@ program	 returns [Program p]
     String file = null;
     String pkgName = null;
     FEContext pkgCtxt = null;
+    List<StmtSpAssert> specialAsserts = new ArrayList<StmtSpAssert>();
+	StmtSpAssert sa;
 }
 	:	(  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
                      TK_generator |  TK_stencil | TK_model)*
@@ -231,6 +233,7 @@ program	 returns [Program p]
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
+           |    sa = special_assert_statement { specialAsserts.add(sa); }
            |    file=include_stmt { handleInclude (file, namespaces); }
            |    TK_package id:ID { currPkg = (id.getText()); curPkgCx = getContext(id);}
                             (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id);} | pk = pkgbody {namespaces.add(pk);  } ) 
@@ -249,7 +252,7 @@ program	 returns [Program p]
 				fun.setPkg(pkgName);	
 			}
 			
-		        Package ss=new Package(pkgCtxt, pkgName, structs, vars, funcs);
+		        Package ss=new Package(pkgCtxt, pkgName, structs, vars, funcs, specialAsserts);
  				namespaces.add(ss);
                 if (!hasError) {
                     if (p == null) {
@@ -272,6 +275,8 @@ pkgbody returns [Package pk]
 	StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
 	List<StructDef> adtList;
 	FEContext pkgCtxt = null;
+	List<StmtSpAssert> specialAsserts = new ArrayList<StmtSpAssert>();
+	StmtSpAssert sa;
 }
 : 
 	LCURLY
@@ -282,6 +287,7 @@ pkgbody returns [Package pk]
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
+           |    sa = special_assert_statement { specialAsserts.add(sa); }
    )*
    RCURLY
    {			
@@ -293,7 +299,7 @@ pkgbody returns [Package pk]
 			fun.setPkg(currPkg);	
 		}
 		
-	    pk=new Package(pkgCtxt, currPkg, structs, vars, funcs);
+	    pk=new Package(pkgCtxt, currPkg, structs, vars, funcs, specialAsserts);
     }
    ;
 
@@ -634,6 +640,23 @@ assume_statement returns [StmtAssume s] { s = null; Expression cond; }
 				s = new StmtAssume(cx, cond, msg);
 			}
 		}
+	;
+	
+special_assert_statement returns [StmtSpAssert s] { s = null; Expression f1, f2;}
+	: (t : TK_assert) LPAREN f1 = func_call EQUAL f2 = func_call RPAREN SEMI {
+			s = new StmtSpAssert(getContext(t), (ExprFunCall)f1, (ExprFunCall)f2);
+		}
+	;
+	
+function returns [FunctionName f] {f = null; FunctionName f1, f2;}
+	: f1 = singleFunction STAR f2 = singleFunction {
+		f = new FunctionName(f1, f2); }
+	| f1 = singleFunction {
+		f = f1; }
+	;
+	
+singleFunction returns [FunctionName f] {f = null; }
+	: name:ID { f = new FunctionName(name.getText()); }
 	;
 	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }

@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
@@ -589,12 +590,45 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         out.println("}");
 
         Object o = super.visitProgram(p);
+        for (Package pkg : p.getPackages()) {
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ((NtsbVtype) this.vtype).out.println("replace " + printSpAssert(sa) + ";");
+            }
+        }
+
         for (SpecSketch s : assertions) {
             ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
         }
+
         return o;
     }
 
+    private String printSpAssert(StmtSpAssert sa) {
+        String res = "";
+        ExprFunCall f1 = sa.getFirstFun();
+        res += f1.getName();
+        for (Expression param : f1.getParams()) {
+            if (param instanceof ExprFunCall) {
+                ExprFunCall pa = (ExprFunCall) param;
+                res += " * ";
+                res += pa.getName();
+            }
+        }
+
+        res += " EQUALS ";
+
+        ExprFunCall f2 = sa.getSecondFun();
+        res += f2.getName();
+        for (Expression param : f2.getParams()) {
+            if (param instanceof ExprFunCall) {
+                ExprFunCall pa = (ExprFunCall) param;
+                res += " * ";
+                res += pa.getName();
+            }
+        }
+
+        return res;
+    }
     public Object visitExprFunCall(ExprFunCall exp) {
         String name = exp.getName();
         // Local function?
