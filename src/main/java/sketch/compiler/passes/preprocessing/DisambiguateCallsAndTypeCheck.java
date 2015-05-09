@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeComparisonResult;
@@ -107,6 +108,310 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     }
 
+    private void checkReplaceFunCall(Program prog) {
+        for (Package pkg : prog.getPackages()) {
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                checkSpAssert(sa, pkg.getName());
+            }
+        }
+    }
+
+
+    private void checkSpAssert(StmtSpAssert sa, String pkg) {
+        // TODO: should also check that both lhs and rhs take same type of inputs and produces same type output
+        ExprFunCall lhs = sa.getFirstFun();
+        if (lhs.getParams().get(0) instanceof ExprFunCall) {
+            // nested funcall
+            Type t = getType(lhs.getParams().get(0));
+            if (!t.isStruct()) report (sa.getContext(), "Not yet supported");
+            String fname = nres.getFunName(lhs.getName());
+            Function f = nres.getFun(fname);
+            String expName = f.getParams().get(0).getName();
+            CheckFunction cf =
+                    new CheckFunction((TypeStructRef) t, f, expName, new SymbolTable(
+                            symtab), nres, pkg);
+            f.getBody().accept(cf);
+            if (!cf.checkPassed()) {
+                report(cf.failContext(), "Check failed");
+            }
+                
+        } 
+    }
+
+    private class CheckFunction extends SymbolTableVisitor {
+        final TypeStructRef type;
+        final String fname;
+        Map<String, Boolean> varsToTrack;
+        boolean safe;
+        boolean finalSafe;
+        boolean fieldAccess;
+        FEContext failContext;
+        String pkg;
+        public CheckFunction(TypeStructRef t, Function func, String expName,
+                SymbolTable symtab, NameResolver nres, String pkg)
+        {
+            super(symtab);
+            this.type = t;
+            this.fname = func.getName();
+            varsToTrack = new HashMap<String, Boolean>();
+            varsToTrack.put(expName, false);
+            safe = true;
+            finalSafe = true;
+            fieldAccess = false;
+            this.nres = nres;
+            this.pkg = pkg;
+
+            for (Parameter par : func.getParams()) {
+                this.symtab.registerVar(par.getName(), par.getType(), par,
+                        SymbolTable.KIND_FUNC_PARAM);
+            }
+        }
+
+        public boolean checkPassed() {
+            return safe && finalSafe;
+        }
+
+        public FEContext failContext() {
+            return failContext;
+        }
+
+        @Override
+        public Object visitStmtAssign(StmtAssign stmt) {
+            if (!safe || !finalSafe)
+                return stmt;
+            super.visitStmtAssign(stmt);
+            safe = true;
+            finalSafe = true;
+            fieldAccess = false;
+            Expression rhs = stmt.getRHS().doExpr(this);
+            Expression lhs = stmt.getLHS();
+            if (!safe) {
+                // unsafe expr can only be assigned to a var
+                if ((lhs instanceof ExprVar)) {
+                    varsToTrack.put(((ExprVar) lhs).getName(), fieldAccess);
+                    safe = true;
+                    fieldAccess = false;
+                } else {
+                    finalSafe = false;
+                    failContext = stmt.getContext();
+                }
+            } 
+            return stmt;
+        }
+
+        @Override
+        public Object visitStmtVarDecl(StmtVarDecl stmt) {
+            if (!safe || !finalSafe)
+                return stmt;
+            super.visitStmtVarDecl(stmt);
+            safe = true;
+            finalSafe = true;
+            fieldAccess = false;
+            int n = stmt.getNumVars();
+            for (int i = 0; i < n; i++) {
+                if (!safe || !finalSafe)
+                    return stmt;
+                fieldAccess = false;
+                if (stmt.getInit(i) != null) {
+                    Expression init = stmt.getInit(i).doExpr(this);
+                    if (!safe) {
+                        varsToTrack.put(stmt.getName(i), fieldAccess);
+                        safe = true;
+                        fieldAccess = false;
+                    }
+                }
+            }
+            return stmt;
+        }
+
+        @Override
+        public Object visitStmtSwitch(StmtSwitch stmt) {
+            ExprVar var = (ExprVar) stmt.getExpr();
+            if (varsToTrack.containsKey(var.getName()) && varsToTrack.get(var.getName()))
+            {
+                // switch on a field access is bad
+                safe = false;
+                finalSafe = false;
+                return stmt;
+            }
+            List<String> cases = new ArrayList<String>();
+            for (String caseExpr : stmt.getCaseConditions()) {
+                if (caseExpr != "default" && caseExpr != "repeat") {
+                    cases.add(caseExpr);
+                    SymbolTable oldSymTab1 = symtab;
+                    symtab = new SymbolTable(symtab);
+                    symtab.registerVar(var.getName(),
+                            (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+
+                    Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                    symtab = oldSymTab1;
+                } else {
+                    if (caseExpr == "default" && varsToTrack.containsKey(var.getName()))
+                    {
+                        TypeStructRef tt = (TypeStructRef) (getType(var));
+
+                        boolean hasRec = false;
+                        StructDef cur = nres.getStruct(tt.getName());
+                        for (StructFieldEnt f : cur.getFieldEntriesInOrder()) {
+                            if (f.getType().promotesTo(type, nres)) {
+                                hasRec = true;
+                            }
+                        }
+                        if (!hasRec) {
+                            List<String> defCases = findDefaultCases(cases, tt.getName());
+
+                        for (String c : defCases) {
+                            if (hasRecursiveFields(c))
+                                    hasRec = true;
+                            }
+                        }
+
+                        if (!hasRec) {
+                            // can remove the var from unsafe var list for this case
+                            varsToTrack.remove(var.getName());
+                            Statement body =
+                                    (Statement) stmt.getBody(caseExpr).accept(this);
+                            varsToTrack.put(var.getName(), false);
+
+                        } else {
+                            Statement body =
+                                    (Statement) stmt.getBody(caseExpr).accept(this);
+                        }
+                    } else {
+                        Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                    }
+                }
+            }
+            return stmt;
+        }
+
+        private List<String> findDefaultCases(List<String> cases, String string) {
+            List<String> allCases = new ArrayList<String>();
+
+            LinkedList<String> queue = new LinkedList<String>();
+            queue.add(string);
+            while (!queue.isEmpty()) {
+                String n = queue.removeFirst();
+                List<String> children = nres.getStructChildren(n);
+                if (children.isEmpty()) {
+                    allCases.add(n.split("@")[0]);
+                } else {
+                    queue.addAll(children);
+                }
+            }
+
+            for (String c : cases) {
+                allCases.remove(c);
+            }
+            return allCases;
+        }
+
+        @Override
+        public Object visitExprBinary(ExprBinary exp) {
+            if (!safe || !finalSafe)
+                return exp;
+            if (exp.getOp() == ExprBinary.BINOP_EQ) {
+                if (exp.getLeft() instanceof ExprVar) {
+                    ExprVar lvar = (ExprVar) exp.getLeft();
+                    if (varsToTrack.containsKey(lvar.getName())) {
+                        if (varsToTrack.get(lvar.getName())) {
+                            safe = false;
+                            finalSafe = false;
+                        }
+                    }
+                } else {
+                    exp.getLeft().doExpr(this);
+                }
+                if (!safe || !finalSafe)
+                    return exp;
+                if (exp.getRight() instanceof ExprVar) {
+                    ExprVar rvar = (ExprVar) exp.getRight();
+                    if (varsToTrack.containsKey(rvar.getName())) {
+                        if (varsToTrack.get(rvar.getName())) {
+                            safe = false;
+                            finalSafe = false;
+                        }
+                    }
+                } else {
+                    exp.getRight().doExpr(this);
+                }
+                return exp;
+            }
+
+            return super.visitExprBinary(exp);
+        }
+
+        @Override
+        public Object visitExprField(ExprField exp) {
+            if (!safe || !finalSafe)
+                return exp;
+            Type t = getType(exp);
+            if (!t.promotesTo(type, nres)) {
+                safe = true;
+                return exp;
+            }
+            super.visitExprField(exp);
+            if (!safe)
+                fieldAccess = true;
+            return exp;
+        }
+
+        @Override
+        public Object visitExprVar(ExprVar exp) {
+            if (!safe || !finalSafe)
+                return exp;
+
+            if (varsToTrack.containsKey(exp.getName())) {
+                TypeStructRef t = (TypeStructRef) (getType(exp));
+                if (varsToTrack.get(exp.getName()) || hasRecursiveFields(t.getName())) {
+                    safe = false;
+                    failContext = exp.getContext();
+                }
+            }
+            return exp;
+        }
+
+        private boolean hasRecursiveFields(String name) {
+            LinkedList<String> queue = new LinkedList<String>();
+            queue.addLast(name);
+            while (!queue.isEmpty()) {
+                String n = queue.removeFirst();
+                StructDef cur = nres.getStruct(n);
+                for (StructFieldEnt f : cur.getFieldEntriesInOrder()) {
+                    if (f.getType().promotesTo(type, nres)) {
+                        return true;
+                    }
+                }
+
+                queue.addAll(nres.getStructChildren(n));
+            }
+            return false;
+        }
+
+        @Override
+        public Object visitExprFunCall(ExprFunCall exp) {
+            if (!safe || !finalSafe)
+                return exp;
+            if (exp.getName().equals(fname)) {
+                List<Expression> params = exp.getParams();
+                // first params can be unsafe
+                for (int i = 1; i < params.size(); i++) {
+                    params.get(i).doExpr(this);
+                    if (!safe) {
+                        finalSafe = false;
+                        failContext = exp.getContext();
+                    }
+                }
+            } else {
+                super.visitExprFunCall(exp);
+                if (!safe) {
+                    finalSafe = false;
+                    failContext = exp.getContext();
+                }
+            }
+            return exp;
+        }
+    }
 
     /**
      * Checks that no structures have duplicated field names. In particular, a field in a
@@ -469,8 +774,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         checkDupFieldNames(prog);
         checkPackageNames(prog);
 
+        Object ob = super.visitProgram(prog);
 
-        return super.visitProgram(prog);
+        checkReplaceFunCall(prog);
+        return ob;
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
