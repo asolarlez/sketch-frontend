@@ -11,7 +11,6 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
-import sketch.compiler.passes.preprocessing.EliminateTripleEquals;
 import sketch.compiler.passes.preprocessing.ExpandADTHoles;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.RemoveExprGet;
@@ -47,8 +46,6 @@ public class PreprocessStage extends MetaStage {
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
-        prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
-        // prog.debugDump("after expand ===");
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));

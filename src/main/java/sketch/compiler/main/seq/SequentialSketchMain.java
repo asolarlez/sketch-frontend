@@ -63,15 +63,7 @@ import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
-import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
-import sketch.compiler.passes.preprocessing.CreateHarnesses;
-import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
-import sketch.compiler.passes.preprocessing.EliminateMacros;
-import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
-import sketch.compiler.passes.preprocessing.MethodRename;
-import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
-import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
-import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
+import sketch.compiler.passes.preprocessing.*;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.solvers.SATBackend;
@@ -493,6 +485,7 @@ public class SequentialSketchMain extends CommonSketchMain
     public Program preprocAndSemanticCheck(Program prog) {
 
         prog = (Program) prog.accept(new CreateHarnesses(varGen));
+
         prog = (Program) prog.accept(new ExpandRepeatCases());
         // prog.debugDump();
         prog = (Program) prog.accept(new EliminateMacros());
@@ -505,7 +498,6 @@ public class SequentialSketchMain extends CommonSketchMain
         
         prog = (Program) prog.accept(new PidReplacer());
 
-
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
         // prog.debugDump("After RemoveFunctionParameters");
@@ -516,6 +508,8 @@ public class SequentialSketchMain extends CommonSketchMain
         if (!dtc.good) {
             throw new ProgramParseException("Semantic check failed");
         }
+
+        prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
 
         prog = (Program) prog.accept(new MinimizeFcnCall());
 

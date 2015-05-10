@@ -184,7 +184,8 @@ public class CreateHarnesses extends FEReplacer {
             List<Type> intypes, List<Type> outtypes, List<Function> newFuns)
     {
         Function.FunctionCreator fc =
-                Function.creator(sa.getContext(), "main", Function.FcnType.Harness); // TODO: more general naming
+                Function.creator(sa.getContext(), vargen.nextVar("main"),
+                        Function.FcnType.Harness);
         fc.returnType(TypePrimitive.voidtype);
 
         List<Parameter> params = new ArrayList<Parameter>();
@@ -245,7 +246,7 @@ public class CreateHarnesses extends FEReplacer {
         if (produceFuns.containsKey(t.getName())) {
             return produceFuns.get(t.getName());
         }
-        String fname = "produce" + "_" + t.getName(); // TODO: more general naming
+        String fname = vargen.nextVar("produce" + "_" + t.getName());
         produceFuns.put(t.getName(), fname);
         Function.FunctionCreator fc =
                 Function.creator(ctx, fname, Function.FcnType.Static);
