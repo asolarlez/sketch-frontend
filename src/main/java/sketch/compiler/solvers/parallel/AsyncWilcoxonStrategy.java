@@ -86,11 +86,13 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
             }
         }
         List<Double> dist_tp;
+        int dist_sz;
         synchronized (lock) {
             dist_tp = dMap.get(degree);
+            dist_sz = dist_tp.size();
         }
-        double[] dist = new double[dist_tp.size()];
-        for (int i = 0; i < dist_tp.size(); i++) {
+        double[] dist = new double[dist_sz];
+        for (int i = 0; i < dist_sz; i++) {
             dist[i] = dist_tp.get(i);
         }
         return dist;
@@ -104,12 +106,14 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
             }
         }
         List<Double> dist_tp;
+        int dist_sz;
         synchronized (lock) {
             dist_tp = dMap.get(degree);
+            dist_sz = dist_tp.size();
         }
         Mean m = new Mean();
-        for (Double tp : dist_tp) {
-            m.increment(tp);
+        for (int i = 0; i < dist_sz; i++) {
+            m.increment(dist_tp.get(i));
         }
         return m.getResult();
     }
@@ -214,6 +218,8 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
     void checkSampledEnough() {
         List<Double> dist_tp1;
         List<Double> dist_tp2;
+        int len1;
+        int len2;
         synchronized (lock) {
             // if either active degree is still empty, then wait
             if (!dMap.containsKey(active_degree_1))
@@ -222,10 +228,9 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
                 return;
             dist_tp1 = dMap.get(active_degree_1);
             dist_tp2 = dMap.get(active_degree_2);
+            len1 = dist_tp1.size();
+            len2 = dist_tp2.size();
         }
-
-        int len1 = dist_tp1.size();
-        int len2 = dist_tp2.size();
 
         // whether active degrees' sample size reaches the minimum
         if (len1 < test_trial_min)
