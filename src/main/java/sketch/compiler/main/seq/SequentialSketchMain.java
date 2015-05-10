@@ -64,6 +64,7 @@ import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
+import sketch.compiler.passes.preprocessing.CreateHarnesses;
 import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
 import sketch.compiler.passes.preprocessing.EliminateMacros;
 import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
@@ -491,7 +492,7 @@ public class SequentialSketchMain extends CommonSketchMain
 
     public Program preprocAndSemanticCheck(Program prog) {
 
-
+        prog = (Program) prog.accept(new CreateHarnesses(varGen));
         prog = (Program) prog.accept(new ExpandRepeatCases());
         // prog.debugDump();
         prog = (Program) prog.accept(new EliminateMacros());
