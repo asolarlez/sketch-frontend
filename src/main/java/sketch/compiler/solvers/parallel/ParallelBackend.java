@@ -80,6 +80,7 @@ public class ParallelBackend extends SATBackend {
                     synchronized (lock) {
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
+                        log(2, "Stats for last run:\n" + worker_stat);
                         plog(out, prefix + " solved ===");
                     }
                 } else {
@@ -92,6 +93,7 @@ public class ParallelBackend extends SATBackend {
                     synchronized (lock) {
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
+                        log(2, "Stats for last run:\n" + worker_stat);
                         plog(out, prefix + " failed ===");
                     }
                 }
