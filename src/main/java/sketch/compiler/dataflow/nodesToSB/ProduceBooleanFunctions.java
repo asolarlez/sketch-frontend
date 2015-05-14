@@ -1,12 +1,7 @@
 package sketch.compiler.dataflow.nodesToSB;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.Function;
@@ -36,6 +31,7 @@ import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.PartialEvaluator;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
+import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.util.exceptions.ExceptionAtNode;
 /**
@@ -57,14 +53,93 @@ import sketch.util.exceptions.ExceptionAtNode;
 public class ProduceBooleanFunctions extends PartialEvaluator {
     boolean tracing = false;
     int maxArrSize;
-    class SpecSketch{
+
+    class SpecSketch {
         public final String spec;
         public final String sketch;
-        SpecSketch(String spec, String sketch){ this.spec = spec; this.sketch = sketch; }
+
+        SpecSketch(String spec, String sketch) {
+            this.spec = spec;
+            this.sketch = sketch;
+
+            this.stmt_cnt = 0;
+            this.callees = new ArrayList<Function>();
+        }
+
         public String toString(){
             return sketch + " SKETCHES " + spec;
         }
+
+        // inexact yet quick estimate for the size of this function
+        int stmt_cnt;
+
+        protected void incStmtCnt() {
+            this.stmt_cnt++;
+        }
+
+        protected int getStmtCnt() {
+            return this.stmt_cnt;
+        }
+
+        // simple call relations to take into accounts callees' size
+        List<Function> callees;
+
+        protected void addFunCall(Function fun) {
+            this.callees.add(fun);
+        }
+
+        protected List<Function> getCallees() {
+            return this.callees;
+        }
     }
+
+    class SpecSketchComparator implements Comparator<SpecSketch> {
+
+        Map<SpecSketch, Integer> funSizes;
+        SketchOptions options;
+
+        public SpecSketchComparator() {
+            funSizes = new HashMap<SpecSketch, Integer>();
+            options = SketchOptions.getSingleton();
+        }
+
+        public void estimate(List<SpecSketch> ssks) {
+            for (SpecSketch ssk : ssks) {
+                StringBuffer buf = new StringBuffer();
+                buf.append("estimated size of ");
+                buf.append(ssk.sketch + System.lineSeparator());
+
+                int sz = ssk.getStmtCnt();
+                buf.append("stmt cnt: " + sz + System.lineSeparator());
+
+                List<Function> callees = ssk.getCallees();
+                for (Function callee : callees) {
+                    int callee_sz = callee.getBody().size();
+                    sz += callee_sz;
+                    buf.append("callee " + callee.getName() + " : " + callee_sz);
+                    buf.append(System.lineSeparator());
+                }
+
+                if (options.debugOpts.verbosity >= 10) {
+                    System.out.println(buf.toString());
+                }
+                funSizes.put(ssk, sz);
+            }
+        }
+
+        public int compare(SpecSketch o1, SpecSketch o2) {
+            int s1 = 0;
+            int s2 = 0;
+            if (funSizes.containsKey(o1)) {
+                s1 = funSizes.get(o1);
+            }
+            if (funSizes.containsKey(o2)) {
+                s2 = funSizes.get(o2);
+            }
+            return Integer.compare(s1, s2);
+        }
+    }
+
     List<SpecSketch> assertions = new ArrayList<SpecSketch>();
     List<Statement> todoStmts = new ArrayList<Statement>();
     private void dischargeTodo(){
@@ -378,6 +453,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return mainfuns.contains(func.getName());
     }
 
+    SpecSketch currentFun;
+
     public Object visitFunction(Function func)
     {
         if(tracing)
@@ -390,7 +467,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
 
         if (func.getSpecification() != null) {
-            assertions.add(new SpecSketch(func.getSpecification(), func.getName()));
+            SpecSketch ssk = new SpecSketch(func.getSpecification(), func.getName());
+            assertions.add(ssk);
+            currentFun = ssk;
+        } else {
+            // to not accumulate stmt cnt in a wrong place
+            currentFun = null;
         }
 
         List<Integer> tmpopsz = opsizes;
@@ -553,6 +635,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         out.println("}");
 
         Object o = super.visitProgram(p);
+
+        SpecSketchComparator cp = new SpecSketchComparator();
+        cp.estimate(assertions);
+        Collections.sort(assertions, cp);
+
         for (SpecSketch s : assertions) {
             ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
         }
@@ -563,6 +650,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         String name = exp.getName();
         // Local function?
         Function fun = nres.getFun(name);
+        if (currentFun != null) {
+            currentFun.addFunCall(fun);
+        }
         String funPkg = fun.getPkg();
         if (fun.getSpecification() != null) {
             assert false : "The substitution of sketches for their respective specs should have been done in a previous pass.";
@@ -669,6 +759,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     }
 
     public Object visitStmtAssert(StmtAssert sa) {
+        if (currentFun != null) {
+            currentFun.incStmtCnt();
+        }
         return super.visitStmtAssert(sa);
     }
 
@@ -684,9 +777,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             tmp = s.getCx();
             // }
         }
-        String str = s.getLHS().toString();
+        if (currentFun != null) {
+            currentFun.incStmtCnt();
+        }
         return super.visitStmtAssign(s);
-
     }
 
 
