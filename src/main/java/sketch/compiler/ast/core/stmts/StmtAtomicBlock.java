@@ -78,6 +78,11 @@ public class StmtAtomicBlock extends  Statement{
 		this.cond = cond;
 	}
 
+    @Override
+    public int size() {
+        return block == null ? 0 : block.size();
+    }
+
     /** Accepts a front-end visitor. */
     public Object accept(FEVisitor v) {
         return v.visitStmtAtomicBlock(this);

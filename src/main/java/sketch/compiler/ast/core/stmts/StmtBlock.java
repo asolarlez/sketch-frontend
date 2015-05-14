@@ -91,6 +91,17 @@ public class StmtBlock extends Statement
     	this (stmt, Collections.singletonList (stmt));
     }
 
+    @Override
+    public int size() {
+        int sz = 0;
+        if (stmts != null) {
+            for (Statement s : stmts) {
+                sz += s.size();
+            }
+        }
+        return sz;
+    }
+
     public boolean isBlock () { return true; }
 
     /** Returns the list of statements of this. */

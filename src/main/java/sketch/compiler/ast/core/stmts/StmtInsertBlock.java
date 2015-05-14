@@ -55,6 +55,13 @@ public class StmtInsertBlock extends Statement {
 		into = _into;
 	}
 
+    @Override
+    public int size() {
+        int sz_isrt = insert == null ? 0 : insert.size();
+        int sz_into = into == null ? 0 : into.size();
+        return sz_isrt + sz_into;
+    }
+
 	public Object accept (FEVisitor v) {
 		return v.visitStmtInsertBlock(this);
 	}

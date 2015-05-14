@@ -33,6 +33,11 @@ public class StmtReorderBlock extends Statement {
     	block = new StmtBlock(context, stmts);
     }
 
+    @Override
+    public int size() {
+        return block == null ? 0 : block.size();
+    }
+
     /** Create a new StmtReorderBlock that orders the statements within the
      * specified StmtBlock. */
     public StmtReorderBlock (FENode context, StmtBlock block) {

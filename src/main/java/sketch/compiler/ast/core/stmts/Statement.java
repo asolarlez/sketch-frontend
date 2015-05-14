@@ -42,9 +42,14 @@ abstract public class Statement extends FENode
         super(context);
     }
 
+    public int size() {
+        return 1;
+    }
+
     public boolean isBlock () { return false; }
     
     public Statement doStatement(FEVisitor visit){
     	return (Statement) this.accept(visit);
     }
+
 }

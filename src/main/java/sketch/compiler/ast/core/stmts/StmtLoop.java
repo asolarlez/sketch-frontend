@@ -49,6 +49,11 @@ public class StmtLoop extends Statement
         this.body = body;
     }
 
+    @Override
+    public int size() {
+        return body == null ? 0 : body.size();
+    }
+
     /** Return the number of iterations. */
     public Expression getIter()
     {

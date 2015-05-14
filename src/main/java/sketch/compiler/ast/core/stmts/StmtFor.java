@@ -92,7 +92,13 @@ public class StmtFor extends Statement
         isCanonical = true;
     }
 
-
+    @Override
+    public int size() {
+        int sz_init = init == null ? 0 : init.size();
+        int sz_incr = incr == null ? 0 : incr.size();
+        int sz_body = body == null ? 0 : body.size();
+        return sz_init + sz_incr + sz_body;
+    }
 
     /** Return the initialization statement of this. */
     public Statement getInit()

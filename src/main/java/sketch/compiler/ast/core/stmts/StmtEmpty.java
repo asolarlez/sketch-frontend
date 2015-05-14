@@ -55,6 +55,11 @@ public class StmtEmpty extends Statement
         return "{ }";
     }
     
+    @Override
+    public int size() {
+        return 0;
+    }
+
     public Object accept(FEVisitor v)
     {
         return v.visitStmtEmpty(this);
