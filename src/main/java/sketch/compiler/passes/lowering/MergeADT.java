@@ -278,6 +278,7 @@ public class MergeADT extends SymbolTableVisitor {
 
                     }
                 }
+                sa.setStateCount(state);
                 specialStructs.put(outName, state);
             }
             

@@ -627,6 +627,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
         }
 
+        res += " (" + sa.getStateCount() + ")";
+
         return res;
     }
     public Object visitExprFunCall(ExprFunCall exp) {
