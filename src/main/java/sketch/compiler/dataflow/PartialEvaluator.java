@@ -235,7 +235,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
             if(nbase instanceof ExprArrayInit && newStart.hasIntVal()){
                 if(!rl.hasLen()){
                     ExprArrayInit eai = (ExprArrayInit) nbase;
-                    exprRV = eai.getElements().get(newStart.getIntVal());
+                    try {
+                        exprRV = eai.getElements().get(newStart.getIntVal());
+                    } catch (IndexOutOfBoundsException ex) {
+                        throw new ArrayIndexOutOfBoundsException(ex.getMessage());
+                    }
                 }else{
                     Integer ln = rl.getLenExpression().getIValue();
                     if(ln != null){
