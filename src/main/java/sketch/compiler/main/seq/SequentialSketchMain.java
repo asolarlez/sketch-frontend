@@ -634,9 +634,11 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                     System.out.println("Sketch front-end timed out");
                     exitCode = 1;
                 } catch (ExecutionException e) {
-                    throw new RuntimeException(e);
+                    ErrorHandling.handleErr(e);
+                    exitCode = 1;
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    ErrorHandling.handleErr(e);
+                    exitCode = 1;
                 } finally {
                     executor.shutdown();
                 }
