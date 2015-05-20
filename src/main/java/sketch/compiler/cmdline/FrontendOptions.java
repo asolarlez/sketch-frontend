@@ -89,4 +89,7 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "the file name to which to output the values of 'Hole Functions', which are single line functions to give unique names to holes")
     public String outputHoleFunc;
+
+    @CliParameter(help = "Stop Sketch after given number of minutes.")
+    public float timeout = 0;
 }
