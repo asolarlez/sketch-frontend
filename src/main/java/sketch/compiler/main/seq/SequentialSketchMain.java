@@ -637,6 +637,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                     throw new RuntimeException(e);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                } finally {
+                    executor.shutdown();
                 }
             } else { // normal run
                 sketchmain.run();
