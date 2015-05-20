@@ -32,6 +32,10 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public float extendPTimeout() {
         synchronized (pTimeoutLock) {
             pTimeout = pTimeout * 2;
+            // if general timeout is set, do not exceed that
+            if (timeout > 0) {
+                pTimeout = Math.min(pTimeout, timeout);
+            }
         }
         return pTimeout;
     }
