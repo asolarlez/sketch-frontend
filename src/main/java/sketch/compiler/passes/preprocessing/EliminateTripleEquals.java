@@ -96,7 +96,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
 
             return new ExprFunCall(expr, funName, pm);
         }
-        return expr;
+        return super.visitExprBinary(expr);
     }
     
     private String createEqualsFun(TypeStructRef type, FENode ctx) {

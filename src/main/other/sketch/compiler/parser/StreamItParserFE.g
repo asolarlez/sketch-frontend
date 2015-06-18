@@ -648,17 +648,6 @@ special_assert_statement returns [StmtSpAssert s] { s = null; Expression f1, f2;
 		}
 	;
 	
-function returns [FunctionName f] {f = null; FunctionName f1, f2;}
-	: f1 = singleFunction STAR f2 = singleFunction {
-		f = new FunctionName(f1, f2); }
-	| f1 = singleFunction {
-		f = f1; }
-	;
-	
-singleFunction returns [FunctionName f] {f = null; }
-	: name:ID { f = new FunctionName(name.getText()); }
-	;
-	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
 		String msg = null;
@@ -1146,7 +1135,7 @@ adt_decl returns [List<StructDef> adtList]
 	| an=annotation {annotations.append(an.tag, an);}
 	)*
 	RCURLY
-	{str = StructDef.creator(getContext(t), id.getText(), null, false, names, types, annotations).create();
+	{str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, annotations).create();
      str.setImmutable();
 	 adtList.add(0, str);
 	}

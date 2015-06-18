@@ -987,9 +987,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
             for (Parameter f1 : func.getParams()) {
                 if (f1.getType() instanceof TypeStructRef) {
-                    report(func,
-                            "A harness function can not have a structure or array of structures as input: " +
-                                    f1);
+                    //report(func,
+                     //       "A harness function can not have a structure or array of structures as input: " +
+                        // f1);
                     return super.visitFunction(func);
                 }
                 if (f1.getType() instanceof TypeArray) {

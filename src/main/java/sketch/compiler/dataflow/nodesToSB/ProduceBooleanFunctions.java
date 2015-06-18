@@ -576,7 +576,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                                 }
 
                             } else {
-                                out.print(printType(ta.getBase()) + "_arr" + " ");
+                                Type base = ta.getBase();
+                                if (base.isStruct()) {
+                                    out.print(printType(ta.getBase()) + "[*" +
+                                            maxArrSize + "]" + " ");
+                                } else {
+                                    out.print(printType(ta.getBase()) + "_arr" + " ");
+                                }
                             }
                         } else {
                             out.print(printType(param.getType()) + " ");
