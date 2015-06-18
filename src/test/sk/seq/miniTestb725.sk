@@ -12,9 +12,9 @@ struct outStmt {
 outStmt foo (Statement s) {
 	if (s == null) return null;
 	switch(s) {
-		case StmtVarDecl: return new outStmt(stmts = {s});
-		case StmtAssert: return new outStmt(stmts = {s});
-		case StmtExpr: return new outStmt(stmts = {s});	
+		case StmtVarDecl: { Statement ss = new StmtVarDecl(); return new outStmt(stmts = {ss}); }
+		case StmtAssert: { Statement ss = new StmtAssert(); return new outStmt(stmts = {ss}); }
+		case StmtExpr: {Statement ss = new StmtExpr(); return new outStmt(stmts = {ss}); }
 	}	
 }
 

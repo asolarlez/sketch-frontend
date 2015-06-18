@@ -94,8 +94,8 @@ public class EliminateDeadCode extends BackwardDataflow {
             if(e instanceof ExprConstInt || e instanceof ExprVar){
                 return null;
             }            
-            abstractValue val = (abstractValue) stmt.getExpression().accept(this);
-            enliven(val);
+            // abstractValue val = (abstractValue) stmt.getExpression().accept(this);
+            // enliven(val);
         }
         return super.visitStmtExpr(stmt);
     }
@@ -160,6 +160,7 @@ public class EliminateDeadCode extends BackwardDataflow {
         return isReplacer ? new StmtMinimize(exprRV, stmtMinimize.userGenerated)
                 : stmtMinimize;
     }
+
 
 	public Object visitExprField(ExprField exp) {
 		abstractValue leftav = (abstractValue)exp.getLeft().accept(this);
@@ -313,6 +314,33 @@ public class EliminateDeadCode extends BackwardDataflow {
     @Override
 	public Object visitExprFunCall(ExprFunCall exp){
 		Iterator actualParams = exp.getParams().iterator();
+        Function fun = nres.getFun(exp.getName());
+        List<Parameter> funParams = fun.getParams();
+        int i = 0;
+        boolean isPure = true; // TODO: actually need to do a more detailed analysis
+        boolean isDead = false;
+        while (actualParams.hasNext()) {
+            Expression actual = (Expression) actualParams.next();
+            Parameter p = funParams.get(i);
+            if (p.isParameterReference())
+                isPure = false;
+            else if (p.isParameterOutput()) {
+                if (actual instanceof ExprVar) {
+                    ExprVar v = (ExprVar) actual;
+                    LiveVariableAV av = (LiveVariableAV) state.varValue(v.getName());
+                    if (av.getLiveness() == LiveVariableAV.DEAD) {
+                        isDead = true;
+                    }
+                }
+            }
+            i++;
+        }
+        if (isPure && isDead) {
+            exprRV = null;
+            return vtype.CONST(0);
+
+        }
+        actualParams = exp.getParams().iterator();
 		while(actualParams.hasNext()){
 			Expression actual = (Expression) actualParams.next();
 			if(actual instanceof ExprVar){
