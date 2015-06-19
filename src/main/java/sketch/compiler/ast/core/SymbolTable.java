@@ -369,11 +369,9 @@ public class SymbolTable
 	// table. I'm not sure if I need to do this.
     /**
 	 * Return the variables from the symbol table as ExprVar. Be careful with
-	 * this since this should not include the variable where the special symbol
-	 * is found. Also be careful since it might return the variables from the
-	 * parent. This currently works for int that are initialized to 0. Ints that
-	 * do not have a value throw an exception. Ints that were initialized to 0
-	 * and have another value are NOT ignored right now.
+	 * this since this will include the variable where the special symbol is
+	 * found. Also be careful since it might return the variables from the
+	 * parent.
 	 * 
 	 * @return
 	 */
@@ -404,10 +402,11 @@ public class SymbolTable
 			// (ExprConstant.class.isAssignableFrom(statement.getInit(0).getClass()))
 			// {
 			// // Check if the initial value of the variable is 0
-			// // TODO MIGUEL might not work with floats
 			// if (statement.getInit(0).getIValue().intValue() == 0) {
-                    // Add the variable name to the list
-                    localVariables.add(new ExprVar(statement.getContext(), statement.getName(0)));
+            
+            
+            // Add the variable name to the list
+			localVariables.add(new ExprVar(statement.getCx(), statement.getName(0)));
 			// }
 			// }
         }
