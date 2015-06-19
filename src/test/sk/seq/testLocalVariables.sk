@@ -1,0 +1,17 @@
+pragma options "-V 10 -P preproc";
+
+
+harness void localVariable(int x)
+{
+  int a = 6969;
+  int b = 0; 
+  int c = a + b;
+  int d = $$$ + 3;
+
+  int t = x * ?? + d;
+
+  int e = 0;
+  int f = d * 2;
+    
+  assert (t == x + x + 3);
+}
