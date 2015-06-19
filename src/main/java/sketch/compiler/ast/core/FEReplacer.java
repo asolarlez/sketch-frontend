@@ -82,6 +82,7 @@ import static sketch.util.DebugOut.assertFalse;
  * @version $Id$
  */
 public class FEReplacer implements FEVisitor
+// TODO MIGUEL look at this replacer to see what it does
 {
 
     /**
@@ -1029,6 +1030,15 @@ public class FEReplacer implements FEVisitor
     public Object visitExprType(ExprType exprtyp) {
         assertFalse("Not implemented: visitExprType()");
         return null;
+    }
+
+	/**
+	 * Since a local variable expression is a terminal expression, its default
+	 * behavior is to return the same object that was passed.
+	 */
+    public Object visitExprLocalVariables(ExprLocalVariables exp) {
+		// TODO MIGUEL just returning null
+        return exp;
     }
 
 }

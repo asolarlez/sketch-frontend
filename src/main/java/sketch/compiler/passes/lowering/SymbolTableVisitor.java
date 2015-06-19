@@ -61,6 +61,8 @@ import sketch.util.exceptions.ExceptionAtNode;
  * @version $Id$
  */
 public class SymbolTableVisitor extends FEReplacer
+// TODO MIGUEL this could help me a lot with a table of all the local variables
+// that I can use, so read this and understand it and test it
 {
     /**
      * The current symbol table.  Functions in this class keep the
@@ -180,7 +182,7 @@ public class SymbolTableVisitor extends FEReplacer
     public SymbolTableVisitor(SymbolTable symtab)
     {
         this.symtab = (symtab == null ? new SymbolTable(null) : symtab);
-
+ 
     }
 
     public Type getTypeOrNotYetComputed(Expression expr) {

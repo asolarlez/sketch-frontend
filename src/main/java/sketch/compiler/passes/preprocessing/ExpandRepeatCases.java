@@ -42,6 +42,7 @@ class CloneHoles extends FEReplacer {
 }
 
 public class ExpandRepeatCases extends SymbolTableVisitor {
+	// TODO MIGUEL look at an example of a replacer that uses the SymbolTableVisitor
     public ExpandRepeatCases() {
         super(null);
 
