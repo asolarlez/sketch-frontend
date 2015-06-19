@@ -503,7 +503,7 @@ public class MergeADT extends SymbolTableVisitor {
             }
 
         }
-
+        int actFields = names.size();
         if (pair != null) {
             // Add extra fields to the tuple in the following order
             // orig fields | in state | out state | out
@@ -530,6 +530,7 @@ public class MergeADT extends SymbolTableVisitor {
         ts =
                 StructDef.creator(str.getContext(), newName, null, true, names, types,
                         annotations).create();
+        ts.setActFields(actFields);
         ts.setPkg(str.getPkg());
         // structs.get(str.getFullName()).newStruct = ts.getFullName();
 

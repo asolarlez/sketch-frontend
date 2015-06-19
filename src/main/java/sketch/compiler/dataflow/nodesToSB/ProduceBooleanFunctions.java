@@ -538,6 +538,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 if (t.immutable()) {
                     out.print(t.getName().toUpperCase() + "_" + t.getPkg().toUpperCase() +
                             " ( ");
+                    int actFields = t.getActFields();
+                    if (actFields <= 0)
+                        actFields = t.getNumFields();
+                    out.print(actFields + " ");
                     for (StructFieldEnt e : t.getFieldEntriesInOrder()) {
                         out.print(printTupleType(e.getType()) + " ");
                     }

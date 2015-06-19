@@ -60,6 +60,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
     // For sake of ADT
     private String parentName;
+    private int actFieldsSize;
     private boolean isInstantiable;
     private boolean immutable = false;
     private final List<String> fieldOrder;
@@ -233,6 +234,7 @@ annotations);
         this.pkg = pkg;
         this.parentName = parentName;
         this.isInstantiable = isInstantiable;
+        this.actFieldsSize = -1;
         TypedHashMap<String, Type> types = new TypedHashMap<String, Type>();
         fieldOrder = fields;
         for (int i = 0; i < fields.size(); i++)
@@ -429,6 +431,14 @@ annotations);
 
     public Iterator<Entry<String, Type>> iterator() {
         return fieldTypMap.iterator();
+    }
+
+    public void setActFields(int actFields) {
+        this.actFieldsSize = actFields;
+    }
+
+    public int getActFields() {
+        return actFieldsSize;
     }
 }
 
