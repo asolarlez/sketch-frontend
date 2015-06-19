@@ -1,4 +1,4 @@
-pragma options "-V 10 -P preproc";
+pragma options "-V 10";
 
 
 harness void localVariable(int x)
@@ -6,6 +6,7 @@ harness void localVariable(int x)
   int a = 6969;
   int b = 0; 
   int c = a + b;
+  b = 75;
   int d = $$$ + 3;
 
   int t = x * ?? + d;
