@@ -1,4 +1,4 @@
-pragma options "-V 10";
+pragma options "-V 0";
 
 
 harness void localVariable(int x)
@@ -6,13 +6,15 @@ harness void localVariable(int x)
   int a = 6969;
   int b = 0; 
   int c = a + b;
-  b = 75;
-  int d = $$$ + 3;
+  int d = 0;
+  d = 75;
 
-  int t = x * ?? + d;
+  int e = $$$ + 3;
 
-  int e = 0;
-  int f = d * 2;
+  int t = x * ?? + e;
+
+  int f = 0;
+  int g = d * 2;
     
   assert (t == x + x + 3);
 }
