@@ -496,10 +496,11 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 
     public Program preprocAndSemanticCheck(Program prog) {
-
+		// TODO MIGUEL this is where I had my local variable replacer, but Armando
+    	// told me to put in the preporcess stage
 
         prog = (Program) prog.accept(new ExpandRepeatCases());
-        // prog.debugDump();
+		// prog.debugDump("After expand Repeat Case");
         prog = (Program) prog.accept(new EliminateMacros());
         // prog.debugDump("af");
         prog = (Program) prog.accept(new ConstantReplacer(null));
@@ -512,10 +513,13 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+		// prog.debugDump("After remove Function Parameters");
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
-        prog = (Program) prog.accept(dtc);
-        // prog.debugDump("After");
+
+		// prog.debugDump("After disambiguate calls and type check");
+		prog = (Program) prog.accept(dtc);
+		// prog.debugDump("After dtc accept");
         if (!dtc.good) {
             throw new ProgramParseException("Semantic check failed");
         }
@@ -566,7 +570,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = null;
         try {
-            prog = parseProgram();
+			prog = parseProgram();
+            // System.out.println(prog);
         } catch (SketchException se) {
             throw se;
         } catch (IllegalArgumentException ia) {
@@ -575,17 +580,19 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             throw new ProgramParseException("Sketch failed to parse: " + re.getMessage());
         }
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
-        prog = this.preprocAndSemanticCheck(prog);
+
+		prog = this.preprocAndSemanticCheck(prog);
+        // System.out.println(prog);
 
         // withoutConstsReplaced =
         // prog =
         // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
 
-        SynthesisResult synthResult = this.partialEvalAndSolve(prog);
-        prog = synthResult.lowered.result;
+		SynthesisResult synthResult = this.partialEvalAndSolve(prog);
+		prog = synthResult.lowered.result;
 
         // prog.debugDump("");
-        Program finalCleaned = synthResult.lowered.highLevelC;
+		Program finalCleaned = synthResult.lowered.highLevelC;
         // (Program) (new
         // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
 
@@ -595,7 +602,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         Program substituted;
         if (synthResult.solution != null) {
             substituted =
-                (new SubstituteSolution(varGen, options, synthResult.solution)).visitProgram(finalCleaned);
+ (new SubstituteSolution(varGen, options,
+					synthResult.solution)).visitProgram(finalCleaned);
         } else {
             substituted = finalCleaned;
         }
@@ -603,10 +611,11 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         // substituted.debugDump("after substitution");
 
         Program substitutedCleaned =
-                (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);
+ (new CleanupFinalCode(varGen, options,
+				visibleRControl(finalCleaned))).visitProgram(substituted);
 
 
-        generateCode(substitutedCleaned);
+		generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");
     }
 
@@ -643,7 +652,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                     executor.shutdown();
                 }
             } else { // normal run
+            // System.out.println("Running");
                 sketchmain.run();
+                // System.out.println("End run");
             }
         } catch (SketchException e) {
             e.print();

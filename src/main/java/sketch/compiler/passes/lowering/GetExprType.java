@@ -265,6 +265,13 @@ public class GetExprType extends FENullVisitor
     	}
     }
 
+	public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
+		// TODO MIGUEL we need to treat this symbols as we treat a star. However,
+		// ExprLV does not have a type. Let's see if this works and then we might
+		// add a type variable to ExprLV
+		return TypePrimitive.bottomtype;
+	}
+
     public Object visitExprNullPtr(ExprNullPtr exp){
     	return nullType;
     }

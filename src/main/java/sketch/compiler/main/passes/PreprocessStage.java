@@ -13,6 +13,7 @@ import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
 import sketch.compiler.passes.preprocessing.EliminateTripleEquals;
 import sketch.compiler.passes.preprocessing.ExpandADTHoles;
+import sketch.compiler.passes.preprocessing.LocalVariablesReplacer;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.ReplaceADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
@@ -43,6 +44,7 @@ public class PreprocessStage extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
+		// TODO MIGUEL maybe I'll do something here, but maybe not
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
@@ -85,13 +87,23 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new ExpandADTHoles());
 
 
-        prog = (Program) prog.accept(new GlobalsToParams(varGen));
+        prog = (Program) prog.accept(new GlobalsToParams(varGen)); // TODO MIGUEL this is where something special happense
 
         // prog = ir1.run(prog);
         // prog.debugDump("before type inference");
 
+		// TODO MIGUEL This is where typeInferenceForStars is used
         prog = (Program) prog.accept(new TypeInferenceForStars());
-
+        // TODO MIGUEL this is where I should put my code for the local variables. This will
+        // help to get the updated value of the variables so that I can tell if the variable
+        // has changed or not.
+        // TODO MIGUEL after this point, my special character will be gone so check what
+        // other passes do before this for the stars (which mean the ??) and do the same
+        // for the $$$. 
+		prog.debugDump("Before Local Variable replacer");
+		prog = (Program) prog.accept(new LocalVariablesReplacer());
+        
+        
         prog = (Program) prog.accept(new EliminateFieldHoles());
         //prog.debugDump("af");
         

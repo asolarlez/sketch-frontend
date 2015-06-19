@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.ast.core;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
@@ -361,5 +363,55 @@ public class SymbolTable
     public SymbolTable getParent()
     {
         return parent;
+    }
+
+	// TODO MIGUEL I just added this to access the variables from the symbol
+	// table. I'm not sure if I need to do this.
+    /**
+	 * Return the variables from the symbol table as ExprVar. Be careful with
+	 * this since this should not include the variable where the special symbol
+	 * is found. Also be careful since it might return the variables from the
+	 * parent. This currently works for int that are initialized to 0. Ints that
+	 * do not have a value throw an exception. Ints that were initialized to 0
+	 * and have another value are NOT ignored right now.
+	 * 
+	 * @return
+	 */
+    public ArrayList<ExprVar> getLocalVariables() {
+        ArrayList<ExprVar> localVariables = new ArrayList<ExprVar>();
+
+        // Loop through the variables
+        for (Entry<String, VarInfo> entry : vars.entrySet()) {
+            // Get the information of the variable
+            VarInfo varInformation = entry.getValue();
+
+            // Get the statement from the information
+            StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
+
+			// // Check if declaration has at least 1 initial value
+			// if (statement.getInits().size() < 1) {
+			// throw new IllegalArgumentException(
+			// "How can a declaration have 0 initial values?");
+			// }
+            
+			// // Check if first init is not null
+			// if (statement.getInit(0) == null) {
+			// // throw new IllegalArgumentException("The init is null");
+			// }
+
+			// // Add variables that are a constant expression
+			// if
+			// (ExprConstant.class.isAssignableFrom(statement.getInit(0).getClass()))
+			// {
+			// // Check if the initial value of the variable is 0
+			// // TODO MIGUEL might not work with floats
+			// if (statement.getInit(0).getIValue().intValue() == 0) {
+                    // Add the variable name to the list
+                    localVariables.add(new ExprVar(statement.getContext(), statement.getName(0)));
+			// }
+			// }
+        }
+
+        return localVariables;
     }
 }

@@ -138,4 +138,17 @@ public interface FEVisitor
     public Object visitSpmdNProc(SpmdNProc spmdnproc);
 
     public Object visitStmtAssume(StmtAssume stmtAssume);
+
+
+    /**
+	 * Method that implements the behavior of visiting a local variable
+	 * expression. Calling visitor methods returns some value, the type of which
+	 * depends on the semantics of the visitor in question.
+	 * 
+	 * @param exprLocalVariables
+	 * @return
+	 */
+    public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables);
+	// TODO MIGUEL this is where I added this method, now all visitors must
+	// implement this method
 }

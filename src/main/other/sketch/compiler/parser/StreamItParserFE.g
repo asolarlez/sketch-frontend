@@ -1077,6 +1077,10 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	  x = new ExprStar(getContext(t2)); 
             	}
             }
+    |  t3:LOCAL_VARIABLES // MIGUEL this is where I need to modify the grammar so that my symbol is understood by the parser
+            {
+              x = new ExprLocalVariables(getContext(t3)); // MIGUEL just follow the same pattern from NDVAL, meaning reate a t3 temporary
+            }
     ;
 
 adt_decl returns [List<StructDef> adtList]
