@@ -278,8 +278,7 @@ public class MergeADT extends SymbolTableVisitor {
 
         nres = new NameResolver(p);
         List<Package> newStreams = new ArrayList<Package>();
-        Map<String, Pair<List<Type>, List<Type>>> specialStructs =
-                new HashMap<String, Pair<List<Type>, List<Type>>>();
+        Map<String, List<Type>> specialStructs = new HashMap<String, List<Type>>();
         // first add all trackers for adts
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
@@ -292,48 +291,35 @@ public class MergeADT extends SymbolTableVisitor {
                 String outName = "";
                 int state = 0;
                 boolean first = true;
-                List<Type> stateTypes = new ArrayList<Type>();
                 List<Type> outTypes = new ArrayList<Type>();
                 for (Parameter pp : params) {
                     if (first && pp.isParameterInput()) {
                         Type t = pp.getType();
                         assert (t.isStruct());
                         outName = ((TypeStructRef) pp.getType()).getName().split("@")[0];
+                        ExprFunCall innerFCall = (ExprFunCall) f1.getParams().get(0);
+                        Function innerF = nres.getFun(innerFCall.getName());
+
+                        for (Parameter ppp : innerF.getParams()) {
+                            if (ppp.isParameterInput() || ppp.isParameterReference()) {
+                                Type tt = ppp.getType();
+                                if (tt.isArray()) {
+                                    TypeArray ta = (TypeArray) tt;
+                                    Type base = ta.getBase();
+                                    int len = ((ExprConstInt) ta.getLength()).getVal();
+                                    for (int i = 0; i < len; i++)
+                                        outTypes.add(ppp.getType());
+                                } else {
+                                    outTypes.add(ppp.getType());
+                                }
+                            }
+
+                        }
                         first = false;
-                    } else
-                    if (pp.isParameterReference()) {
-                        Type t = pp.getType();
-                        assert (!t.isStruct());
-                        if (t.isArray()) {
-                            TypeArray ta = (TypeArray) t;
-                            Type base = ta.getBase();
-                            int len = ((ExprConstInt) ta.getLength()).getVal();
-                            for (int i = 0; i < len; i++) {
-                                stateTypes.add(base);
-                            }
-
-                        } else {
-                            assert (t.promotesTo(TypePrimitive.inttype, nres));
-                            stateTypes.add(TypePrimitive.inttype);
-                        }
-                    } else if (pp.isParameterOutput()) {
-                        Type t = pp.getType();
-                        if (t.isArray()) {
-                            TypeArray ta = (TypeArray) t;
-                            Type base = ta.getBase();
-                            int len = ((ExprConstInt) ta.getLength()).getVal();
-                            for (int i = 0; i < len; i++) {
-                                outTypes.add(base);
-                            }
-                        } else {
-                            outTypes.add(t);
-                        }
                     }
-
-
                 }
                 sa.setStateCount(state);
-                specialStructs.put(outName, new Pair(stateTypes, outTypes));
+                specialStructs.put(outName, outTypes);
             }
 
             for (StructDef str : pkg.getStructs()) {
@@ -449,7 +435,7 @@ public class MergeADT extends SymbolTableVisitor {
     }
 
     public StructDef combineStructs(NameResolver nres, StructDef str,
-            Pair<List<Type>, List<Type>> pair)
+            List<Type> extraTypes)
     {
         String oldName = str.getFullName();
         String newName = structs.get(oldName).newStruct;
@@ -504,26 +490,23 @@ public class MergeADT extends SymbolTableVisitor {
 
         }
         int actFields = names.size();
-        if (pair != null) {
+        if (extraTypes != null) {
+            for (int i = 0; i < extraTypes.size(); i++) {
+                names.add("sp_" + i);
+                types.add(extraTypes.get(i).accept(this));
+            }
             // Add extra fields to the tuple in the following order
             // orig fields | in state | out state | out
             // node
-            List<Type> stateTypes = pair.getFirst();
-            for (int k = 0; k < stateTypes.size(); k++) {
-                names.add("st_in" + k);
-                types.add(stateTypes.get(k).accept(this));
-            }
-
-            for (int k = 0; k < stateTypes.size(); k++) {
-                names.add("st_out" + k);
-                types.add(stateTypes.get(k).accept(this));
-            }
-
-            List<Type> outTypes = pair.getSecond();
-            for (int k = 0; k < outTypes.size(); k++) {
-                names.add("out_" + k);
-                types.add(outTypes.get(k).accept(this));
-            }
+            /*
+             * List<Type> stateTypes = pair.getFirst(); for (int k = 0; k <
+             * stateTypes.size(); k++) { names.add("st_in" + k);
+             * types.add(stateTypes.get(k).accept(this)); } for (int k = 0; k <
+             * stateTypes.size(); k++) { names.add("st_out" + k);
+             * types.add(stateTypes.get(k).accept(this)); } List<Type> outTypes =
+             * pair.getSecond(); for (int k = 0; k < outTypes.size(); k++) {
+             * names.add("out_" + k); types.add(outTypes.get(k).accept(this)); }
+             */
 
 
         }
