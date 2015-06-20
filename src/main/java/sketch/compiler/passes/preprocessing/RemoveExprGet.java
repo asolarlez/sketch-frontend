@@ -118,7 +118,39 @@ public class RemoveExprGet extends SymbolTableVisitor {
     private void getExpr(ExprVar ev, Type type, List<Expression> params,
             List<Statement> newStmts, int depth)
     {
+        if (type.isArray()) {
+            TypeArray ta = (TypeArray) type;
+            Type baseType = ta.getBase();
+            if (baseType.isStruct()) {
+                ExprStar hole = new ExprStar(context);
+                Statement ifBlock = getBaseExprs(type, params, ev);
+                List<Statement> elseStmts = new ArrayList<Statement>();
+                if (depth > 1) {
+                    List<Expression> arrelems = new ArrayList<Expression>();
+                    Expression length = ta.getLength();
+                    int size = length.isConstant() ? length.getIValue() : maxArrSize;
 
+                    // TODO: is there a better way of dealing with this
+                    for (int i = 0; i < size; i++) {
+                        String tempVar = varGen.nextVar(ev.getName().split("@")[0]);
+                        Statement decl =
+                                (new StmtVarDecl(context, baseType, tempVar, null));
+                        elseStmts.add(decl);
+                        symtab.registerVar(tempVar, baseType, decl,
+                                SymbolTable.KIND_LOCAL);
+                        ExprVar newV = new ExprVar(context, tempVar);
+                        getExpr(newV, baseType, params, elseStmts, depth);
+                        arrelems.add(newV);
+                    }
+                    elseStmts.add(new StmtAssign(context, ev,
+                            new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
+                                    new ExprArrayRange.RangeLen(ExprConstInt.zero, length))));
+                }
+                Statement elseBlock = new StmtBlock(elseStmts);
+                newStmts.add(new StmtIfThen(context, hole, ifBlock, elseBlock));
+                return;
+            }
+        }
         if (type instanceof TypeStructRef) {
             // if (type.promotesTo(oriType, nres)) {
             TypeStructRef tt = (TypeStructRef) type;
@@ -268,9 +300,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                         finExp))));
             }
         } else {
-            if (curExp == null) {
-                stmts.add(new StmtAssign(var, new ExprNullPtr()));
-            } else {
+            if (curExp != null) {
                 stmts.add(new StmtAssign(var, new ExprRegen(context, curExp)));
             }
         }
