@@ -1034,11 +1034,31 @@ public class FEReplacer implements FEVisitor
 
 	/**
 	 * Since a local variable expression is a terminal expression, its default
-	 * behavior is to return the same object that was passed.
+	 * behavior is to return the same object that was passed. It also does some
+	 * check on the type of the expression.
 	 */
-    public Object visitExprLocalVariables(ExprLocalVariables exp) {
-		// TODO MIGUEL just returning null
-        return exp;
+	public Object visitExprLocalVariables(ExprLocalVariables expr) {
+		// If the expression type is not null
+		if (expr.getType() != null) {
+
+			// Send the FEReplacer visitor to the Type class get the type
+			Type type = (Type) expr.getType().accept(this);
+
+			// If the type does not equal the expr type
+			if (type != expr.getType()) {
+				// Create a new local variables expr
+				ExprLocalVariables exprLocalVariables = new ExprLocalVariables(expr);
+
+				// Set the type to the one we just found
+				exprLocalVariables.setType(type);
+
+				// Return the new expr
+				return exprLocalVariables;
+			}
+		}
+
+		// Return the same expression that was passed
+		return expr;
     }
 
 }

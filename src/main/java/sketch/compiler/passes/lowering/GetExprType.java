@@ -265,11 +265,18 @@ public class GetExprType extends FENullVisitor
     	}
     }
 
+    /**
+	 * Returns the type of the local variable expression based on the context.
+	 */
 	public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
-		// TODO MIGUEL we need to treat this symbols as we treat a star. However,
-		// ExprLV does not have a type. Let's see if this works and then we might
-		// add a type variable to ExprLV
-		return TypePrimitive.bottomtype;
+		// If the expression already has a type
+		if (exprLocalVariables.getType() != null) {
+			// Return that type
+			return exprLocalVariables.getType();
+		} else {
+			// Else return a bottom type
+			return TypePrimitive.bottomtype;
+		}
 	}
 
     public Object visitExprNullPtr(ExprNullPtr exp){

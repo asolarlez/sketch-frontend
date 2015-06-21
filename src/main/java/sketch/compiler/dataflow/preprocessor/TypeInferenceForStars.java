@@ -46,6 +46,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     class UpgradeStarToInt extends FEReplacer {
         private final SymbolTableVisitor stv;
         Type type;
+		Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
 
         UpgradeStarToInt(SymbolTableVisitor stv, Type type, NameResolver nres) {
             this.stv = stv;
@@ -68,6 +69,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             }
             return star;
         }
+        
 
         public Object visitExprConstFloat(ExprConstFloat ecf) {
             ecf.setType(type);
@@ -167,7 +169,6 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 return stmt;
             return new StmtLoop(stmt, newIter, newBody);
         }
-        Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
         public Object visitExprNew(ExprNew expNew) {
 
             Type nt = (Type) expNew.getTypeToConstruct().accept(this);
@@ -306,6 +307,22 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 return exp;
             return new ExprArrayRange(exp, newBase, new RangeLen(newStart, newLen));
         }
+
+		/**
+		 * Visitor that checks the type of the expression that is passed. If the
+		 * type is null, the type is set to the type inferred.
+		 */
+		public Object visitExprLocalVariables(ExprLocalVariables expr) {
+			// If the type of the expression is null
+			if (expr.getType() == null) {
+				// Set the type to the inferred type
+				expr.setType(this.type);
+			}
+
+			// Return the expression
+			return expr;
+		}
+
     }
 
     public TypeInferenceForStars(){

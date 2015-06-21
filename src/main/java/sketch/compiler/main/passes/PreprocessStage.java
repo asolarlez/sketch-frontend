@@ -90,7 +90,7 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new GlobalsToParams(varGen)); // TODO MIGUEL this is where something special happense
 
         // prog = ir1.run(prog);
-        // prog.debugDump("before type inference");
+		prog.debugDump("before type inference");
 
 		// TODO MIGUEL This is where typeInferenceForStars is used
         prog = (Program) prog.accept(new TypeInferenceForStars());
@@ -102,7 +102,7 @@ public class PreprocessStage extends MetaStage {
         // for the $$$. 
 		prog.debugDump("Before Local Variable replacer");
 		prog = (Program) prog.accept(new LocalVariablesReplacer());
-        
+		prog.debugDump("After Local Variable replacer");
         
         prog = (Program) prog.accept(new EliminateFieldHoles());
         //prog.debugDump("af");
