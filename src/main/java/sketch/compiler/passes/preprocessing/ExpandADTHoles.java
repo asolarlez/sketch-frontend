@@ -21,6 +21,7 @@ import sketch.util.exceptions.ExceptionAtNode;
 
 
 public class ExpandADTHoles extends SymbolTableVisitor {
+	// TODO MIGUEL This prepro class has an EXPRSTAR
     TypeStructRef ts = null;
 
     public ExpandADTHoles() {
