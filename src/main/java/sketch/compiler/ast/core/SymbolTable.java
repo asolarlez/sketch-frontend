@@ -368,47 +368,29 @@ public class SymbolTable
 	// TODO MIGUEL I just added this to access the variables from the symbol
 	// table. I'm not sure if I need to do this.
     /**
-	 * Return the variables from the symbol table as ExprVar. Be careful with
-	 * this since this will include the variable where the special symbol is
-	 * found. Also be careful since it might return the variables from the
-	 * parent.
+	 * Return the variables from the symbol table as ExprVar based on the 
+	 * provided type. Be careful with this since this will include the 
+	 * variable where the special symbol is found. Also be careful since 
+	 * it might return the variables from the parent.
 	 * 
 	 * @return
 	 */
-    public ArrayList<ExprVar> getLocalVariables() {
+	public ArrayList<ExprVar> getLocalVariablesOfType(Type type) {
         ArrayList<ExprVar> localVariables = new ArrayList<ExprVar>();
 
         // Loop through the variables
-        for (Entry<String, VarInfo> entry : vars.entrySet()) {
+        for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
             // Get the information of the variable
             VarInfo varInformation = entry.getValue();
 
-            // Get the statement from the information
-            StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
+			if (type.equals(varInformation.type)) {
+				// Get the statement from the information
+				StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
+				
+				// Add the variable name to the list
+				localVariables.add(new ExprVar(statement.getCx(), statement.getName(0)));
+			}
 
-			// // Check if declaration has at least 1 initial value
-			// if (statement.getInits().size() < 1) {
-			// throw new IllegalArgumentException(
-			// "How can a declaration have 0 initial values?");
-			// }
-            
-			// // Check if first init is not null
-			// if (statement.getInit(0) == null) {
-			// // throw new IllegalArgumentException("The init is null");
-			// }
-
-			// // Add variables that are a constant expression
-			// if
-			// (ExprConstant.class.isAssignableFrom(statement.getInit(0).getClass()))
-			// {
-			// // Check if the initial value of the variable is 0
-			// if (statement.getInit(0).getIValue().intValue() == 0) {
-            
-            
-            // Add the variable name to the list
-			localVariables.add(new ExprVar(statement.getCx(), statement.getName(0)));
-			// }
-			// }
         }
 
         return localVariables;
