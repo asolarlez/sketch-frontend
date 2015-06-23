@@ -191,38 +191,13 @@ public class CreateHarnesses extends FEReplacer {
         List<Parameter> params = new ArrayList<Parameter>();
 
         for (int i = 0; i < intypes.size(); i++) {
-            Type t = intypes.get(i);
-            if (t.isStruct()) {
-                Parameter p =
-                        new Parameter(sa, new TypeArray(TypePrimitive.inttype,
-                                ExprConstInt.createConstant(30)), // TODO: eliminate this magic number
-                                inparams.get(i).getName() + "_arr");
-                params.add(p);
-            } else {
-                params.add(new Parameter(sa, intypes.get(i), inparams.get(i).getName()));
-            }
+            params.add(new Parameter(sa, intypes.get(i), inparams.get(i).getName()));
         }
         
         fc.params(params);
         
         List<Statement> body = new ArrayList<Statement>();
         
-        for (int i = 0; i < intypes.size(); i++) {
-            Type t = intypes.get(i);
-            if (t.isStruct()) {
-                String funName = createFunction((TypeStructRef) t, sa, newFuns);
-                List<Expression> pm = new ArrayList<Expression>();
-                pm.add(new ExprVar(sa, inparams.get(i).getName() + "_arr"));
-                pm.add(ExprConstInt.createConstant(2)); // TODO: Magic number
-                String tmp = vargen.nextVar();
-                body.add(new StmtVarDecl(sa, TypePrimitive.inttype, tmp,
-                        ExprConstInt.zero));
-                pm.add(new ExprVar(sa, tmp));
-
-                body.add(new StmtVarDecl(sa, t, inparams.get(i).getName(),
-                        new ExprFunCall(sa, funName, pm)));
-            }
-        }
         String newvar = vargen.nextVar();
         body.add(new StmtVarDecl(sa, outtypes.get(outtypes.size() - 1), newvar,
                 sa.getSecondFun()));

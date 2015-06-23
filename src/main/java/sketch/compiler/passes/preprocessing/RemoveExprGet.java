@@ -31,6 +31,8 @@ class Clone extends FEReplacer {
     public Object visitExprStar(ExprStar es) {
         ExprStar newStar = new ExprStar(es);
         es.renewName();
+        if (es.special())
+            newStar.makeSpecial();
         return newStar;
     }
 
@@ -108,24 +110,32 @@ public class RemoveExprGet extends SymbolTableVisitor {
 
         Statement decl = (new StmtVarDecl(exp, tt, tempVar, null));
         newStmts.add(decl);
+        String depthVar = varGen.nextVar("depth");
+        newStmts.add(new StmtVarDecl(exp, TypePrimitive.inttype, depthVar,
+                new ExprConstInt(exp.getDepth())));
         symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
+        symtab.registerVar(depthVar, TypePrimitive.inttype);
         ExprVar ev = new ExprVar(exp, tempVar);
+        ExprVar d = new ExprVar(exp, depthVar);
         assert (tt instanceof TypeStructRef);
-        getExpr(ev, (TypeStructRef) tt, exp.getParams(), newStmts, exp.getDepth());
+        getExpr(ev, (TypeStructRef) tt, exp.getParams(), newStmts, exp.getDepth(), d);
         return ev;
     }
 
     private void getExpr(ExprVar ev, Type type, List<Expression> params,
-            List<Statement> newStmts, int depth)
+            List<Statement> newStmts, int depth, Expression d)
     {
         if (type.isArray()) {
             TypeArray ta = (TypeArray) type;
             Type baseType = ta.getBase();
             if (baseType.isStruct()) {
                 ExprStar hole = new ExprStar(context);
+                Expression dCon =
+                        new ExprBinary(ExprBinary.BINOP_LE, d, ExprConstInt.zero);
                 Statement ifBlock = getBaseExprs(type, params, ev);
                 List<Statement> elseStmts = new ArrayList<Statement>();
                 if (depth > 1) {
+                    hole.makeSpecial();
                     List<Expression> arrelems = new ArrayList<Expression>();
                     Expression length = ta.getLength();
                     int size = length.isConstant() ? length.getIValue() : maxArrSize;
@@ -139,7 +149,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                         symtab.registerVar(tempVar, baseType, decl,
                                 SymbolTable.KIND_LOCAL);
                         ExprVar newV = new ExprVar(context, tempVar);
-                        getExpr(newV, baseType, params, elseStmts, depth);
+                        getExpr(newV, baseType, params, elseStmts, depth, d);
                         arrelems.add(newV);
                     }
                     elseStmts.add(new StmtAssign(context, ev,
@@ -147,7 +157,8 @@ public class RemoveExprGet extends SymbolTableVisitor {
                                     new ExprArrayRange.RangeLen(ExprConstInt.zero, length))));
                 }
                 Statement elseBlock = new StmtBlock(elseStmts);
-                newStmts.add(new StmtIfThen(context, hole, ifBlock, elseBlock));
+                newStmts.add(new StmtIfThen(context, new ExprBinary(ExprBinary.BINOP_OR,
+                        dCon, hole), ifBlock, elseBlock));
                 return;
             }
         }
@@ -155,13 +166,16 @@ public class RemoveExprGet extends SymbolTableVisitor {
             // if (type.promotesTo(oriType, nres)) {
             TypeStructRef tt = (TypeStructRef) type;
             ExprStar hole = new ExprStar(context);
+            Expression dCon = new ExprBinary(ExprBinary.BINOP_LE, d, ExprConstInt.zero);
             Statement ifBlock = getBaseExprs(tt, params, ev);
             List<Statement> elseStmts = new ArrayList<Statement>();
             if (depth > 1) {
-                createNewAdt(ev, tt, params, elseStmts, depth, true);
+                hole.makeSpecial();
+                createNewAdt(ev, tt, params, elseStmts, depth, true, d);
             }
             Statement elseBlock = new StmtBlock(elseStmts);
-            newStmts.add(new StmtIfThen(context, hole, ifBlock, elseBlock));
+            newStmts.add(new StmtIfThen(context, new ExprBinary(ExprBinary.BINOP_OR,
+                    dCon, hole), ifBlock, elseBlock));
             return;
             // }
         }
@@ -171,10 +185,10 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private void createNewAdt(ExprVar ev, TypeStructRef tt, List<Expression> params,
-            List<Statement> newStmts, int depth, boolean recursive)
+            List<Statement> newStmts, int depth, boolean recursive, Expression d)
     {
         Map<Type, List<ExprVar>> exprVarsMap =
-                findParamVars(tt.getName(), newStmts, tt, depth, recursive, params);
+                findParamVars(tt.getName(), newStmts, tt, depth, recursive, params, d);
 
         //for (Entry<Type, List<ExprVar>> list : exprVarsMap.entrySet()) {
         //    for (ExprVar e : list.getValue()) {
@@ -224,7 +238,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private Map<Type, List<ExprVar>> findParamVars(String name, List<Statement> stmts,
-            Type type, int depth, boolean recursive, List<Expression> params)
+            Type type, int depth, boolean recursive, List<Expression> params, Expression d)
     {
         Map<Type, List<ExprVar>> map = new HashMap<Type, List<ExprVar>>();
         LinkedList<String> queue = new LinkedList<String>();
@@ -260,8 +274,9 @@ public class RemoveExprGet extends SymbolTableVisitor {
                     ExprVar ev = new ExprVar(context, tempVar);
                     varsForType.add(ev);
 
-
-                    getExpr(ev, t, params, stmts, depth - 1);
+                    Expression newDepth =
+                            new ExprBinary(ExprBinary.BINOP_SUB, d, ExprConstInt.one);
+                    getExpr(ev, t, params, stmts, depth - 1, newDepth);
                 }
                 varMap.put(e.getName().split("@")[0], varsForType.get(c));
                 count.put(t, ++c);
@@ -300,7 +315,9 @@ public class RemoveExprGet extends SymbolTableVisitor {
                         finExp))));
             }
         } else {
-            if (curExp != null) {
+            if (curExp == null) {
+                stmts.add(new StmtAssign(var, new ExprNullPtr()));
+            } else {
                 stmts.add(new StmtAssign(var, new ExprRegen(context, curExp)));
             }
         }
@@ -339,7 +356,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             stmts.add(decl);
             symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
             ExprVar ev = new ExprVar(context, tempVar);
-            createNewAdt(ev, tt, params, stmts, 1, false);
+            createNewAdt(ev, tt, params, stmts, 1, false, ExprConstInt.one);
             return ev;
 
         }

@@ -56,6 +56,7 @@ public class ExprStar extends Expression
     private static String ANGJ_BASE = "AH__";
 	
     private Kind kind = Kind.NORMAL;
+    private boolean isSpecial = false;
 
     // private Expression exprMax = null;
 
@@ -76,6 +77,7 @@ public class ExprStar extends Expression
         hasrange = old.hasrange;
         this.starName = old.starName;
         this.kind = old.kind;
+        this.isSpecial = old.isSpecial;
 
     }
 
@@ -361,6 +363,14 @@ public class ExprStar extends Expression
 
     public int upperBound() {
         return this.rangehigh;
+    }
+
+    public void makeSpecial() {
+        isSpecial = true;
+    }
+
+    public boolean special() {
+        return isSpecial;
     }
     // public Expression getExprMax() {
     // return exprMax;

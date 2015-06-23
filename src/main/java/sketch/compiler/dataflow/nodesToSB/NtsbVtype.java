@@ -79,7 +79,12 @@ public class NtsbVtype extends IntVtype {
                     rval += ((ExprSpecialStar) node).name;
                 }
 
-                String head = "<";
+                String head = "";
+                if (star.special()) {
+                    head += "SPVAR";
+                }
+
+                head += "<";
 
                 if (star.getSize() > 1 && !star.isCounter())
                     rval += head + cvar + "  " + star.getSize() + isFixed;

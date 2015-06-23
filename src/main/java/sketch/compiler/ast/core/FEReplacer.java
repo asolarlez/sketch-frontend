@@ -804,6 +804,8 @@ public class FEReplacer implements FEVisitor
             if (t != star.getType()) {
                 ExprStar s = new ExprStar(star);
                 s.setType(t);
+                if (star.special())
+                    s.makeSpecial();
             }
         }
         return star;

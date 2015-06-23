@@ -49,6 +49,8 @@ class CloneHoles extends FEReplacer{
     // TODO xzl: what's this?
     public Object visitExprStar(ExprStar es){
         ExprStar newStar = new ExprStar(es);
+        if (es.special())
+            newStar.makeSpecial();
         es.renewName();
         return newStar;
     }

@@ -20,6 +20,8 @@ class CloneHoles extends FEReplacer {
     public Object visitExprStar(ExprStar es) {
         ExprStar newStar = new ExprStar(es);
         es.renewName();
+        if (es.special())
+            newStar.makeSpecial();
         return newStar;
     }
 
