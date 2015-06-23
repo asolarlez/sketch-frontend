@@ -1,6 +1,7 @@
 package sketch.compiler.main.passes;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 
 import sketch.compiler.ast.core.Program;
@@ -83,25 +84,42 @@ public class OutputCCode extends MetaStage {
                     outWriter.write(testcode);
                     outWriter.flush();
                     outWriter.close();
-                    Writer outWriter2 =
-                            new FileWriter(options.feOpts.outputDir + "script");
-                    outWriter2.write("#!/bin/sh\n");
-                    outWriter2.write("if [ -z \"$SKETCH_HOME\" ];\n"
-                            + "then\n"
-                            + "echo \"You need to set the \\$SKETCH_HOME environment variable to be the path to the SKETCH distribution; This is needed to find the SKETCH header files needed to compile your program.\" >&2;\n"
-                            + "exit 1;\n" + "fi\n");
-                    outWriter2.write("g++ -I \"$SKETCH_HOME/include\" -o " + resultFile +
-                            " " + resultFile + ".cpp " + resultFile + "_test.cpp\n");
-
-                    outWriter2.write("./" + resultFile + "\n");
-                    outWriter2.flush();
-                    outWriter2.close();
+                    writeRunScript(options.feOpts.outputDir + "script", resultFile,
+                            resultFile + "_test.cpp\n");
                     printNote("Wrote test harness to", outputFname);
+                } else {
+                    if (options.feOpts.outputScript) {
+                        writeRunScript(options.feOpts.outputDir + "script", resultFile,
+                                resultFile + "_test.cpp\n");
+                    }
                 }
             } catch (java.io.IOException e) {
                 throw new RuntimeException(e);
             }
         }
         return prog;
+    }
+
+    void writeRunScript(String name, String resultFile, String drivername)
+            throws IOException
+    {
+        Writer outWriter2 =
+                new FileWriter(name);
+        outWriter2.write("#!/bin/sh\n");
+        outWriter2.write("if [ -z \"$SKETCH_HOME\" ];\n"
+                + "then\n"
+                + "echo \"You need to set the \\$SKETCH_HOME environment variable to be the path to the SKETCH distribution; This is needed to find the SKETCH header files needed to compile your program.\" >&2;\n"
+                + "exit 1;\n" + "fi\n");
+        String clargs = "";
+        for (String c : options.nativeArgs) {
+            clargs += " " + c;
+        }
+        outWriter2.write("g++ -I \"$SKETCH_HOME/include\" " + clargs + "-o " +
+                resultFile +
+ " " + resultFile + ".cpp " + drivername);
+
+        outWriter2.write("./" + resultFile + "\n");
+        outWriter2.flush();
+        outWriter2.close();
     }
 }

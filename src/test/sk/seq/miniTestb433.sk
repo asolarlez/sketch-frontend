@@ -1,4 +1,4 @@
-pragma options "--bnd-unroll-amnt 32  --debug-show-dag ";
+pragma options "--bnd-unroll-amnt 32  ";
 
 int[n] foo(int n);
 

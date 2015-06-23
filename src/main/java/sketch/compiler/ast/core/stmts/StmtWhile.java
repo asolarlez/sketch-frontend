@@ -52,6 +52,11 @@ public class StmtWhile extends Statement
         this.body = body;
     }
 
+    @Override
+    public int size() {
+        return body == null ? 0 : body.size();
+    }
+
     /** Returns the loop condition. */
     public Expression getCond()
     {

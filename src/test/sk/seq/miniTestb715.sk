@@ -1,5 +1,4 @@
-int[4] mo = {25, 12, 3, 4};
-int moo = mo[0]; //TypeError
+int moo = {| 10 | 20 |};
 
 
 void foo(){

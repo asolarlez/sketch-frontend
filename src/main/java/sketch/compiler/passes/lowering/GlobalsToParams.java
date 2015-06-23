@@ -1,10 +1,12 @@
 package sketch.compiler.passes.lowering;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.*;
@@ -24,9 +26,10 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.compiler.passes.structure.CallGraph.CallEdge;
-import sketch.util.datastructures.HashmapSet;
+import sketch.util.datastructures.OrderedHashSet;
+import sketch.util.datastructures.TreemapSet;
 import sketch.util.datastructures.TypedHashMap;
-import sketch.util.datastructures.TypedHashSet;
+import sketch.util.datastructures.TypedTreeMap;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
@@ -66,9 +69,9 @@ public class GlobalsToParams extends FEReplacer {
     protected FcnToParamsMap newParamsForCall = new FcnToParamsMap();
     protected GlobalExprs glblExprs;
     protected final TempVarGen varGen;
-    protected final TypedHashMap<String, Function> glblInitFcns =
-            new TypedHashMap<String, Function>();
-    protected final TypedHashSet<Function> fcnsToAdd = new TypedHashSet<Function>();
+    protected final TypedTreeMap<String, Function> glblInitFcns =
+            new TypedTreeMap<String, Function>();
+    protected final OrderedHashSet<Function> fcnsToAdd = new OrderedHashSet<Function>();
     protected Function enclosingFcn;
 
     public GlobalsToParams(TempVarGen varGen) {
@@ -78,7 +81,7 @@ public class GlobalsToParams extends FEReplacer {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Entry<Function, HashMap<String, AddedParam>> v : newParamsForCall.entrySet())
+        for (Entry<Function, TreeMap<String, AddedParam>> v : newParamsForCall.entrySet())
         {
             sb.append("=== new params for " + v.getKey().getName() + " ===\n");
             for (AddedParam param : v.getValue().values()) {
@@ -101,7 +104,7 @@ public class GlobalsToParams extends FEReplacer {
         prog.accept(this.glblExprs);
 
         // add all base expressions
-        for (Entry<Function, HashSet<String>> ent : this.glblExprs.globalVarRefs.entrySet())
+        for (Entry<Function, TreeSet<String>> ent : this.glblExprs.globalVarRefs.entrySet())
         {
             for (String globalVarName : ent.getValue()) {
                 newParamsForCall.getCreate(ent.getKey()).put(globalVarName,
@@ -113,9 +116,9 @@ public class GlobalsToParams extends FEReplacer {
         for (CallEdge closureEdge : callGraph.closureEdges) {
             final Function caller = closureEdge.caller();
             final Function callee = closureEdge.target();
-            final HashMap<String, AddedParam> callerParams =
+            final TreeMap<String, AddedParam> callerParams =
                     newParamsForCall.getCreate(caller);
-            final HashMap<String, AddedParam> calleeParams =
+            final TreeMap<String, AddedParam> calleeParams =
                     newParamsForCall.getCreate(callee);
             for (AddedParam calleeParam : calleeParams.values()) {
                 if (!callerParams.containsKey(calleeParam.globalVar)) {
@@ -138,9 +141,9 @@ public class GlobalsToParams extends FEReplacer {
                         continue;
                     }
 
-                    final HashMap<String, AddedParam> callerParams =
+                    final TreeMap<String, AddedParam> callerParams =
                             newParamsForCall.getCreate(f);
-                    final HashMap<String, AddedParam> calleeParams =
+                    final TreeMap<String, AddedParam> calleeParams =
                             newParamsForCall.getCreate(spec);
                     for (AddedParam calleeParam : calleeParams.values()) {
                         if (!callerParams.containsKey(calleeParam.globalVar)) {
@@ -216,6 +219,7 @@ public class GlobalsToParams extends FEReplacer {
 
     @Override
     public Object visitPackage(Package spec) {
+        callGraph.getNres().setPackage(spec);
         spec = (Package) super.visitPackage(spec);
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
         for (Function fcn : this.fcnsToAdd) {
@@ -309,13 +313,20 @@ public class GlobalsToParams extends FEReplacer {
         return new ExprFunCall(callParam, callParam.getName(), fcnArgs);
     }
 
+    static String compName(String nm, String pkg) {
+        return nm + "__" + pkg;
+    }
+
     @Override
     public Object visitExprVar(ExprVar exp) {
-        if (fldNames.hasName(exp.getName()) && (enclosingFcn != null)) {
-            final HashMap<String, AddedParam> fcnGlbls =
+        String pkgname = nres.curPkg().getName();
+        if (fldNames.hasName(exp.getName(), pkgname) &&
+                (enclosingFcn != null))
+        {
+            final TreeMap<String, AddedParam> fcnGlbls =
                     newParamsForCall.get(enclosingFcn);
             assert fcnGlbls != null : "no key for function " + enclosingFcn;
-            final AddedParam paramvar = fcnGlbls.get(exp.getName());
+            final AddedParam paramvar = fcnGlbls.get(compName(exp.getName(), pkgname));
             assert paramvar != null : "no parameter variable for " + exp.getName();
             return new ExprVar(exp, paramvar.paramName);
         } else {
@@ -385,7 +396,7 @@ public class GlobalsToParams extends FEReplacer {
 
     /** find the names of global variables */
     public class GlobalFieldNames extends FEReplacer {
-        private final TypedHashSet<String> fieldNames = new TypedHashSet<String>();
+        private final Set<String> fieldNames = new TreeSet<String>();
         private final TypedHashMap<String, Type> fieldTypes =
                 new TypedHashMap<String, Type>();
         private final TypedHashMap<String, Expression> fieldInits =
@@ -438,30 +449,32 @@ public class GlobalsToParams extends FEReplacer {
         @Override
         public Object visitFieldDecl(FieldDecl field) {
             String pkg = nres.curPkg().getName();
-            this.getFieldNames().addAll(field.getNames());
             int i = 0;
             for (Type ft : field.getTypes()) {
                 if (ft instanceof TypeStructRef) {
                     ft = ((TypeStructRef) ft).addDefaultPkg(pkg, nres);
                 }
-                fieldTypes.put(field.getName(i), ft);
+                String fldName = compName(field.getName(i), pkg);
+                fieldTypes.put(fldName, ft);
+                fieldInits.put(fldName, field.getInit(i));
+                fieldNames.add(fldName);
                 ++i;
             }
-            fieldInits.addZipped(field.getNames(), field.getInits());
+
             return field;
         }
 
-        public boolean hasName(String name) {
+        public boolean hasName(String name, String pkg) {
             if (shadows.contains(name))
                 return false;
-            return fieldNames.contains(name);
+            return fieldNames.contains(compName(name, pkg));
         }
 
         public AddedParam createParam(String globalVar) {
             return new AddedParam(globalVar, fieldTypes.get(globalVar));
         }
 
-        public TypedHashSet<String> getFieldNames() {
+        public Set<String> getFieldNames() {
             return fieldNames;
         }
 
@@ -476,31 +489,33 @@ public class GlobalsToParams extends FEReplacer {
 
     /** detect references to global variables, and record the enclosing functions */
     public class GlobalExprs extends FEReplacer {
-        HashmapSet<Function, String> globalVarRefs = new HashmapSet<Function, String>();
+        TreemapSet<Function, String> globalVarRefs = new TreemapSet<Function, String>();
         protected Function enclosing;
-
+        String pkg;
         @Override
         public Object visitFunction(Function func) {
             this.enclosing = func;
+            pkg = func.getPkg();
             return super.visitFunction(func);
         }
 
         @Override
         public Object visitExprVar(ExprVar exp) {
-            if (fldNames.getFieldNames().contains(exp.getName())) {
+
+            if (fldNames.getFieldNames().contains(compName(exp.getName(), pkg))) {
                 // System.err.println("adding global var ref " + exp.getName());
-                globalVarRefs.add(enclosing, exp.getName());
+                globalVarRefs.add(enclosing, compName(exp.getName(), pkg));
             }
             return super.visitExprVar(exp);
         }
     }
 
     public static class FcnToParamsMap extends
-            TypedHashMap<Function, HashMap<String, AddedParam>>
+            TypedTreeMap<Function, TreeMap<String, AddedParam>>
     {
         @Override
-        public HashMap<String, AddedParam> createValue() {
-            return new HashMap<String, AddedParam>();
+        public TreeMap<String, AddedParam> createValue() {
+            return new TreeMap<String, AddedParam>();
         }
     }
 }

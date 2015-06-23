@@ -12,8 +12,8 @@ Assert y <= k_0;
 include "generators.skh";
 pragma options "--bnd-inline-amnt 3";
 
-bit inv (int y, int y_0, int k, int k_0, int t) {
-  return exprBool({y, y_0, k, k_0, t}, {PLUS@generators}); 
+bit inv(int y, int y_0, int k, int k_0, int t){
+return exprBool({y, y_0, k, k_0, t}, {PLUS}); 
     
 }
 

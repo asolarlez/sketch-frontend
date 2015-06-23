@@ -1,6 +1,7 @@
 package sketch.compiler.ast.core.stmts;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
@@ -10,9 +11,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 
 public class StmtSwitch extends Statement {
 
-
     ExprVar expr;
-
 	
     LinkedList<String> cases;
     HashMap<String, Statement> bodies;
@@ -34,7 +33,16 @@ public class StmtSwitch extends Statement {
         bodies = new HashMap<String, Statement>();
     }
 
-
+    @Override
+    public int size() {
+        int sz = 0;
+        if (bodies != null) {
+            for (Map.Entry<String, Statement> entry : bodies.entrySet()) {
+                sz += entry.getValue().size();
+            }
+        }
+        return sz;
+    }
 
     public void addCaseBlock(String caseName, Statement caseBody) {
         assert caseName != null;

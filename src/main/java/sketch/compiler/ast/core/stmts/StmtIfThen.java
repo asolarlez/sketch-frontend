@@ -61,6 +61,13 @@ public class StmtIfThen extends Statement
         this.alt = alt;
     }
 
+    @Override
+    public int size() {
+        int sz_cons = cons == null ? 0 : cons.size();
+        int sz_alt = alt == null ? 0 : alt.size();
+        return sz_cons + sz_alt;
+    }
+
     /** Returns the condition of this. */
     public Expression getCond()
     {

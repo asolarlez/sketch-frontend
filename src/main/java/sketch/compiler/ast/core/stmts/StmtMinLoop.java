@@ -44,6 +44,11 @@ public class StmtMinLoop extends Statement
         this.body = body;
     }
 
+    @Override
+    public int size() {
+        return body == null ? 0 : body.size();
+    }
+
     /** Return the loop body of this. */
     public Statement getBody()
     {

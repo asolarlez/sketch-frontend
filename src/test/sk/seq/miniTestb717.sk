@@ -1,0 +1,15 @@
+
+package A{
+    
+    harness void main(int in){
+        assert in + X == in + ??;
+    }
+    
+}
+
+package B{
+    int X = 2;
+    harness void main(int in){
+        assert in + X < in + 4;
+    }    
+}

@@ -1,0 +1,23 @@
+pragma options "--bnd-inline-amnt 3";
+
+int ff(int x, int y){
+    if(y>0){
+        return ff(x-1, y-1);
+    }else{
+        if(x>0){
+            return 7;
+        }else{
+            return 4;
+        }        
+    }
+}
+
+harness void main(int in){  
+        if(ff(in, 8)==4)
+        {
+            bit f = (7==ff(in, 8));
+            assert in<9 || f;        
+        }  
+        int g = ff(in, 8);
+        assert g > 3;    
+}

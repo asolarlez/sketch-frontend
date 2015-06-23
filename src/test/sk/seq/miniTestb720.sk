@@ -1,0 +1,29 @@
+
+package A{
+    int X = 2;
+    harness void main(int in){
+        X = X + 3;
+        assert in + X == in + 5;
+    }
+    int getX(){ return X; }
+    void addX(int x){ X += x; }
+}
+
+package B{
+    int X = 7;
+    harness void main(int in){
+        X = X + 1;
+        assert in + X > in + 4;
+    }
+    void addX(int x){ X += x; }
+    int getX(){ return X; }
+}
+
+package C{    
+    harness void main(int in){
+        addX@B(3);
+        addX@A(2);
+        assert in + getX@A() == in + 4;
+        assert in + getX@B() == in + 10;
+    }    
+}

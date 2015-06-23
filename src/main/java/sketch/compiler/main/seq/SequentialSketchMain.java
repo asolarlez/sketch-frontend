@@ -25,6 +25,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -90,7 +96,7 @@ import static sketch.util.Misc.nonnull;
  * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class SequentialSketchMain extends CommonSketchMain
+public class SequentialSketchMain extends CommonSketchMain implements Runnable
 {
     public SequentialSketchMain(String[] args) {
         super(new SketchOptions(args));
@@ -500,7 +506,6 @@ public class SequentialSketchMain extends CommonSketchMain
 
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
-        // prog.debugDump("After RemoveFunctionParameters");
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
@@ -615,7 +620,27 @@ public class SequentialSketchMain extends CommonSketchMain
         PlatformLocalization.getLocalization().setTempDirs();
         int exitCode = 0;
         try {
-            sketchmain.run();
+            SketchOptions options = SketchOptions.getSingleton();
+            if (options.feOpts.timeout > 0) {
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Future<?> f = executor.submit(sketchmain);
+                try {
+                    f.get((long) options.feOpts.timeout, TimeUnit.MINUTES);
+                } catch (TimeoutException e) {
+                    System.out.println("Sketch front-end timed out");
+                    exitCode = 1;
+                } catch (ExecutionException e) {
+                    ErrorHandling.handleErr(e);
+                    exitCode = 1;
+                } catch (InterruptedException e) {
+                    ErrorHandling.handleErr(e);
+                    exitCode = 1;
+                } finally {
+                    executor.shutdown();
+                }
+            } else { // normal run
+                sketchmain.run();
+            }
         } catch (SketchException e) {
             e.print();
             if (isTest) {

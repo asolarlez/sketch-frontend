@@ -116,6 +116,10 @@ public class FEReplacer implements FEVisitor
 
     protected NameResolver nres;
 
+    public NameResolver getNres() {
+        return nres;
+    }
+
     protected Function getFuncNamed(String name) {
         return nres.getFun(name);
     }

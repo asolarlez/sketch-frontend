@@ -27,7 +27,8 @@ public class StrategicalBackend extends ParallelBackend {
                 strategy = new MaxTimeStrategy(options);
                 break;
             case WILCOXON:
-                proxy = new WilcoxonStrategy(options, rcontrol, varGen);
+                // proxy = new WilcoxonStrategy(options, rcontrol, varGen);
+                proxy = new AsyncWilcoxonStrategy(options, rcontrol, varGen);
                 break;
         }
     }
@@ -41,8 +42,11 @@ public class StrategicalBackend extends ParallelBackend {
         }
 
         if (strategy != null) {
+            int old_ntimes = options.solverOpts.ntimes;
+            options.solverOpts.ntimes = 0;
             stage = STAGE.LEARNING;
             plog(strategy.getName() + " degree searching...");
+
             // until the strategy has a fixed degree
             while (strategy.hasNextDegree()) {
                 // ask it what degree to test next
@@ -53,7 +57,7 @@ public class StrategicalBackend extends ParallelBackend {
                 }
                 // test that degree
                 List<SATSolutionStatistics> results =
-                        runTrials(oracle, hasMinimize, next_d);
+                        runSyncTrials(oracle, hasMinimize, next_d);
                 // check if we're too lucky: found a solution while test runs
                 for (SATSolutionStatistics stat : results) {
                     if (stat.successful()) {
@@ -67,6 +71,8 @@ public class StrategicalBackend extends ParallelBackend {
             int d = strategy.getDegree();
             plog(strategy.getName() + " degree choice: " + d);
             options.solverOpts.randdegree = d;
+
+            options.solverOpts.ntimes = old_ntimes;
             stage = STAGE.TESTING;
         }
         return super.solve(oracle, hasMinimize, timeoutMins);

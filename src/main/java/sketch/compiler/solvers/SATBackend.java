@@ -79,6 +79,11 @@ public class SATBackend {
             commandLineOptions.add("" + options.solverOpts.randdegree);
         }
 
+        if (options.solverOpts.ntimes > 0) {
+            commandLineOptions.add("-ntimes");
+            commandLineOptions.add("" + options.solverOpts.ntimes);
+        }
+
         commandLineOptions.add("-o");
         commandLineOptions.add(options.getSolutionsString(i));
         commandLineOptions.addAll(Arrays.asList(additional));
@@ -390,7 +395,9 @@ public class SATBackend {
         be_stat.elapsedTimeMs = status.execTimeMs;
         be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
         lastSolveStats = be_stat;
-        log(2, "Stats for last run:\n" + lastSolveStats);
+        if (!options.solverOpts.parallel) {
+            log(2, "Stats for last run:\n" + lastSolveStats);
+        }
 
         solverErrorStr = status.err;
         log("Solver exit value: " + status.exitCode);

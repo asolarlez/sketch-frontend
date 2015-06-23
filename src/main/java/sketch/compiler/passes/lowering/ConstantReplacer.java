@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitorException;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.*;
@@ -20,7 +23,6 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.compiler.passes.structure.GetAssignLHS;
 import sketch.util.Misc;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -81,7 +83,6 @@ public class ConstantReplacer extends FEReplacer {
     }
 
     protected HashMap<String, Expression> constants;
-    protected HashSet<String> constVars;
 
     public ConstantReplacer(Map<String, Expression> subs) {
         constants = new HashMap<String, Expression>();
@@ -95,19 +96,17 @@ public class ConstantReplacer extends FEReplacer {
         replacement = null;
 		if(init==null) return false;
 		init=(Expression) init.accept(this);
-		if(init instanceof ExprConstInt) {
-			if(constants.get(name)!=null) return false;
-            if (!constVars.contains(name)) {
+        if (init instanceof ExprConstInt) {
+            if (!isFinal(name)) {
                 return false;
             }
             constants.put(name, init);
+            replacement = init;
 			return true;
 		}
         if (type.equals(TypePrimitive.inttype)) {
             if (init instanceof ExprStar) {
-                if (constants.get(name) != null)
-                    return false;
-                if (!constVars.contains(name)) {
+                if (!isFinal(name)) {
                     return false;
                 }
                 constants.put(name, new ExprStar((ExprStar) init, true));
@@ -123,9 +122,8 @@ public class ConstantReplacer extends FEReplacer {
                 if (clist == null) {
                     return false;
                 }
-                if (constants.get(name) != null)
-                    return false;
-                if (!constVars.contains(name)) {
+                if (!isFinal(name)) {
+                    replacement = newChoices(init, clist);
                     return false;
                 }
                 replacement = newChoices(init, clist);
@@ -190,7 +188,7 @@ public class ConstantReplacer extends FEReplacer {
 
 
 	@SuppressWarnings("unchecked")
-	public Object visitFieldDecl(FieldDecl field) {
+    public Object visitFieldDecl(FieldDecl field) {
 		field=(FieldDecl) super.visitFieldDecl(field);
 		//if it's statically computable (constant), store it in
 		//our hash table and remove it from the program
@@ -208,8 +206,8 @@ public class ConstantReplacer extends FEReplacer {
                 }
 				types.add(type);
 				names.add(name);
-				inits.add(init);
-			}
+                inits.add(init);
+            }
 		}
 		if(types.isEmpty()) return null;
 		return new FieldDecl(field,types,names,inits);
@@ -339,18 +337,48 @@ public class ConstantReplacer extends FEReplacer {
         }
     }
 
+    GetValDefs constInfo;
+
     @Override
     public Object visitProgram(Program prog) {
-        this.constVars = (new GetValDefs()).run(prog);
+        this.constInfo = new GetValDefs();
+        constInfo.visitProgram(prog);
+        nres = constInfo.getNres();
+        for (Package pk : prog.getPackages()) {
+            currPkg = pk.getName();
+            nres.setPackage(pk);
+            for (FieldDecl fd : pk.getVars()) {
+                fd.accept(this);
+            }
+        }
         return super.visitProgram(prog);
+    }
+
+    String currPkg = null;
+
+    public Object visitPackage(Package pkg) {
+        currPkg = pkg.getName();
+        for (Entry<String, String> var : constInfo.namesToPkg.entrySet()) {
+            if (var.getValue() == constInfo.multiPkg) {
+                constants.remove(var.getKey());
+            }
+        }
+        return super.visitPackage(pkg);
+    }
+
+    public boolean isFinal(String name) {
+        if (constInfo.result.contains(name + '@' + currPkg)) {
+            return true;
+        }
+        return false;
     }
 
     /**
      * Find all the global variables that remain constant through the computation.
      */
-    public static class GetValDefs extends ASTObjQuery<HashSet<String>> {
+    public static class GetValDefs extends FEReplacer {
         ShadowStack shadows = new ShadowStack(null);
-
+        public HashSet<String> result;
         public void pushBlock() {
             shadows = shadows.push();
         }
@@ -365,12 +393,18 @@ public class ConstantReplacer extends FEReplacer {
 
 
         public GetValDefs() {
-            super(new HashSet<String>());
+            result = new HashSet<String>();
         }
 
         public Object visitFieldDecl(FieldDecl fd) {
             for (int i = 0; i < fd.getNumFields(); ++i) {
-                result.add(fd.getName(i));
+                String name = fd.getName(i);
+                result.add(addPkgName(name));
+                if (namesToPkg.containsKey(name)) {
+                    namesToPkg.put(name, multiPkg);
+                } else {
+                    namesToPkg.put(name, currPkg);
+                }
             }
             return super.visitFieldDecl(fd);
         }
@@ -380,9 +414,7 @@ public class ConstantReplacer extends FEReplacer {
         public Object visitStmtAssign(StmtAssign stmt) {
             try {
                 String nm = stmt.getLhsBase().getName();
-                if (!shadows.contains(nm)) {
-                    result.remove(nm);
-                }
+                checkAndRemove(nm);
             } catch (FEVisitorException e) {}
             return super.visitStmtAssign(stmt);
         }
@@ -445,15 +477,52 @@ public class ConstantReplacer extends FEReplacer {
                     if (f == null || p.isParameterOutput()) {
                         if (e instanceof ExprVar || e instanceof ExprArrayRange) {
                             String nm = e.accept(new GetAssignLHS()).getName();
-                            if (!shadows.contains(nm)) {
-                                result.remove(nm);
-                            }
+                            checkAndRemove(nm);
                         }
                     }
                 }
             }
 
             return super.visitExprFunCall(efc);
+        }
+
+        void checkAndRemove(String nm) {
+            if (!shadows.contains(nm)) {
+                String pkg = namesToPkg.get(nm);
+                if (pkg == multiPkg) {
+                    result.remove(nm + '@' + currPkg);
+                } else {
+                    result.remove(nm + '@' + pkg);
+                }
+            }
+        }
+
+        String currPkg;
+        public final String multiPkg = "$$MULTI";
+        public Map<String, String> namesToPkg = new HashMap<String, String>();
+
+        String addPkgName(String name) {
+            return name + "@" + currPkg;
+        }
+
+        public Object visitProgram(Program p) {
+            nres = new NameResolver(p);
+            for (Package pk : p.getPackages()) {
+                currPkg = pk.getName();
+                nres.setPackage(pk);
+                for (FieldDecl fd : pk.getVars()) {
+                    fd.accept(this);
+                }
+            }
+
+            for (Package pk : p.getPackages()) {
+                nres.setPackage(pk);
+                currPkg = pk.getName();
+                for (Function f : pk.getFuncs()) {
+                    f.accept(this);
+                }
+            }
+            return p;
         }
 
         @Override
@@ -464,9 +533,7 @@ public class ConstantReplacer extends FEReplacer {
                 case ExprUnary.UNOP_PREDEC:
                 case ExprUnary.UNOP_PREINC:
                     String nm = exp.getExpr().accept(new GetAssignLHS()).getName();
-                    if (!shadows.contains(nm)) {
-                        result.remove(nm);
-                    }
+                    checkAndRemove(nm);
             }
             return super.visitExprUnary(exp);
         }

@@ -1,0 +1,19 @@
+void foo(int x, fun baz){
+    
+    {
+      int y = x;
+      assert y == x;
+      baz(y);
+    }    
+}
+
+harness void main(int y){
+    
+    void boo(int t){
+        assert t == y;
+    }
+    
+    foo(y-1+1, boo);
+    
+    
+}
