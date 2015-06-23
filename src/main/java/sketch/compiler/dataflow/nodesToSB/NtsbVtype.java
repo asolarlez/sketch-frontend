@@ -81,7 +81,7 @@ public class NtsbVtype extends IntVtype {
 
                 String head = "";
                 if (star.special()) {
-                    head += "SPVAR";
+                    head += "SPVAR " + star.upperBound() + " ";
                 }
 
                 head += "<";

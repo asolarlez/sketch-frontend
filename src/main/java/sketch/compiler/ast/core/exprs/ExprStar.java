@@ -139,7 +139,7 @@ public class ExprStar extends Expression
     */
     public ExprStar(FENode context, int rstart, int rend) {
         super(context);
-        size = 1;
+        size = 5;
         isGlobal = false;
         isFixed = true;
         rangelow = rstart;
