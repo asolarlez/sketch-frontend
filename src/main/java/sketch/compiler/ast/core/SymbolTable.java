@@ -398,22 +398,33 @@ public class SymbolTable
 			}
 
         }
+        
+        // Get the symbol table parent
+        SymbolTable parent = this.getParent();
+        
+		// Loop through the parent symbol table while it is not null
+        while(parent != null) {
+        	// Loop through the formal paramenters
+			for (Entry<String, VarInfo> parameter : parent.vars.entrySet()) {
+        		// Get the information of the variable
+        		VarInfo varInformation = parameter.getValue();
+        		
+        		// If the current variable has the same type that we want
+        		if (exp.getType().equals(varInformation.type)) {
+        			// Get the parameter from the information
+        			Parameter variable = (Parameter) varInformation.origin;
+        			
+        			// Add the variable name to the list
+        			localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
+        		}
+        		
+        	}
+        	
+        	// Get the new parent
+			parent = parent.getParent();
+        	
+        }
 
-		// Loop through the formal paramenters
-		for (Entry<String, VarInfo> parameter : this.parent.vars.entrySet()) {
-			// Get the information of the variable
-			VarInfo varInformation = parameter.getValue();
-
-			// If the current variable has the same type that we want
-			if (exp.getType().equals(varInformation.type)) {
-				// Get the parameter from the information
-				Parameter variable = (Parameter) varInformation.origin;
-
-				// Add the variable name to the list
-				localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
-			}
-
-		}
 		
 		// If the type is an int, we want to also consider 0
 		if (exp.getType().equals(TypePrimitive.int32type)) {
