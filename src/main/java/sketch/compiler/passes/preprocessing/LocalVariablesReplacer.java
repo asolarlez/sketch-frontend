@@ -3,9 +3,7 @@ package sketch.compiler.passes.preprocessing;
 import java.util.ArrayList;
 
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
-import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /**
@@ -62,59 +60,10 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		if (possibleVariables.size() < 1) {
 			throw new RuntimeException("You do not have any possible variables to use");
         }
-        
-		// Get the local variables of a specific type
-		ArrayList<StmtAssign> assignments = this.getLocalStmtAssign();
-		
-		// Create the list of the available variables to use
-		ArrayList<ExprVar> availableVariables = new ArrayList<ExprVar>();
 
-		// Loop through the possible variables
-		for (int i = assignments.size() - 1; i >= 0; i--) {
-
-			// If the variable assignment is part of the possible variables
-			if (possibleVariables.contains(assignments.get(i).getLhsBase())) {
-
-				// Add the variable to the list
-				availableVariables.add(assignments.get(i).getLhsBase());
-			}
-
-		}
-
-		if(availableVariables.size() < 1) {
-			throw new RuntimeException("You do not have any available variables to use");
-		}
-
-        // Return the first available variable. This might be the closes one to the expression
-        // that needs a variables. Can try to be smarter and pick the best one that gives the
-        // best performance, ie the closest one, the one that is not modified later in the code.
-		return availableVariables.get(0);
+		// TODO this is where I need to pass to the synthesizer to decide which
+		// variable to use
+		return possibleVariables.get(0);
     }
-
-	/**
-	 * Loops through this.newFunctions and returns the objects that are
-	 * StmtAssign assigned to a variable. TODO check that it loops through only
-	 * the local StmtAssign. TODO should also work for assignment to variables.
-	 * 
-	 * @return
-	 */
-	private ArrayList<StmtAssign> getLocalStmtAssign() {
-		ArrayList<StmtAssign> localAssignements = new ArrayList<StmtAssign>();
-
-		// Loop through all the statements
-		for (int i = 0; i < this.newStatements.size(); i++) {
-			// We are looking for assignments to get the latest value of the variables
-			if (this.newStatements.get(i).getClass() == StmtAssign.class) {
-				// Get the statement assignment
-				StmtAssign statement = (StmtAssign) this.newStatements.get(i);
-				
-				// Add the variable to the local assignments
-				localAssignements.add(statement);
-			}
-
-		}
-
-		return localAssignements;
-	}
 
 }

@@ -382,21 +382,13 @@ public class SymbolTable
 	 */
 	public ArrayList<Expression> getLocalVariablesOfType(ExprLocalVariables exp) {
 		ArrayList<Expression> localVariables = new ArrayList<Expression>();
-		
-		// If the type is an int, we want to also consider 0
-		if (exp.getType().equals(TypePrimitive.int32type)) {
-			// Create a new 0 constant expression
-			ExprConstInt zero = (ExprConstInt) ExprConstant.createConstant(new DummyFENode (exp.getCx()), "0");
-
-			// Added to the possible variables
-			localVariables.add(zero);
-		}
-
+	
         // Loop through the variables
         for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
             // Get the information of the variable
             VarInfo varInformation = entry.getValue();
 
+			// If the current variable has the same type that we want
 			if (exp.getType().equals(varInformation.type)) {
 				// Get the statement from the information
 				StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
@@ -406,6 +398,31 @@ public class SymbolTable
 			}
 
         }
+
+		// Loop through the formal paramenters
+		for (Entry<String, VarInfo> parameter : this.parent.vars.entrySet()) {
+			// Get the information of the variable
+			VarInfo varInformation = parameter.getValue();
+
+			// If the current variable has the same type that we want
+			if (exp.getType().equals(varInformation.type)) {
+				// Get the parameter from the information
+				Parameter variable = (Parameter) varInformation.origin;
+
+				// Add the variable name to the list
+				localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
+			}
+
+		}
+		
+		// If the type is an int, we want to also consider 0
+		if (exp.getType().equals(TypePrimitive.int32type)) {
+			// Create a new 0 constant expression
+			ExprConstInt zero = (ExprConstInt) ExprConstant.createConstant(new DummyFENode(exp.getCx()), "0");
+
+			// Added to the possible variables
+			localVariables.add(zero);
+		}
 
         return localVariables;
     }
