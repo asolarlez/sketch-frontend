@@ -22,9 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
@@ -368,22 +373,31 @@ public class SymbolTable
 	// TODO MIGUEL I just added this to access the variables from the symbol
 	// table. I'm not sure if I need to do this.
     /**
-	 * Return the variables from the symbol table as ExprVar based on the 
-	 * provided type. Be careful with this since this will include the 
+	 * Return the variables from the symbol table as Expression based on the 
+	 * type of the provided expression. Be careful with this since this will include the 
 	 * variable where the special symbol is found. Also be careful since 
 	 * it might return the variables from the parent.
 	 * 
 	 * @return
 	 */
-	public ArrayList<ExprVar> getLocalVariablesOfType(Type type) {
-        ArrayList<ExprVar> localVariables = new ArrayList<ExprVar>();
+	public ArrayList<Expression> getLocalVariablesOfType(ExprLocalVariables exp) {
+		ArrayList<Expression> localVariables = new ArrayList<Expression>();
+		
+		// If the type is an int, we want to also consider 0
+		if (exp.getType().equals(TypePrimitive.int32type)) {
+			// Create a new 0 constant expression
+			ExprConstInt zero = (ExprConstInt) ExprConstant.createConstant(new DummyFENode (exp.getCx()), "0");
+
+			// Added to the possible variables
+			localVariables.add(zero);
+		}
 
         // Loop through the variables
         for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
             // Get the information of the variable
             VarInfo varInformation = entry.getValue();
 
-			if (type.equals(varInformation.type)) {
+			if (exp.getType().equals(varInformation.type)) {
 				// Get the statement from the information
 				StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
 				

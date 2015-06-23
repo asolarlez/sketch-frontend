@@ -2,12 +2,10 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.ArrayList;
 
-import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
 /**
@@ -33,7 +31,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 	 */
     public LocalVariablesReplacer() {
         super(null);
-        System.out.println("***************************Constructor in replacer");
+		// System.out.println("***************************Constructor in replacer");
     }
 
     /**
@@ -43,12 +41,12 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
     public Object visitExprLocalVariables(ExprLocalVariables exp) {
         System.out.println("***************************visit in replacer");
         
-        // Create an arrayList of ExprVar to store all the available variables to use
-        ArrayList<ExprVar> possibleVariables = this.symtab.getLocalVariablesOfType(exp.getType());
+        // Create an arrayList of Expressions to store all the available variables to use
+        ArrayList<Expression> possibleVariables = this.symtab.getLocalVariablesOfType(exp);
         
 		// Loop through the possible variables to find if the statement with the
 		// special symbol is in here
-		for (ExprVar variable : possibleVariables) {
+		for (Expression variable : possibleVariables) {
 			// If the context of this variable is the same as the context
 			// of the statement with the symbol
 			if (variable.getCx().equals(exp.getCx())) {
@@ -77,13 +75,8 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 			// If the variable assignment is part of the possible variables
 			if (possibleVariables.contains(assignments.get(i).getLhsBase())) {
 
-				// If the variable is currently assigned to 0
-				// TODO MIGUEL this is where I'm not sure if we always want to check for 0
-				if(assignments.get(i).getRHS().getIValue() == 0) { 
-					// Add the variable to the list
-					availableVariables.add(assignments.get(i).getLhsBase());
-				}
-
+				// Add the variable to the list
+				availableVariables.add(assignments.get(i).getLhsBase());
 			}
 
 		}
@@ -124,67 +117,4 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		return localAssignements;
 	}
 
-	/**
-	 * Return the local variables that are of the provided type.
-	 * 
-	 * @param type
-	 * @return
-	 */
-	private ArrayList<ExprVar> getLocalVariablesOfType(ArrayList<ExprVar> possibleVariables, Type type) {
-		ArrayList<ExprVar> variablesOfType = new ArrayList<ExprVar>();
-			
-		// Get the variables that are assignments
-		ArrayList<StmtAssign> assignments = this.getLocalStmtAssign();
-		
-		// Loop through the possible variables
-		for (int i = assignments.size() - 1; i >= 0; i--) {
-			if (possibleVariables.contains(assignments.get(i).getLhsBase())) {
-
-				// If the provided type is an int
-				if (type.equals(TypePrimitive.int32type)) {
-					
-					//
-					if(ExprConstant.class.isAssignableFrom(assignments.get(i).getRHS().getClass())) {
-						// Add the variable to the list
-						variablesOfType.add(assignments.get(i).getLhsBase());
-					}
-				}
-			}
-		}
-		
-		
-//		// Loop through all the variables
-//		for (ExprVar variable : possibleVariables) {
-//			// Check that the current variable is not the variable that uses the symbol
-//			if (variable.getCx().equals(exp.getCx())) {
-//				System.out.println("This variable cannot be used since that is the place with the symbol");
-//
-//				// Go to the next iteration
-//				continue;
-//			}
-//
-//			// Loop through the local assignments from the latest
-//			for (int i = localStatementAssignments.size() - 1; i >= 0; i--) {
-//				
-//				// Check if the left hand side is the current variable
-//				if (localStatementAssignments.get(i).getLHS().equals(variable)) {
-//					
-//					// If the variable is assigned to 0
-//					if (localStatementAssignments.get(i).getRHS().getIValue() == 0) {
-//						// Add the variable to the available variables
-//						availableVariables.add(variable);
-//					} else {
-//						// We cannot use this variable since its current value is not 0
-//						break;
-//					}
-//					
-//				}
-//
-//			}
-		
-		
-		
-		return variablesOfType;
-
-	}
 }
