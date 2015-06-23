@@ -80,7 +80,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public int randdegree = 0;
 
     @CliParameter(help = "Number of rounds on a single back-end invocation.")
-    public int ntimes = 0;
+    public int ntimes = 100;
 
     @CliParameter(help = "Strategy for parallel-running.")
     public Strategies strategy = Strategies.NOT_SET;
