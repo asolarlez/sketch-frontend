@@ -293,7 +293,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                         newDepths.add(new ExprBinary(ExprBinary.BINOP_SUB, d.get(i),
                                 ExprConstInt.one));
                     }
-                    if (depth > 1 && t.promotesTo(type, nres)) {
+                    if (depth > 2 && t.promotesTo(type, nres)) {
                         String depthVar = varGen.nextVar("depth");
                         ExprStar hole = new ExprStar(context, 0, depth - 2);
                         hole.makeSpecial();
