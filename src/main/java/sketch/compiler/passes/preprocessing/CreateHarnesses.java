@@ -14,14 +14,7 @@ import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtExpr;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtReturn;
-import sketch.compiler.ast.core.stmts.StmtSpAssert;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
@@ -33,6 +26,7 @@ import sketch.util.exceptions.UnrecognizedVariableException;
 
 public class CreateHarnesses extends FEReplacer {
     Map<String, String> produceFuns = new HashMap<String, String>();
+    Map<String, String> checkFuns = new HashMap<String, String>();
     TempVarGen vargen;
 
     public CreateHarnesses(TempVarGen varGen) {
@@ -193,28 +187,87 @@ public class CreateHarnesses extends FEReplacer {
         for (int i = 0; i < intypes.size(); i++) {
             params.add(new Parameter(sa, intypes.get(i), inparams.get(i).getName()));
         }
-        
+
         fc.params(params);
-        
+
         List<Statement> body = new ArrayList<Statement>();
-        
+
+        for (int i = 0; i < intypes.size(); i++) {
+            if (intypes.get(i).isStruct()) {
+                String fname =
+                        createCheckInputFun(sa, (TypeStructRef) intypes.get(i), newFuns);
+                List<Expression> pm = new ArrayList<Expression>();
+                pm.add(new ExprVar(sa, inparams.get(i).getName()));
+
+                body.add(new StmtExpr(new ExprFunCall(sa, fname, pm)));
+
+            }
+        }
+
         String newvar = vargen.nextVar();
         body.add(new StmtVarDecl(sa, outtypes.get(outtypes.size() - 1), newvar,
                 sa.getSecondFun()));
 
-        ExprBinary cond =
-                new ExprBinary(sa, ExprBinary.BINOP_NEQ, new ExprVar(sa, newvar),
-                        new ExprNullPtr());
-        StmtAssert assertStmt =
-                new StmtAssert(sa, new ExprBinary(sa, ExprBinary.BINOP_TEQ, new ExprVar(
-                        sa, newvar), sa.getFirstFun()), false);
-        StmtIfThen sif = new StmtIfThen(sa, cond, assertStmt, null);
+        Type t = outtypes.get(outtypes.size() - 1);
+        if (t.isStruct()) {
+            ExprBinary cond =
+                    new ExprBinary(sa, ExprBinary.BINOP_NEQ, new ExprVar(sa, newvar),
+                            new ExprNullPtr());
+            StmtAssert assertStmt =
+                    new StmtAssert(sa, new ExprBinary(sa, ExprBinary.BINOP_TEQ,
+                            new ExprVar(sa, newvar), sa.getFirstFun()), false);
+            StmtIfThen sif = new StmtIfThen(sa, cond, assertStmt, null);
 
-        body.add(sif);
+            body.add(sif);
+        } else {
+            StmtAssert assertStmt =
+                    new StmtAssert(sa, new ExprBinary(sa, ExprBinary.BINOP_EQ,
+                            new ExprVar(sa, newvar), sa.getFirstFun()), false);
+            body.add(assertStmt);
+        }
+
 
         fc.body(new StmtBlock(body));
 
         return fc.create();
+    }
+
+    private String createCheckInputFun(FENode ctx, TypeStructRef t, List<Function> newFuns)
+    {
+        if (checkFuns.containsKey(t.getName())) {
+            return checkFuns.get(t.getName());
+        }
+        String fname = vargen.nextVar("check" + "_" + t.getName());
+        produceFuns.put(t.getName(), fname);
+        Function.FunctionCreator fc =
+                Function.creator(ctx, fname, Function.FcnType.Static);
+        fc.returnType(TypePrimitive.voidtype);
+        String var = vargen.nextVar("var");
+        List<Parameter> params = new ArrayList<Parameter>();
+        params.add(new Parameter(ctx, t, var));
+        fc.params(params);
+        List<Statement> body = new ArrayList<Statement>();
+        ExprVar inp = new ExprVar(ctx, var);
+        ExprBinary cond =
+                new ExprBinary(ctx, ExprBinary.BINOP_EQ, inp,
+                        new ExprNullPtr());
+        StmtIfThen nullCaseIf =
+                new StmtIfThen(ctx, cond, new StmtReturn(ctx, null), null);
+        body.add(nullCaseIf);
+
+        List<String> orderedCases = getCasesInOrder(t.getName());
+        StmtSwitch swt = new StmtSwitch(ctx, inp);
+        for (String c : orderedCases) {
+            swt.addCaseBlock(c.split("@")[0], new StmtEmpty(ctx));
+        }
+        swt.addCaseBlock("default", new StmtReturn(ctx, null));
+        body.add(swt);
+
+        fc.body(new StmtBlock(body));
+        fc.pkg(nres.curPkg().getName());
+        newFuns.add(fc.create());
+
+        return fname;
     }
 
     private String createFunction(TypeStructRef t, FENode ctx, List<Function> newFuns) {
@@ -256,15 +309,15 @@ public class CreateHarnesses extends FEReplacer {
                     genCase(orderedCases.get(orderedCases.size() - 1), arr, bnd, idx,
                             ctx, newFuns);
 
-        for (int i = orderedCases.size() - 2; i >= 0; i--) {
-            Expression cnd =
-                    new ExprBinary(ctx, ExprBinary.BINOP_EQ, new ExprArrayRange(
-                            new ExprVar(ctx, arr), new ExprVar(ctx, idx)),
-                            ExprConstInt.createConstant(i));
+            for (int i = orderedCases.size() - 2; i >= 0; i--) {
+                Expression cnd =
+                        new ExprBinary(ctx, ExprBinary.BINOP_EQ, new ExprArrayRange(
+                                new ExprVar(ctx, arr), new ExprVar(ctx, idx)),
+                                ExprConstInt.createConstant(i));
                 Statement ifPart =
                         genCase(orderedCases.get(i), arr, bnd, idx, ctx, newFuns);
-            cur = new StmtIfThen(ctx, cnd, ifPart, cur);
-        }
+                cur = new StmtIfThen(ctx, cnd, ifPart, cur);
+            }
             body.add(cur);
         }
 
