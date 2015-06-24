@@ -370,8 +370,6 @@ public class SymbolTable
         return parent;
     }
 
-	// TODO MIGUEL I just added this to access the variables from the symbol
-	// table. I'm not sure if I need to do this.
     /**
 	 * Return the variables from the symbol table as Expression based on the 
 	 * type of the provided expression. Be careful with this since this will include the 

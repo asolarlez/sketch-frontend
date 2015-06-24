@@ -82,7 +82,6 @@ import static sketch.util.DebugOut.assertFalse;
  * @version $Id$
  */
 public class FEReplacer implements FEVisitor
-// TODO MIGUEL look at this replacer to see what it does
 {
 
     /**

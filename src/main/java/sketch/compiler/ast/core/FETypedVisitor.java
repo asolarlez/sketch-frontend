@@ -355,7 +355,6 @@ public class FETypedVisitor<T> implements FEVisitor {
      * 
      */
 	public T visitExprLocalVariables(ExprLocalVariables exprDoubleUnderscore) {
-		// TODO MIGUEL just follow the patterns from the other methods
         throw new FEVisitorException(this, exprDoubleUnderscore);
     }
 }

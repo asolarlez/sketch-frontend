@@ -27,7 +27,6 @@ import sketch.compiler.ast.core.FEVisitor;
  * @version $Id$
  */
 public class ExprConstInt extends ExprConstant
-// TODO MIGUEL check this class to know what to do
 {
     private final int val;
 

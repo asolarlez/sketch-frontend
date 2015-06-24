@@ -28,7 +28,7 @@ import sketch.util.Pair;
  *
  */
 public class EliminateReorderBlocks extends FEReplacer {
-	// TODO MIGUEL This prepro class has an EXPRSTAR
+
 	private boolean insertBlockRewrite;
 	private TempVarGen varGen;
 

@@ -44,14 +44,21 @@ public class PreprocessStage extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
-		// TODO MIGUEL maybe I'll do something here, but maybe not
+
+		// prog.debugDump("************************************** Inside visit program inner");
+
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
+
         // prog.debugDump("after expand ===");
         prog = (Program) prog.accept(new SeparateInitializers());
+
+		// prog.debugDump("************************************** Before BlockifyRewriteableStmts");
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
+
+		// prog.debugDump("************************************** After BlockifyRewriteableStmts");
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
 
         // prog.debugDump("After Replace Min Loops");
@@ -59,14 +66,23 @@ public class PreprocessStage extends MetaStage {
         // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
         prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
+		// prog.debugDump("************************************** Before eleminate regens");
+
         prog = (Program) prog.accept(new EliminateRegens(varGen));
+
+		// prog.debugDump("************************************** After eleminate regens");
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
 
+		// prog.debugDump("************************************** 1");
 
         prog.accept(new CheckProperFinality());
 
+		// prog.debugDump("************************************** 2");
+
         prog = (Program) prog.accept(new MainMethodCreateNospec());
+
+		// prog.debugDump("************************************** 3");
 
         // prog = preproc1.run(prog);
 
@@ -76,36 +92,41 @@ public class PreprocessStage extends MetaStage {
         prog =
                 (Program) prog.accept(new EliminateReorderBlocks(varGen,
                         useInsertEncoding));
+
+		// prog.debugDump("************************************** 4");
+
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
+
+		// prog.debugDump("************************************** 5");
+
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         
-
+		// prog.debugDump("************************************** 6");
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 
+		// prog.debugDump("************************************** 7");
 
         prog = (Program) prog.accept(new ExpandADTHoles());
 
+		// prog.debugDump("************************************** 8");
 
-        prog = (Program) prog.accept(new GlobalsToParams(varGen)); // TODO MIGUEL this is where something special happense
+
+        prog = (Program) prog.accept(new GlobalsToParams(varGen)); // TODO MIGUEL this is where something special happens
+
+		// prog.debugDump("************************************** 9");
 
         // prog = ir1.run(prog);
-		prog.debugDump("before type inference");
+		// prog.debugDump("before type inference");
 
-		// TODO MIGUEL This is where typeInferenceForStars is used
         prog = (Program) prog.accept(new TypeInferenceForStars());
-        // TODO MIGUEL this is where I should put my code for the local variables. This will
-        // help to get the updated value of the variables so that I can tell if the variable
-        // has changed or not.
-        // TODO MIGUEL after this point, my special character will be gone so check what
-        // other passes do before this for the stars (which mean the ??) and do the same
-        // for the $$$. 
-		prog.debugDump("Before Local Variable replacer");
-		prog = (Program) prog.accept(new LocalVariablesReplacer());
-		prog.debugDump("After Local Variable replacer");
+
+		prog.debugDump("************************************** Before Local Variable replacer");
+		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
+		prog.debugDump("************************************** After Local Variable replacer");
         
         prog = (Program) prog.accept(new EliminateFieldHoles());
-        //prog.debugDump("af");
+		// prog.debugDump("af");
         
         prog = (Program) prog.accept(new ReplaceADTHoles());
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
@@ -123,7 +144,7 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
-        // prog.debugDump("before preprocess");
+		// prog.debugDump("before preprocess");
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,

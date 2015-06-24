@@ -39,10 +39,6 @@ import static sketch.util.fcns.ZipWithIndex.zipwithindex;
  */
 public class TypeInferenceForStars extends SymbolTableVisitor {
 
-	// TODO MIGUEL: infers the type of ?? Armando said that I will need this to
-	// infer the type
-    // of of stars.
-
     class UpgradeStarToInt extends FEReplacer {
         private final SymbolTableVisitor stv;
         Type type;

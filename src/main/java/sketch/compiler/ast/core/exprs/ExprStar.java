@@ -33,7 +33,6 @@ import sketch.compiler.main.cmdline.SketchOptions;
  * @version $Id$
  */
 public class ExprStar extends Expression
-// TODO MIGUEL check this class to know what to do
 {
     public enum Kind {
         NORMAL, ANGELIC, COUNTER

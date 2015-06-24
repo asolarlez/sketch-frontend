@@ -149,6 +149,4 @@ public interface FEVisitor
 	 * @return
 	 */
     public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables);
-	// TODO MIGUEL this is where I added this method, now all visitors must
-	// implement this method
 }

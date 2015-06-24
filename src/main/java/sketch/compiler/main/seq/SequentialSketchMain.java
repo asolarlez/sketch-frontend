@@ -496,9 +496,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 
     public Program preprocAndSemanticCheck(Program prog) {
-		// TODO MIGUEL this is where I had my local variable replacer, but Armando
-    	// told me to put in the preporcess stage
-
         prog = (Program) prog.accept(new ExpandRepeatCases());
 		// prog.debugDump("After expand Repeat Case");
         prog = (Program) prog.accept(new EliminateMacros());
@@ -588,14 +585,16 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         // prog =
         // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
 
+		// prog.debugDump("After Preproc");
+
 		SynthesisResult synthResult = this.partialEvalAndSolve(prog);
 		prog = synthResult.lowered.result;
 
-        // prog.debugDump("");
 		Program finalCleaned = synthResult.lowered.highLevelC;
         // (Program) (new
         // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
 
+		// finalCleaned.debugDump("After final Cleaned");
 
         // beforeUnvectorizing =
         // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
@@ -608,12 +607,13 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             substituted = finalCleaned;
         }
 
-        // substituted.debugDump("after substitution");
+		substituted.debugDump("after substitution");
 
         Program substitutedCleaned =
  (new CleanupFinalCode(varGen, options,
 				visibleRControl(finalCleaned))).visitProgram(substituted);
 
+		// substitutedCleaned.debugDump("after substitution cleaned");
 
 		generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");

@@ -36,8 +36,7 @@ import sketch.util.exceptions.ExceptionAtNode;
  * @author liviu
  */
 public class ConstantReplacer extends FEReplacer {
-	// TODO MIGUEL look at this replacer, since I will be replacing my symbol
-	// with other stuff
+
     static class ShadowStack {
         final HashSet<String> shadow = new HashSet<String>();
         final ShadowStack prev;

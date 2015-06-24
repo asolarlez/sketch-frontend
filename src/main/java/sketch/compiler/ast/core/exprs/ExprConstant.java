@@ -27,7 +27,6 @@ import sketch.compiler.ast.core.FENode;
  * @version $Id$
  */
 abstract public class ExprConstant extends Expression
-// TODO MIGUEL check this class to know what to do
 {
     // Go Java go!  If we don't have this, the compiler complains:
     public ExprConstant(FENode context)

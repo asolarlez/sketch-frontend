@@ -180,7 +180,6 @@ public class FENullVisitor implements FEVisitor
 	 * A local variable expression visitor that always returns null.
 	 */
     public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
-		// TODO MIGUEL here just return null
         return null;
     }
 }

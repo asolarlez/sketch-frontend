@@ -12,7 +12,7 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 public class EliminateBitSelector extends SymbolTableVisitor {
-	// TODO MIGUEL This prepro class has an EXPRSTAR
+
 	TempVarGen varGen;
 	public EliminateBitSelector(TempVarGen varGen){
 		super(null);

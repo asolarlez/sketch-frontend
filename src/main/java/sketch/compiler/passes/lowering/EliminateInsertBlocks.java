@@ -49,7 +49,7 @@ import sketch.util.Misc;
  * @author <a href="mailto:cgjones@cs.berkeley.edu">Chris Jones</a>
  */
 public class EliminateInsertBlocks extends FEReplacer {
-	// TODO MIGUEL This prepro class has an EXPRSTAR
+
 	protected TempVarGen varGen;
 	/**
 	 * The 'depth' and 'header' variables are a bit of a hack.  When
