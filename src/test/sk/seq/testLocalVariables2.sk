@@ -1,0 +1,12 @@
+pragma options "-V 0";
+
+bit firstElementSketch(bit[10] in) implements firstElement {		
+	
+	if(in[??]) {
+		return in[??];
+	}		
+}
+
+bit firstElement (bit[10] in) {
+	return in[5];
+}
