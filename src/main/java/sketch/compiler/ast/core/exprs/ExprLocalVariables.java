@@ -29,7 +29,7 @@ public class ExprLocalVariables extends Expression {
         
 		this.type = null;
         
-        System.out.println("***************************Constructor node in expression");
+//        System.out.println("***************************Constructor node in expression");
     }
 
     /**
@@ -42,9 +42,9 @@ public class ExprLocalVariables extends Expression {
 
 		this.type = null;
 
-        System.out.println("***************************Constructor context in expression");
-        System.out.println("We found a symbol at line: " + context.getLineNumber() +
-                " that represents that the user wants to use local variables");
+//        System.out.println("***************************Constructor context in expression");
+//        System.out.println("We found a symbol at line: " + context.getLineNumber() +
+//                " that represents that the user wants to use local variables");
     }
 
     /**
@@ -56,7 +56,7 @@ public class ExprLocalVariables extends Expression {
      */
     @Override
     public Object accept(FEVisitor visitor) {
-		System.out.println("***************************Visitor in expression");
+//		System.out.println("***************************Visitor in expression");
 
         // Visit a local variable expression
         return visitor.visitExprLocalVariables(this);
@@ -71,8 +71,22 @@ public class ExprLocalVariables extends Expression {
 		return this.type;
 	}
 
+	/**
+	 * Set the type of the local variable expression
+	 * 
+	 * @param type
+	 */
 	public void setType(Type type) {
 		this.type = type;
+	}
+
+	@Override
+	public String toString() {
+		if (this.getType() == null) {
+			return "$$$:null";
+		} else {
+			return "$$$:" + this.getType();
+		}
 	}
 
 }
