@@ -403,8 +403,9 @@ public class SymbolTable
         SymbolTable parent = this.getParent();
         
 		// Loop through the parent symbol table while it is not null
+        // TODO MIGUEL check how parent works in bigger programs.
         while(parent != null) {
-        	// Loop through the formal paramenters
+        	// Loop through the formal parameters
 			for (Entry<String, VarInfo> parameter : parent.vars.entrySet()) {
         		// Get the information of the variable
         		VarInfo varInformation = parameter.getValue();
@@ -412,10 +413,16 @@ public class SymbolTable
         		// If the current variable has the same type that we want
         		if (exp.getType().equals(varInformation.type)) {
         			// Get the parameter from the information
-        			Parameter variable = (Parameter) varInformation.origin;
+					try {
+						Parameter variable = (Parameter) varInformation.origin;
+						// Add the variable name to the list
+	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
+					} catch (ClassCastException cce) {
+						StmtVarDecl variable = (StmtVarDecl) varInformation.origin;
+						// Add the variable name to the list
+	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName(0)));
+					}
         			
-        			// Add the variable name to the list
-        			localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
         		}
         		
         	}
