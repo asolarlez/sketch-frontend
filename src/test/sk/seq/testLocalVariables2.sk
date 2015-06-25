@@ -1,12 +1,17 @@
-pragma options "-V 0";
+pragma options "-V 10";
 
-bit firstElementSketch(bit[10] in) implements firstElement {		
-	
-	if(in[??]) {
-		return in[??];
-	}		
+bit reverseSketch(bit[4] in) implements reverse {	
+	bit t=0;
+	int i=0;
+	int j = 0;
+	repeat(??){
+		t = in[$$$];
+		i = $$$+??;
+	}
+	return t;
 }
 
-bit firstElement (bit[10] in) {
-	return in[5];
+
+bit reverse (bit[4] in) {
+	return in[2];
 }
