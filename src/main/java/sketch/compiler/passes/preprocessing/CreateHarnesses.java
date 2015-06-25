@@ -199,7 +199,8 @@ public class CreateHarnesses extends FEReplacer {
                 List<Expression> pm = new ArrayList<Expression>();
                 pm.add(new ExprVar(sa, inparams.get(i).getName()));
 
-                body.add(new StmtExpr(new ExprFunCall(sa, fname, pm)));
+                body.add(new StmtIfThen(sa, new ExprFunCall(sa, fname, pm),
+                        new StmtEmpty(sa), new StmtReturn(sa, null)));
 
             }
         }
@@ -216,7 +217,7 @@ public class CreateHarnesses extends FEReplacer {
             StmtAssert assertStmt =
                     new StmtAssert(sa, new ExprBinary(sa, ExprBinary.BINOP_TEQ,
                             new ExprVar(sa, newvar), sa.getFirstFun()), false);
-            StmtIfThen sif = new StmtIfThen(sa, cond, assertStmt, null);
+            StmtIfThen sif = new StmtIfThen(sa, cond, new StmtBlock(assertStmt), null);
 
             body.add(sif);
         } else {
@@ -238,10 +239,10 @@ public class CreateHarnesses extends FEReplacer {
             return checkFuns.get(t.getName());
         }
         String fname = vargen.nextVar("check" + "_" + t.getName());
-        produceFuns.put(t.getName(), fname);
+        checkFuns.put(t.getName(), fname);
         Function.FunctionCreator fc =
                 Function.creator(ctx, fname, Function.FcnType.Static);
-        fc.returnType(TypePrimitive.voidtype);
+        fc.returnType(TypePrimitive.bittype);
         String var = vargen.nextVar("var");
         List<Parameter> params = new ArrayList<Parameter>();
         params.add(new Parameter(ctx, t, var));
@@ -252,16 +253,31 @@ public class CreateHarnesses extends FEReplacer {
                 new ExprBinary(ctx, ExprBinary.BINOP_EQ, inp,
                         new ExprNullPtr());
         StmtIfThen nullCaseIf =
-                new StmtIfThen(ctx, cond, new StmtReturn(ctx, null), null);
+                new StmtIfThen(ctx, cond, new StmtReturn(ctx, ExprConstInt.one), null);
         body.add(nullCaseIf);
 
         List<String> orderedCases = getCasesInOrder(t.getName());
         StmtSwitch swt = new StmtSwitch(ctx, inp);
         for (String c : orderedCases) {
-            swt.addCaseBlock(c.split("@")[0], new StmtEmpty(ctx));
+            StructDef ts = nres.getStruct(c);
+            Expression cur = ExprConstInt.one;
+            for (StructFieldEnt fe : ts.getFieldEntriesInOrder()) {
+                Type ft = fe.getType();
+                if (ft.isStruct()) {
+                    String name = createCheckInputFun(ctx, (TypeStructRef) ft, newFuns);
+                    List<Expression> pm = new ArrayList<Expression>();
+                    pm.add(new ExprField(ctx, inp, fe.getName()));
+
+                    cur =
+                            new ExprBinary(ctx, ExprBinary.BINOP_AND, new ExprFunCall(
+                                    ctx, name, pm), cur);
+                }
+            }
+            swt.addCaseBlock(c.split("@")[0], new StmtReturn(ctx, cur));
         }
-        swt.addCaseBlock("default", new StmtReturn(ctx, null));
+        swt.addCaseBlock("default", new StmtReturn(ctx, ExprConstInt.zero));
         body.add(swt);
+        body.add(new StmtReturn(ctx, ExprConstInt.one));
 
         fc.body(new StmtBlock(body));
         fc.pkg(nres.curPkg().getName());
