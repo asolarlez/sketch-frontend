@@ -24,7 +24,9 @@ int[2*N] karatsuba(int N, int[N] x, int[N] y)  implements mult  {
     if(N % 2 != 0){ return mult(N, x, y); }
     int No2 = N/2;
     int[No2] x1, x2, y1, y2;
-    int[N]  a=0, b=0, c=0;
+    int[N]  a=0;
+    int[N] b=0;
+    int[N] c=0;
     int[2*N] out = 0;
     
     x1=x[0::No2];  x2=x[No2::No2];
@@ -35,8 +37,10 @@ int[2*N] karatsuba(int N, int[N] x, int[N] y)  implements mult  {
     c = karatsuba(No2, poly1(No2, x1,x2,y1,y2), poly1(No2, x1,x2,y1,y2));
     
     repeat(??){
-        int[N] t = {| a | b | c |};
-        out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , {|N | No2 | 0|} )  );    
+        //int[N] t = {| a | b | c |};
+        int[N] t = $$$;
+        //out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , {|N | No2 | 0|} )  );   
+        out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , $$$ )  );   
     }
     out = normalize(2*N, out);
     return out;
