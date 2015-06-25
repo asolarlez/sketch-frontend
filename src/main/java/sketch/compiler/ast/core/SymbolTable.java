@@ -410,16 +410,25 @@ public class SymbolTable
         		
         		// If the current variable has the same type that we want
         		if (exp.getType().equals(varInformation.type)) {
-        			// Get the parameter from the information
-					try {
+        			
+        			// If the variable is of type Parameter
+        			if(varInformation.origin.getClass().equals(Parameter.class)) {
+        				// Get the parameter from the information
 						Parameter variable = (Parameter) varInformation.origin;
+						
 						// Add the variable name to the list
 	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
-					} catch (ClassCastException cce) {
-						StmtVarDecl variable = (StmtVarDecl) varInformation.origin;
-						// Add the variable name to the list
-	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName(0)));
 					}
+	        		else if(varInformation.origin.getClass().equals(StmtVarDecl.class)) {
+	        			// Get the statement from the information
+	        			StmtVarDecl variable = (StmtVarDecl) varInformation.origin;
+	        			
+	        			// Add the variable name to the list
+	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName(0)));
+	        		}
+	        		else {
+	        			throw new ClassCastException("Could not cast a variable in a parent symbol table");
+	        		}
         			
         		}
         		
