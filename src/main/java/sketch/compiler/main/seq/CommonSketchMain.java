@@ -112,6 +112,25 @@ public class CommonSketchMain {
             // assert false : "need to convert old style command line args";
             backendOptions.add("-nosim");
         }
+        if (options.bndOpts.angTupleDepth > 0) {
+            backendOptions.add("--angelictupledepth");
+            backendOptions.add("" + options.bndOpts.angTupleDepth);
+        }
+        if (options.bndOpts.srcTupleDepth > 0) {
+            backendOptions.add("--srctupledepth");
+            backendOptions.add("" + options.bndOpts.srcTupleDepth);
+        }
+        if (options.solverOpts.onlySpRand) {
+            backendOptions.add("-onlysprandassign");
+        }
+        if (options.solverOpts.spRandBias > 0) {
+            backendOptions.add("--sprandbias");
+            backendOptions.add("" + options.solverOpts.spRandBias);
+        }
+        if (options.solverOpts.ntimes > 0) {
+            backendOptions.add("--ntimes");
+            backendOptions.add("" + options.solverOpts.ntimes);
+        }
         
     }
 

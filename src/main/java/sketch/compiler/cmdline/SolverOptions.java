@@ -107,6 +107,12 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Maximum steps of random simulation to perform for every verification step.")
     public int simiters = 4;
 
+    @CliParameter(help = "Only randomize depth holes of GUC")
+    public boolean onlySpRand = false;
+
+    @CliParameter(help = "Bias for special randomize holes")
+    public int spRandBias = 1;
+
     public enum ReorderEncoding {
         exponential, quadratic
     }
