@@ -186,8 +186,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 createNewAdt(ev, tt, params, elseStmts, depth, true, d, ht);
             }
             Statement elseBlock = new StmtBlock(elseStmts);
-            newStmts.add(new StmtIfThen(context, new ExprBinary(ExprBinary.BINOP_OR,
-                    cond, hole), ifBlock, elseBlock));
+            newStmts.add(new StmtIfThen(context, cond, ifBlock, elseBlock));
             return;
             // }
         }
