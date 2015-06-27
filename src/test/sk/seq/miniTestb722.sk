@@ -1,0 +1,10 @@
+pragma options "--debug-show-dag";
+
+
+harness void main(){
+    int x = ??(6);
+    int y = ??(6);
+    int t = {| x + y | x * y |};
+    assert t == 60;
+    assert y == 2*x;
+}

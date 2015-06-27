@@ -1,0 +1,26 @@
+
+adt Foo{
+    A{}
+    B{}
+}
+
+
+T boo<T>(fun ff){
+    T a = ff();
+    return a;
+}
+
+
+T moo<T>(fun ff){
+    T a;
+    a = ff();
+    return a;
+}
+
+harness void main(){    
+    B foo(){
+        return new B();
+    }
+    moo(foo);
+    boo(foo);
+}
