@@ -108,16 +108,23 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     }
 
-    private void checkReplaceFunCall(Program prog) {
+    private Program checkReplaceFunCall(Program prog) {
+        List<Package> newStreams = new ArrayList<Package>();
         for (Package pkg : prog.getPackages()) {
+            List<StmtSpAssert> newSpAssertStmts = new ArrayList<StmtSpAssert>();
             for (StmtSpAssert sa : pkg.getSpAsserts()) {
-                checkSpAssert(sa, pkg.getName());
+                if (true || checkSpAssert(sa, pkg.getName())) {
+                    newSpAssertStmts.add(sa);
+                }
             }
+            newStreams.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
+                    pkg.getVars(), pkg.getFuncs(), newSpAssertStmts));
         }
+        return prog.creator().streams(newStreams).create();
     }
 
 
-    private void checkSpAssert(StmtSpAssert sa, String pkg) {
+    private boolean checkSpAssert(StmtSpAssert sa, String pkg) {
         // TODO: should also check that both lhs and rhs take same type of inputs and produces same type output
         ExprFunCall lhs = sa.getFirstFun();
         if (lhs.getParams().get(0) instanceof ExprFunCall) {
@@ -132,10 +139,12 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                             symtab), nres, pkg);
             f.getBody().accept(cf);
             if (!cf.checkPassed()) {
-                report(cf.failContext(), "Check failed");
+                System.err.println("Optimization not applicable because of " +
+                        cf.failContext());
+                return false;
             }
-                
         } 
+        return true;
     }
 
     private class CheckFunction extends SymbolTableVisitor {
@@ -774,10 +783,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         checkDupFieldNames(prog);
         checkPackageNames(prog);
 
-        Object ob = super.visitProgram(prog);
-
-        checkReplaceFunCall(prog);
-        return ob;
+        Program newProg = (Program) super.visitProgram(prog);
+        return checkReplaceFunCall(newProg);
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
@@ -1384,7 +1391,13 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         }
         TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
 
-        List<String> children = nres.getStructChildren(tres.getName());
+        String curName = tres.getName();
+        String parentName = curName;
+        while (parentName != null) {
+            curName = parentName;
+            parentName = nres.getStructParentName(parentName);
+        }
+        List<String> children = nres.getStructChildren(curName);
 
         if (children == null || children.isEmpty()) {
             report(stmt, "Pattern matching on variable " + var + " of type " + tres +
