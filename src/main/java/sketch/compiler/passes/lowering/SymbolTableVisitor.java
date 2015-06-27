@@ -457,7 +457,10 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
 
         if (changed) {
-            return ts.creator().fields(map).create();
+            StructDef new_struct = ts.creator().fields(map).create();
+            if (ts.immutable())
+                new_struct.setImmutable();
+            return new_struct;
         } else {
             return ts;
         }

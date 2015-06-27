@@ -292,6 +292,10 @@ public class GetExprType extends FENullVisitor
 	}
     }
 
+    public Object visitExprTuple(ExprTuple exp) {
+        return new TypeStructRef(exp.getName(), false);
+    }
+
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
         // Make it more robust
         Type base = (Type) exp.getBase().accept(this);

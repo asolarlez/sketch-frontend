@@ -884,7 +884,10 @@ public class FEReplacer implements FEVisitor
             map.put(entry.getKey(), type);
         }
         if (changed) {
-            return ts.creator().fields(map).create();
+            StructDef new_struct = ts.creator().fields(map).create();
+            if (ts.immutable())
+                new_struct.setImmutable();
+            return new_struct;
         } else {
             return ts;
         }
