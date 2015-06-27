@@ -3,15 +3,8 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.*;
 
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -503,9 +496,28 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     }
 
+    /**
+     * There are some functions that can no longer be polymorphic after we specialize them
+     * based on their function parameters because the function parameters impose certain
+     * constraints on the outputs. This class will specialize the types for these
+     * functions by making them less generic.
+     */
     class FixPolymorphism extends SymbolTableVisitor {
+        /**
+         * The tren type renamer keeps track of what generic types should be specialized
+         * and to what.
+         */
         TypeRenamer tren;
+
+        /**
+         * namesset keeps track of the original type parameters.
+         */
         Set<String> namesset;
+
+        /**
+         * elimset keeps track of which type parameters are no longer necessary because
+         * they are being eliminated.
+         */
         Set<String> elimset;
 
         Map<String, Function> doneFunctions = new HashMap<String, Function>();
@@ -546,6 +558,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
+            // We may have to unify based on function parameters
             Function f = nres.getFun(efc.getName());
 
             if (doneFunctions.containsKey(f.getFullName())) {
@@ -588,23 +601,60 @@ public class RemoveFunctionParameters extends FEReplacer {
                     // call we should have restricted the polymorphism, so we have to add
                     // now.
                     if (!calleenamesset.contains(ptypebase.toString())) {
-                        elimset.add(aname);
-                        if (ptype instanceof TypeArray) {
-                            throw new ExceptionAtNode(
-                                    "Generics can not resolve to an array type " + aname +
-                                            "->" + ptype, f);
-                        }
-                        if (tren.tmap.containsKey(aname)) {
-                            Type lcp =
-                                    tren.tmap.get(aname).leastCommonPromotion(ptype, nres);
-                        } else {
-                            tren.tmap.put(aname, ptype);
-                        }
+                        unifyGeneric(aname, ptype, f);
                     }
                 }
             }
             return super.visitExprFunCall(efc);
         }
+
+        public Object visitStmtVarDecl(StmtVarDecl svd) {
+
+            for (int i = 0; i < svd.getNumVars(); ++i) {
+                Type left = svd.getType(i);
+                Expression eright = svd.getInit(i);
+                if (eright != null) {
+                    Type right = getType(eright);
+                    checkAndUnify(left, right, svd);
+                }
+            }
+
+            return super.visitStmtVarDecl(svd);
+        }
+
+        public Object visitStmtAssign(StmtAssign sa) {
+            Type left = getType(sa.getLHS());
+            Type right = getType(sa.getRHS());
+
+            checkAndUnify(left, right, sa);
+
+            return super.visitStmtAssign(sa);
+        }
+
+        void checkAndUnify(Type left, Type right, FENode ctxt) {
+            while (left instanceof TypeArray) {
+                left = ((TypeArray) left).getBase();
+                right = ((TypeArray) right).getBase();
+            }
+            String lname = left.toString();
+            if (namesset.contains(lname)) {
+                unifyGeneric(lname, right, ctxt);
+            }
+        }
+
+        void unifyGeneric(String genericName, Type newType, FENode ctxt) {
+            elimset.add(genericName);
+            if (newType instanceof TypeArray) {
+                throw new ExceptionAtNode("Generics can not resolve to an array type " +
+                        genericName + "->" + newType, ctxt);
+            }
+            if (tren.tmap.containsKey(genericName)) {
+                Type lcp = tren.tmap.get(genericName).leastCommonPromotion(newType, nres);
+            } else {
+                tren.tmap.put(genericName, newType);
+            }
+        }
+
     }
 
     /**
