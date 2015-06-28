@@ -233,10 +233,19 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 if (varsForType == null) {
                     continue;
                 }
-                if (c >= varsForType.size())
-                    assert (false);
-                expParams.add(new ExprNamedParam(context, e.getName(), varsForType.get(c)));
-                varMap.put(e.getName().split("@")[0], varsForType.get(c));
+
+                ExprVar var;
+                if (!t.isArray() && !t.isStruct()) {
+                    if (varsForType.isEmpty())
+                        assert (false);
+                    var = varsForType.remove(0);
+                } else {
+                    if (c >= varsForType.size())
+                        assert (false);
+                    var = varsForType.get(c);
+                }
+                expParams.add(new ExprNamedParam(context, e.getName(), var));
+                varMap.put(e.getName().split("@")[0], var);
                 count.put(t, ++c);
             }
             queue.addAll(nres.getStructChildren(curName));
@@ -279,7 +288,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 }
                 int c = count.get(t);
                 List<ExprVar> varsForType = map.get(t);
-                if (c >= varsForType.size()) {
+                if (c >= varsForType.size() || (!t.isArray() && !t.isStruct())) {
                     String tempVar = varGen.nextVar(e.getName().split("@")[0]);
                     Statement decl = (new StmtVarDecl(context, t, tempVar, null));
                     stmts.add(decl);
