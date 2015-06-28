@@ -641,11 +641,29 @@ assume_statement returns [StmtAssume s] { s = null; Expression cond; }
 			}
 		}
 	;
-	
-special_assert_statement returns [StmtSpAssert s] { s = null; Expression f1, f2;}
-	: (t : TK_assert) LPAREN f1 = func_call EQUAL f2 = func_call RPAREN SEMI {
-			s = new StmtSpAssert(getContext(t), (ExprFunCall)f1, (ExprFunCall)f2);
+
+special_assert_statement returns [StmtSpAssert s] { s = null; Map<String, Expression> set = new HashMap<String, Expression>(); Expression preCond = null; List<Expression> asserts = new ArrayList<Expression>(); Expression x; }
+	: ((t : TK_let) set = extract_bindings) LCURLY
+	  ((t1: TK_precond) preCond = right_expr)?
+	  ((t2 : TK_assert) x = right_expr SEMI {
+			asserts.add(x);
+		})
+	  ((t3 : TK_assert) x = right_expr SEMI {
+			asserts.add(x);
+		})* {
+		s = new StmtSpAssert(getContext(t), set, preCond, asserts);
 		}
+		RCURLY
+	| ((t4 : TK_assert) x = right_expr SEMI {
+			asserts.add(x);
+			s = new StmtSpAssert(getContext(t4), set, preCond, asserts);
+		})
+	;
+	
+extract_bindings returns [Map<String, Expression> set] { set = new HashMap<String, Expression>(); Expression x;}
+	: ((name:ID ASSIGN x = right_expr) {
+			set.put(name.getText(), x);
+		} (COMMA name1:ID ASSIGN x = right_expr {set.put(name1.getText(), x); })* )?
 	;
 	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }

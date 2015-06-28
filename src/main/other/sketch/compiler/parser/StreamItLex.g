@@ -101,6 +101,9 @@ tokens {
     
     //ADT
     "extends";
+    
+    "let";
+    "precond";
 }
 {
   public static String lastComment = null;

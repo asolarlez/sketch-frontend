@@ -51,11 +51,13 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("atomic", this), new Integer(4));
 	literals.put(new ANTLRHashString("h_assert", this), new Integer(47));
 	literals.put(new ANTLRHashString("case", this), new Integer(32));
+	literals.put(new ANTLRHashString("precond", this), new Integer(60));
 	literals.put(new ANTLRHashString("loop", this), new Integer(8));
 	literals.put(new ANTLRHashString("for", this), new Integer(30));
 	literals.put(new ANTLRHashString("false", this), new Integer(40));
 	literals.put(new ANTLRHashString("true", this), new Integer(39));
 	literals.put(new ANTLRHashString("global", this), new Integer(51));
+	literals.put(new ANTLRHashString("let", this), new Integer(59));
 	literals.put(new ANTLRHashString("assert_max", this), new Integer(46));
 	literals.put(new ANTLRHashString("void", this), new Integer(20));
 	literals.put(new ANTLRHashString("float", this), new Integer(17));

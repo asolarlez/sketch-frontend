@@ -1,20 +1,36 @@
 package sketch.compiler.ast.core.stmts;
 
+import java.util.List;
+import java.util.Map;
+
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.Expression;
 
 public class StmtSpAssert extends Statement {
 
     ExprFunCall f1;
     ExprFunCall f2;
     int stateCount;
+    Map<String, Expression> varBindings;
+    Expression preCond;
+    List<Expression> asserts;
 
     public StmtSpAssert(FEContext context, ExprFunCall f12, ExprFunCall f22) {
         super(context);
         this.f1 = f12;
         this.f2 = f22;
         stateCount = 0;
+    }
+
+    public StmtSpAssert(FEContext context, Map<String, Expression> set,
+            Expression preCond, List<Expression> asserts)
+    {
+        super(context);
+        this.varBindings = set;
+        this.preCond = preCond;
+        this.asserts = asserts;
     }
 
     @Override
@@ -37,5 +53,21 @@ public class StmtSpAssert extends Statement {
 
     public int getStateCount() {
         return stateCount;
+    }
+
+    public Expression getExprForVar(String var) {
+        return varBindings.get(var);
+    }
+
+    public Expression getPreCond() {
+        return preCond;
+    }
+
+    public List<Expression> getAssertExprs() {
+        return asserts;
+    }
+
+    public Map<String, Expression> getVarBindings() {
+        return varBindings;
     }
 }
