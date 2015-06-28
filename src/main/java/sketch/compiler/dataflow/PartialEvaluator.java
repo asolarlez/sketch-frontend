@@ -11,15 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -1051,6 +1044,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitParameter(Parameter param){
         Type ntype = (Type)param.getType().accept(this);
         state.varDeclare(param.getName() , ntype);
+        symtab.registerVar(param.getName(), ntype, param,
+                SymbolTable.KIND_FUNC_PARAM);
         if(isReplacer){            
             return new Parameter(param, ntype, transName(param.getName()),
                     param.getPtype());
@@ -1748,6 +1743,8 @@ nvarContext,
         {
             String nm = stmt.getName(i);
             Type vt = (Type)stmt.getType(i).accept(this);
+
+            symtab.registerVar(stmt.getName(i), vt, stmt, SymbolTable.KIND_LOCAL);
             state.varDeclare(nm, vt);
             Expression ninit = null;
             if( stmt.getInit(i) != null ){
