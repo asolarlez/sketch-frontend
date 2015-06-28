@@ -75,8 +75,6 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
 
-        // Reordering this is not working in some cases.
-
         // TODO: ExpandADTHoles should deal with function parameters
 
         prog = (Program) prog.accept(new ExpandADTHoles());
@@ -102,8 +100,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
         // prog.debugDump("af");
-        prog = (Program) prog.accept(new EliminateFieldHoles());
-        // prog.debugDump("af");
+        // prog = (Program) prog.accept(new EliminateFieldHoles());
         
         prog = (Program) prog.accept(new ReplaceADTHoles());
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
@@ -121,13 +118,17 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
-        // prog.debugDump("before preprocess");
+
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
             //prog.debugDump("after preprocess");
         }
+        prog.debugDump();
+        prog = (Program) prog.accept(new TypeInferenceForStars());
+        prog = (Program) prog.accept(new EliminateFieldHoles());
+        prog.debugDump();
 
         return prog;
     }

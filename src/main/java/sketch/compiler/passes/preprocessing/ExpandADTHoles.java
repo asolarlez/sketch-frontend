@@ -25,7 +25,7 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /*
- * Do relevant type inference for new ??() and ExprGet.
+ * Do relevant type inference for new ??() and GUC.
  */
 
 public class ExpandADTHoles extends SymbolTableVisitor {
