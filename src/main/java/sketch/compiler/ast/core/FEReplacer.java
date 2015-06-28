@@ -315,7 +315,7 @@ public class FEReplacer implements FEVisitor
         if (left == exp.getLeft())
             return exp;
         else
-            return new ExprField(exp, left, exp.getName());
+            return new ExprField(exp, left, exp.getName(), exp.isHole());
     }
 
     public Object visitExprGet(ExprGet exp) {

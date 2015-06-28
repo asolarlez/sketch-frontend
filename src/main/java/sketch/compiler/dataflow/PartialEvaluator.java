@@ -341,7 +341,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         exp.getLeft().accept(this);
         Expression left = exprRV;
         if (isReplacer)
-            exprRV = new ExprField(exp, left, exp.getName());
+            exprRV = new ExprField(exp, left, exp.getName(), exp.isHole());
         return vtype.BOTTOM();
     }
 
