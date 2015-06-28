@@ -1,15 +1,5 @@
-adt bar {
-	bar1 { }
-	bar2 {int[2] arr; }
-}
+int t = {| 5 | 4 | 3 |};
 
-harness void foo () {
-	bar b;
-	bar b1 = new bar1();
-	bar b2 = new bar2(arr = {2, 3});
-	b = {b1, b2}[??];
-	switch(b) {
-		case bar1: {}
-		case bar2: {assert (b.arr[0] == 2); }
-	}
+harness void main(int[t] v, int x){
+    assert x+x == x*??;
 }

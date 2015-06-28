@@ -650,6 +650,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
             if (tren.tmap.containsKey(genericName)) {
                 Type lcp = tren.tmap.get(genericName).leastCommonPromotion(newType, nres);
+                tren.tmap.put(genericName, lcp);
             } else {
                 tren.tmap.put(genericName, newType);
             }

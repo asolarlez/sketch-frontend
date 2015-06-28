@@ -1,13 +1,10 @@
-adt NODE {
-    Op {NODE left; NODE right;}
-    Arr {int sz; int[sz] arr; int dflt;}
-}
-
+pragma options "--debug-show-dag";
 
 
 harness void main(){
-    int[2] ax = {1,2};
-    NODE e1 = new Arr(sz=2,arr=ax,dflt=0);
-    NODE e = ??(3,{});
-    assert(e1 === e);
+    int x = ??(6);
+    int y = ??(6);
+    int t = {| x + y | x * y |};
+    assert t == 60;
+    assert y == 2*x;
 }

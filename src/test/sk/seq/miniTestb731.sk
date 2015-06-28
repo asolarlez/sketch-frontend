@@ -1,0 +1,20 @@
+
+adt Foo{
+    A{}
+    B{}
+}
+
+
+Q moo<T, Q>(fun ff, T t, Q q){
+    Q a = ff(t);
+    return a;
+}
+
+harness void main(){
+    A ff = new A();
+    B gg = new B();
+    B foo(A x){
+        return new B();
+    }
+    moo(foo, ff, gg);
+}
