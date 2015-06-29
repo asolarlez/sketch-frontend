@@ -2,6 +2,7 @@ package sketch.compiler.cmdline;
 
 import sketch.util.cli.CliAnnotatedOptionGroup;
 import sketch.util.cli.CliParameter;
+import sketch.util.datastructures.CmdLineHashSet;
 
 /**
  * options which are mostly passed to cegis; a few lowering stages are in the
@@ -78,6 +79,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Degree of randomness for hole concretization.")
     public int randdegree = 0;
+
+    @CliParameter(help = "Degrees of randomness for hole concretization.", hide_default = true, inlinesep = ",")
+    public CmdLineHashSet randdegrees = new CmdLineHashSet();
 
     @CliParameter(help = "Number of rounds on a single back-end invocation.")
     public int ntimes = 0;
