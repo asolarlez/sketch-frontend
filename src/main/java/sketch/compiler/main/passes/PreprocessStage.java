@@ -106,9 +106,6 @@ public class PreprocessStage extends MetaStage {
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
             prog.accept(new PerformFlowChecks());
         }
-        // prog.debugDump("Before fun call");
-        // prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
-        // prog.debugDump("After fun call");
 
         prog = (Program) prog.accept(new EliminateUnboxedStructs(varGen));
 
@@ -125,10 +122,9 @@ public class PreprocessStage extends MetaStage {
                             options.bndOpts.unrollAmnt, rctrl));
             //prog.debugDump("after preprocess");
         }
-        prog.debugDump();
         prog = (Program) prog.accept(new TypeInferenceForStars());
         prog = (Program) prog.accept(new EliminateFieldHoles());
-        prog.debugDump();
+        // prog.debugDump();
 
         return prog;
     }

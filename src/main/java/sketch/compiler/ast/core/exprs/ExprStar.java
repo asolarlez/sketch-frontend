@@ -137,9 +137,9 @@ public class ExprStar extends Expression
     /**
     *
     */
-    public ExprStar(FENode context, int rstart, int rend) {
+    public ExprStar(FENode context, int rstart, int rend, int size) {
         super(context);
-        size = 5;
+        this.size = size;
         isGlobal = false;
         isFixed = true;
         rangelow = rstart;

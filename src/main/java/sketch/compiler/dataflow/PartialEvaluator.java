@@ -1279,7 +1279,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitStmtSwitch(StmtSwitch stmt) {
 
-        Expression var = stmt.getExpr();
+        ExprVar var = stmt.getExpr();
         abstractValue vcond = (abstractValue) var.accept(this);
         Expression ncond = isReplacer ? exprRV : var;
 
@@ -1287,6 +1287,13 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), (ExprVar) ncond);
         for (String caseExpr : stmt.getCaseConditions()) {
+            SymbolTable oldSymTab1 = symtab;
+            symtab = new SymbolTable(symtab);
+
+            if (caseExpr != "default") {
+                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false),
+                        stmt, SymbolTable.KIND_LOCAL);
+            }
             state.pushChangeTracker(vcond, false);
             Statement body = null;
             try {
@@ -1323,6 +1330,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             }
             newStmt.addCaseBlock(caseExpr, body);
             ChangeTracker epms = state.popChangeTracker();
+            symtab = oldSymTab1;
             if (ipms == null) {
                 ipms = epms;
             } else {

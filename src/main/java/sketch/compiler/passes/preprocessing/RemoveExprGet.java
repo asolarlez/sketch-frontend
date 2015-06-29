@@ -303,7 +303,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                     }
                     if (depth > 2 && t.promotesTo(type, nres)) {
                         String depthVar = varGen.nextVar("depth");
-                        ExprStar hole = new ExprStar(context, 0, depth - 2);
+                        ExprStar hole = new ExprStar(context, 0, depth - 2, 3);
                         hole.makeSpecial();
                         stmts.add(new StmtVarDecl(context, TypePrimitive.inttype,
                                 depthVar, hole));
@@ -411,6 +411,16 @@ public class RemoveExprGet extends SymbolTableVisitor {
         List<Expression> filteredExprs = new ArrayList<Expression>();
         for (Expression exp : params) {
             Type t = getType(exp);
+            if (t.isArray()) {
+                TypeArray ta = (TypeArray) t;
+                Type base = ta.getBase();
+                if (base.promotesTo(tt, nres)) {
+                    if (!(exp instanceof ExprVar)) {
+                        exp = (Expression) (new Clone()).process(exp).accept(this);
+                    }
+                    filteredExprs.add(new ExprArrayRange(exp, new ExprStar(exp)));
+                }
+            }
             if (t.promotesTo(tt, nres)) {
                 if (!(exp instanceof ExprVar)) {
                     exp = (Expression) (new Clone()).process(exp).accept(this);
