@@ -420,6 +420,7 @@ public class SATBackend {
         be_stat.killedByTimeout = false;
         be_stat.elapsedTimeMs = status.execTimeMs;
         be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
+        be_stat.decided = (2 != status.exitCode);
         lastSolveStats = be_stat;
         if (!options.solverOpts.parallel) {
             log(2, "Stats for last run:\n" + lastSolveStats);

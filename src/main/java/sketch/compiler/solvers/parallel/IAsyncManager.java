@@ -22,6 +22,8 @@ public interface IAsyncManager<R> {
     // found a solution, so the manager can abort any other workers' tasks
     public void found(int degree);
 
+    public void end(int degree);
+
     // is the job already done by another worker?
     public boolean aborted();
 

@@ -45,9 +45,24 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
     // exception/message about solution finding
     Lucky lucky;
 
+    public void end(int degree) {
+        synchronized (lock) {
+            parallel_solved = false;
+            parallel_failed = true;
+            lucky = new Lucky(name + " lucky (degree: " + degree + ")");
+        }
+        // wake up the manager thread if waiting
+        synchronized (managerLock) {
+            managerLock.notify();
+        }
+        // clean up the thread pool
+        cleanUpPool();
+    }
+
     public void found(int degree) {
         synchronized (lock) {
             parallel_solved = true;
+            parallel_failed = false;
             lucky = new Lucky(name + " lucky (degree: " + degree + ")");
         }
         // wake up the manager thread if waiting
@@ -161,7 +176,7 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
         for (nTrial = 0; nTrial < n; nTrial++) {
             // while submitting tasks, check whether it's already solved
             synchronized (lock) {
-                if (parallel_solved) {
+                if (parallel_solved || parallel_failed) {
                     aw_es.shutdown(); // no more tasks accepted
                     break;
                 }

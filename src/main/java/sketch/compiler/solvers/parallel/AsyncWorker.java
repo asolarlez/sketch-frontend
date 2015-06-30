@@ -70,6 +70,10 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
                 manager.plog(out, prefix + " solved ===");
             }
         } else {
+            if (worker_stat != null && worker_stat.decided()) {
+                manager.end(degree);
+
+            }
             String failed_solution = options.getSolutionsString(fileIdx);
             try {
                 Files.delete(Paths.get(failed_solution));
