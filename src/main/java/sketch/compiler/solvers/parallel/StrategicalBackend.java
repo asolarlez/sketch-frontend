@@ -71,6 +71,7 @@ public class StrategicalBackend extends ParallelBackend {
             int d = strategy.getDegree();
             plog(strategy.getName() + " degree choice: " + d);
             options.solverOpts.randdegree = d;
+            randdegrees.clear();
 
             options.solverOpts.ntimes = old_ntimes;
             stage = STAGE.TESTING;

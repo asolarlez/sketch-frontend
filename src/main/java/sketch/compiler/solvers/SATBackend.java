@@ -1,7 +1,9 @@
 package sketch.compiler.solvers;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -47,11 +49,28 @@ public class SATBackend {
         this.options = options;
         this.rcontrol = rcontrol;
         this.varGen = varGen;
+
+        // convert comma-separated degree of String into int
+        this.randdegrees = new ArrayList<Integer>();
+        if (!options.solverOpts.randdegrees.isEmpty()) {
+            Iterator<String> iter = options.solverOpts.randdegrees.iterator();
+            while (iter.hasNext()) {
+                String degreeStr = iter.next();
+                try {
+                    int d = Integer.parseInt(degreeStr);
+                    this.randdegrees.add(d);
+                } catch (NumberFormatException ne) {
+                    log(10, "non-integer randdegree: " + degreeStr);
+                }
+            }
+        }
     }
 
     public void activateTracing(){
         tracing = true;
     }
+
+    protected List<Integer> randdegrees;
 
     @SuppressWarnings("unchecked")
     public String[] getBackendCommandline(int i, Vector<String> commandLineOptions_,
@@ -74,7 +93,14 @@ public class SATBackend {
             commandLineOptions.add("" + abs_seed);
         }
 
-        if (options.solverOpts.randdegree > 0) {
+        // pick degree either from options...randdegrees
+        if (!this.randdegrees.isEmpty()) {
+            commandLineOptions.add("-randdegree");
+            int idx = i % this.randdegrees.size();
+            commandLineOptions.add("" + this.randdegrees.get(idx));
+        }
+        // or ...randdegree (chosen/given by a strategy/user)
+        else if (options.solverOpts.randdegree > 0) {
             commandLineOptions.add("-randdegree");
             commandLineOptions.add("" + options.solverOpts.randdegree);
         }
@@ -394,6 +420,7 @@ public class SATBackend {
         be_stat.killedByTimeout = false;
         be_stat.elapsedTimeMs = status.execTimeMs;
         be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
+        be_stat.decided = (2 != status.exitCode);
         lastSolveStats = be_stat;
         if (!options.solverOpts.parallel) {
             log(2, "Stats for last run:\n" + lastSolveStats);
