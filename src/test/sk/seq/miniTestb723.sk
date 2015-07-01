@@ -1,4 +1,4 @@
-pragma options "-V 10";
+pragma options "-V 0";
 
 bit reverseSketch(bit[4] in) implements reverse {	
 	bit t=0;

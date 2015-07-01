@@ -1,0 +1,11 @@
+int apply(fun f, int x){
+    return f(x);
+}
+
+int timesTwo(int x){
+    return x+x;
+}
+
+harness void main(int x){
+    assert apply(timesTwo, x) == 2*x;
+}
