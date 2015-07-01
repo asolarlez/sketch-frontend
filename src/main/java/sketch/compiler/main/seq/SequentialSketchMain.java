@@ -490,7 +490,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
     public Program preprocAndSemanticCheck(Program prog) {
 
-        prog = (Program) prog.accept(new CreateHarnesses(varGen));
+        prog =
+                (Program) prog.accept(new CreateHarnesses(varGen,
+                        !options.solverOpts.unoptimized));
         // prog.debugDump();
         prog = (Program) prog.accept(new ExpandRepeatCases());
         // prog.debugDump();

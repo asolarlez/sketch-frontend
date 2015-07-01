@@ -46,9 +46,11 @@ public class CreateHarnesses extends FEReplacer {
     Map<String, String> produceFuns = new HashMap<String, String>();
     Map<String, String> checkFuns = new HashMap<String, String>();
     TempVarGen vargen;
+    boolean optimize;
 
-    public CreateHarnesses(TempVarGen varGen) {
+    public CreateHarnesses(TempVarGen varGen, boolean optimize) {
         this.vargen = varGen;
+        this.optimize = optimize;
     }
 
     class ExtractInputs extends FEReplacer {
@@ -164,13 +166,15 @@ public class CreateHarnesses extends FEReplacer {
                             // produce same type of
                             // outputs
 
-
-                            System.out.println("Considering the following invariant " +
-                                    rhs.toString() + " == " + lhs.toString());
-
                             assertAllOuts = true;
-                            newSpAsserts.add(new StmtSpAssert(assert_expr.getContext(),
-                                    (ExprFunCall) rhs, (ExprFunCall) lhs));
+                            if (optimize) {
+                                System.out.println("Considering the following invariant " +
+                                        rhs.toString() + " == " + lhs.toString());
+
+                                newSpAsserts.add(new StmtSpAssert(
+                                        assert_expr.getContext(), (ExprFunCall) rhs,
+                                        (ExprFunCall) lhs));
+                            }
 
                         }
 
@@ -186,18 +190,20 @@ public class CreateHarnesses extends FEReplacer {
 
                 if (assertAllOuts) {
                     if (lhs_out.size() != rhs_out.size()) {
-                        System.out.println("Output sizes don't match. Therefore, not considering the above invariant.");
-                        newSpAsserts.remove(newSpAsserts.size() - 1);
+                        if (optimize) {
+                            System.out.println("Output sizes don't match. Therefore, not considering the above invariant.");
+                            newSpAsserts.remove(newSpAsserts.size() - 1);
+                        }
                         // throw new ExceptionAtNode(assert_expr,
                         // "Output sizes don't match");
                     } else {
-                    assert (lhs_out.size() == out_type.size() - 1);
-                    if (lhs_out.size() > 0) {
-                        for (int i = 0; i < lhs_out.size(); i++) {
-                            assertEqual(lhs_out.get(i), rhs_out.get(i), out_type.get(i),
-                                    mainBody);
+                        assert (lhs_out.size() == out_type.size() - 1);
+                        if (lhs_out.size() > 0) {
+                            for (int i = 0; i < lhs_out.size(); i++) {
+                                assertEqual(lhs_out.get(i), rhs_out.get(i),
+                                        out_type.get(i), mainBody);
+                            }
                         }
-                    }
                     }
                 }
             }

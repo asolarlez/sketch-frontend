@@ -117,6 +117,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Bias for special randomize holes")
     public int spRandBias = 1;
 
+    @CliParameter(help = "Don't optimize using specification")
+    public boolean unoptimized = false;
+
     public enum ReorderEncoding {
         exponential, quadratic
     }
