@@ -66,19 +66,19 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
         // Create an arrayList of Expressions to store all the available variables to use
         ArrayList<Expression> possibleVariables = this.symtab.getLocalVariablesOfType(exp);
         
-		// Loop through the possible variables to find if the statement with the
-		// special symbol is in here
-		for (Expression variable : possibleVariables) {
-			// If the context of this variable is the same as the context
-			// of the statement with the symbol
-			if (variable.getCx().equals(exp.getCx())) {
-				// Remove that variable from the possible list
-				possibleVariables.remove(variable);
-
-				// Break this loop and continue
-				break;
-			}
-		}
+//		// Loop through the possible variables to find if the statement with the
+//		// special symbol is in here
+//		for (Expression variable : possibleVariables) {
+//			// If the context of this variable is the same as the context
+//			// of the statement with the symbol
+//			if (variable.getCx().equals(exp.getCx())) {
+//				// Remove that variable from the possible list
+//				possibleVariables.remove(variable);
+//
+//				// Break this loop and continue
+//				break;
+//			}
+//		}
 
 		// Check if we have possible variables to use
 		if (possibleVariables.size() < 1) {
