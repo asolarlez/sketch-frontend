@@ -313,7 +313,12 @@ public class RemoveExprGet extends SymbolTableVisitor {
                     }
                     getExpr(ev, t, params, stmts, depth - 1, newDepths, ht + 1);
                 }
-                varMap.put(e.getName().split("@")[0], varsForType.get(c));
+                if (!t.isArray() && !t.isStruct()) {
+                    varMap.put(e.getName().split("@")[0],
+                            varsForType.get(varsForType.size() - 1));
+                } else {
+                    varMap.put(e.getName().split("@")[0], varsForType.get(c));
+                }
                 count.put(t, ++c);
             }
             queue.addAll(nres.getStructChildren(curName));
