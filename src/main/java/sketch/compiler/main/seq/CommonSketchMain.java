@@ -127,11 +127,6 @@ public class CommonSketchMain {
             backendOptions.add("-sprandbias");
             backendOptions.add("" + options.solverOpts.spRandBias);
         }
-        if (options.solverOpts.ntimes > 0) {
-            backendOptions.add("-ntimes");
-            backendOptions.add("" + options.solverOpts.ntimes);
-        }
-        
     }
 
     protected void log(String msg) {
