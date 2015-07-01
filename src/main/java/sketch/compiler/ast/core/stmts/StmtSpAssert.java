@@ -16,6 +16,7 @@ public class StmtSpAssert extends Statement {
     Map<String, Expression> varBindings;
     Expression preCond;
     List<Expression> asserts;
+    List<String> bindingsInOrder;
 
     public StmtSpAssert(FEContext context, ExprFunCall f12, ExprFunCall f22) {
         super(context);
@@ -25,12 +26,13 @@ public class StmtSpAssert extends Statement {
     }
 
     public StmtSpAssert(FEContext context, Map<String, Expression> set,
-            Expression preCond, List<Expression> asserts)
+            Expression preCond, List<Expression> asserts, List<String> bindingsInOrder)
     {
         super(context);
         this.varBindings = set;
         this.preCond = preCond;
         this.asserts = asserts;
+        this.bindingsInOrder = bindingsInOrder;
     }
 
     @Override
@@ -69,5 +71,9 @@ public class StmtSpAssert extends Statement {
 
     public Map<String, Expression> getVarBindings() {
         return varBindings;
+    }
+
+    public List<String> bindingsInOrder() {
+        return bindingsInOrder;
     }
 }

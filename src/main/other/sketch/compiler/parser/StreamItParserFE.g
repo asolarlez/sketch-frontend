@@ -642,8 +642,14 @@ assume_statement returns [StmtAssume s] { s = null; Expression cond; }
 		}
 	;
 
-special_assert_statement returns [StmtSpAssert s] { s = null; Map<String, Expression> set = new HashMap<String, Expression>(); Expression preCond = null; List<Expression> asserts = new ArrayList<Expression>(); Expression x; }
-	: ((t : TK_let) set = extract_bindings) LCURLY
+special_assert_statement returns [StmtSpAssert s] { s = null; List<String> bindingsInOrder = new ArrayList<String>(); Map<String, Expression> set = new HashMap<String, Expression>(); Expression preCond = null; List<Expression> asserts = new ArrayList<Expression>(); Expression x; }
+	: ((t : TK_let) ((name:ID ASSIGN x = right_expr) {
+			set.put(name.getText(), x);
+			bindingsInOrder.add(name.getText());
+		} (COMMA name1:ID ASSIGN x = right_expr {
+				set.put(name1.getText(), x); 
+				bindingsInOrder.add(name1.getText()); })* )?
+	  ) LCURLY
 	  ((t1: TK_precond) preCond = right_expr)?
 	  ((t2 : TK_assert) x = right_expr SEMI {
 			asserts.add(x);
@@ -651,19 +657,13 @@ special_assert_statement returns [StmtSpAssert s] { s = null; Map<String, Expres
 	  ((t3 : TK_assert) x = right_expr SEMI {
 			asserts.add(x);
 		})* {
-		s = new StmtSpAssert(getContext(t), set, preCond, asserts);
+		s = new StmtSpAssert(getContext(t), set, preCond, asserts, bindingsInOrder);
 		}
 		RCURLY
 	| ((t4 : TK_assert) x = right_expr SEMI {
 			asserts.add(x);
-			s = new StmtSpAssert(getContext(t4), set, preCond, asserts);
+			s = new StmtSpAssert(getContext(t4), set, preCond, asserts, bindingsInOrder);
 		})
-	;
-	
-extract_bindings returns [Map<String, Expression> set] { set = new HashMap<String, Expression>(); Expression x;}
-	: ((name:ID ASSIGN x = right_expr) {
-			set.put(name.getText(), x);
-		} (COMMA name1:ID ASSIGN x = right_expr {set.put(name1.getText(), x); })* )?
 	;
 	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }

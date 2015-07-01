@@ -9,6 +9,7 @@ import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
@@ -50,6 +51,32 @@ public class CreateHarnesses extends FEReplacer {
         this.vargen = varGen;
     }
 
+    class ExtractInputs extends FEReplacer {
+        List<String> inputParams;
+        List<Type> inputTypes;
+        List<Statement> body;
+        Map<String, String> varRenameTracker;
+        Map<String, Expression> varBindings;
+
+        public ExtractInputs(List<String> inputParams, List<Type> inputTypes,
+                List<Statement> body, Map<String, String> varRenameTracker,
+                Map<String, Expression> varBindings)
+        {
+            this.inputParams = inputParams;
+            this.inputTypes = inputTypes;
+            this.body = body;
+            this.varRenameTracker = varRenameTracker;
+            this.varBindings = varBindings;
+        }
+
+        public Object visitExprFunCall(ExprFunCall exp) {
+            processExprFunCall((ExprFunCall) exp, inputParams, inputTypes, body,
+                    varRenameTracker, varBindings, new ArrayList<Expression>(), false,
+                    this);
+            return exp;
+        }
+    }
+
     @Override
     public Object visitPackage(Package pkg) {
         nres.setPackage(pkg);
@@ -66,17 +93,21 @@ public class CreateHarnesses extends FEReplacer {
 
             Map<String, Expression> varBindings = sa.getVarBindings();
 
-            for (String var : varBindings.keySet()) {
+            for (String var : sa.bindingsInOrder()) {
                 Expression exp = varBindings.get(var);
                 if (exp instanceof ExprFunCall) {
                     List<Expression> outExprs = new ArrayList<Expression>();
                     List<Type> outTypes = processExprFunCall((ExprFunCall) exp, inputParams, inputTypes, body,
  varRenameTracker, varBindings,
-                                    outExprs);
+                                    outExprs, true, null);
                     outputsTracker.put(var, outExprs);
                     Type varType = outTypes.get(outTypes.size() - 1);
                     VarReplacer vr = new VarReplacer(varRenameTracker);
                     StmtVarDecl stmt = new StmtVarDecl(sa, varType, var, exp.doExpr(vr));
+                    body.add(stmt);
+                } else if (exp instanceof ExprConstInt) {
+                    StmtVarDecl stmt =
+                            new StmtVarDecl(sa, TypePrimitive.inttype, var, exp);
                     body.add(stmt);
                 } else {
                     assert (false); // Not yet supported
@@ -107,7 +138,7 @@ public class CreateHarnesses extends FEReplacer {
                             out_type =
                                     processExprFunCall((ExprFunCall) lhs, inputParams,
                                             inputTypes, mainBody, varRenameTracker,
-                                            varBindings, lhs_out);
+                                            varBindings, lhs_out, true, null);
                         }
                         Expression rhs = binExp.getRight();
                         if (rhs instanceof ExprVar) {
@@ -121,7 +152,7 @@ public class CreateHarnesses extends FEReplacer {
                             out_type =
                                     processExprFunCall((ExprFunCall) rhs, inputParams,
                                             inputTypes, mainBody, varRenameTracker,
-                                            varBindings, rhs_out);
+                                            varBindings, rhs_out, true, null);
                         }
 
                         if (lhs instanceof ExprFunCall && rhs instanceof ExprFunCall) {
@@ -144,20 +175,29 @@ public class CreateHarnesses extends FEReplacer {
                         }
 
                     }
+                } else {
+                    ExtractInputs ei =
+                            new ExtractInputs(inputParams, inputTypes, body,
+                                    varRenameTracker, varBindings);
+                    assert_expr.doExpr(ei);
                 }
                 VarReplacer vr = new VarReplacer(varRenameTracker);
                 mainBody.add(new StmtAssert(assert_expr, assert_expr.doExpr(vr), false));
 
                 if (assertAllOuts) {
                     if (lhs_out.size() != rhs_out.size()) {
-                        throw new ExceptionAtNode(assert_expr, "Output sizes don't match");
-                    }
+                        System.out.println("Output sizes don't match. Therefore, not considering the above invariant.");
+                        newSpAsserts.remove(newSpAsserts.size() - 1);
+                        // throw new ExceptionAtNode(assert_expr,
+                        // "Output sizes don't match");
+                    } else {
                     assert (lhs_out.size() == out_type.size() - 1);
                     if (lhs_out.size() > 0) {
                         for (int i = 0; i < lhs_out.size(); i++) {
                             assertEqual(lhs_out.get(i), rhs_out.get(i), out_type.get(i),
                                     mainBody);
                         }
+                    }
                     }
                 }
             }
@@ -275,7 +315,7 @@ public class CreateHarnesses extends FEReplacer {
     private List<Type> processExprFunCall(ExprFunCall exp, List<String> inputParams,
             List<Type> inputTypes, List<Statement> body,
             Map<String, String> varRenameTracker, Map<String, Expression> varBindings,
-            List<Expression> outExprs)
+            List<Expression> outExprs, boolean special, FEVisitor fe)
     {
         List<Type> outTypes = new ArrayList<Type>();
         Function fun;
@@ -291,7 +331,7 @@ public class CreateHarnesses extends FEReplacer {
             throw new ExceptionAtNode(exp, "Wrong number of parameters " + exp.getName());
 
         if (!fparams.isEmpty()) {
-            if (fparams.get(0) instanceof ExprFunCall) {
+            if (special && fparams.get(0) instanceof ExprFunCall) {
                 ExprFunCall f2 = (ExprFunCall) fparams.get(0);
                 List<Expression> f2params = f2.getParams();
                 Function fun2;
@@ -376,8 +416,13 @@ public class CreateHarnesses extends FEReplacer {
 
                 for (int i = 0; i < fActParams.size(); i++) {
                     Parameter p = fActParams.get(i);
+                    Expression param;
+                    if (special) {
+                        param = fparams.get(i);
+                    } else {
+                        param = fparams.get(i).doExpr(fe);
+                    }
                     if (p.isParameterInput()) {
-                        Expression param = fparams.get(i);
                         if (param instanceof ExprVar) {
                             String var = ((ExprVar) param).getName();
                             if (!varBindings.containsKey(var) &&
@@ -390,7 +435,6 @@ public class CreateHarnesses extends FEReplacer {
                         }
                     }
                     if (p.isParameterReference()) {
-                        Expression param = fparams.get(i);
                         if (param instanceof ExprVar) {
                             String old_name = ((ExprVar) param).getName();
                             String new_name = vargen.nextVar(old_name);
