@@ -61,7 +61,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         super(null);
         this.varGen = varGen;
     }
-    
+
     @Override
     public Object visitPackage(Package pkg) {
         nres.setPackage(pkg);
@@ -77,7 +77,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         if (expr.getOp() == ExprBinary.BINOP_TEQ) {
             Expression left = (Expression) expr.getLeft().doExpr(this);
             Expression right = (Expression) expr.getRight().doExpr(this);
-            
+
             TypeStructRef lt = (TypeStructRef) getType(left);
             TypeStructRef rt = (TypeStructRef) getType(right);
             TypeStructRef parent;
@@ -98,7 +98,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         }
         return super.visitExprBinary(expr);
     }
-    
+
     private String createEqualsFun(TypeStructRef type, FENode ctx) {
         StructDef struct = nres.getStruct(type.getName());
         String structName = struct.getFullName();
@@ -128,7 +128,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
 
         genEqualsBody(ctx, new ExprVar(ctx, left), new ExprVar(ctx, right), new ExprVar(
                 ctx, bnd), structName, struct.getPkg(),
-                        stmts);
+ stmts);
         fc.body(new StmtBlock(stmts));
         newFuns.add(fc.create());
         return fname;
@@ -172,23 +172,26 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             Expression r = new ExprField(right, e.getName());
             Type t = e.getType();
             Expression fieldEq = checkFieldEqual(ctx, l, r, t, stmts, pkgName, bnd, left);
-            
+
             stmts.add(new StmtIfThen(ctx,
                     new ExprUnary(ctx, ExprUnary.UNOP_NOT, fieldEq), new StmtReturn(ctx,
                             ExprConstInt.zero), null));
         }
-        
-        TypeStructRef type = new TypeStructRef(structName, false);
-            
-        StmtSwitch stmt = new StmtSwitch(ctx, left);
-        List<String> cases = getCases(structName);
-        for (String c : cases) {
-            Statement body = generateBody(ctx, c, structName, pkgName, left, right, bnd);
-            stmt.addCaseBlock(c, body);
+
+        if (nres.getStructChildren(structName).isEmpty()) {
+            stmts.add(new StmtReturn(ctx, ExprConstInt.one));
+        } else {
+            StmtSwitch stmt = new StmtSwitch(ctx, left);
+            List<String> cases = getCases(structName);
+            for (String c : cases) {
+                Statement body =
+                        generateBody(ctx, c, structName, pkgName, left, right, bnd);
+                stmt.addCaseBlock(c, body);
+            }
+            stmts.add(stmt);
         }
-        stmts.add(stmt);
     }
-    
+
     private Expression checkFieldEqual(FENode context, Expression l, Expression r,
             Type t, List<Statement> stmts, String pkgName, ExprVar bnd, Expression lorig)
     {
@@ -259,12 +262,12 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         }
         return cases;
     }
-    
+
     private Statement generateBody(FENode context, String caseName,  String structName, String pkgName,
             ExprVar left, ExprVar right, ExprVar bnd) {
         StmtSwitch stmt = new StmtSwitch(context, right);
         List<Statement> caseBody = new ArrayList<Statement>();
-        
+
         StructDef struct = nres.getStruct(caseName+"@"+pkgName);
         Expression eq = ExprConstInt.one;
         boolean first = true;
