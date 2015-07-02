@@ -1382,8 +1382,6 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     // ADT
     public Object visitStmtSwitch(StmtSwitch stmt) {
-        SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);
         ExprVar var = (ExprVar) stmt.getExpr().accept(this);
 
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
@@ -1394,6 +1392,12 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
 
         String curName = tres.getName();
+        if (nres.isTemplate(curName)) {
+            return super.visitStmtSwitch(stmt);
+        }
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
         String parentName = curName;
         while (parentName != null) {
             curName = parentName;
@@ -1405,15 +1409,18 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             report(stmt, "Pattern matching on variable " + var + " of type " + tres +
                     " but that type has no variants");
         }
-        if(!stmt.getCaseConditions().contains("default")){
+        if (!stmt.getCaseConditions().contains("default") &&
+                !stmt.getCaseConditions().contains("repeat"))
+        {
             if (!isExhaustive(children, stmt.getCaseConditions())) {
                 report(stmt, "Switch cases must be exclusive and exhaustive");
             }
         }
 
+
         // visit each case body
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (caseExpr != "default") {
+            if (caseExpr != "default" && caseExpr != "repeat") {
                 if (!checkCaseExpr(caseExpr, children)) {
                     report(stmt, "Case must be a variant of the type " + tres);
                 }
@@ -1429,6 +1436,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 newStmt.addCaseBlock(caseExpr, body);
             }
         }
+
         symtab = oldSymTab;
         return newStmt;
 

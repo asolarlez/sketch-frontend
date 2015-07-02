@@ -43,7 +43,7 @@ class CloneHoles extends FEReplacer{
     public Object visitExprStar(ExprStar es){
         ExprStar newStar = new ExprStar(es);
         if (es.special())
-            newStar.makeSpecial();
+            newStar.makeSpecial(es.parentHoles());
         es.renewName();
         return newStar;
     }
@@ -1799,7 +1799,10 @@ nvarContext,
         return isReplacer? new StmtVarDecl(stmt, types, names, inits) : stmt;
     }
 
-
+    public Object visitExprGet(ExprGet exp) {
+        exprRV = (Expression) super.visitExprGet(exp);
+        return vtype.BOTTOM();
+    }
     public Object visitExprNew(ExprNew expNew){
         exprRV = (Expression) super.visitExprNew(expNew);
         return vtype.BOTTOM();

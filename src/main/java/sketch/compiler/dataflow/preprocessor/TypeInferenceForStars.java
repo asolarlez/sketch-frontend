@@ -182,7 +182,9 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
         Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
         public Object visitExprNew(ExprNew expNew) {
-
+            if (expNew.getTypeToConstruct() == null) {
+                return expNew;
+            }
             Type nt = (Type) expNew.getTypeToConstruct().accept(this);
             StructDef ts = null;
             {
@@ -482,6 +484,8 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     public Object visitExprNew(ExprNew expNew) {
         if (expNew.isHole()) {
             TypeStructRef t = (TypeStructRef) expNew.getTypeToConstruct();
+            if (t == null)
+                return expNew;
             Map<String, Type> mst;
             if (ftypeMaps.containsKey(t.getName())) {
                 mst = ftypeMaps.get(t.getName());

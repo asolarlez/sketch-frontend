@@ -381,7 +381,7 @@ public class GetExprType extends FENullVisitor
 
     // TODO: deal with packages
     public Object visitExprGet(ExprGet exp) {
-        return null;
+        return new NotYetComputedType();
     }
 
     public Object visitExprParen (ExprParen ep) {
@@ -454,6 +454,8 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprNew(ExprNew expNew){
         Type t = expNew.getTypeToConstruct();
+        if (t == null)
+            return new NotYetComputedType();
         if(t instanceof TypeStructRef){
             return ((TypeStructRef)t).addDefaultPkg(nres.curPkg().getName(), nres);
         }

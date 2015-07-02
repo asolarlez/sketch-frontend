@@ -21,7 +21,7 @@ class CloneHoles extends FEReplacer {
         ExprStar newStar = new ExprStar(es);
         es.renewName();
         if (es.special())
-            newStar.makeSpecial();
+            newStar.makeSpecial(es.parentHoles());
         return newStar;
     }
 
@@ -55,6 +55,8 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
         TypeStructRef tres = (TypeStructRef) getType(stmt.getExpr());
         LinkedList<String> queue = new LinkedList<String>();
         String name = nres.getStruct(tres.getName()).getFullName();
+        if (nres.isTemplate(tres.getName()))
+            return stmt;
         queue.add(name);
         // List<String> children = nres.getStructChildren(tres.getName());
         if (stmt.getCaseConditions().size() == 0) {

@@ -360,7 +360,13 @@ public class SymbolTableVisitor extends FEReplacer
 
         // visit each case body
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
-        String pkg = nres.getStruct(((TypeStructRef) getType(var)).getName()).getPkg();
+        String name = ((TypeStructRef) getType(var)).getName();
+        StructDef ts = nres.getStruct(name);
+        String pkg;
+        if (ts == null)
+            pkg = nres.curPkg().getName();
+        else
+            pkg = ts.getPkg();
         for (String caseExpr : stmt.getCaseConditions()) {
             if (caseExpr != "default" && caseExpr != "repeat") {
                 SymbolTable oldSymTab1 = symtab;

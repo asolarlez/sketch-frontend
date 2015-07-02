@@ -155,6 +155,7 @@ public class EliminateReturns extends SymbolTableVisitor{
     
     @Override
     public Object visitParameter(Parameter p){
+        symtab.registerVar(p.getName(), p.getType(), p, SymbolTable.KIND_FUNC_PARAM);
         if(p.isParameterOutput()){
             currentRefParams.add(p.getName());
         }
