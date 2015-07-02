@@ -56,7 +56,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             ExprStar n = new ExprStar(old);
             n.extendName(rcontrol.callStack());
             if (old.special())
-                n.makeSpecial();
+                n.makeSpecial(old.parentHoles());
             exprRV = n;
         }
         return obj;

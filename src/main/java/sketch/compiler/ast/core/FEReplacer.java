@@ -809,7 +809,7 @@ public class FEReplacer implements FEVisitor
                 ExprStar s = new ExprStar(star);
                 s.setType(t);
                 if (star.special())
-                    s.makeSpecial();
+                    s.makeSpecial(star.parentHoles());
             }
         }
         return star;
