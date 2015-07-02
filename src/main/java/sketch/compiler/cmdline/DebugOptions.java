@@ -48,6 +48,9 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     @CliParameter(shortname = "P", help = "Stages / visitors to dump the program before (comma-sep)", hide_default = true, inlinesep = ",")
     public CmdLineHashSet dumpBefore = new CmdLineHashSet();
 
+    @CliParameter(help = "Feed the backend input file to a bash script to check its validity")
+    public String checkBackInput = null;
+
     /*
      * TODO
      * @CliParameter(help =
