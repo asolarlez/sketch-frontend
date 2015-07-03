@@ -1,0 +1,18 @@
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 2";
+
+// test PartialEvaluator: correctly handle ChangeTrackers for StmtIfThen
+
+generator int eval(int op) {
+	if (op == 0) {
+		return 0;
+	} else if (op == 1) {
+		return eval(0) + 1;
+	} else if (op == 2) {
+		return eval(0) + 2;
+	}
+}
+
+harness void f() {
+	int x = eval(2);
+	assert x == 2;
+}

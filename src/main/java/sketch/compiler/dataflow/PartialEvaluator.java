@@ -1276,17 +1276,45 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
     public Object visitStmtSwitch(StmtSwitch stmt) {
+        List<String> cases = stmt.getCaseConditions();
+        int nCases = cases.size();
+        assert nCases > 0 : "StmtSwitch must have a branch";
+        if (nCases == 1) {
+            // only one case, ignore the condition var and convert stmt to the single body
+            Statement body = null;
+            try {
+                String caseExpr = cases.get(0);
+                body = (Statement) stmt.getBody(caseExpr).accept(this);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // IF the body throws this exception, it means that no matter what the
+                // input,
+                // if this branch runs, it will cause the exception, so we can just assert
+                // that this
+                // branch will never run.
+                String error = e.getMessage();
+                body = new StmtAssert(stmt, ExprConstInt.zero, error, false);
+            } catch (ArithmeticException e) {
+                String error = e.getMessage();
+                body = new StmtAssert(stmt, ExprConstInt.zero, error, false);
+            }
+            return isReplacer ? body : stmt;
+        }
 
         Expression var = stmt.getExpr();
         abstractValue vcond = (abstractValue) var.accept(this);
         Expression ncond = isReplacer ? exprRV : var;
 
-        ChangeTracker ipms = null;
+        List<ChangeTracker> changeTrackers = new ArrayList<ChangeTracker>(nCases);
 
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), (ExprVar) ncond);
-        for (String caseExpr : stmt.getCaseConditions()) {
-            state.pushChangeTracker(vcond, false);
+        for (String caseExpr : cases) {
             Statement body = null;
+            String error = null;
+            ChangeTracker thisChange = null;
+            // NOTE xzl: we should push a new level of ChangeTracker so that the state change in this Case remains local in this Case
+            // and do not affect other Cases below it. Then we pop it out to collect the state change of this Case.
+            // In the end we should merge all ChangeTrackers to form the joint state change of this StmtSwitch.
+            state.pushChangeTracker(vcond, false);
             try {
                 body = (Statement) stmt.getBody(caseExpr).accept(this);
                 /*
@@ -1300,36 +1328,31 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 // if this branch runs, it will cause the exception, so we can just assert
                 // that this
                 // branch will never run.
-                // In order to improve the precision of the analysis, we pop the dirty
-                // change tracker,
-                // and push in a clean one, so the rest of the function thinks that
-                // nothing at all was written in this branch.
-                state.popChangeTracker();
-                body = new StmtAssert(stmt, ExprConstInt.zero, e.getMessage(), false);
-                state.pushChangeTracker(vcond, false);
+                error = e.getMessage();
             } catch (ArithmeticException e) {
-                state.popChangeTracker();
-                body = new StmtAssert(stmt, ExprConstInt.zero, e.getMessage(), false);
-                state.pushChangeTracker(vcond, false);
+                error = e.getMessage();
             } catch (RuntimeException e) {
-                state.popChangeTracker();
+                // Something we cannot handle
                 throw e;
-                // throw e;
+            } finally {
+                thisChange = state.popChangeTracker();
             }
-            if (body == null) {
-                body = new StmtBlock(new ArrayList<Statement>());
+            if (error != null) {
+                body = new StmtAssert(stmt, ExprConstInt.zero, error, false);
+            } else {
+                if (body == null) {
+                    // NOTE xzl: even if body == null or empty, we still must collect the
+                    // ChangeTracker, because later the changeTrackers is processed
+                    // destructively, and an NOP branch effectively prevents anything to
+                    // be updated destructively.
+                    body = new StmtBlock(new ArrayList<Statement>());
+                }
+                // NOTE xzl: a body without any error, we should collect the ChangeTracker
+                changeTrackers.add(thisChange);
             }
             newStmt.addCaseBlock(caseExpr, body);
-            ChangeTracker epms = state.popChangeTracker();
-            if (ipms == null) {
-                ipms = epms;
-            } else {
-                state.procChangeTrackers(ipms, epms);
-                state.pushChangeTracker(vcond, false);
-                ipms = state.popChangeTracker();
-            }
         }
-        state.procChangeTrackers(ipms);
+        state.procChangeTrackers(changeTrackers);
         return isReplacer ? newStmt : stmt;
 
     }
