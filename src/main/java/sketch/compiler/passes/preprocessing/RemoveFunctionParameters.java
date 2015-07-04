@@ -550,11 +550,24 @@ public class RemoveFunctionParameters extends FEReplacer {
                 nl.add(s);
             }
             Function rf = (Function) fout.creator().typeParams(nl).create().accept(tren);
+            substitute(oldtren, tren);
             tren = oldtren;
             namesset = oldnamesset;
             elimset = oldelimset;
             doneFunctions.put(f.getFullName(), rf);
             return rf;
+        }
+
+        private void substitute(TypeRenamer oldtren, TypeRenamer tren) {
+            if (oldtren == null)
+                return;
+            for (String k : oldtren.tmap.keySet()) {
+                String t = oldtren.tmap.get(k).toString();
+                if (tren.tmap.containsKey(t)) {
+                    oldtren.tmap.put(k, tren.tmap.get(t));
+                }
+            }
+
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
