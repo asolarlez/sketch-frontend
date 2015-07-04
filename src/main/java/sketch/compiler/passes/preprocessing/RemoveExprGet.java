@@ -456,7 +456,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 return new ExprStar(context);
             }
         } else if (type instanceof TypeStructRef) {
-            if (type.equals(oriType)) {
+            if (type.promotesTo(oriType, nres)) {
                 return null;
             }
             TypeStructRef tt = (TypeStructRef) type;
@@ -466,6 +466,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             stmts.add(decl);
             symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
             ExprVar ev = new ExprVar(context, tempVar);
+            System.out.println("Creating a depth 1 " + tt + " tree");
             createNewAdt(ev, tt, params, stmts, 1, false, new ArrayList(), 1);
             return ev;
 
