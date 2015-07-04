@@ -119,6 +119,12 @@ public class EliminateReturns extends SymbolTableVisitor{
         return null;
     }
     
+    @Override
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        stmt = (StmtSwitch) super.visitStmtSwitch(stmt);
+        addStatement(conditionWrap(stmt));
+        return null;
+    }
     
 
     @Override
