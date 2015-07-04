@@ -110,13 +110,13 @@ public class RemoveExprGet extends SymbolTableVisitor {
 
         Statement decl = (new StmtVarDecl(exp, tt, tempVar, null));
         newStmts.add(decl);
-        ExprStar hole = new ExprStar(context, 0, exp.getDepth() - 1, 3);
-        hole.makeSpecial(new ArrayList<ExprStar>());
+        // ExprStar hole = new ExprStar(context, 0, exp.getDepth() - 1, 3);
+        // hole.makeSpecial(new ArrayList<ExprStar>());
         symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
         ExprVar ev = new ExprVar(exp, tempVar);
         assert (tt instanceof TypeStructRef);
         List<ExprStar> depthVars = new ArrayList<ExprStar>();
-        depthVars.add(hole);
+        // depthVars.add(hole);
         getExpr(ev, (TypeStructRef) tt, exp.getParams(), newStmts, exp.getDepth(),
                 depthVars, 1);
         return ev;
@@ -129,6 +129,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             TypeArray ta = (TypeArray) type;
             Type baseType = ta.getBase();
             if (baseType.isStruct()) {
+                assert false;
                 ExprStar hole = new ExprStar(context);
                 Expression cond = hole;
                 for (int i = 0; i < d.size(); i++) {
@@ -186,7 +187,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             return;
             // }
         }
-        newStmts.add(getBaseExprs(type, params, ev));
+        newStmts.addAll(getBaseExprs(type, params, ev).getStmts());
         return;
 
     }
@@ -239,6 +240,25 @@ public class RemoveExprGet extends SymbolTableVisitor {
                     if (c >= varsForType.size())
                         assert (false);
                     var = varsForType.get(c);
+                }
+                if (t.isArray()) {
+                    TypeArray ta = (TypeArray) t;
+                    Type baseType = ta.getBase();
+                    if (baseType.isStruct()) {
+                        List<Expression> arrelems = new ArrayList<Expression>();
+                        Expression length = ta.getLength();
+                        int size = length.isConstant() ? length.getIValue() : maxArrSize;
+
+                        // TODO: is there a better way of dealing with this
+                        for (int i = 0; i < size; i++) {
+                            if (!count.containsKey(baseType)) {
+                                count.put(baseType, 0);
+                            }
+                            int c1 = count.get(baseType);
+                            count.put(baseType, ++c1);
+
+                        }
+                    }
                 }
                 expParams.add(new ExprNamedParam(context, e.getName(), var));
                 varMap.put(e.getName().split("@")[0], var);
@@ -302,7 +322,66 @@ public class RemoveExprGet extends SymbolTableVisitor {
                         newDepths.add(0, hole);
 
                     }
-                    getExpr(ev, t, params, stmts, depth - 1, newDepths, ht + 1);
+                    boolean done = false;
+                    if (t.isArray()) {
+                        TypeArray ta = (TypeArray) t;
+                        Type baseType = ta.getBase();
+                        if (baseType.isStruct()) {
+                            List<Expression> arrelems = new ArrayList<Expression>();
+                            Expression length = ta.getLength();
+                            int size =
+                                    length.isConstant() ? length.getIValue() : maxArrSize;
+
+                            // TODO: is there a better way of dealing with this
+                            for (int i = 0; i < size; i++) {
+                                if (!count.containsKey(baseType)) {
+                                    count.put(baseType, 0);
+                                }
+                                if (!map.containsKey(baseType)) {
+                                    map.put(baseType, new ArrayList<ExprVar>());
+                                }
+                                int c1 = count.get(baseType);
+                                List<ExprVar> varsForType1 = map.get(baseType);
+                                if (c1 >= varsForType1.size()) {
+                                    String tempVar1 = varGen.nextVar(e.getName().split("@")[0]);
+                                    Statement decl1 = (new StmtVarDecl(context, baseType, tempVar1, null));
+                                    stmts.add(decl1);
+                                    symtab.registerVar(tempVar, baseType, decl1, SymbolTable.KIND_LOCAL);
+                                    ExprVar ev1 = new ExprVar(context, tempVar1);
+                                    varsForType1.add(ev1);
+
+                                    List<ExprStar> newDepths1 = new ArrayList<ExprStar>();
+                                    for (int i1 = 0; i1 < d.size(); i1++) {
+                                        newDepths1.add(d.get(i1));
+                                    }
+                                    if (depth > 2 && baseType.promotesTo(type, nres)) {
+                                        ExprStar hole = new ExprStar(context, 0, depth - 2, 3);
+                                        hole.makeSpecial(d);
+                                        newDepths1.add(0, hole);
+                                    }
+                                    getExpr(ev1, baseType, params, stmts, depth - 1, newDepths1, ht + 1);
+                               
+                                }
+                                arrelems.add(varsForType1.get(c1));
+                                count.put(baseType, ++c1);
+                            }
+                            ExprStar hole = new ExprStar(context);
+                            Expression cond = hole;
+                            Statement ifBlock = getBaseExprs(t, params, ev);
+                            Statement elseBlock =
+                                    new StmtAssign(context, ev,
+                                            new ExprArrayRange(context,
+                                                    new ExprArrayInit(context, arrelems),
+                                                    new ExprArrayRange.RangeLen(
+                                                            ExprConstInt.zero, length)));
+                            stmts.add(new StmtIfThen(context, cond, ifBlock, elseBlock));
+                            done = true;
+                        }
+
+                    }
+                    if (!done) {
+                        getExpr(ev, t, params, stmts, depth - 1, newDepths, ht + 1);
+                    }
                 }
                 if (!t.isArray() && !t.isStruct()) {
                     varMap.put(e.getName().split("@")[0],
@@ -317,7 +396,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
         return map;
     }
 
-    private Statement getBaseExprs(Type type, List<Expression> params, ExprVar var)
+    private StmtBlock getBaseExprs(Type type, List<Expression> params, ExprVar var)
     {
         List<Statement> stmts = new ArrayList<Statement>();
         List<Expression> baseExprs = getExprsOfType(params, type);
