@@ -47,10 +47,13 @@ public class CreateHarnesses extends FEReplacer {
     Map<String, String> checkFuns = new HashMap<String, String>();
     TempVarGen vargen;
     boolean optimize;
+    boolean separateHarness = true;
+    int arrSize;
 
-    public CreateHarnesses(TempVarGen varGen, boolean optimize) {
+    public CreateHarnesses(TempVarGen varGen, boolean optimize, int arrSize) {
         this.vargen = varGen;
         this.optimize = optimize;
+        this.arrSize = arrSize;
     }
 
     class ExtractInputs extends FEReplacer {
@@ -229,17 +232,6 @@ public class CreateHarnesses extends FEReplacer {
                 body.addAll(mainBody);
             }
 
-            Function.FunctionCreator fc =
-                    Function.creator(sa.getContext(), vargen.nextVar("main"),
-                            Function.FcnType.Harness);
-            fc.returnType(TypePrimitive.voidtype);
-
-            List<Parameter> params = new ArrayList<Parameter>();
-
-            for (int i = 0; i < inputTypes.size(); i++) {
-                params.add(new Parameter(sa, inputTypes.get(i), inputParams.get(i)));
-            }
-
             for (int i = 0; i < inputTypes.size(); i++) {
                 if (inputTypes.get(i).isStruct()) {
                     String fname =
@@ -275,14 +267,98 @@ public class CreateHarnesses extends FEReplacer {
                 }
             }
 
-            fc.params(params);
+            if (separateHarness && !inputTypes.isEmpty() && inputTypes.get(0).isStruct())
+            {
+                TypeStructRef ts = (TypeStructRef) (inputTypes.get(0));
+                List<String> cases = getCasesInOrder(ts.getName());
+                for (int k = cases.size() - 1; k >= 0; k--) {
+                    String c = cases.get(k).split("@")[0];
+                    Function.FunctionCreator fc =
+                            Function.creator(sa.getContext(),
+                                    vargen.nextVar("main_" + c), Function.FcnType.Harness);
+                    fc.returnType(TypePrimitive.voidtype);
 
-            fc.body(new StmtBlock(body));
+                    List<Parameter> params = new ArrayList<Parameter>();
+                    StructDef str = nres.getStruct(c);
+                    List<ExprNamedParam> adtParams = new ArrayList<ExprNamedParam>();
+                    Map<String, String> varMap = new HashMap<String, String>();
 
-            Function harness = fc.create();
-            harness.setPkg(pkg.getName());
-            newFuns.add(harness);
+                    List<Statement> new_body = new ArrayList<Statement>();
 
+                    for (StructFieldEnt e : str.getFieldEntriesInOrder()) {
+                        Type t = e.getType();
+                        if (t.isArray() && ((TypeArray) t).getBase().isStruct()) {
+                            TypeArray ta = (TypeArray) t;
+                            int len = 0;
+                            if (ta.getLength().isConstant()) {
+                                len = ta.getLength().getIValue();
+                            } else {
+                                len = arrSize;
+                            }
+                            List<Expression> exps = new ArrayList<Expression>();
+                            for (int i = 0; i < len; i++) {
+                                String name = vargen.nextVar(e.getName() + "_" + i);
+                                params.add(new Parameter(sa, ta.getBase(), name));
+                                exps.add(new ExprVar(sa, name));
+                            }
+
+                            Expression base = new ExprArrayInit(sa, exps);
+                            VarReplacer vr = new VarReplacer(varMap);
+                            Expression lenExp = ta.getLength().doExpr(vr);
+                            Expression range =
+                                    new ExprArrayRange(sa, base,
+                                            new ExprArrayRange.RangeLen(
+                                                    ExprConstInt.zero, lenExp));
+                            adtParams.add(new ExprNamedParam(sa, e.getName(), range));
+                            Expression cond =
+                                    new ExprBinary(ExprBinary.BINOP_GT, lenExp,
+                                            new ExprConstInt(len));
+                            new_body.add(new StmtIfThen(sa, cond,
+                                    new StmtReturn(sa, null), null));
+                        } else {
+                            String name = vargen.nextVar(e.getName());
+                            adtParams.add(new ExprNamedParam(sa, e.getName(),
+                                    new ExprVar(sa,
+                                name)));
+                            params.add(new Parameter(sa, t, name));
+                            varMap.put(e.getName(), name);
+                        }
+                    }
+                    ExprNew constr =
+                            new ExprNew(sa, new TypeStructRef(c, false), adtParams, false);
+                    StmtVarDecl vd = new StmtVarDecl(sa, ts, inputParams.get(0), constr);
+                    new_body.add(vd);
+                    new_body.addAll(body);
+
+                    for (int i = 1; i < inputTypes.size(); i++) {
+                        params.add(new Parameter(sa, inputTypes.get(i),
+                                inputParams.get(i)));
+                    }
+                    fc.params(params);
+                    fc.body(new StmtBlock(new_body));
+
+                    Function harness = fc.create();
+                    harness.setPkg(pkg.getName());
+                    newFuns.add(harness);
+                }
+
+            } else {
+                Function.FunctionCreator fc =
+                        Function.creator(sa.getContext(), vargen.nextVar("main"),
+                                Function.FcnType.Harness);
+                fc.returnType(TypePrimitive.voidtype);
+
+                List<Parameter> params = new ArrayList<Parameter>();
+                for (int i = 0; i < inputTypes.size(); i++) {
+                    params.add(new Parameter(sa, inputTypes.get(i), inputParams.get(i)));
+                }
+                fc.params(params);
+                fc.body(new StmtBlock(body));
+
+                Function harness = fc.create();
+                harness.setPkg(pkg.getName());
+                newFuns.add(harness);
+            }
         }
 
         return new Package(pkg, pkg.getName(), pkg.getStructs(), pkg.getVars(), newFuns,
