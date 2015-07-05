@@ -11,9 +11,8 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
@@ -400,37 +399,17 @@ public class RemoveExprGet extends SymbolTableVisitor {
     {
         List<Statement> stmts = new ArrayList<Statement>();
         List<Expression> baseExprs = getExprsOfType(params, type);
-        boolean first = true;
-        Expression curExp = null;
-        for (Expression e : baseExprs) {
-            // if (e instanceof ExprGet) {
-            // e = processExprGet((ExprGet) e, stmts);
-            // }
-            String tmp = varGen.nextVar();
-            stmts.add(new StmtVarDecl(context, type, tmp, e));
-            if (first) {
-                curExp = new ExprVar(context, tmp);
-                first = false;
-            } else {
-                curExp = new ExprAlt(context, curExp, new ExprVar(context, tmp));
-            }
+        Expression finExp = getGeneralExprOfType(type, params, stmts);
+        if (finExp != null) baseExprs.add(finExp);
+        ExprStar h = new ExprStar(var.getContext());
+        stmts.add(new StmtAssert(var, new ExprBinary(ExprBinary.BINOP_LT, h,
+                new ExprConstInt(baseExprs.size())), StmtAssert.UBER));
+        for (int i = 0; i < baseExprs.size(); i++) {
+            Expression e = baseExprs.get(i);
+            Expression cond = new ExprBinary(ExprBinary.BINOP_EQ, h, new ExprConstInt(i));
+            stmts.add(new StmtIfThen(context, cond, new StmtAssign(context, var, e), null));
         }
 
-        Expression finExp = getGeneralExprOfType(type, params, stmts);
-        if (finExp != null) {
-            if (curExp == null) {
-                stmts.add(new StmtAssign(var, finExp));
-            } else {
-                stmts.add(new StmtAssign(var, new ExprRegen(context, new ExprAlt(curExp,
-                        finExp))));
-            }
-        } else {
-            if (curExp == null) {
-                stmts.add(new StmtAssign(var, new ExprNullPtr()));
-            } else {
-                stmts.add(new StmtAssign(var, new ExprRegen(context, curExp)));
-            }
-        }
         return new StmtBlock(stmts);
     }
 
@@ -457,7 +436,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             }
         } else if (type instanceof TypeStructRef) {
             if (type.promotesTo(oriType, nres)) {
-                return null;
+                return new ExprNullPtr();
             }
             TypeStructRef tt = (TypeStructRef) type;
 
@@ -471,7 +450,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             return ev;
 
         }
-        return null;
+        return type.defaultValue();
     }
 
     private boolean checkType(Type type) {
@@ -487,7 +466,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
         List<Expression> filteredExprs = new ArrayList<Expression>();
         for (Expression exp : params) {
             Type t = getType(exp);
-            if (t.isArray()) {
+            if (t.isArray() && !tt.isArray()) {
                 TypeArray ta = (TypeArray) t;
                 Type base = ta.getBase();
                 if (base.promotesTo(tt, nres)) {
@@ -500,6 +479,11 @@ public class RemoveExprGet extends SymbolTableVisitor {
             if (t.promotesTo(tt, nres)) {
                 if (!(exp instanceof ExprVar)) {
                     exp = (Expression) (new Clone()).process(exp).accept(this);
+                }
+                if (t.isArray() && tt.isArray()) {
+                    exp =
+                            new ExprArrayRange(context, exp, new ExprArrayRange.RangeLen(
+                                    ExprConstInt.zero, ((TypeArray) tt).getLength()));
                 }
                 filteredExprs.add(exp);
             }

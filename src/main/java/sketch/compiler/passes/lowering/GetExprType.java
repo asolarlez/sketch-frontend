@@ -93,7 +93,8 @@ public class GetExprType extends FENullVisitor
     public Object visitExprArrayRange(ExprArrayRange exp) {    	
     	Type base = (Type)exp.getBase().accept(this);
     	
-		
+        if (base.equals(new NotYetComputedType()))
+            return base;
 		Expression expr = null;
             RangeLen range=exp.getSelection();
             Type start = (Type)range.start().accept(this);
