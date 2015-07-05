@@ -219,7 +219,7 @@ public class MergeADT extends SymbolTableVisitor {
 
         for (int i = stmt.getCaseConditions().size() - 1; i >= 0; i--) {
             String c = stmt.getCaseConditions().get(i);
-            if (c != "default") {
+            if (!("default".equals(c))) {
                 Expression condition;
 
                 ExprConstInt right =

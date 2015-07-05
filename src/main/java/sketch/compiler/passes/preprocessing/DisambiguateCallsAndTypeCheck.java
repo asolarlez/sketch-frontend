@@ -1074,7 +1074,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
         // visit each case body
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (caseExpr != "default") {
+            if (!("default".equals(caseExpr))) {
                 if (!checkCaseExpr(caseExpr, children)) {
                     report(stmt, "Case must be a variant of the type " + tres);
                 }
