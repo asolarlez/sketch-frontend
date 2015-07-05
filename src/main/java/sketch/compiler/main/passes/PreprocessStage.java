@@ -127,8 +127,6 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new RemoveExprGet(varGen, options.bndOpts.arrSize));
         // prog.debugDump();
-        prog = (Program) prog.accept(new EliminateRegens(varGen));
-
         prog = (Program) prog.accept(new ExpandADTHoles());
         prog = (Program) prog.accept(new TypeInferenceForStars());
         prog = (Program) prog.accept(new EliminateFieldHoles());

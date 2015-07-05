@@ -123,6 +123,8 @@ public class CreateHarnesses extends FEReplacer {
                 List<Expression> rhs_out = new ArrayList<Expression>();
                 List<Type> out_type = new ArrayList<Type>();
                 boolean assertAllOuts = false;
+                boolean rhsVar = false;
+                boolean lhsVar = false;
                 if (assert_expr instanceof ExprBinary) {
                     ExprBinary binExp = (ExprBinary) assert_expr;
                     if (binExp.getOp() == ExprBinary.BINOP_EQ ||
@@ -130,6 +132,7 @@ public class CreateHarnesses extends FEReplacer {
                     {
                         Expression lhs = binExp.getLeft();
                         if (lhs instanceof ExprVar) {
+                            lhsVar = true;
                             String name = ((ExprVar) lhs).getName();
                             lhs_out = outputsTracker.get(name);
                             lhs = sa.getExprForVar(name);
@@ -141,9 +144,12 @@ public class CreateHarnesses extends FEReplacer {
                                     processExprFunCall((ExprFunCall) lhs, inputParams,
                                             inputTypes, mainBody, varRenameTracker,
                                             varBindings, lhs_out, true, null);
+                            VarReplacer vr = new VarReplacer(varRenameTracker);
+                            lhs = lhs.doExpr(vr);
                         }
                         Expression rhs = binExp.getRight();
                         if (rhs instanceof ExprVar) {
+                            rhsVar = true;
                             String name = ((ExprVar) rhs).getName();
                             rhs_out = outputsTracker.get(name);
                             rhs = sa.getExprForVar(name);
@@ -155,6 +161,8 @@ public class CreateHarnesses extends FEReplacer {
                                     processExprFunCall((ExprFunCall) rhs, inputParams,
                                             inputTypes, mainBody, varRenameTracker,
                                             varBindings, rhs_out, true, null);
+                            VarReplacer vr = new VarReplacer(varRenameTracker);
+                            rhs = rhs.doExpr(vr);
                         }
 
                         if (lhs instanceof ExprFunCall && rhs instanceof ExprFunCall) {
@@ -174,10 +182,15 @@ public class CreateHarnesses extends FEReplacer {
                                 newSpAsserts.add(new StmtSpAssert(
                                         assert_expr.getContext(), (ExprFunCall) rhs,
                                         (ExprFunCall) lhs));
+                                if (!lhsVar && !rhsVar) {
+                                    assert_expr = new ExprBinary(((ExprBinary) assert_expr).getOp(), lhs, rhs);
+                                } else if (!rhsVar) {
+                                    assert_expr = new ExprBinary(((ExprBinary) assert_expr).getOp(), ((ExprBinary) assert_expr).getLeft(), rhs);
+                                } else if (!lhsVar) {
+                                    assert_expr = new ExprBinary(((ExprBinary) assert_expr).getOp(), lhs, ((ExprBinary) assert_expr).getRight());
+                                }
                             }
-
                         }
-
                     }
                 } else {
                     ExtractInputs ei =
