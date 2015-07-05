@@ -1279,26 +1279,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
         List<String> cases = stmt.getCaseConditions();
         int nCases = cases.size();
         assert nCases > 0 : "StmtSwitch must have a branch";
-        if (nCases == 1) {
-            // only one case, ignore the condition var and convert stmt to the single body
-            Statement body = null;
-            try {
-                String caseExpr = cases.get(0);
-                body = (Statement) stmt.getBody(caseExpr).accept(this);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // IF the body throws this exception, it means that no matter what the
-                // input,
-                // if this branch runs, it will cause the exception, so we can just assert
-                // that this
-                // branch will never run.
-                String error = e.getMessage();
-                body = new StmtAssert(stmt, ExprConstInt.zero, error, false);
-            } catch (ArithmeticException e) {
-                String error = e.getMessage();
-                body = new StmtAssert(stmt, ExprConstInt.zero, error, false);
-            }
-            return isReplacer ? body : stmt;
-        }
+        // NOTE xzl: currently we do not replace StmtSwitch with only one case to the sole
+        // body, because SymbolTableVisitor relies on StmtSwitch to infer the refined type
+        // of the matched variable inside each Case
 
         Expression var = stmt.getExpr();
         abstractValue vcond = (abstractValue) var.accept(this);
