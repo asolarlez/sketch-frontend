@@ -650,6 +650,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                 right = ((TypeArray) right).getBase();
             }
             String lname = left.toString();
+            if (lname.equals(right.toString())) {
+                return;
+            }
             if (namesset.contains(lname)) {
                 unifyGeneric(lname, right, ctxt);
             }
