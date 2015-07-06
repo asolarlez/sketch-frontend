@@ -22,7 +22,6 @@ import sketch.compiler.ast.core.stmts.StmtSwitch;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
@@ -299,22 +298,23 @@ public class MergeADT extends SymbolTableVisitor {
                         outName = ((TypeStructRef) pp.getType()).getName().split("@")[0];
                         ExprFunCall innerFCall = (ExprFunCall) f1.getParams().get(0);
                         Function innerF = nres.getFun(innerFCall.getName());
+                        outTypes.add(innerF.getParams().get(0).getType());
 
-                        for (Parameter ppp : innerF.getParams()) {
-                            if (ppp.isParameterInput() || ppp.isParameterReference()) {
-                                Type tt = ppp.getType();
-                                if (tt.isArray()) {
-                                    TypeArray ta = (TypeArray) tt;
-                                    Type base = ta.getBase();
-                                    int len = ((ExprConstInt) ta.getLength()).getVal();
-                                    for (int i = 0; i < len; i++)
-                                        outTypes.add(ppp.getType());
-                                } else {
-                                    outTypes.add(ppp.getType());
-                                }
-                            }
-
-                        }
+                        // for (Parameter ppp : innerF.getParams()) {
+                        // if (ppp.isParameterInput() || ppp.isParameterReference()) {
+                        // Type tt = ppp.getType();
+                        // if (tt.isArray()) {
+                        // TypeArray ta = (TypeArray) tt;
+                        // Type base = ta.getBase();
+                        // int len = ((ExprConstInt) ta.getLength()).getVal();
+                        // for (int i = 0; i < len; i++)
+                        // outTypes.add(ppp.getType());
+                        // } else {
+                        // outTypes.add(ppp.getType());
+                        // }
+                        // }
+                        //
+                        // }
                         first = false;
                     }
                 }

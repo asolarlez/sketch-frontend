@@ -903,7 +903,8 @@ public class FEReplacer implements FEVisitor
         if (t == par.getType()) {
             return par;
         } else {
-            return new Parameter(par, t, par.getName(), par.getPtype());
+            return new Parameter(par, par.getSrcTupleDepth(), t, par.getName(),
+                    par.getPtype());
         }
     }
 

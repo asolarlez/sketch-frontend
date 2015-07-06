@@ -37,7 +37,7 @@ public class Parameter extends FENode implements Comparable<Parameter>
     private final Type type;
     private final String name;
     private final int partype;
-
+    private int srcTupleDepth = -1;
     private final boolean isImplicit;
 
     /** Creates a new Parameter with the specified type and name. */
@@ -47,9 +47,21 @@ public class Parameter extends FENode implements Comparable<Parameter>
                 : false);
     }
 
+    public Parameter(FENode fn, int depth, Type type, String name) {
+        this(fn, type, name, IN, fn instanceof Parameter ? ((Parameter) fn).isImplicit
+                : false);
+        this.srcTupleDepth = depth;
+    }
+
     public Parameter(FENode fn, Type type, String name, int ptype) {
         this(fn, type, name, ptype, fn instanceof Parameter ? ((Parameter) fn).isImplicit
                 : false);
+    }
+
+    public Parameter(FENode fn, int depth, Type type, String name, int ptype) {
+        this(fn, type, name, ptype, fn instanceof Parameter ? ((Parameter) fn).isImplicit
+                : false);
+        this.srcTupleDepth = depth;
     }
 
     public Parameter withNewType(Type newt) {
@@ -125,6 +137,10 @@ public class Parameter extends FENode implements Comparable<Parameter>
     public String getName()
     {
         return name;
+    }
+
+    public int getSrcTupleDepth() {
+        return srcTupleDepth;
     }
 
     public String toString() {

@@ -616,7 +616,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
             Parameter param = formalParams.next();            
             Type paramType = (Type) ((Type)param.getType().accept(vrep)).accept(this);            
             pmap.put(param.getName(), interpretActualParam(actual));
-            nplist.add(new Parameter(param, paramType, param.getName(), param.getPtype()));
+            nplist.add(new Parameter(param, param.getSrcTupleDepth(), paramType,
+                    param.getName(), param.getPtype()));
             boolean addedAlready = false;
             if (param.isParameterOutput()) {
                 // if (actual instanceof ExprVar) {
@@ -1049,7 +1050,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
         symtab.registerVar(param.getName(), ntype, param,
                 SymbolTable.KIND_FUNC_PARAM);
         if(isReplacer){            
-            return new Parameter(param, ntype, transName(param.getName()),
+            return new Parameter(param, param.getSrcTupleDepth(), ntype,
+                    transName(param.getName()),
                     param.getPtype());
         }else{
             return param;

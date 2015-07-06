@@ -49,11 +49,15 @@ public class CreateHarnesses extends FEReplacer {
     boolean optimize;
     boolean separateHarness = true;
     int arrSize;
+    int srcTupleDepth;
 
-    public CreateHarnesses(TempVarGen varGen, boolean optimize, int arrSize) {
+    public CreateHarnesses(TempVarGen varGen, boolean optimize, int arrSize,
+            int srcTupleDepth)
+    {
         this.vargen = varGen;
         this.optimize = optimize;
         this.arrSize = arrSize;
+        this.srcTupleDepth = srcTupleDepth;
     }
 
     class ExtractInputs extends FEReplacer {
@@ -298,7 +302,8 @@ public class CreateHarnesses extends FEReplacer {
                             List<Expression> exps = new ArrayList<Expression>();
                             for (int i = 0; i < len; i++) {
                                 String name = vargen.nextVar(e.getName() + "_" + i);
-                                params.add(new Parameter(sa, ta.getBase(), name));
+                                params.add(new Parameter(sa, srcTupleDepth - 1,
+                                        ta.getBase(), name));
                                 exps.add(new ExprVar(sa, name));
                             }
 
@@ -320,7 +325,8 @@ public class CreateHarnesses extends FEReplacer {
                             adtParams.add(new ExprNamedParam(sa, e.getName(),
                                     new ExprVar(sa,
                                 name)));
-                            params.add(new Parameter(sa, t, name));
+                            int depth = t.isStruct() ? srcTupleDepth - 1 : -1;
+                            params.add(new Parameter(sa, depth, t, name));
                             varMap.put(e.getName(), name);
                         }
                     }

@@ -492,7 +492,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         prog =
                 (Program) prog.accept(new CreateHarnesses(varGen,
-                        !options.solverOpts.unoptimized));
+                        !options.solverOpts.unoptimized, options.bndOpts.arrSize,
+                        options.bndOpts.srcTupleDepth));
         // prog.debugDump();
 
         prog = (Program) prog.accept(new ConstantReplacer(null));

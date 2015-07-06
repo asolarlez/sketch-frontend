@@ -329,6 +329,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     }
                 }
             }
+            if (param.getSrcTupleDepth() != -1) {
+                out.print("<" + param.getSrcTupleDepth() + " > ");
+            }
         }
         // Add the output parameter
         if (hasOutput) {
