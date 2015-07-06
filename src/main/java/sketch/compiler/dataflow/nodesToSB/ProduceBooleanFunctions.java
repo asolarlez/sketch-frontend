@@ -114,7 +114,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
                 List<Function> callees = ssk.getCallees();
                 for (Function callee : callees) {
-                    int callee_sz = callee.getBody().size();
+                    // FIXME xzl: is this the correct behaviro? uninterp functions have
+                    // size 0
+                    Statement body = callee.getBody();
+                    int callee_sz = body == null ? 0 : body.size();
                     sz += callee_sz;
                     buf.append("callee " + callee.getName() + " : " + callee_sz);
                     buf.append(System.lineSeparator());
