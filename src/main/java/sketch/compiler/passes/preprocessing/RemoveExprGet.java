@@ -167,7 +167,6 @@ public class RemoveExprGet extends SymbolTableVisitor {
             }
         }
         if (type instanceof TypeStructRef) {
-            // if (type.promotesTo(oriType, nres)) {
             TypeStructRef tt = (TypeStructRef) type;
             ExprStar hole = new ExprStar(context);
             Expression cond = hole;
@@ -179,8 +178,10 @@ public class RemoveExprGet extends SymbolTableVisitor {
             Statement ifBlock = getBaseExprs(tt, params, ev);
             List<Statement> elseStmts = new ArrayList<Statement>();
             if (depth > 1) {
-                // hole.makeSpecial();
+                TypeStructRef oldOriType = oriType;
+                oriType = tt;
                 createNewAdt(ev, tt, params, elseStmts, depth, true, d, ht);
+                oriType = oldOriType;
             }
             Statement elseBlock = new StmtBlock(elseStmts);
             newStmts.add(new StmtIfThen(context, cond, ifBlock, elseBlock));
@@ -467,7 +468,10 @@ public class RemoveExprGet extends SymbolTableVisitor {
             symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
             ExprVar ev = new ExprVar(context, tempVar);
             System.out.println("Creating a depth 1 " + tt + " tree");
-            createNewAdt(ev, tt, params, stmts, 1, false, new ArrayList(), 1);
+            TypeStructRef oldOriType = oriType;
+            oriType = tt;
+            createNewAdt(ev, tt, params, stmts, 1, true, new ArrayList(), 1);
+            oriType = oldOriType;
             return ev;
 
         }
