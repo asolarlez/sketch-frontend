@@ -329,11 +329,42 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
     public Object visitExprField(ExprField exp) {
-        exp.getLeft().accept(this);
+        Object retVal = vtype.BOTTOM();
+        Expression origLeft = exp.getLeft();
+        abstractValue av = (abstractValue) origLeft.accept(this);
         Expression left = exprRV;
+        String right = exp.getName();
+
+        Map<String, Map<String, abstractValue>> cases =
+                ((abstractValue) av).getADTcases();
+        if (cases != null) {
+            Type typ = null;
+            try {
+                typ = getType(left);
+            } catch (RuntimeException e) {
+                // System.out.println(e);
+            }
+            if (!(typ != null && typ.isStruct())) {
+                try {
+                    typ = getType(origLeft);
+                } catch (RuntimeException e) {
+                    // System.out.println(e);
+                }
+            }
+            if (typ != null && typ.isStruct()) {
+                String caseName = ((TypeStructRef) typ).getName();
+                if (cases.containsKey(caseName)) {
+                    Map<String, abstractValue> fields = cases.get(caseName);
+                    if (fields.containsKey(right)) {
+                        retVal = fields.get(right);
+                    }
+                }
+            }
+        }
+
         if (isReplacer)
-            exprRV = new ExprField(exp, left, exp.getName());
-        return vtype.BOTTOM();
+            exprRV = new ExprField(exp, left, right);
+        return retVal;
     }
 
     public Object visitExprTernary(ExprTernary exp) {
@@ -391,6 +422,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     exprRV = new ExprVar(exp, transName(exp.getName()));
                 }
             }
+        // FIXME xzl: is this correct? shouldn't we set exprRV = exp if !isReplacer ?
         return  val;
     }
 
@@ -1283,14 +1315,53 @@ public class PartialEvaluator extends SymbolTableVisitor {
         // body, because SymbolTableVisitor relies on StmtSwitch to infer the refined type
         // of the matched variable inside each Case
 
-        Expression var = stmt.getExpr();
-        abstractValue vcond = (abstractValue) var.accept(this);
-        Expression ncond = isReplacer ? exprRV : var;
+        ExprVar oldCond = (ExprVar) (stmt.getExpr());
+        abstractValue vcond = (abstractValue) oldCond.accept(this);
+        ExprVar ncond = isReplacer ? (ExprVar) exprRV : oldCond;
+        Map<String, Map<String, abstractValue>> knownCases = vcond.getADTcases();
+        int uncaughtCases = Integer.MAX_VALUE;
+        if (knownCases != null) {
+            uncaughtCases = knownCases.size();
+        }
 
         List<ChangeTracker> changeTrackers = new ArrayList<ChangeTracker>(nCases);
 
-        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), (ExprVar) ncond);
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), ncond);
+        String pkg = null;
+        ExprVar realCond = oldCond;
+        for (int i = 0; i < 5; ++i) {
+            try {
+                pkg = nres.getStruct(((TypeStructRef) getType(realCond)).getName()).getPkg();
+                if (pkg != null) {
+                    break;
+                }
+            } catch (RuntimeException e) {
+                // ignore
+            }
+            realCond = new ExprVar(ncond, transName(realCond.getName()));
+        }
         for (String caseExpr : cases) {
+            TypeStructRef ntype = null;
+            if ("default".equals(caseExpr)) {
+                // FIXME xzl: is this the correct behavior? "default" will catch all
+                // cases even if there's still concrete cases below it.
+                uncaughtCases = 0;
+            } else {
+                ntype = (new TypeStructRef(caseExpr, false));
+                if (pkg != null) {
+                    ntype = ntype.addDefaultPkg(pkg, nres);
+                }
+                if (knownCases != null) {
+                    if (knownCases.containsKey(ntype.getName())) {
+                        // caught a concreate case
+                        --uncaughtCases;
+                    } else {
+                        // we know about vcond, and caseExpr is not a possible case
+                        continue;
+                    }
+                }
+            }
+
             Statement body = null;
             String error = null;
             ChangeTracker thisChange = null;
@@ -1298,7 +1369,13 @@ public class PartialEvaluator extends SymbolTableVisitor {
             // and do not affect other Cases below it. Then we pop it out to collect the state change of this Case.
             // In the end we should merge all ChangeTrackers to form the joint state change of this StmtSwitch.
             state.pushChangeTracker(vcond, false);
+            SymbolTable oldSymTab1 = symtab;
             try {
+                if (!"default".equals(caseExpr)) {
+                    symtab = new SymbolTable(symtab);
+                    symtab.registerVar(ncond.getName(), ntype);
+                }
+
                 body = (Statement) stmt.getBody(caseExpr).accept(this);
                 /*
                  * if (isReplacer) { if (body != null) { Statement ts = (new
@@ -1318,6 +1395,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 // Something we cannot handle
                 throw e;
             } finally {
+                symtab = oldSymTab1;
                 thisChange = state.popChangeTracker();
             }
             if (error != null) {
@@ -1334,6 +1412,12 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 changeTrackers.add(thisChange);
             }
             newStmt.addCaseBlock(caseExpr, body);
+
+            if (uncaughtCases <= 0) {
+                // NOTE xzl: this depends on that all cases in StmtSwitch must be
+                // exclusive. no other cases to match, just stop.
+                break;
+            }
         }
         state.procChangeTrackers(changeTrackers);
         return isReplacer ? newStmt : stmt;
@@ -1749,7 +1833,15 @@ nvarContext,
         {
             String nm = stmt.getName(i);
             Type vt = (Type)stmt.getType(i).accept(this);
-
+            try {
+                StructDef sdef = null;
+                String pkg = null;
+                sdef = nres.getStruct(((TypeStructRef) vt).getName());
+                pkg = sdef.getPkg();
+                vt = vt.addDefaultPkg(pkg, nres);
+            } catch (RuntimeException err) {
+                // ignore
+            }
             symtab.registerVar(stmt.getName(i), vt, stmt, SymbolTable.KIND_LOCAL);
             state.varDeclare(nm, vt);
             Expression ninit = null;
@@ -1798,6 +1890,38 @@ nvarContext,
 
     public Object visitExprNew(ExprNew expNew){
         exprRV = (Expression) super.visitExprNew(expNew);
+        if (exprRV instanceof ExprNew) {
+            ExprNew e = (ExprNew) exprRV;
+            if (!e.isHole()) {
+                TypeStructRef tref = (TypeStructRef) e.getTypeToConstruct();
+                StructDef sdef = null;
+                try {
+                    String pkg = null;
+                    sdef = nres.getStruct(tref.getName());
+                    pkg = sdef.getPkg();
+                    tref = tref.addDefaultPkg(pkg, nres);
+                } catch (RuntimeException err) {
+                    // ignore
+                }
+                String tname = tref.getName();
+                String pname = sdef.getParentName();
+                if (pname != null) {
+                    Map<String, abstractValue> fields =
+                            new HashMap<String, abstractValue>();
+                    for (ExprNamedParam p : expNew.getParams()) {
+                        String name = p.getName();
+                        abstractValue value = (abstractValue) p.getExpr().accept(this);
+                        fields.put(name, value);
+                    }
+                    Map<String, Map<String, abstractValue>> cases =
+                            new HashMap<String, Map<String, abstractValue>>(1);
+                    cases.put(tname, fields);
+                    // NOTE xzl: must recover exprRV! We have called this visitor above!
+                    exprRV = e;
+                    return vtype.ADTnode(cases);
+                }
+            }
+        }
         return vtype.BOTTOM();
     }
 
@@ -2043,39 +2167,47 @@ nvarContext,
             String formalParamName = formalParam.getName();
 
             Type type = (Type) formalParam.getType().accept(this);
+            if (type.isStruct()) {
+                try {
+                    String pkg = nres.getStruct(((TypeStructRef)type).getName()).getPkg();
+                    type = type.addDefaultPkg(pkg, nres);
+                } catch (RuntimeException e) {
+                    // ignore
+                }
+            }
 
-
+            StmtVarDecl varDecl = null;
             switch(formalParam.getPtype()){
                 case Parameter.REF:{
                     state.outVarDeclare(formalParamName, type);
                     state.setVarValue(formalParamName, actualParamValue);
-                    Statement varDecl =
+                    varDecl =
                             new StmtVarDecl(cx, type, transName(formalParam.getName()),
                                     actualParam);
-                    addStatement((Statement) varDecl);
                     break;
                 }
 
                 case Parameter.IN:{
                     state.varDeclare(formalParamName, type);
                     state.setVarValue(formalParamName, actualParamValue);
-                    Statement varDecl =
+                    varDecl =
                             new StmtVarDecl(cx, type, transName(formalParam.getName()),
                                     actualParam);
-                    addStatement((Statement) varDecl);
                     break;
                 }
                 case Parameter.OUT:{
                     state.outVarDeclare(formalParamName, type);
                     Expression initVal = type.defaultValue();
-                    Statement varDecl =
+                    varDecl =
                             new StmtVarDecl(cx, type, transName(formalParam.getName()),
                                     initVal);
-                    addStatement((Statement) varDecl);
                     break;
                 }
             }
-
+            // NOTE xzl: should register the new variable
+            symtab.registerVar(varDecl.getName(0), varDecl.getType(0), varDecl,
+                    SymbolTable.KIND_LOCAL);
+            addStatement(varDecl);
         }
 
         return lvl;

@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.nodesToSB;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.dataflow.abstractValue;
 
@@ -10,12 +11,13 @@ public class IntAbsValue extends abstractValue {
 	public static final int BOTTOM = 0;
 	public static final int INT = 1;
 	public static final int LIST = 2;
+    private static final int ADTNODE = 3;
 
 	protected int type;
 	protected Object obj;
     protected boolean knownGeqZero;
 
-
+    protected Map<String, Map<String, abstractValue>> knownCases = null;
 	
     public boolean equals(Object other) {
         if (!(other instanceof IntAbsValue))
@@ -94,8 +96,22 @@ public class IntAbsValue extends abstractValue {
         this.knownGeqZero = obj >= 0;
 	}
 	
+    public static IntAbsValue ADTnode(Map<String, Map<String, abstractValue>> cases)
+    {
+        IntAbsValue v = new IntAbsValue();
+        v.type = ADTNODE;
+        v.knownCases = cases;
+        return v;
+    }
+
 	public boolean hasValue() {
-        return type != BOTTOM;
+        if (type == BOTTOM) {
+            return false;
+        }
+        if (type == ADTNODE && knownCases == null) {
+            return false;
+        }
+        return true;
 	}
 
 	public boolean isVect() {
@@ -142,6 +158,7 @@ public class IntAbsValue extends abstractValue {
 			obj = ntsv.obj;
 			type = ntsv.type;
 			knownGeqZero = ntsv.knownGeqZero();
+            knownCases = ntsv.knownCases;
 		}
 	}
 	public String toString(){
@@ -157,6 +174,14 @@ public class IntAbsValue extends abstractValue {
 			rval += "$";
 			return rval;
 		}
+        
+        case ADTNODE: {
+            // NOTE xzl: too memory consuming, only turn it on for debug
+            if (false && knownCases != null) {
+                return "ADT" + knownCases.toString();
+            }
+            return "ADTNODE";
+        }
 
 		case BOTTOM:{ 
 			if( obj != null ){
@@ -171,5 +196,10 @@ public class IntAbsValue extends abstractValue {
 		}
 		return "NULL";
 	}
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        return knownCases;
+    }
 
 }

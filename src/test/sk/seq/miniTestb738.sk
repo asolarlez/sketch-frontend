@@ -13,20 +13,20 @@ generator void bad(Opr op) {
 }
 
 harness void f() {
-	Opr op = new A();
+	Opr a = new A();
 	
 	if (??) {
-		bad(op);
+		bad(a);
 	}
 	
 	int x = 0;
-	switch(op) {
+	switch(a) {
 	case A:
 		x = 1;
 	}
 	
 	int y = 0;
-	switch(op) {
+	switch(a) {
 	default:
 		y = 2;
 	}

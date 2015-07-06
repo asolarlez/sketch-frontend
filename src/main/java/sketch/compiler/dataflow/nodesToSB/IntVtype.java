@@ -3,6 +3,7 @@ package sketch.compiler.dataflow.nodesToSB;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -445,5 +446,10 @@ public class IntVtype extends abstractValueType {
     		}
     	}
 	}
+
+    @Override
+    public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases) {
+        return IntAbsValue.ADTnode(cases);
+    }
 
 }

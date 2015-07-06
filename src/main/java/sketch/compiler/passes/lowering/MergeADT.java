@@ -213,12 +213,21 @@ public class MergeADT extends SymbolTableVisitor {
                         false);
 
         stmtIfs.add(assertStmt);
+        List<String> cases = stmt.getCaseConditions();
+        int nCases = cases.size();
+        assert nCases > 0 : "StmtSwitch should have >0 cases!";
+        if (nCases == 1) {
+            // there is only one case, replace the whole thing with the single body.
+            String singleCaseName = cases.get(0);
+            return stmt.getBody(singleCaseName);
+        }
+        
         boolean first = true;
         Statement current = null;
         Statement prev = null;
 
-        for (int i = stmt.getCaseConditions().size() - 1; i >= 0; i--) {
-            String c = stmt.getCaseConditions().get(i);
+        for (int i = nCases - 1; i >= 0; i--) {
+            String c = cases.get(i);
             if (!("default".equals(c))) {
                 Expression condition;
 

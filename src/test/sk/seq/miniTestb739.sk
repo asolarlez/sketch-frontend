@@ -7,14 +7,14 @@ struct A extends Opr {}
 struct B extends Opr {}
 
 harness void f() {
-	Opr op = new B();
+	Opr b = new B();
 	int x = 0;
-	switch(op) {
+	switch(b) {
 	case A:
 		x = 1;
 	case B: {}
 	}
-	switch(op) {
+	switch(b) {
 	case B:
 		x = x + 2;
 	case A: {}
