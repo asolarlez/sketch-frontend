@@ -345,7 +345,7 @@ public class CreateHarnesses extends FEReplacer {
 
                     Function harness = fc.create();
                     harness.setPkg(pkg.getName());
-                    // newFuns.add(harness);
+                    newFuns.add(harness);
                 }
 
             } else {
