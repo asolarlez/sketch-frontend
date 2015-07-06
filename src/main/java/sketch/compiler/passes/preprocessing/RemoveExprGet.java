@@ -137,7 +137,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
  new ExprConstInt(i)),
                                     cond);
                 }
-                Statement ifBlock = getBaseExprs(type, params, ev);
+                Statement ifBlock = getBaseExprs(type, params, ev, depth == 1);
                 List<Statement> elseStmts = new ArrayList<Statement>();
                 if (depth > 1) {
                     // hole.makeSpecial();
@@ -175,7 +175,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                         new ExprBinary(ExprBinary.BINOP_OR, new ExprBinary(
                                 ExprBinary.BINOP_LE, d.get(i), new ExprConstInt(i)), cond);
             }
-            Statement ifBlock = getBaseExprs(tt, params, ev);
+            Statement ifBlock = getBaseExprs(tt, params, ev, depth == 1);
             List<Statement> elseStmts = new ArrayList<Statement>();
             if (depth > 1) {
                 TypeStructRef oldOriType = oriType;
@@ -188,7 +188,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             return;
             // }
         }
-        newStmts.addAll(getBaseExprs(type, params, ev).getStmts());
+        newStmts.addAll(getBaseExprs(type, params, ev, depth == 1).getStmts());
         return;
 
     }
@@ -197,6 +197,40 @@ public class RemoveExprGet extends SymbolTableVisitor {
             List<Statement> newStmts, int depth, boolean recursive, List<ExprStar> d,
             int ht)
     {
+        String name = tt.getName();
+        StructDef sd = nres.getStruct(name);
+
+        if (!recursive && !sd.isInstantiable()) {
+            List<String> nonRecCases = getNonRecCases(name);
+            boolean first = true;
+            Expression curExp = new ExprNullPtr();
+
+            for (String c : nonRecCases) {
+                TypeStructRef childType = new TypeStructRef(c, false);
+                String vname = varGen.nextVar(ev.getName());
+                Statement decl = (new StmtVarDecl(context, tt, vname, null));
+                newStmts.add(decl);
+                symtab.registerVar(vname, childType, decl, SymbolTable.KIND_LOCAL);
+                ExprVar newV = new ExprVar(context, vname);
+                createNewAdt(newV, childType, params, newStmts, 1, false,
+                        new ArrayList(), 1);
+                if (first) {
+                    curExp = newV;
+                    first = false;
+                } else {
+                    curExp = new ExprAlt(context, curExp, newV);
+                }
+
+            }
+            if (curExp instanceof ExprAlt) {
+                curExp = new ExprRegen(context, curExp);
+            }
+
+            newStmts.add(new StmtAssign(context, ev, curExp));
+            return;
+
+        }
+
         Map<Type, List<ExprVar>> exprVarsMap =
                 findParamVars(tt.getName(), newStmts, tt, depth, recursive, params, d, ht);
 
@@ -207,8 +241,6 @@ public class RemoveExprGet extends SymbolTableVisitor {
         //}
 
         // Create a new adt with the exprvars above
-        String name = tt.getName();
-        StructDef sd = nres.getStruct(name);
         List<ExprNamedParam> expParams = new ArrayList<ExprNamedParam>();
         LinkedList<String> queue = new LinkedList<String>();
         queue.add(name);
@@ -368,7 +400,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
                             }
                             ExprStar hole = new ExprStar(context);
                             Expression cond = hole;
-                            Statement ifBlock = getBaseExprs(t, params, ev);
+                            Statement ifBlock = getBaseExprs(t, params, ev, depth == 1);
                             Statement elseBlock =
                                     new StmtAssign(context, ev,
                                             new ExprArrayRange(context,
@@ -397,7 +429,8 @@ public class RemoveExprGet extends SymbolTableVisitor {
         return map;
     }
 
-    private StmtBlock getBaseExprs(Type type, List<Expression> params, ExprVar var)
+    private StmtBlock getBaseExprs(Type type, List<Expression> params, ExprVar var,
+            boolean considerNonRec)
     {
         List<Statement> stmts = new ArrayList<Statement>();
         List<Expression> baseExprs = getExprsOfType(params, type);
@@ -417,7 +450,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             }
         }
 
-        Expression finExp = getGeneralExprOfType(type, params, stmts);
+        Expression finExp = getGeneralExprOfType(type, params, stmts, considerNonRec);
         if (finExp != null) {
             if (curExp == null) {
                 stmts.add(new StmtAssign(var, finExp));
@@ -436,7 +469,8 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private Expression getGeneralExprOfType(Type type,
-            List<Expression> params, List<Statement> stmts)
+ List<Expression> params,
+            List<Statement> stmts, boolean considerNonRec)
     {
         if (checkType(type)) {
             if (type.isArray()) {
@@ -446,7 +480,8 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 int size = length.isConstant() ? length.getIValue() : maxArrSize;
                 // TODO: is there a better way of dealing with this
                 for (int i = 0; i < size; i++) {
-                    arrelems.add(getGeneralExprOfType(ta.getBase(), params, stmts));
+                    arrelems.add(getGeneralExprOfType(ta.getBase(), params, stmts,
+                            considerNonRec));
                 }
                 String tmp = varGen.nextVar();
                 stmts.add(new StmtVarDecl(context, ta,tmp, new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
@@ -456,7 +491,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             } else {
                 return new ExprStar(context);
             }
-        } else if (type instanceof TypeStructRef) {
+        } else if (considerNonRec && type instanceof TypeStructRef) {
             boolean rec = true;
             if (type.promotesTo(oriType, nres)) {
                 rec = false;
@@ -515,5 +550,33 @@ public class RemoveExprGet extends SymbolTableVisitor {
             }
         }
         return filteredExprs;
+    }
+
+    private List<String> getNonRecCases(String name) {
+        List<String> nonRecCases = new ArrayList<String>();
+        LinkedList<String> queue = new LinkedList<String>();
+        queue.add(name);
+        while (!queue.isEmpty()) {
+            String n = queue.removeFirst();
+            List<String> children = nres.getStructChildren(n);
+            if (children.isEmpty()) {
+                StructDef ts = nres.getStruct(n);
+                boolean nonRec = true;
+                for (StructFieldEnt f : ts.getFieldEntriesInOrder()) {
+                    if (!checkType(f.getType())) {
+                        nonRec = false;
+                        break;
+                    }
+                }
+                if (nonRec) {
+                    nonRecCases.add(n);
+                }
+
+            } else {
+                queue.addAll(children);
+            }
+        }
+        return nonRecCases;
+
     }
 }
