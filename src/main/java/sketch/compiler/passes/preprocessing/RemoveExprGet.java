@@ -457,8 +457,9 @@ public class RemoveExprGet extends SymbolTableVisitor {
                 return new ExprStar(context);
             }
         } else if (type instanceof TypeStructRef) {
+            boolean rec = true;
             if (type.promotesTo(oriType, nres)) {
-                return new ExprNullPtr();
+                rec = false;
             }
             TypeStructRef tt = (TypeStructRef) type;
 
@@ -470,7 +471,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             System.out.println("Creating a depth 1 " + tt + " tree");
             TypeStructRef oldOriType = oriType;
             oriType = tt;
-            createNewAdt(ev, tt, params, stmts, 1, true, new ArrayList(), 1);
+            createNewAdt(ev, tt, params, stmts, 1, rec, new ArrayList(), 1);
             oriType = oldOriType;
             return ev;
 
