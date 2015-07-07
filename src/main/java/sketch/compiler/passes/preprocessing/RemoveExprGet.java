@@ -105,7 +105,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
     }
 
     private Expression processExprGet(ExprGet exp, List<Statement> newStmts) {
-        String tempVar = varGen.nextVar(exp.getName().split("@")[0]);
+        String tempVar = varGen.nextVar(exp.getName().split("@")[0] + "_");
         Type tt = new TypeStructRef(exp.getName(), false);
 
         Statement decl = (new StmtVarDecl(exp, tt, tempVar, null));
@@ -498,7 +498,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             }
             TypeStructRef tt = (TypeStructRef) type;
 
-            String tempVar = varGen.nextVar(tt.getName().split("@")[0]);
+            String tempVar = varGen.nextVar(tt.getName().split("@")[0] + "_");
             Statement decl = (new StmtVarDecl(context, tt, tempVar, null));
             stmts.add(decl);
             symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);

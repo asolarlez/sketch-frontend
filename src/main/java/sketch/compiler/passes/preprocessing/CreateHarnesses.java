@@ -199,6 +199,91 @@ public class CreateHarnesses extends FEReplacer {
                             }
                         }
                     }
+                } else if (assert_expr instanceof ExprFunCall) {
+                    // TODO: this is very hacky, but works for now
+                    ExprFunCall fc = (ExprFunCall) assert_expr;
+                    Function fun = nres.getFun(fc.getName());
+                    if (fun.hasAnnotation("replaceable")) {
+                        List<Expression> params = fc.getParams();
+                        assert (params.size() == 2);
+                        ExprFunCall lhs = (ExprFunCall) (params.get(0));
+                        ExprFunCall rhs = (ExprFunCall) (params.get(1));
+                        List<Expression> wrapperParams = new ArrayList<Expression>();
+                        List<Type> wrapperTypes = new ArrayList<Type>();
+                        List<Expression> lhsParams = lhs.getParams();
+                        List<Expression> newParams = new ArrayList<Expression>();
+
+                        Function lhsFun = nres.getFun(lhs.getName());
+                        List<Parameter> actLhsParams = lhsFun.getParams();
+                        int i = 0;
+                        for (Expression p : lhsParams) {
+                            if (p instanceof ExprVar) {
+                                String name = ((ExprVar) p).getName();
+                                if (varBindings.containsKey(name)) {
+                                    Expression rep = varBindings.get(name);
+                                    assert (rep instanceof ExprFunCall);
+                                    ExprFunCall repFc = (ExprFunCall) rep;
+                                    Function repFun =
+                                            nres.getFun(((ExprFunCall) rep).getName());
+                                    List<Parameter> actRepParams = repFun.getParams();
+                                    int j = 0;
+                                    for (Expression pp : repFc.getParams()) {
+                                        assert (pp instanceof ExprVar);
+                                        wrapperParams.add((ExprVar) pp);
+                                        wrapperTypes.add(actRepParams.get(j).getType());
+                                        j++;
+                                    }
+                                    newParams.add(rep);
+                                } else {
+                                    wrapperParams.add((ExprVar) p);
+                                    newParams.add(p);
+                                    wrapperTypes.add(actLhsParams.get(i).getType());
+                                }
+                            }
+                            i++;
+                        }
+                        processExprFunCall((ExprFunCall) rhs, inputParams,
+                                        inputTypes, mainBody, varRenameTracker,
+                                        varBindings, new ArrayList<Expression>(), true,
+                                        null);
+
+                        String wrapName = vargen.nextVar("wrapper_" + lhs.getName());
+                        Function.FunctionCreator wrapF =
+                                Function.creator(sa.getContext(),
+                                        wrapName,
+                                        Function.FcnType.Static);
+                        wrapF.returnType(nres.getFun(lhs.getName()).getReturnType());
+
+                        List<Parameter> wrapParams = new ArrayList<Parameter>();
+                        assert (wrapperParams.size() == wrapperTypes.size());
+
+                        for (int k = 0; k < wrapperTypes.size(); k++) {
+                            String name = ((ExprVar) wrapperParams.get(k)).getName();
+                            wrapParams.add(new Parameter(assert_expr,
+                                    wrapperTypes.get(k), name));
+                        }
+
+                        wrapF.params(wrapParams);
+                        ExprFunCall newLhs =
+                                new ExprFunCall(assert_expr, lhs.getName(), newParams);
+                        wrapF.body(new StmtBlock(new StmtReturn(assert_expr, newLhs)));
+
+                        Function wrapperFun = wrapF.create();
+                        wrapperFun.setPkg(pkg.getName());
+                        newFuns.add(wrapperFun);
+
+                        ExprFunCall wrapFunCall =
+                                new ExprFunCall(assert_expr, wrapName, wrapperParams);
+                        if (optimize) {
+                        System.out.println(wrapFunCall.toString());
+                        System.out.println("Considering the following invariant " +
+                                rhs.toString() + " == " + newLhs.toString());
+
+                        newSpAsserts.add(new StmtSpAssert(assert_expr.getContext(),
+                                (ExprFunCall) rhs, wrapFunCall));
+                        }
+                    }
+
                 } else {
                     ExtractInputs ei =
                             new ExtractInputs(inputParams, inputTypes, body,
