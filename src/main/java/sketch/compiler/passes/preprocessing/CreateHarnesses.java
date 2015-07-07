@@ -47,7 +47,7 @@ public class CreateHarnesses extends FEReplacer {
     Map<String, String> checkFuns = new HashMap<String, String>();
     TempVarGen vargen;
     boolean optimize;
-    boolean separateHarness = true;
+    boolean separateHarness = false;
     int arrSize;
     int srcTupleDepth;
 
@@ -182,6 +182,7 @@ public class CreateHarnesses extends FEReplacer {
                             // outputs
 
                             assertAllOuts = true;
+                            separateHarness = true;
                             if (optimize) {
                                 System.out.println("Considering the following invariant " +
                                         rhs.toString() + " == " + lhs.toString());
@@ -274,6 +275,7 @@ public class CreateHarnesses extends FEReplacer {
 
                         ExprFunCall wrapFunCall =
                                 new ExprFunCall(assert_expr, wrapName, wrapperParams);
+                        separateHarness = true;
                         if (optimize) {
                         System.out.println(wrapFunCall.toString());
                         System.out.println("Considering the following invariant " +
