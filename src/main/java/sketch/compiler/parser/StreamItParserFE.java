@@ -4189,20 +4189,16 @@ inputState.guessing--;
 		Expression x;
 		
 		Token  t = null;
-		Token  n = null;
 		x = null; List l;
 		
 		try {      // for error handling
 			t = LT(1);
 			match(NDVAL2);
 			match(LPAREN);
-			n = LT(1);
-			match(NUMBER);
-			match(COMMA);
 			l=expr_get_params();
 			match(RPAREN);
 			if ( inputState.guessing==0 ) {
-				x = new ExprGet(getContext(t), l, Integer.parseInt(n.getText()));
+				x = new ExprGet(getContext(t), l);
 			}
 		}
 		catch (RecognitionException ex) {
@@ -4222,7 +4218,6 @@ inputState.guessing--;
 		l = new ArrayList(); Expression x;
 		
 		try {      // for error handling
-			match(LCURLY);
 			{
 			switch ( LA(1)) {
 			case TK_new:
@@ -4268,7 +4263,7 @@ inputState.guessing--;
 				}
 				break;
 			}
-			case RCURLY:
+			case RPAREN:
 			{
 				break;
 			}
@@ -4278,7 +4273,6 @@ inputState.guessing--;
 			}
 			}
 			}
-			match(RCURLY);
 		}
 		catch (RecognitionException ex) {
 			if (inputState.guessing==0) {
@@ -6213,7 +6207,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_31 = new BitSet(mk_tokenSet_31());
 	private static final long[] mk_tokenSet_32() {
-		long[] data = { 0L, 281646775402832L, 0L, 0L};
+		long[] data = { 0L, 281646775402768L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_32 = new BitSet(mk_tokenSet_32());

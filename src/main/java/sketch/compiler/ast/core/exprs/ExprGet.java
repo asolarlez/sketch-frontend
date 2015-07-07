@@ -9,7 +9,6 @@ import sketch.compiler.ast.core.FEVisitor;
 public class ExprGet extends Expression {
     private String name = null;
     private final List<Expression> params;
-    private final int depth;
 
     /**
      * Creates a new get expression that creates an ADT of type and depth given.
@@ -22,16 +21,14 @@ public class ExprGet extends Expression {
      * @param depth
      *            Maximum depth of the ADT to be created.
      */
-    public ExprGet(FENode context, List<Expression> params, int depth) {
+    public ExprGet(FENode context, List<Expression> params) {
         super(context);
         this.params = params;
-        this.depth = depth;
     }
 
-    public ExprGet(FEContext context, List<Expression> params, int depth) {
+    public ExprGet(FEContext context, List<Expression> params) {
         super(context);
         this.params = params;
-        this.depth = depth;
     }
 
     /** Returns the name of the type of returned ADT */
@@ -44,11 +41,6 @@ public class ExprGet extends Expression {
         return params;
     }
 
-    /** Returns the max depth */
-    public int getDepth() {
-        return depth;
-    }
-
     /** Accepts a front-end visitor */
     @Override
     public Object accept(FEVisitor v) {
@@ -56,7 +48,7 @@ public class ExprGet extends Expression {
     }
 
     public String toString() {
-        return "get(" + name + ", {" + printParams() + "}, " + depth + ")";
+        return "??(" + printParams() + ")";
     }
 
     public String printParams() {

@@ -86,11 +86,13 @@ public class RemoveExprGet extends SymbolTableVisitor {
     FENode context;
     TypeStructRef oriType;
     int maxArrSize;
+    int gucDepth;
 
-    public RemoveExprGet(TempVarGen varGen, int arrSize) {
+    public RemoveExprGet(TempVarGen varGen, int arrSize, int gucDepth) {
         super(null);
         this.varGen = varGen;
         this.maxArrSize = arrSize;
+        this.gucDepth = gucDepth;
     }
 
     @Override
@@ -117,7 +119,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
         assert (tt instanceof TypeStructRef);
         List<ExprStar> depthVars = new ArrayList<ExprStar>();
         // depthVars.add(hole);
-        getExpr(ev, (TypeStructRef) tt, exp.getParams(), newStmts, exp.getDepth(),
+        getExpr(ev, (TypeStructRef) tt, exp.getParams(), newStmts, gucDepth,
                 depthVars, 1);
         return ev;
     }
@@ -503,7 +505,7 @@ public class RemoveExprGet extends SymbolTableVisitor {
             stmts.add(decl);
             symtab.registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
             ExprVar ev = new ExprVar(context, tempVar);
-            System.out.println("Creating a depth 1 " + tt + " tree");
+            // System.out.println("Creating a depth 1 " + tt + " tree");
             TypeStructRef oldOriType = oriType;
             oriType = tt;
             createNewAdt(ev, tt, params, stmts, 1, rec, new ArrayList(), 1);

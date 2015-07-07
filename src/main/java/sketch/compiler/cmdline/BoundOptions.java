@@ -83,4 +83,7 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Maximum depth of angelic tuples")
     public int angTupleDepth = 1;
 
+    @CliParameter(help = "Maximum depth of GUC")
+    public int gucDepth = 3;
+
 }
