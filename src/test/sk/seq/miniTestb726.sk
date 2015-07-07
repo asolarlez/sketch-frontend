@@ -1,0 +1,14 @@
+int apply(fun function, int x){
+	int y = 9;
+	int a = (,x,y) -> 1 - x + y;
+    //int a = (5 + 2);
+    return function(x);
+}
+
+int timesTwo(int x){
+    return x+x;
+}
+
+harness void main(int x){
+    assert apply(timesTwo, x) == 2*x;
+}

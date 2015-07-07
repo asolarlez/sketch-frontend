@@ -754,6 +754,36 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 		)?
 		RPAREN
 	;
+
+// (x, y) -> x + y; 	
+lambda_expr returns [Expression expression]  {
+	expression = null;
+	List list = new ArrayList();
+	Expression operation = null;
+}
+	: // Left parenthesis 
+	  prefix:LPAREN 
+	  // Group that occurs 1 or more times
+	  (
+	    // Comma
+	  	COMMA
+	  	// Match an ID and set temp to it
+	  	temp:ID { 
+	  		// Create a new ExprVar and add it to the list of variables
+	  		list.add(new ExprVar(getContext(temp), temp.getText())); 
+	  	} 
+	  )+
+	  // Right parenthesis
+	  RPAREN
+	  // ->
+	  ARROW
+	  // Operation is a
+	  operation = addExpr
+	  {
+	  	// Create a new expression
+	  	expression = new ExprLambda(getContext(prefix), list, operation);
+	  }
+	;
 	
 constr_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
@@ -990,6 +1020,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
+	|   (lambda_expr) => x = lambda_expr
 	|	x=var_expr
 	|	x=constantExpr
 	|   x=arr_initializer
