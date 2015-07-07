@@ -240,6 +240,19 @@ public class CreateHarnesses extends FEReplacer {
                                     newParams.add(p);
                                     wrapperTypes.add(actLhsParams.get(i).getType());
                                 }
+                            } else if (p instanceof ExprFunCall) {
+                                ExprFunCall repFc = (ExprFunCall) p;
+                                Function repFun = nres.getFun(repFc.getName());
+                                List<Parameter> actRepParams = repFun.getParams();
+                                int j = 0;
+                                for (Expression pp : repFc.getParams()) {
+                                    assert (pp instanceof ExprVar);
+                                    wrapperParams.add((ExprVar) pp);
+                                    wrapperTypes.add(actRepParams.get(j).getType());
+                                    j++;
+                                }
+                                newParams.add(p);
+
                             }
                             i++;
                         }
@@ -284,6 +297,11 @@ public class CreateHarnesses extends FEReplacer {
                         newSpAsserts.add(new StmtSpAssert(assert_expr.getContext(),
                                 (ExprFunCall) rhs, wrapFunCall));
                         }
+                    } else {
+                        ExtractInputs ei =
+                                new ExtractInputs(inputParams, inputTypes, body,
+                                        varRenameTracker, varBindings);
+                        assert_expr.doExpr(ei);
                     }
 
                 } else {
@@ -362,7 +380,7 @@ public class CreateHarnesses extends FEReplacer {
             {
                 TypeStructRef ts = (TypeStructRef) (inputTypes.get(0));
                 List<String> cases = getCasesInOrder(ts.getName());
-                for (int k = cases.size() - 1; k >= 0; k--) {
+                for (int k = 0; k < cases.size(); k++) {
                     String c = cases.get(k).split("@")[0];
                     Function.FunctionCreator fc =
                             Function.creator(sa.getContext(),
