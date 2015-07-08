@@ -1107,7 +1107,7 @@ public class FEReplacer implements FEVisitor
         }
         
         // Return a new lambda expression
-        return new ExprLambda(exprLambda, newParameters, exprLambda.getExpression());
+		return new ExprLambda(exprLambda, newParameters, newExpression);
 	}
 
 }
