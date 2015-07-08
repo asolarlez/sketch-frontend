@@ -1,8 +1,8 @@
 package sketch.compiler.passes.preprocessing;
 
-
 import java.util.*;
 
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
@@ -17,6 +17,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -41,14 +42,423 @@ import sketch.util.exceptions.TypeErrorException;
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class RemoveFunctionParameters extends FEReplacer {
-    Map<String, SymbolTable> tempSymtables = new HashMap<String, SymbolTable>();
+	final TempVarGen 			varGen;
+
+	Map<String, SymbolTable> 	tempSymtables = new HashMap<String, SymbolTable>();
+	Map<String, NewFunInfo> 	extractedInnerFuns = new HashMap<String, NewFunInfo>();
+	Map<String, List<String>> 	equivalences = new HashMap<String, List<String>>();
+	Map<String, String> 		reverseEquiv = new HashMap<String, String>();
+	Map<String, Function> 		funToReplace = new HashMap<String, Function>();
+	Map<String, Function> 		newFunctions = new HashMap<String, Function>();
+	Map<String, Package> 		pkges;
+	Map<String, String> 		nfnMemoize = new HashMap<String, String>();
+	Set<String> 				visited = new HashSet<String>();
+	Stack<String> 				funsToVisit = new Stack<String>();
+	InnerFunReplacer 			hoister = new InnerFunReplacer(false);
+	int 						nfcnt = 0;
+
+	private int tempFunctionsCount;
+
+	public RemoveFunctionParameters(TempVarGen varGen) {
+		this.varGen = varGen;
+		this.tempFunctionsCount = 0;
+	}
+
+	/**
+	 * Check the function parameters. If they are type function, then store it
+	 * to be replace
+	 * 
+	 * @param fun
+	 */
+	private void checkFunParameters(Function fun) {
+		// Loop through the parameters
+		for (Parameter p : fun.getParams()) {
+			// If the parameter is type fun
+			if (p.getType() instanceof TypeFunction) {
+				// Store the function to be replace later
+				funToReplace.put(nres.getFunName(fun.getName()), fun);
+
+				break;
+			}
+		}
+	}
+
+	String getPkgName(String fname) {
+		int i = fname.indexOf("@");
+		return fname.substring(i + 1);
+	}
+
+	String getNameSufix(String fname) {
+		int i = fname.indexOf("@");
+		return fname.substring(0, i >= 0 ? i : fname.length());
+	}
+
+	/**
+	 * Creating a new function name from the function call
+	 * 
+	 * @param efc
+	 * @param orig
+	 * @return
+	 */
+	String newFunName(ExprFunCall efc, Function orig) {
+		String name = newNameCore(efc, orig);
+
+		String oldName = name;
+		String newName = name;
+		if (nfnMemoize.containsKey(oldName)) {
+			return nfnMemoize.get(oldName);
+		}
+		while (nres.getFun(newName) != null) {
+			newName = oldName + (++nfcnt);
+		}
+		nfnMemoize.put(oldName, newName);
+		return newName;
+	}
+
+	private String newNameCore(ExprFunCall efc, Function orig) {
+		String name = orig.getName();
+		Iterator<Parameter> fp = orig.getParams().iterator();
+
+		if (efc.getParams().size() != orig.getParams().size()) {
+			// Give user the benefit of the doubt and assume the mismatch is
+			// purely due to
+			// implicit parameters.
+			int diff = orig.getParams().size() - efc.getParams().size();
+			if (diff < 0) {
+				throw new TypeErrorException(
+						"Incorrect number of parameters to function " + orig,
+						efc);
+			}
+			for (int i = 0; i < diff; ++i) {
+				if (!fp.hasNext()) {
+					throw new TypeErrorException(
+							"Incorrect number of parameters to function "
+									+ orig,
+							efc);
+				}
+				Parameter p = fp.next();
+				if (!p.isImplicit()) {
+					throw new TypeErrorException(
+							"Incorrect number of parameters to function "
+									+ orig,
+							efc);
+				}
+			}
+		}
+
+		for (Expression actual : efc.getParams()) {
+			Parameter p = fp.next();
+
+			// If the actual parameter is a lambda expression
+			if(actual.getClass() == ExprLambda.class) {
+				// Add a tempt string to the end of the function name
+				name += "_temp" + this.tempFunctionsCount;
+
+				// Increment the count of temp function
+				this.tempFunctionsCount++;
+			}
+			else if (p.getType() instanceof TypeFunction) {
+				name += "_" + actual.toString();
+			}
+		}
+		return name;
+	}
+
+	void addEquivalence(String old, String newName) {
+		if (!equivalences.containsKey(old)) {
+			equivalences.put(old, new ArrayList<String>());
+		}
+		equivalences.get(old).add(newName);
+		reverseEquiv.put(newName, old);
+	}
+
+	ExprFunCall replaceCall(ExprFunCall efc, Function orig, String nfn) {
+		List<Expression> params = new ArrayList<Expression>();
+		Iterator<Parameter> fp = orig.getParams().iterator();
+		if (orig.getParams().size() > efc.getParams().size()) {
+			int dif = orig.getParams().size() - efc.getParams().size();
+			for (int i = 0; i < dif; ++i) {
+				fp.next();
+			}
+		}
+
+		for (Expression actual : efc.getParams()) {
+			Parameter p = fp.next();
+			if (!(p.getType() instanceof TypeFunction)) {
+				params.add(doExpression(actual));
+			}
+		}
+		return new ExprFunCall(efc, nfn, params);
+	}
+
+	/**
+	 * Create a new call
+	 * 
+	 * @param efc
+	 * @param orig
+	 * @param nfn
+	 * @return
+	 */
+	Function createCall(final ExprFunCall efc, Function orig, final String nfn) {
+		List<Expression> existingArgs = efc.getParams();
+		List<Parameter> params = orig.getParams();
+		Iterator<Parameter> it = params.iterator();
+		int starti = 0;
+		if (params.size() != existingArgs.size()) {
+			while (starti < params.size()) {
+				if (!params.get(starti).isImplicit()) {
+					break;
+				}
+				++starti;
+				it.next();
+			}
+		}
+
+		if ((params.size() - starti) != existingArgs.size()) {
+			throw new ExceptionAtNode("Wrong number of parameters", efc);
+		}
+
+		final String cpkg = nres.curPkg().getName();
+		for (Expression actual : efc.getParams()) { 
+			Parameter formal = it.next();
+			if (formal.getType() instanceof TypeFunction) {
+				// If the function is found, good! Otherwise, have to create function
+				Function f = nres.getFun(actual.toString());
+
+				// If the function is null AND the actual is a lambda expression
+				if (f == null && actual instanceof ExprLambda) {
+					// Create a new function similar to the original, that is, where the 
+					// function is being called
+					f = this.createTempFunction(orig, nfn, cpkg);
+				}
+				else {
+					throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
+				}
+
+				Type t = f.getReturnType();
+				List<String> tps = f.getTypeParams();
+				for (String ct : tps) {
+					if (ct.equals(t.toString())) {
+						throw new ExceptionAtNode(
+								"Functions with generic return types cannot be passed as function parameters: "
+										+ f,
+								efc);
+					}
+				}
+			}
+
+		}
+
+		FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg);
+
+		return (Function) orig.accept(renamer);
+	}
+
+	/**
+	 * Create a temporary function when there is a lambda expression. The new function
+	 * will be similar to the one where the lambda expression function is being called.
+	 * 
+	 * @param origin
+	 * @param name
+	 * @param currentPackage
+	 * @return
+	 */
+	private Function createTempFunction(Function origin, String name, String currentPackage) {
+		return origin.creator()
+				.returnType(origin.getReturnType())
+				.params(origin.getParams())
+				.name(name)
+				.pkg(currentPackage)
+				.create();
+	}
+
+
+	public Object visitProgram(Program p) {
+		// p = (Program) p.accept(new SpecializeInnerFunctions());
+		// p.debugDump("After specializing inners");
+		// p = (Program) p.accept(new InnerFunReplacer());
+
+		nres = new NameResolver(p);
+		// Set the name resolver in hoister
+		hoister.setNres(nres);
+		// Register the global variables of the program in the hoister
+		hoister.registerGlobals(p);
+
+		// Loop each package
+		for (Package pkg : p.getPackages()) {
+			// Set the package in the name resolver
+			nres.setPackage(pkg);
+			Set<String> nameChk = new HashSet<String>();
+
+			// Loop through each function
+			for (Function fun : pkg.getFuncs()) {
+				// Check the function parameters
+				checkFunParameters(fun);
+				
+				// Check if name check has the same name as the current function
+				if (nameChk.contains(fun.getName())) {
+					throw new ExceptionAtNode("Duplicated Name in Package", fun);
+				}
+
+				// Add the function name to name check
+				nameChk.add(fun.getName());
+
+				// If the function is a harness
+				if (fun.isSketchHarness()) {
+					// Add the harness to the functions to visit
+					funsToVisit.add(nres.getFunName(fun.getName()));
+				}
+
+				// If the function implements some other function
+				if (fun.getSpecification() != null) {
+
+					String spec = nres.getFunName(fun.getSpecification());
+					if (spec == null)
+						throw new ExceptionAtNode(
+								"Function " + fun.getSpecification()
+										+ ", the spec of " + fun.getName()
+										+ " is can not be found. did you put the wrong name?",
+								fun);
+
+					funsToVisit.add(spec);
+					funsToVisit.add(nres.getFunName(fun.getName()));
+				}
+			}
+		}
+		// We visited all packages and all functions
+
+		Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
+		pkges = new HashMap<String, Package>();
+
+		// Loop each package
+		for (Package pkg : p.getPackages()) {
+			nflistMap.put(pkg.getName(), new ArrayList<Function>());
+			pkges.put(pkg.getName(), pkg);
+		}
+
+		// While we have function to visit.
+		while (!funsToVisit.isEmpty()) {
+			// Get the latest function
+			String fname = funsToVisit.pop();
+			String pkgName = getPkgName(fname);
+
+			Function next = nres.getFun(fname);
+
+			// If visited function does not contains the current function
+			if (!visited.contains(fname)) {
+				String chkname = fname;
+
+				if (this.reverseEquiv.containsKey(fname)) {
+					chkname = reverseEquiv.get(fname);
+				}
+
+				if (tempSymtables.containsKey(chkname)) {
+					hoister.setSymtab(tempSymtables.get(chkname));
+				} else {
+					// Setting the symbol table of the hoister
+					hoister.setSymtab(tempSymtables.get("pkg:" + next.getPkg()));
+				}
+
+				next = (Function) next.accept(hoister);
+				Function nf = (Function) next.accept(this);
+				visited.add(fname);
+				nflistMap.get(pkgName).add(nf);
+			}
+		}
+		List<Package> newPkges = new ArrayList<Package>();
+		for (Package pkg : p.getPackages()) {
+			newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
+					pkg.getVars(), nflistMap.get(pkg.getName())));
+		}
+		// This is where the new program is created
+		Program np = p.creator().streams(newPkges).create();
+
+		Program aftertc = (Program) np.accept(new ThreadClosure());
+		return aftertc.accept(new FixPolymorphism());
+
+	}
+
+	/**
+	 * Visit a package returns null
+	 */
+	public Object visitPackage(Package spec) {
+		return null;
+	}
+
+	/**
+	 * Just checking that the type of the variables are not fun
+	 */
+	public Object visitStmtVarDecl(StmtVarDecl svd) {
+		for (int i = 0; i < svd.getNumVars(); ++i) {
+			if (svd.getType(i) instanceof TypeFunction) {
+				throw new ExceptionAtNode(
+						"You can not declare a variable with fun type.", svd);
+			}
+		}
+
+		Object o = super.visitStmtVarDecl(svd);
+
+		return o;
+	}
+
+	public Object visitExprFunCall(ExprFunCall efc) {
+		if (efc.getName().equals("minimize")) {
+			return super.visitExprFunCall(efc);
+		}
+
+		String name = nres.getFunName(efc.getName());
+		if (name == null) {
+			throw new ExceptionAtNode("Function " + efc.getName()
+					+ " either does not exist, or is ambiguous.", efc);
+		}
+
+		// If this function call is one that we need to replace. Most likely a fun
+		if (funToReplace.containsKey(name)) {
+			// Get the function to replace
+			Function orig = funToReplace.get(name);
+			// Get the new function name
+			String nfn = newFunName(efc, orig);
+
+			// If new function already has this new function
+			if (newFunctions.containsKey(nfn)) {
+				return replaceCall(efc, orig, nfn);
+			} else {
+				// Create a new call of this function
+				Function newFun = createCall(efc, orig, getNameSufix(nfn));
+				nres.registerFun(newFun);
+				String newName = nres.getFunName(newFun.getName());
+				addEquivalence(name, newName);
+				newFunctions.put(newName, newFun);
+				funsToVisit.push(newName);
+				return replaceCall(efc, orig, nfn);
+			}
+		} else {
+			if (!visited.contains(name)) {
+				String pkgName = getPkgName(name);
+				if (pkges != null && pkges.get(pkgName) == null) {
+					throw new ExceptionAtNode(
+							"Package named " + pkgName + " does not exist.",
+							efc);
+				}
+				if (nres.getFun(name) == null) {
+					throw new ExceptionAtNode(
+							"Function " + efc.getName()
+									+ " either does not exist, or is ambiguous.",
+							efc);
+				}
+				funsToVisit.push(name);
+			}
+			return super.visitExprFunCall(efc);
+		}
+	}
 
     private static final class FunctionParamRenamer extends FEReplacer {
         private final String nfn;
         private final ExprFunCall efc;
         private final String cpkg;
         private final Map<String, String> rmap = new HashMap<String, String>();
-
+		private final Map<String, ExprLambda> lambdaMap = new HashMap<String, ExprLambda>();
+		private final Map<ExprVar, Expression> lambdaReplace = new HashMap<ExprVar, Expression>();
 
         private FunctionParamRenamer(String nfn, ExprFunCall efc, String cpkg)
         {
@@ -81,18 +491,27 @@ public class RemoveFunctionParameters extends FEReplacer {
                     newParam.add(newPar);
                 }
             }
-
+            
             for (Expression actual : this.efc.getParams()) {
-                Parameter par = fp.next();
-                Parameter newPar = (Parameter) par.accept(this);
-                if (!(par.getType() instanceof TypeFunction)) {
-                    if (par != newPar)
-                        samePars = false;
-                    newParam.add(newPar);
-                } else {
-                    samePars = false;
-                    this.rmap.put(par.getName(), actual.toString());
-                }
+				Parameter par = fp.next();
+				Parameter newPar = (Parameter) par.accept(this);
+				if (!(par.getType() instanceof TypeFunction)) {
+					if (par != newPar)
+						samePars = false;
+					newParam.add(newPar);
+				}
+				// If actual is a lambda expression
+				else if (actual instanceof ExprLambda) {
+						samePars = false;
+
+					// Map the parameter with the lambda expression
+						this.lambdaMap.put(par.getName(), (ExprLambda) actual);
+            	}
+            	else {
+        			samePars = false;
+        			this.rmap.put(par.getName(), actual.toString());           	
+            	}
+            	
             }
 
             Type rtype = (Type) func.getReturnType().accept(this);
@@ -121,10 +540,31 @@ public class RemoveFunctionParameters extends FEReplacer {
                 if (param != newParam)
                     hasChanged = true;
             }
-            if (this.rmap.containsKey(efc.getName())) {
+            if (this.rmap.containsKey(efc.getName())) { 
                 return new ExprFunCall(efc, this.rmap.get(efc.getName()), newParams);
             } else {
-                if (hasChanged) {
+				// If the lambda map contains a function call to a lambda expression
+				if (this.lambdaMap.containsKey(efc.getName())) {
+					// Get the lambda expression
+					ExprLambda lambda = this.lambdaMap.get(efc.getName());
+					
+					// If the number of function call parameters does not match the length of
+					// formal parameters of the lambda expression
+					if(lambda.getParameters().size() != efc.getParams().size()) {
+						throw new ExceptionAtNode("Wrong number of parameters: " + lambda, lambda);
+					}
+
+					// Loop through the formal parameters of the lambda and the actual parameters
+					// of the call mapping them.
+					for (int i = 0; i < lambda.getParameters().size(); i++) {
+						this.lambdaReplace.put(lambda.getParameters().get(i), efc.getParams().get(i));
+					}
+
+					// Return a new expression where all the variables are replaced with
+					// actual parameters
+					return this.doExpression(lambda.getExpression());
+					
+				} else if (hasChanged) {
                     return new ExprFunCall(efc, efc.getName(), newParams);
                 } else {
                     return efc;
@@ -135,7 +575,13 @@ public class RemoveFunctionParameters extends FEReplacer {
         public Object visitExprVar(ExprVar ev) {
             if (this.rmap.containsKey(ev.getName())) {
                 return new ExprVar(ev, this.rmap.get(ev.getName()));
-            } else {
+            }
+            // If three is an actual parameter that corresponds to a lambda variable
+            else if(this.lambdaReplace.containsKey(ev)) {
+            	// Return the actual parameter
+            	return this.lambdaReplace.get(ev);          	
+            }            
+            else {
                 return ev;
             }
         }
@@ -174,7 +620,6 @@ public class RemoveFunctionParameters extends FEReplacer {
      * 
      * @author asolar, tim
      */
-    
     static final class ParamInfo {
         final Type pt;
         // whether this variable has been changed
@@ -234,15 +679,6 @@ public class RemoveFunctionParameters extends FEReplacer {
         public String toString() {
             return paramsToAdd.toString();
         }
-    }
-
-    Map<String, NewFunInfo> extractedInnerFuns = new HashMap<String, NewFunInfo>();
-    Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
-    Map<String, String> reverseEquiv = new HashMap<String, String>();
-    final TempVarGen varGen;
-
-    public RemoveFunctionParameters(TempVarGen varGen) {
-        this.varGen = varGen;
     }
 
     /**
@@ -502,9 +938,28 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     }
 
+	/**
+	 * There are some functions that can no longer be polymorphic after we
+	 * specialize them based on their function parameters because the function
+	 * parameters impose certain constraints on the outputs. This class will
+	 * specialize the types for these functions by making them less generic.
+	 */
     class FixPolymorphism extends SymbolTableVisitor {
+		/**
+		 * The tren type renamer keeps track of what generic types should be
+		 * specialized and to what.
+		 */
         TypeRenamer tren;
+
+		/**
+		 * namesset keeps track of the original type parameters.
+		 */
         Set<String> namesset;
+
+		/**
+		 * elimset keeps track of which type parameters are no longer necessary
+		 * because they are being eliminated.
+		 */
         Set<String> elimset;
 
         Map<String, Function> doneFunctions = new HashMap<String, Function>();
@@ -545,6 +1000,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
+			// We may have to unify based on function parameters
             Function f = nres.getFun(efc.getName());
 
             if (doneFunctions.containsKey(f.getFullName())) {
@@ -587,23 +1043,64 @@ public class RemoveFunctionParameters extends FEReplacer {
                     // call we should have restricted the polymorphism, so we have to add
                     // now.
                     if (!calleenamesset.contains(ptypebase.toString())) {
-                        elimset.add(aname);
-                        if (ptype instanceof TypeArray) {
-                            throw new ExceptionAtNode(
-                                    "Generics can not resolve to an array type " + aname +
-                                            "->" + ptype, f);
-                        }
-                        if (tren.tmap.containsKey(aname)) {
-                            Type lcp =
-                                    tren.tmap.get(aname).leastCommonPromotion(ptype, nres);
-                        } else {
-                            tren.tmap.put(aname, ptype);
-                        }
+						unifyGeneric(aname, ptype, f);
                     }
                 }
             }
             return super.visitExprFunCall(efc);
         }
+
+		public Object visitStmtVarDecl(StmtVarDecl svd) {
+
+			for (int i = 0; i < svd.getNumVars(); ++i) {
+				Type left = svd.getType(i);
+				Expression eright = svd.getInit(i);
+				if (eright != null) {
+					Type right = getType(eright);
+					checkAndUnify(left, right, svd);
+				}
+			}
+
+			return super.visitStmtVarDecl(svd);
+		}
+
+		public Object visitStmtAssign(StmtAssign sa) {
+			Type left = getType(sa.getLHS());
+			Type right = getType(sa.getRHS());
+
+			checkAndUnify(left, right, sa);
+
+			return super.visitStmtAssign(sa);
+		}
+
+		void checkAndUnify(Type left, Type right, FENode ctxt) {
+			while (left instanceof TypeArray) {
+				left = ((TypeArray) left).getBase();
+				right = ((TypeArray) right).getBase();
+			}
+			String lname = left.toString();
+			if (namesset.contains(lname)) {
+				unifyGeneric(lname, right, ctxt);
+			}
+		}
+
+		void unifyGeneric(String genericName, Type newType, FENode ctxt) {
+			elimset.add(genericName);
+			if (newType instanceof TypeArray) {
+				throw new ExceptionAtNode(
+						"Generics can not resolve to an array type "
+								+ genericName + "->" + newType,
+						ctxt);
+			}
+			if (tren.tmap.containsKey(genericName)) {
+				Type lcp = tren.tmap.get(genericName)
+						.leastCommonPromotion(newType, nres);
+				tren.tmap.put(genericName, lcp);
+			} else {
+				tren.tmap.put(genericName, newType);
+			}
+		}
+
     }
 
     /**
@@ -614,15 +1111,17 @@ public class RemoveFunctionParameters extends FEReplacer {
      * @author asolar, tim
      */
     class InnerFunReplacer extends SymbolTableVisitor {
-
-        boolean isGenerator = false;
-
-        final boolean recursive;
-        boolean topLevel = true;
-
-        int nfcnt = 0;
-        FunReplMap frmap = new FunReplMap(null);
-
+        boolean 		isGenerator = false;
+        final boolean 	recursive;
+        boolean 		topLevel = true;
+        int 			nfcnt = 0;
+        FunReplMap 		frmap = new FunReplMap(null);
+		Function curFun;
+        
+        InnerFunReplacer(boolean recursive) {
+            super(null);
+            this.recursive = recursive;
+        }
 
         public void registerGlobals(Program p) {
 
@@ -638,11 +1137,6 @@ public class RemoveFunctionParameters extends FEReplacer {
             symtab = null;
         }
 
-        InnerFunReplacer(boolean recursive) {
-            super(null);
-            this.recursive = recursive;
-        }
-
         /**
          * This is a leveled lookup table of the hoisted functions. If "f" is hoisted out
          * to "f2", then when we visit "f(x)" we need to replace it with "f2(x)". But
@@ -652,7 +1146,7 @@ public class RemoveFunctionParameters extends FEReplacer {
          * @author asolar, tim
          */
         class FunReplMap {
-            FunReplMap parent = null;
+            FunReplMap 			parent = null;
             Map<String, String> frmap = new HashMap<String, String>();
 
             FunReplMap(FunReplMap parent) {
@@ -679,7 +1173,6 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         }
 
-        Function curFun;
         public Object visitFunction(Function fun) {
             boolean tmpIsGen = isGenerator;
             isGenerator = fun.isGenerator();
@@ -1102,298 +1595,4 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     } // end of InnerFunReplacer
 
-
-    // begin of actual ReplaceFunctionParamters
-
-    Map<String, Function> funToReplace = new HashMap<String, Function>();
-
-    Stack<String> funsToVisit = new Stack<String>();
-    Map<String, Function> newFunctions = new HashMap<String, Function>();
-    Set<String> visited = new HashSet<String>();
-    Map<String, Package> pkges;
-    private void checkFunParameters(Function fun) {
-        for(Parameter p : fun.getParams()){
-            if(p.getType() instanceof TypeFunction){
-                funToReplace.put(nres.getFunName(fun.getName()), fun);
-                break;
-            }
-        }
-    }
-    
-    InnerFunReplacer hoister = new InnerFunReplacer(false);
-
-    public Object visitProgram(Program p) {
-
-        // p = (Program) p.accept(new SpecializeInnerFunctions());
-        // p.debugDump("After specializing inners");
-        // p = (Program) p.accept(new InnerFunReplacer());
-        nres = new NameResolver(p);
-        hoister.setNres(nres);
-        hoister.registerGlobals(p);
-        for (Package pkg : p.getPackages()) {
-            nres.setPackage(pkg);
-            Set<String> nameChk = new HashSet<String>();
-            for (Function fun : pkg.getFuncs()) {
-                checkFunParameters(fun);
-                if (nameChk.contains(fun.getName())) {
-                    throw new ExceptionAtNode("Duplicated Name in Package", fun);
-                }
-                nameChk.add(fun.getName());
-                if (fun.isSketchHarness()) {
-                    funsToVisit.add(nres.getFunName(fun.getName()));
-                }
-                if (fun.getSpecification() != null) {
-                    String spec = nres.getFunName(fun.getSpecification());
-                    if (spec == null)
-                        throw new ExceptionAtNode("Function " + fun.getSpecification() +
-                                ", the spec of " + fun.getName() +
-                                " is can not be found. did you put the wrong name?", fun);
-
-                    funsToVisit.add(spec);
-                    funsToVisit.add(nres.getFunName(fun.getName()));
-                }
-            }
-        }
-
-        Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
-        pkges = new HashMap<String, Package>();
-        for (Package pkg : p.getPackages()) {
-            nflistMap.put(pkg.getName(), new ArrayList<Function>());
-            pkges.put(pkg.getName(), pkg);
-        }
-
-        while (!funsToVisit.isEmpty()) {
-            String fname = funsToVisit.pop();
-            String pkgName = getPkgName(fname);
-            nres.setPackage(pkges.get(pkgName));
-            Function next = nres.getFun(fname);
-
-            if (!visited.contains(fname)) {
-                String chkname = fname;
-                if (this.reverseEquiv.containsKey(fname)) {
-                    chkname = reverseEquiv.get(fname);
-                }
-                if (tempSymtables.containsKey(chkname)) {
-                    hoister.setSymtab(tempSymtables.get(chkname));
-                } else {
-                    hoister.setSymtab(tempSymtables.get("pkg:" + next.getPkg()));
-                }
-
-                next = (Function) next.accept(hoister);
-                Function nf = (Function) next.accept(this);
-                visited.add(fname);
-                nflistMap.get(pkgName).add(nf);
-            }
-        }
-        List<Package> newPkges = new ArrayList<Package>();
-        for (Package pkg : p.getPackages()) {
-            newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
-                    pkg.getVars(), nflistMap.get(pkg.getName())));
-        }
-        Program np = p.creator().streams(newPkges).create();
-
-        Program aftertc = (Program) np.accept(new ThreadClosure());
-        return aftertc.accept(new FixPolymorphism());
-
-    }
-
-    String getPkgName(String fname) {
-        int i = fname.indexOf("@");
-        return fname.substring(i + 1);
-    }
-
-    String getNameSufix(String fname) {
-        int i = fname.indexOf("@");
-        return fname.substring(0, i >= 0 ? i : fname.length());
-    }
-
-    public Object visitPackage(Package spec)
-    {
-        return null;
-    }
-
-    Map<String, String> nfnMemoize = new HashMap<String, String>();
-
-    String newFunName(ExprFunCall efc, Function orig) {
-        String name = newNameCore(efc, orig);
-
-        String oldName = name;
-        String newName = name;
-        if (nfnMemoize.containsKey(oldName)) {
-            return nfnMemoize.get(oldName);
-        }
-        while (nres.getFun(newName) != null) {
-            newName = oldName + (++nfcnt);
-        }
-        nfnMemoize.put(oldName, newName);
-        return newName;
-    }
-
-    private String newNameCore(ExprFunCall efc, Function orig) {
-        String name = orig.getName();
-        Iterator<Parameter> fp = orig.getParams().iterator();
-
-        if (efc.getParams().size() != orig.getParams().size()) {
-            // Give user the benefit of the doubt and assume the mismatch is purely due to
-            // implicit parameters.
-            int diff = orig.getParams().size() - efc.getParams().size();
-            if (diff < 0) {
-                throw new TypeErrorException(
-                        "Incorrect number of parameters to function " +
-                    orig, efc);
-            }
-            for (int i = 0; i < diff; ++i) {
-                if (!fp.hasNext()) {
-                    throw new TypeErrorException(
-                            "Incorrect number of parameters to function " + orig, efc);
-                }
-                Parameter p = fp.next();
-                if (!p.isImplicit()) {
-                    throw new TypeErrorException(
-                            "Incorrect number of parameters to function " + orig, efc);
-                }
-            }
-        }
-
-        for (Expression actual : efc.getParams()) {
-            Parameter p = fp.next();
-            if (p.getType() instanceof TypeFunction) {
-                name += "_" + actual.toString();
-            }
-        }
-        return name;
-    }
-
-    int nfcnt = 0;
-
-    void addEquivalence(String old, String newName) {
-        if (!equivalences.containsKey(old)) {
-            equivalences.put(old, new ArrayList<String>());
-        }
-        equivalences.get(old).add(newName);
-        reverseEquiv.put(newName, old);
-    }
-
-    ExprFunCall replaceCall(ExprFunCall efc, Function orig, String nfn) {
-        List<Expression> params = new ArrayList<Expression>();
-        Iterator<Parameter> fp = orig.getParams().iterator();
-        if (orig.getParams().size() > efc.getParams().size()) {
-            int dif = orig.getParams().size() - efc.getParams().size();
-            for (int i = 0; i < dif; ++i) {
-                fp.next();
-            }
-        }
-
-        for (Expression actual : efc.getParams()) {
-            Parameter p = fp.next();
-            if (!(p.getType() instanceof TypeFunction)) {
-                params.add(doExpression(actual));
-            }
-        }
-        return new ExprFunCall(efc, nfn, params);
-    }
-
-    Function createCall(final ExprFunCall efc, Function orig, final String nfn) {
-
-        List<Expression> existingArgs = efc.getParams();
-        List<Parameter> params = orig.getParams();
-        Iterator<Parameter> it = params.iterator();
-        int starti = 0;
-        if (params.size() != existingArgs.size()) {
-            while (starti < params.size()) {
-                if (!params.get(starti).isImplicit()) {
-                    break;
-                }
-                ++starti;
-                it.next();
-            }
-        }
-
-        if ((params.size() - starti) != existingArgs.size()) {
-            throw new ExceptionAtNode("Wrong number of parameters", efc);
-        }
-
-        final String cpkg = nres.curPkg().getName();
-        for (Expression actual : efc.getParams()) {
-            Parameter formal = it.next();
-            if (formal.getType() instanceof TypeFunction) {
-                Function f = nres.getFun(actual.toString());
-                if (f == null) {
-                    throw new ExceptionAtNode("Function " + actual + " does not exist",
-                            efc);
-                }
-                Type t = f.getReturnType();
-                List<String> tps = f.getTypeParams();
-                for (String ct : tps) {
-                    if (ct.equals(t.toString())) {
-                        throw new ExceptionAtNode(
-                                "Functions with generic return types cannot be passed as function parameters: " +
-                                        f, efc);
-                    }
-                }
-            }
-
-        }
-
-        FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg);
-
-        return (Function) orig.accept(renamer);
-    }
-
-    public Object visitStmtVarDecl(StmtVarDecl svd) {
-        for (int i = 0; i < svd.getNumVars(); ++i) {
-            if (svd.getType(i) instanceof TypeFunction) {
-                throw new ExceptionAtNode(
-                        "You can not declare a variable with fun type.", svd);
-            }
-        }
-
-        Object o = super.visitStmtVarDecl(svd);
-
-        return o;
-    }
-
-    public Object visitExprFunCall(ExprFunCall efc) {
-
-        if (efc.getName().equals("minimize")) {
-            return super.visitExprFunCall(efc);
-        }
-
-        String name = nres.getFunName(efc.getName());
-        if (name == null) {
-            throw new ExceptionAtNode("Function " + efc.getName() +
-                    " either does not exist, or is ambiguous.", efc);
-        }
-        if (funToReplace.containsKey(name)) {
-            Function orig = funToReplace.get(name);
-            String nfn = newFunName(efc, orig);
-            if (newFunctions.containsKey(nfn)) {
-                return replaceCall(efc, orig, nfn);
-            } else {
-                Function newFun = createCall(efc, orig, getNameSufix(nfn));
-                nres.registerFun(newFun);
-                String newName = nres.getFunName(newFun.getName());
-                addEquivalence(name, newName);
-                newFunctions.put(newName, newFun);
-                funsToVisit.push(newName);
-                return replaceCall(efc, orig, nfn);
-            }
-        } else {
-            if (!visited.contains(name)) {
-                String pkgName = getPkgName(name);
-                if (pkges != null && pkges.get(pkgName) == null) {
-                    throw new ExceptionAtNode("Package named " + pkgName +
-                            " does not exist.", efc);
-                }
-                if (nres.getFun(name) == null) {
-                    throw new ExceptionAtNode("Function " + efc.getName() +
-                            " either does not exist, or is ambiguous.", efc);
-                }
-                funsToVisit.push(name);
-            }
-            return super.visitExprFunCall(efc);
-        }
-    }
-    
 }
-
