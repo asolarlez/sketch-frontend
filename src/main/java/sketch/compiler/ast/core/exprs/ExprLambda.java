@@ -32,8 +32,8 @@ public class ExprLambda extends Expression {
 	}
 
 	/**
-	 * Create a new lambda expression by passing context, a variable list, and a
-	 * expression.
+	 * Create a new lambda expression by passing context, a variable list, and
+	 * an expression.
 	 * 
 	 * @param context
 	 * @param variableList
@@ -45,10 +45,24 @@ public class ExprLambda extends Expression {
 		this.expression = expression;
 	}
 
+	/**
+	 * Create a new lambda expression by passing context, a variable list, and
+	 * an expression
+	 * 
+	 * @param context
+	 * @param variableList
+	 * @param expression
+	 */
+	public ExprLambda(FENode context, List<ExprVar> variableList, Expression expression) {
+		super(context);
+		this.parameters = variableList;
+		this.expression = expression;
+	}
+
 	@Override
-	public Object accept(FEVisitor v) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object accept(FEVisitor visitor) {
+		// Visit a lambda expression
+		return visitor.visitExprLambda(this);
 	}
 
 	/**
@@ -89,7 +103,7 @@ public class ExprLambda extends Expression {
 
 	@Override
 	public String toString() {
-		return this.parameters.toString() + " -> " + this.expression.toString()  + ";";
+		return this.parameters.toString() + " -> " + this.expression.toString();
 	}
 
 }
