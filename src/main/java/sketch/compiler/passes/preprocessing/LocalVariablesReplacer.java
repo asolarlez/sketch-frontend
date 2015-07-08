@@ -164,7 +164,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 	 * @param prefix
 	 * @return
 	 */
-	protected ExprVar generateChoiceExpression(int numberOfChoices, FENode context, String prefix) {
+	private ExprVar generateChoiceExpression(int numberOfChoices, FENode context, String prefix) {
 		// Create a variable that represents the unknown expressions
 		ExprVar variable = new ExprVar(context, this.tempVarGen.nextVar(prefix));
 
