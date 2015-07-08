@@ -149,4 +149,13 @@ public interface FEVisitor
 	 * @return
 	 */
     public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables);
+    
+	/**
+	 * Method the implements behavior of visiting a lambda expression.
+	 * 
+	 * @param exprLambda
+	 * @return
+	 */
+	public Object visitExprLambda(ExprLambda exprLambda);
+
 }

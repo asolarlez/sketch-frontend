@@ -357,4 +357,12 @@ public class FETypedVisitor<T> implements FEVisitor {
 	public T visitExprLocalVariables(ExprLocalVariables exprDoubleUnderscore) {
         throw new FEVisitorException(this, exprDoubleUnderscore);
     }
+
+	/**
+	 * 
+	 */
+	public T visitExprLambda(ExprLambda exprLambda) {
+		throw new FEVisitorException(this, exprLambda);
+	}
+
 }

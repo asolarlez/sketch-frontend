@@ -16,8 +16,18 @@
 
 package sketch.compiler.ast.core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Vector;
+
+import static sketch.util.DebugOut.assertFalse;
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -46,8 +56,6 @@ import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.util.datastructures.TypedHashMap;
-
-import static sketch.util.DebugOut.assertFalse;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -1059,5 +1067,47 @@ public class FEReplacer implements FEVisitor
 		// Return the same expression that was passed
 		return expr;
     }
+
+	/**
+	 * 
+	 */
+	public Object visitExprLambda(ExprLambda exprLambda) {
+        boolean hasChanged = false;
+		List<ExprVar> newParameters = new ArrayList<ExprVar>();
+		Expression newExpression;
+        
+        // Loop through all the parameters
+        for(ExprVar parameter : exprLambda.getParameters()) {
+        	// Analyze the parameter an return a new one
+        	ExprVar newParameter = (ExprVar) parameter.accept(this);
+        	
+        	// Add the new parameter to the list of new parameters
+            newParameters.add(newParameter);
+            
+            // If the new parameter is different from the original parameter
+            if(parameter != newParameter) {
+            	// There has been a change
+            	hasChanged = true;
+            }
+        }
+        
+        // Analyze the expression and return a new one
+        newExpression = this.doExpression(exprLambda.getExpression());
+        
+        // If the new parameter is different from the original parameter
+        if(exprLambda.getExpression() != newExpression) {
+        	// There has been a change
+        	hasChanged = true;
+        }
+        
+        // If there was not a change
+        if (!hasChanged) {
+        	// Return the orginal lambda expression
+        	return exprLambda;
+        }
+        
+        // Return a new lambda expression
+        return new ExprLambda(exprLambda, newParameters, exprLambda.getExpression());
+	}
 
 }
