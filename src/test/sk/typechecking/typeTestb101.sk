@@ -1,0 +1,12 @@
+// Passing the wrong number of parameters to the specialized function
+
+int five(fun f, int x, int y) {	
+	return f(x, y);
+}
+
+harness void main(){	
+	int four = 4;
+	int one = 1;
+	
+    assert five((,four, one) -> four + one, four) == 5;
+}
