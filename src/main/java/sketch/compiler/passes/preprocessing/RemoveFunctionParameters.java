@@ -231,7 +231,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// function is being called
 					f = this.createTempFunction(orig, nfn, cpkg);
 				}
-				else {
+				else if(f == null) {
 					throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
 				}
 
@@ -551,7 +551,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// If the number of function call parameters does not match the length of
 					// formal parameters of the lambda expression
 					if(lambda.getParameters().size() != efc.getParams().size()) {
-						throw new ExceptionAtNode("Wrong number of parameters: " + lambda, lambda);
+						throw new ExceptionAtNode("The number of lambda parameters does not match "
+								+ "the number of parameters in the function call: " 
+								+ lambda.getParameters() + " - " + efc.getParams(), lambda);
 					}
 
 					// Loop through the formal parameters of the lambda and the actual parameters
