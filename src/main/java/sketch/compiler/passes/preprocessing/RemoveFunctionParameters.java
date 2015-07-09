@@ -223,25 +223,26 @@ public class RemoveFunctionParameters extends FEReplacer {
 			Parameter formal = it.next();
 			if (formal.getType() instanceof TypeFunction) {
 				// If the function is found, good! Otherwise, have to create function
-				Function f = nres.getFun(actual.toString());
+				Function fun = nres.getFun(actual.toString());
 
 				// If the function is null AND the actual is a lambda expression
-				if (f == null && actual instanceof ExprLambda) {
+				if (fun == null && actual instanceof ExprLambda) {
 					// Create a new function similar to the original, that is, where the 
 					// function is being called
-					f = this.createTempFunction(orig, nfn, cpkg);
+					fun = this.createTempFunction(orig, nfn, cpkg);
+
 				}
-				else if(f == null) {
+				else if(fun == null) {
 					throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
 				}
 
-				Type t = f.getReturnType();
-				List<String> tps = f.getTypeParams();
+				Type t = fun.getReturnType();
+				List<String> tps = fun.getTypeParams();
 				for (String ct : tps) {
 					if (ct.equals(t.toString())) {
 						throw new ExceptionAtNode(
 								"Functions with generic return types cannot be passed as function parameters: "
-										+ f,
+										+ fun,
 								efc);
 					}
 				}
@@ -716,13 +717,13 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         public Object visitProgram(Program prog){
             CallGraph cg = new CallGraph(prog);
-            nres = new NameResolver(prog);
-            for(Map.Entry<String, NewFunInfo> eif : extractedInnerFuns.entrySet() ){
+			nres = new NameResolver(prog);
+            for(Map.Entry<String, NewFunInfo> eif : extractedInnerFuns.entrySet() ){ // Go in
                 String key = eif.getKey();
                 NewFunInfo nfi = eif.getValue();
                 Set<String> visited = new HashSet<String>();
                 Stack<String> toVisit = new Stack<String>(); 
-                if(equivalences.containsKey(key)){
+				if (equivalences.containsKey(key)) { // Jump
                     for(String fn : equivalences.get(key)){
                         toVisit.push(fn);
                         if (funsToVisit.containsKey(fn)) {
@@ -734,30 +735,29 @@ public class RemoveFunctionParameters extends FEReplacer {
                     }
                 }else{
                     toVisit.push(key);
-                    if (funsToVisit.containsKey(key)) {
+					if (funsToVisit.containsKey(key)) { // Jump
                         funsToVisit.put(key,
                                 mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(key)));
                     } else {
-                        funsToVisit.put(key, nfi.cloneParamsToAdd());
+						funsToVisit.put(key, nfi.cloneParamsToAdd()); // execute
                     }
                 }
-                while(!toVisit.isEmpty()){
+				while (!toVisit.isEmpty()) { // Go in 1, 2
                     String cur = toVisit.pop();
-                    if (visited.contains(cur)) {
+					if (visited.contains(cur)) { // Jump
                         continue;
                     }
                     visited.add(cur);
-                    Set<Function> callers = cg.callersTo(nres.getFun(cur));
-                    for (Function caller : callers) {
-
+                    Set<Function> callers = cg.callersTo(nres.getFun(cur)); // TODO MIGUEL lambda returns empty
+					for (Function caller : callers) { // Go in 1, 2
                         String callerName = nres.getFunName(caller);
                         String callerOriName = callerName;
-                        if (reverseEquiv.containsKey(callerName)) {
-                            callerOriName = reverseEquiv.get(callerName);
+						if (reverseEquiv.containsKey(callerName)) { // Jump 2
+							callerOriName = reverseEquiv.get(callerName); // Execute
                         }
-                        if (!callerName.equals(nfi.containingFunction)) {
-                            toVisit.push(callerName);
-                            if (funsToVisit.containsKey(callerName)) {
+                        if (!callerName.equals(nfi.containingFunction)) { // Go in, Jump 2
+                            toVisit.push(callerName); 
+                            if (funsToVisit.containsKey(callerName)) { // Jump
                                 // funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
                                 // should merge correctly
                                 Map<String, ParamInfo> c =
@@ -776,7 +776,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                                     }
                                 }
                             } else {
-                                funsToVisit.put(callerName, nfi.cloneParamsToAdd());
+                                funsToVisit.put(callerName, nfi.cloneParamsToAdd()); // Execute
                             }
                         }
                     }
@@ -1336,7 +1336,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
 
-        NewFunInfo funInfo(Function f) {
+		NewFunInfo funInfo(Function f) {
             // get the new function info
             // i.e. the used variables that are in f's containing function
             // among the used variables, some are modified, we also track if a used var is
