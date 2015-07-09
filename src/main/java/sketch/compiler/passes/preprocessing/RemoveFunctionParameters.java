@@ -44,6 +44,9 @@ import sketch.util.exceptions.TypeErrorException;
 public class RemoveFunctionParameters extends FEReplacer {
 	final TempVarGen 			varGen;
 
+	private Map<String, ExprLambda> localLambda = new HashMap<String, ExprLambda>();
+	private Map<ExprVar, Expression> lambdaReplace = new HashMap<ExprVar, Expression>();
+
 	Map<String, SymbolTable> 	tempSymtables = new HashMap<String, SymbolTable>();
 	Map<String, NewFunInfo> 	extractedInnerFuns = new HashMap<String, NewFunInfo>();
 	Map<String, List<String>> 	equivalences = new HashMap<String, List<String>>();
@@ -392,8 +395,13 @@ public class RemoveFunctionParameters extends FEReplacer {
 	public Object visitStmtVarDecl(StmtVarDecl svd) {
 		for (int i = 0; i < svd.getNumVars(); ++i) {
 			if (svd.getType(i) instanceof TypeFunction) {
-				throw new ExceptionAtNode(
-						"You can not declare a variable with fun type.", svd);
+				// Map the function call to the lambda expression
+				this.localLambda.put(svd.getName(0), (ExprLambda) svd.getInit(0));
+				
+				return null;
+				// TODO MIGUEL be careful since now we are allowing fun as type
+				// throw new ExceptionAtNode(
+				// "You can not declare a variable with fun type.", svd);
 			}
 		}
 
@@ -401,6 +409,18 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 		return o;
 	}
+	
+	public Object visitExprVar(ExprVar ev) {
+		// If the is a local lambda expression, then there are some
+		// variables that will be mapped to actual values
+       if(this.lambdaReplace.containsKey(ev)) {
+        	// Return the actual parameter
+        	return this.lambdaReplace.get(ev);          	
+        }            
+        else {
+            return ev;
+        }
+    }
 
 	public Object visitExprFunCall(ExprFunCall efc) {
 		if (efc.getName().equals("minimize")) {
@@ -409,6 +429,12 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 		String name = nres.getFunName(efc.getName());
 		if (name == null) {
+			// If there is a local lambda expression
+			if (this.localLambda.containsKey(efc.getName())) {
+				// Return that inlined version of the lambda expression
+				 return this.inlineLocalLambda(efc, this.localLambda.get(efc.getName()));
+			}
+
 			throw new ExceptionAtNode("Function " + efc.getName()
 					+ " either does not exist, or is ambiguous.", efc);
 		}
@@ -453,7 +479,34 @@ public class RemoveFunctionParameters extends FEReplacer {
 		}
 	}
 
-    private static final class FunctionParamRenamer extends FEReplacer {
+	/**
+	 * Inline a previously defined lambda expression.
+	 * 
+	 * @param functionCall
+	 * @param exprLambda
+	 * @return
+	 */
+	private Object inlineLocalLambda(ExprFunCall functionCall, ExprLambda exprLambda) {
+		// If the number of function call parameters does not match the length of
+		// formal parameters of the lambda expression
+		if(exprLambda.getParameters().size() != functionCall.getParams().size()) {
+			throw new ExceptionAtNode("The number of lambda parameters does not match "
+					+ "the number of parameters in the function call: " 
+					+ exprLambda.getParameters() + " - " + functionCall.getParams(), functionCall);
+		}
+
+		// Loop through the formal parameters of the lambda and the actual parameters
+		// of the call mapping them.
+		for (int i = 0; i < exprLambda.getParameters().size(); i++) {
+			this.lambdaReplace.put(exprLambda.getParameters().get(i), functionCall.getParams().get(i));
+		}
+
+		// Return a new expression where all the variables are replaced with
+		// actual parameters
+		return this.doExpression(exprLambda.getExpression());
+	}
+
+	private static final class FunctionParamRenamer extends FEReplacer {
         private final String nfn;
         private final ExprFunCall efc;
         private final String cpkg;
@@ -503,10 +556,10 @@ public class RemoveFunctionParameters extends FEReplacer {
 				}
 				// If actual is a lambda expression
 				else if (actual instanceof ExprLambda) {
-						samePars = false;
+					samePars = false;
 
 					// Map the parameter with the lambda expression
-						this.lambdaMap.put(par.getName(), (ExprLambda) actual);
+					this.lambdaMap.put(par.getName(), (ExprLambda) actual);
             	}
             	else {
         			samePars = false;
