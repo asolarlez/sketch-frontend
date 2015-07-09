@@ -1,0 +1,14 @@
+harness void main(int x, int y){
+    
+    int q = ??;
+    
+    assert (q + x) / ?? == 1 + x/3;
+    
+    
+    int[5] t = ??;
+    
+    assert t[(x+??) % ??] == ((x+2) % 5) + 3;
+    
+    
+    
+}

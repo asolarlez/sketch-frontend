@@ -1,0 +1,18 @@
+harness void main(int x, int y){
+    int q = ??;
+    int p = ??;
+         
+    
+    int[5] t = {p+q, p+x, p+y, q+p, q+p};
+    int u = t[p+q];
+    assert u == 3;
+    
+    bit [5] xx = {0,1,1,0,0};
+    bit [5] yy = {0,1,1,1,0};
+    
+    assert xx[p+q] | yy[p+q];    
+    assert xx[p+q] ^ yy[p+q];
+    assert xx[p+q] + xx[p+q] + yy[p+q] + yy[p+q] == 2;
+    
+    
+}
