@@ -1315,9 +1315,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
         // body, because SymbolTableVisitor relies on StmtSwitch to infer the refined type
         // of the matched variable inside each Case
 
-        ExprVar oldCond = (ExprVar) (stmt.getExpr());
-        abstractValue vcond = (abstractValue) oldCond.accept(this);
-        ExprVar ncond = isReplacer ? (ExprVar) exprRV : oldCond;
+        ExprVar var = (ExprVar) (stmt.getExpr());
+        abstractValue vcond = (abstractValue) var.accept(this);
+        ExprVar ncond = isReplacer ? (ExprVar) exprRV : var;
         Map<String, Map<String, abstractValue>> knownCases = vcond.getADTcases();
         int uncaughtCases = Integer.MAX_VALUE;
         if (knownCases != null) {
@@ -1328,7 +1328,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), ncond);
         String pkg = null;
-        ExprVar realCond = oldCond;
+        ExprVar realCond = var;
         for (int i = 0; i < 5; ++i) {
             try {
                 pkg = nres.getStruct(((TypeStructRef) getType(realCond)).getName()).getPkg();
