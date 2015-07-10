@@ -421,22 +421,35 @@ public class RemoveFunctionParameters extends FEReplacer {
 		// If the is a local lambda expression, then there are some
 		// variables that will be mapped to actual values
        if(this.lambdaReplace.containsKey(ev)) {
-        	// Return the actual parameter
-        	return this.lambdaReplace.get(ev);          	
+			// Get the replacement value
+			Expression hold = this.lambdaReplace.get(ev);
+
+			// This replaced value can be mapped to other variables,
+			// so keep checking for replacements
+			while (this.lambdaReplace.containsKey(hold)) {
+				// visit the expression
+				hold = this.doExpression(hold);
+			}
+
+			// Return the actual parameter
+			return hold;
         }            
         else {
             return ev;
         }
     }
-
+	
 	public Object visitStmtAssign(StmtAssign stmt) {
-		// Check if there is a statement assignment to a lambda expression previously defined
-		if(this.localLambda.containsKey(((ExprVar) stmt.getLHS()).getName())) {
-			throw new ExceptionAtNode(
-					"dsfafafdadsfShadowing of lambda expressions is not allowed: "
-							+ stmt,
-					stmt);
+		// Get the left side of the statement assignment
+		Expression left = stmt.getLHS();
+		
+		if(left instanceof ExprVar) {
+			// Check if there is a statement assignment to a lambda expression previously defined
+			if(this.localLambda.containsKey(((ExprVar) left).getName())) {
+				throw new ExceptionAtNode("Shadowing of lambda expressions is not allowed: " + stmt, stmt);
+			}			
 		}
+		
 		
 		return super.visitStmtAssign(stmt);
 	}
