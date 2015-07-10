@@ -1,5 +1,6 @@
 package sketch.compiler.dataflow.nodesToSB;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +56,36 @@ public class IntAbsValue extends abstractValue {
 		this.type = n.type;
 		this.isVolatile = n.isVolatile;
         this.knownGeqZero = n.knownGeqZero;
+        this.knownCases = n.cloneCases();
 	}
 	
+	public static Map<String, abstractValue> cloneFields(Map<String, abstractValue> f) {
+	    if (f == null) {
+	        return null;
+	    }
+        Map<String, abstractValue> fields = new HashMap<String, abstractValue>(f.size());
+        for (Map.Entry<String, abstractValue> e : f.entrySet()) {
+            String name = e.getKey();
+            abstractValue value = e.getValue();
+            fields.put(name, value.clone());
+        }
+        return fields;
+	}
+	
+    public Map<String, Map<String, abstractValue>> cloneCases() {
+        if (knownCases == null) {
+            return null;
+        }
+        Map<String, Map<String, abstractValue>> cases =
+                new HashMap<String, Map<String, abstractValue>>(knownCases.size());
+        for (Map.Entry<String, Map<String, abstractValue>> c : knownCases.entrySet()) {
+            String caseName = c.getKey();
+            Map<String, abstractValue> fields = c.getValue();
+            cases.put(caseName, cloneFields(fields));
+        }
+        return cases;
+    }
+
     public IntAbsValue(String label, boolean knownGeqZero) {
 		this.obj = label;
         this.knownGeqZero = knownGeqZero;
