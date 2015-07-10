@@ -1,8 +1,10 @@
-// Testing that an lambda expression is identified and created in line 5
+// Testing that an lambda expression is identified and created in line 5. The sketc will fail
+// because you are assigning a lambda to an int. The good thing is that the  lambda is recognized
+// and created after the RemoveFunctionParameters pass
 
 int apply(fun function, int x){
 	int y = 9;
-	int a = (,x,y) -> 1 - x + y;
+	int a = (,y) -> y + 1;
     return function(x);
 }
 
