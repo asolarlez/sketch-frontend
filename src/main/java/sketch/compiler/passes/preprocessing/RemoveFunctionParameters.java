@@ -422,6 +422,18 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
     }
 
+	public Object visitStmtAssign(StmtAssign stmt) {
+		// Check if there is a statement assignment to a lambda expression previously defined
+		if(this.localLambda.containsKey(((ExprVar) stmt.getLHS()).getName())) {
+			throw new ExceptionAtNode(
+					"dsfafafdadsfShadowing of lambda expressions is not allowed: "
+							+ stmt,
+					stmt);
+		}
+		
+		return super.visitStmtAssign(stmt);
+	}
+
 	public Object visitExprFunCall(ExprFunCall efc) {
 		if (efc.getName().equals("minimize")) {
 			return super.visitExprFunCall(efc);
