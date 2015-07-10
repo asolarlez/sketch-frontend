@@ -1,3 +1,5 @@
+// Testing how specialized functions are created
+
 int apply(fun f, int x){
     return f(x);
 }
