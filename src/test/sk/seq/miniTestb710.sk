@@ -1,0 +1,16 @@
+//variable length arrays in tuple
+struct A{
+	@Immutable("")
+	int x;	
+	int n;
+	int [n] y;
+	A[n] nxt;
+}
+
+harness void main(int x){
+	A a = new A(x = 2, y = {??, ??}, n = 2);
+	A b = new A(x= ??, y = {??,??}, n = 2);
+	A c = new A(x =3, nxt =  {a, b}, n=2);
+	assert (c.nxt[??].x == 2 && c.nxt[??].y[??] == 3);
+	
+}

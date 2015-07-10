@@ -1,0 +1,69 @@
+void desugar (srcAST s, ref dstAST _out)/*lcP.sk:28*/
+{
+  _out = null;
+  if(s == (null))/*lcP.sk:29*/
+  {
+    _out = null;
+    return;
+  }
+  switch(s){/*lcP.sk:31*/
+    case NumS:
+    {
+      dstAST@ANONYMOUS v1_s368 = null;
+      desugar(null, v1_s368);
+      dstAST@ANONYMOUS v2_s370 = null;
+      desugar(null, v2_s370);
+      dstAST a_s10 = new VarD@ANONYMOUS(name=1);
+      VarD var_s9 = new VarD(name=1);
+      dstAST a_s6 = new AbsD@ANONYMOUS(var=var_s9, a=a_s10);
+      int name_s27 = s.val;
+      dstAST b_s7 = new NumD@ANONYMOUS(val=name_s27);
+      dstAST dstAST_s3 = new AppD@ANONYMOUS(a=a_s6, b=b_s7);
+      _out = dstAST_s3;
+      return;
+    }
+    case PairS:
+    {
+      dstAST@ANONYMOUS v1_s372 = null;
+      desugar(s.a, v1_s372);
+      dstAST@ANONYMOUS v2_s374 = null;
+      desugar(s.b, v2_s374);
+      VarD var = new VarD(name=1);
+      dstAST a_s56 = new AppD@ANONYMOUS(a=var, b=v2_s374);
+      dstAST a_s52 = new AppD@ANONYMOUS(a=a_s56, b=v1_s372);
+      VarD var_s51 = new VarD(name=1);
+      dstAST dstAST_s49 = new AbsD@ANONYMOUS(var=var_s51, a=a_s52);
+      _out = dstAST_s49;
+      return;
+    }
+    case FirstS:
+    {
+      dstAST@ANONYMOUS v1_s376 = null;
+      desugar(s.a, v1_s376);
+      dstAST@ANONYMOUS v2_s378 = null;
+      desugar(s.a, v2_s378);
+      VarD var_0 = new VarD(name=19);
+      dstAST a_s121 = new AbsD@ANONYMOUS(var=var_0, a=var_0);
+      VarD var_s120 = new VarD(name=18);
+      dstAST b_s99 = new AbsD@ANONYMOUS(var=var_s120, a=a_s121);
+      dstAST dstAST_s95 = new AppD@ANONYMOUS(a=v1_s376, b=b_s99);
+      _out = dstAST_s95;
+      return;
+    }
+    case SecondS:
+    {
+      dstAST@ANONYMOUS v1_s380 = null;
+      desugar(s.a, v1_s380);
+      dstAST@ANONYMOUS v2_s382 = null;
+      desugar(s.a, v2_s382);
+      VarD var_1 = new VarD(name=14);
+      VarD VarD_s173 = new VarD(name=8);
+      dstAST a_s167 = new AbsD@ANONYMOUS(var=VarD_s173, a=var_1);
+      dstAST b_s145 = new AbsD@ANONYMOUS(var=var_1, a=a_s167);
+      dstAST dstAST_s141 = new AppD@ANONYMOUS(a=v2_s382, b=b_s145);
+      _out = dstAST_s141;
+      return;
+    }
+  }
+}
+      

@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
@@ -109,7 +110,14 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                     Type oldType = type;
                     Type tleft = getType(exp.getLeft());
                     Type tright = getType(exp.getRight());
-                    Type tt = tright.leastCommonPromotion(tleft, nres);
+                    Type tt;
+                    if (tright.equals(new NotYetComputedType())) {
+                        tt = tleft;
+                    } else if (tleft.equals(new NotYetComputedType())) {
+                        tt = tright;
+                    } else {
+                        tt = tright.leastCommonPromotion(tleft, nres);
+                    }
                     type = tt; // TypePrimitive.inttype;
                     Expression left = doExpression(exp.getLeft());
                     Expression right = doExpression(exp.getRight());
@@ -137,7 +145,14 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 case ExprBinary.BINOP_EQ: {
                     Type tleft = stv.getType(exp.getLeft());
                     Type tright = stv.getType(exp.getRight());
-                    Type tboth = tleft.leastCommonPromotion(tright, nres);
+                    Type tboth;
+                    if (tright.equals(new NotYetComputedType())) {
+                        tboth = tleft;
+                    } else if (tleft.equals(new NotYetComputedType())) {
+                        tboth = tright;
+                    } else {
+                        tboth = tleft.leastCommonPromotion(tright, nres);
+                    }
                     Type oldType = type;
                     type = tboth;
                     Expression left = doExpression(exp.getLeft());
@@ -167,7 +182,9 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         }
         Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
         public Object visitExprNew(ExprNew expNew) {
-
+            if (expNew.getTypeToConstruct() == null) {
+                return expNew;
+            }
             Type nt = (Type) expNew.getTypeToConstruct().accept(this);
             StructDef ts = null;
             {
@@ -467,6 +484,8 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
     public Object visitExprNew(ExprNew expNew) {
         if (expNew.isHole()) {
             TypeStructRef t = (TypeStructRef) expNew.getTypeToConstruct();
+            if (t == null)
+                return expNew;
             Map<String, Type> mst;
             if (ftypeMaps.containsKey(t.getName())) {
                 mst = ftypeMaps.get(t.getName());

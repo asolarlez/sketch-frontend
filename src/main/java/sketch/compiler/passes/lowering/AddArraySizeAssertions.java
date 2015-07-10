@@ -7,6 +7,8 @@ import java.util.Map;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -111,6 +113,25 @@ public class AddArraySizeAssertions extends SymbolTableVisitor {
             rmap.put(p.getName(), actual);
         }
         return super.visitExprFunCall(efc);
+    }
+
+    public Object visitExprArrayRange(ExprArrayRange exp) {
+        exp = (ExprArrayRange) super.visitExprArrayRange(exp);
+        if (exp.hasSingleIndex()) {
+            Expression ind = exp.getSingleIndex();
+            Expression base = exp.getBase();
+            if (base instanceof ExprArrayInit) {
+                int len = ((ExprArrayInit) base).getElements().size();
+                // Add an assertion for ind < len
+                Expression cond =
+                        new ExprBinary(exp, ExprBinary.BINOP_LT, ind, new ExprConstInt(
+                                len));
+                addStatement(new StmtAssert(exp, cond, "Field selection constraint",
+                        StmtAssert.UBER));
+
+            }
+        }
+        return exp;
     }
 
     public Object visitExprNew(ExprNew expNew) {

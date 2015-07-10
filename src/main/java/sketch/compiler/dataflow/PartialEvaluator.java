@@ -42,6 +42,8 @@ class CloneHoles extends FEReplacer{
     // TODO xzl: what's this?
     public Object visitExprStar(ExprStar es){
         ExprStar newStar = new ExprStar(es);
+        if (es.special())
+            newStar.makeSpecial(es.parentHoles());
         es.renewName();
         return newStar;
     }
@@ -363,7 +365,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         }
 
         if (isReplacer)
-            exprRV = new ExprField(exp, left, right);
+            exprRV = new ExprField(exp, left, right, exp.isHole());
         return retVal;
     }
 
@@ -646,7 +648,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
             Parameter param = formalParams.next();            
             Type paramType = (Type) ((Type)param.getType().accept(vrep)).accept(this);            
             pmap.put(param.getName(), interpretActualParam(actual));
-            nplist.add(new Parameter(param, paramType, param.getName(), param.getPtype()));
+            nplist.add(new Parameter(param, param.getSrcTupleDepth(), paramType,
+                    param.getName(), param.getPtype()));
             boolean addedAlready = false;
             if (param.isParameterOutput()) {
                 // if (actual instanceof ExprVar) {
@@ -1079,7 +1082,8 @@ public class PartialEvaluator extends SymbolTableVisitor {
         symtab.registerVar(param.getName(), ntype, param,
                 SymbolTable.KIND_FUNC_PARAM);
         if(isReplacer){            
-            return new Parameter(param, ntype, transName(param.getName()),
+            return new Parameter(param, param.getSrcTupleDepth(), ntype,
+                    transName(param.getName()),
                     param.getPtype());
         }else{
             return param;
@@ -1315,7 +1319,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         // body, because SymbolTableVisitor relies on StmtSwitch to infer the refined type
         // of the matched variable inside each Case
 
-        ExprVar var = (ExprVar) (stmt.getExpr());
+        ExprVar var = stmt.getExpr();
         abstractValue vcond = (abstractValue) var.accept(this);
         ExprVar ncond = isReplacer ? (ExprVar) exprRV : var;
         Map<String, Map<String, abstractValue>> knownCases = vcond.getADTcases();
@@ -1362,6 +1366,13 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 }
             }
 
+            SymbolTable oldSymTab1 = symtab;
+            symtab = new SymbolTable(symtab);
+
+            if (caseExpr != "default") {
+                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false),
+                        stmt, SymbolTable.KIND_LOCAL);
+            }
             Statement body = null;
             String error = null;
             ChangeTracker thisChange = null;
@@ -1369,7 +1380,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
             // and do not affect other Cases below it. Then we pop it out to collect the state change of this Case.
             // In the end we should merge all ChangeTrackers to form the joint state change of this StmtSwitch.
             state.pushChangeTracker(vcond, false);
-            SymbolTable oldSymTab1 = symtab;
             try {
                 if (!"default".equals(caseExpr)) {
                     symtab = new SymbolTable(symtab);
@@ -1607,7 +1617,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             throw e;
         }
         return isReplacer ? new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
-                stmt.getAssertMax()) : stmt;
+                stmt.getAssertMax(), stmt.isHard) : stmt;
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {
@@ -1887,7 +1897,10 @@ nvarContext,
         return isReplacer? new StmtVarDecl(stmt, types, names, inits) : stmt;
     }
 
-
+    public Object visitExprGet(ExprGet exp) {
+        exprRV = (Expression) super.visitExprGet(exp);
+        return vtype.BOTTOM();
+    }
     public Object visitExprNew(ExprNew expNew){
         exprRV = (Expression) super.visitExprNew(expNew);
         if (exprRV instanceof ExprNew) {
@@ -2042,6 +2055,27 @@ nvarContext,
             String pkgName = pkg.getName();
             pkgs.put(pkgName, pkg);
             newfuns.put(pkgName, new ArrayList<Function>());
+            // Add functions in special assert to funcsToAnalyze
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ExprFunCall f1 = sa.getFirstFun();
+                funcsToAnalyze.add(nres.getFun(nres.getFunName(f1.getName())));
+                for (Expression param : f1.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funcsToAnalyze.add(nres.getFun(nres.getFunName(pa.getName())));
+                    }
+                }
+
+                ExprFunCall f2 = sa.getSecondFun();
+                funcsToAnalyze.add(nres.getFun(nres.getFunName(f2.getName())));
+                for (Expression param : f2.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funcsToAnalyze.add(nres.getFun(nres.getFunName(pa.getName())));
+                    }
+                }
+
+            }
         }
         if (funcsToAnalyze.size() == 0) {
             System.out.println("WARNING: Your input file contains no sketches. Make sure all your sketches use the implements keyword properly.");
@@ -2075,7 +2109,7 @@ nvarContext,
             String pkgName = pkg.getName();
             newfuns.get(pkgName).addAll(newPkg.getFuncs());
             newPkgs.add(new Package(newPkg, pkgName, newPkg.getStructs(),
-                    newPkg.getVars(), newfuns.get(pkgName)));
+                    newPkg.getVars(), newfuns.get(pkgName), newPkg.getSpAsserts()));
         }
 
         return p.creator().streams(newPkgs).create();
@@ -2122,7 +2156,7 @@ nvarContext,
 
         return isReplacer ? new Package(spec, spec.getName(), newStructs,
  newVars,
-                newFuncs) : spec;
+                newFuncs, spec.getSpAsserts()) : spec;
     }
 
     /**

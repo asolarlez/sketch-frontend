@@ -79,6 +79,7 @@ public class ParallelBackend extends SATBackend {
                         parallel_solved = true;
                     }
                     synchronized (lock) {
+                        options.setSolFileIdx(Integer.toString(fileIdx));
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
                         log(2, "Stats for last run:\n" + worker_stat);

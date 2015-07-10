@@ -81,7 +81,7 @@ public class StmtAssert extends Statement
     public static final int NORMAL = 0;
     public static final int SUPER = 1;
     public static final int UBER = 2;
-    
+    public boolean isHard = false;
     private int superA = NORMAL;
 
     // isMax = 1: normal assertMax
@@ -98,6 +98,8 @@ public class StmtAssert extends Statement
     }
     
     public String getAssertSymbol() {
+        if (isHard)
+            return "hassert";
         switch (isMax) {
             case 1:
                 return "assert_max";
@@ -114,10 +116,20 @@ public class StmtAssert extends Statement
         this (context, cond, null, isSuper);
     }
 
+    public StmtAssert(FENode context, Expression cond, boolean isSuper, boolean isHard) {
+        this(context, cond, null, isSuper);
+        this.isHard = isHard;
+    }
+
     /** Creates a new assert statement with the specified conditional. */
     public StmtAssert(Expression cond, boolean isSuper)
     {
         this (cond, cond, null, isSuper);
+    }
+
+    public StmtAssert(Expression cond, boolean isSuper, boolean isHard) {
+        this(cond, cond, null, isSuper);
+        this.isHard = isHard;
     }
 
     /** Creates a new assert statement with the specified conditional.
@@ -136,6 +148,11 @@ public class StmtAssert extends Statement
         this (context, cond, null, isSuper);
     }
     
+    public StmtAssert(FENode context, Expression cond, int isSuper, boolean isHard) {
+        this(context, cond, null, isSuper);
+        this.isHard = isHard;
+    }
+
     public StmtAssert(FENode context, Expression cond, String msg, int isSuper)
     {
         super(context);
@@ -144,14 +161,37 @@ public class StmtAssert extends Statement
         this.superA = isSuper;
     }
     
+    public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
+            boolean isHard)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+        this.superA = isSuper;
+        this.isHard = isHard;
+    }
+
     public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper) {
         this(context.getCx(), cond, msg, (isSuper ? 1 : 0), 0);
+    }
+
+    public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper,
+            boolean isHard)
+    {
+        this(context.getCx(), cond, msg, (isSuper ? 1 : 0), 0);
+        this.isHard = isHard;
     }
 
     public static StmtAssert createAssertMax(FEContext context, Expression cond,
             String msg, boolean defer)
     {
         return new StmtAssert(context, cond, msg, 0, (defer ? 2 : 1));
+    }
+
+    public static StmtAssert createAssertMax(FEContext context, Expression cond,
+            String msg, boolean defer, boolean isHard)
+    {
+        return new StmtAssert(context, cond, msg, 0, (defer ? 2 : 1), isHard);
     }
 
     /**
@@ -167,10 +207,28 @@ public class StmtAssert extends Statement
         this.isMax = isMax;
     }
     
+    public StmtAssert(FEContext context, Expression cond, String msg, int isSuper,
+            int isMax, boolean isHard)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+        this.superA = isSuper;
+        this.isMax = isMax;
+        this.isHard = isHard;
+    }
+
     public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
             int isMax)
     {
         this(context.getCx(), cond, msg, isSuper, isMax);
+    }
+
+    public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
+            int isMax, boolean isHard)
+    {
+        this(context.getCx(), cond, msg, isSuper, isMax);
+        this.isHard = isHard;
     }
 
     /**
@@ -179,6 +237,11 @@ public class StmtAssert extends Statement
     public StmtAssert(Expression cond, String msg, boolean isSuper)
     {
         this (cond, cond, msg, isSuper);
+    }
+
+    public StmtAssert(Expression cond, String msg, boolean isSuper, boolean isHard) {
+        this(cond, cond, msg, isSuper);
+        this.isHard = isHard;
     }
 
     /**
@@ -190,6 +253,16 @@ public class StmtAssert extends Statement
         this.cond = cond;
         this.msg = msg;
         this.superA = isSuper? 1 : 0;
+    }
+
+    public StmtAssert(FEContext context, Expression cond, String msg, boolean isSuper,
+            boolean isHard)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+        this.superA = isSuper ? 1 : 0;
+        this.isHard = isHard;
     }
 
     /** Returns the assertion condition. */

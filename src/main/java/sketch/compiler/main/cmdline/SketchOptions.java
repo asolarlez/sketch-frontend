@@ -46,6 +46,7 @@ public class SketchOptions {
     public Vector<String> nativeArgs;
     protected String[] currentArgs;
     protected static SketchOptions _singleton;
+    private String fileIdx;
     int randomAppendage = 0;
     public SketchOptions(String[] inArgs) {
         this.inArgs = inArgs;
@@ -55,6 +56,7 @@ public class SketchOptions {
         _singleton = this;
         // Random r = new Random();
         randomAppendage = 0; // r.nextInt();
+        fileIdx = "";
     }
 
     /** let subclasses set different default values */
@@ -139,10 +141,14 @@ public class SketchOptions {
         return getTmpFilename(getSolStringBase() + i);
     }
 
+    public void setSolFileIdx(String i) {
+        this.fileIdx = i;
+    }
+
     public File[] getSolutionsFiles() {
         FilenameFilter f = new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.startsWith(getSolStringBase());
+                return name.startsWith(getSolStringBase() + fileIdx);
             }
         };
         File[] files = sktmpdir().listFiles(f);

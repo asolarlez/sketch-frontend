@@ -55,6 +55,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             ExprStar old = (ExprStar)exprRV;
             ExprStar n = new ExprStar(old);
             n.extendName(rcontrol.callStack());
+            if (old.special())
+                n.makeSpecial(old.parentHoles());
             exprRV = n;
         }
         return obj;
@@ -142,7 +144,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             msg = stmt.getMsg();
             state.Assert(vcond, stmt);
             return isReplacer ?(
-                    (vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(), stmt.getAssertMax())
+(vcond.hasIntVal() && vcond.getIntVal() == 1) ? null
+                : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
+                        stmt.getAssertMax(), stmt.isHard)
                     )
                     : stmt
                     ;

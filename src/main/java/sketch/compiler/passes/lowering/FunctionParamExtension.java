@@ -76,7 +76,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				if(!unmodifiedParams.containsValue(param)) {
 					String newName=getNewInCpID(param.getName());
                     Parameter newPar =
-                            new Parameter(param, param.getType(), newName,
+                            new Parameter(param, param.getSrcTupleDepth(),
+                                    param.getType(), newName,
                                     param.getPtype());
 					parameters.set(i,newPar);
 					func=addVarCopy(func,param,newName);
@@ -388,7 +389,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
             Package tpkg =
                     new Package(spec, spec.getName(), spec.getStructs(),
-                            spec.getVars(), funs);
+                            spec.getVars(), funs, spec.getSpAsserts());
             nres.populate(tpkg);
             oldStreams.add(tpkg);
 

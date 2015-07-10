@@ -81,6 +81,9 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprUnary(ExprUnary exp) { return null; }
     public Object visitExprVar(ExprVar exp) { return null; }
 
+    public Object visitExprGet(ExprGet exp) {
+        return null;
+    }
     public Object visitExprStar(ExprStar star) {
         return null;
     }

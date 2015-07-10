@@ -105,7 +105,8 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
         if (t == par.getType()) {
             return par;
         } else {
-            return new Parameter(par, t, par.getName(), par.getPtype());
+            return new Parameter(par, par.getSrcTupleDepth(), t, par.getName(),
+                    par.getPtype());
         }
     }
 	
@@ -266,8 +267,7 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
                 }
 			} else if (FailurePolicy.ASSERTION == policy) {
                 if (cond != null) {
-                    addStatement(new StmtAssert(ear, cond,
- ear.getCx() +
+                    addStatement(new StmtAssert(ear, cond, ear.getCx() +
                             ": Either null pointer or Array out of bounds", false));
                 }
 				return new StmtAssign (stmt, near, rhs, op);

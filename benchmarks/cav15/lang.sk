@@ -1,0 +1,482 @@
+//@Description This sketch derives the desugar function between two simple toy languages using full flegded interpreters for asserting correctness.
+
+/**
+ * Command line arguments that help control the depth of inlining for recursive functions. 
+ */
+pragma options "--bnd-inline-amnt 4";
+
+/**
+ * Data definitions
+ */
+adt opcode{
+	Oplus{}
+	Ominus{}
+	Oneg{}
+	Oand{}
+	Oor{}
+	Onot{}
+	Ogt{}
+	Olt{}	
+}
+
+adt srcAST {
+	NumS {int val;}
+	TrueS {}
+	FalseS {}
+	Prim1S {opcode op; srcAST a;}
+	Prim2S {opcode op; srcAST a; srcAST b;}
+	BetweenS {srcAST a;srcAST b;srcAST c;}
+	IfS {srcAST a; srcAST b; srcAST c;}
+}
+
+adt dstAST {
+	NumD {int val;}
+	BoolD {bit v;}
+	Prim1D {opcode op; dstAST a;}
+	Prim2D {opcode op; dstAST a; dstAST b;}
+	IfD {dstAST a; dstAST b; dstAST c;}
+}
+
+/**
+ * Function to synthesize
+ */
+dstAST desugar(srcAST s){ 
+	if(s == null){ return null; }
+	
+	switch(s){
+		repeat_case:
+		{
+			dstAST a = desugar(s.??);
+			dstAST b = desugar(s.??);
+			dstAST c = desugar(s.??);
+			return ??(3, {a, b, c, s.??});
+		}
+	}
+}
+
+/**
+ * Test harness using symbolic srcASTs of depth 2.
+ */
+harness void main( int[30] arr){
+    int idx =0;
+    // produce generates a srcAST based on the non-deterministic array arr.
+    srcAST s = produce( arr, idx, 2);
+    srcAST c1 = interpretSrcAST(s);
+    // If c1 is null it means that the AST is not well formed.
+    if(c1!=null){
+        dstAST c2  = desugar(s);
+        dstAST c3 = interpretDstAST(c2);
+        assert(c3!=null);
+        assert(equals(c1,c3));
+    }
+}
+
+/////////////////////////////////////////
+// Helper functions used in the harness
+/////////////////////////////////////////
+
+/**
+ * Interpreter for src language is used by the test harnesses to check the equivalence of the source and destination ASTs 
+ */
+srcAST interpretSrcAST(srcAST s){
+	if(s==null) return null;
+	
+	switch(s){
+		case Prim1S:
+		{
+			opcode op = s.op;
+			switch(op){
+			case Oneg: {
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumS: return new NumS(val = (0-s_a.val));
+					default: return null;
+				}
+			}
+			case Onot: {
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case TrueS: return new FalseS();
+					case FalseS: return new TrueS();
+					default: return null;
+				}	
+			}
+			default: return null;
+			}
+		}
+		
+		case Prim2S:
+		{
+			opcode op  = s.op;
+			switch(op){
+			case Oplus: {
+				int a, b;
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumS: a = s_a.val;
+					default: return null;
+				}
+				srcAST s_b = interpretSrcAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumS: b = s_b.val;
+					default: return null;
+				}
+				return new NumS(val = a+b);
+			}
+			case Ominus: {
+				int a, b;
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumS: a = s_a.val;
+					default: return null;
+				}
+				srcAST s_b = interpretSrcAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumS: b = s_b.val;
+					default: return null;
+				}
+				return new NumS(val = a-b);
+			}
+			case Oand: {
+				bit a, b;
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case TrueS: a = 1;
+					case FalseS: a = 0;
+					default: return null;
+				}
+				srcAST s_b = interpretSrcAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case TrueS: b = 1;
+					case FalseS: b = 0;
+					default: return null;
+				}
+				if (a&&b) return new TrueS();
+				else return new FalseS();
+				
+			}
+			case Oor: {
+				bit a, b;
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case TrueS: a = 1;
+					case FalseS: a = 0;
+					default: return null;
+				}
+				srcAST s_b = interpretSrcAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case TrueS: b = 1;
+					case FalseS: b = 0;
+					default: return null;
+				}
+				if(a||b) return new TrueS();
+				else return new FalseS();
+				
+			}
+			case Ogt: {
+				int a, b;
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumS: a = s_a.val;
+					default: return null;
+				}
+				srcAST s_b = interpretSrcAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumS: b = s_b.val;
+					default: return null;
+				}
+				if(a>b) return new TrueS();
+				else return new FalseS();
+				
+			}
+			case Olt: {
+				int a, b;
+				srcAST s_a = interpretSrcAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumS: a = s_a.val;
+					default: return null;
+				}
+				srcAST s_b = interpretSrcAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumS: b = s_b.val;
+					default: return null;
+				}
+				if(a<b) return new TrueS();
+				else return new FalseS();
+				
+			}
+			default: return null;	
+			}			
+		}
+		case BetweenS:
+		{
+			int a, b, c;
+			srcAST s_a = interpretSrcAST(s.a);
+			
+			if(s_a==null) return null;
+			switch(s_a){
+				case NumS: a = s_a.val;
+				default: return null;
+			}
+			srcAST s_b = interpretSrcAST(s.b);
+			if(s_b==null) return null;
+			switch(s_b){
+				case NumS: b = s_b.val;
+				default: return null;
+			}
+			srcAST s_c = interpretSrcAST(s.c);
+			if(s_c==null) return null;
+			switch(s_c){
+				case NumS: c = s_c.val;
+				default: return null;
+			}
+			if(a<b&&b<c) return new TrueS();
+			else return new FalseS();
+			
+		}	
+		case IfS:
+		{
+			srcAST c  = interpretSrcAST(s.a);
+			if(c==null) return null;
+			switch(c){
+				case TrueS: return interpretSrcAST(s.b);
+				case FalseS: return interpretSrcAST(s.c);
+				default: return null;
+			}
+		}
+		default: return s;
+	}
+}
+	
+
+/**
+ * Interpreter for dst language 
+ */
+dstAST interpretDstAST(dstAST s){
+    if(s==null) return null;
+	switch(s){
+		case Prim1D:
+		{
+			opcode op = s.op;
+			switch(op){
+			case Oneg: {
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumD: return new NumD(val = (0-s_a.val));
+					default: return null;
+				}
+			}
+			case Onot: {
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case BoolD: return new BoolD( v = (!s_a.v));
+					default: return null;
+				}	
+			}
+			default:  return null;
+			}
+		}
+		
+		case Prim2D:
+		{
+			opcode op = s.op;
+			switch(op){
+			case Oplus: {
+				int a, b;
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumD: a = s_a.val;
+					default: return null;
+				}
+				dstAST s_b = interpretDstAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumD: b = s_b.val;
+					default: return null;
+				}
+				return new NumD(val = a+b);
+			}
+			case Ominus: {
+				int a, b;
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumD: a = s_a.val;
+					default: return null;
+				}
+				dstAST s_b = interpretDstAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumD: b = s_b.val;
+					default: return null;
+				}
+				return new NumD(val = a-b);
+			}
+			case Oand: {
+				bit a, b;
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case BoolD: a = s_a.v;
+					default: return null;
+				}
+				dstAST s_b = interpretDstAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case BoolD: b = s_b.v;
+					default: return null;
+				}
+				return new BoolD(v = a&&b);
+			}
+			case Oor: {
+				bit a, b;
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case BoolD: a = s_a.v;
+					default: return null;
+				}
+				dstAST s_b = interpretDstAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case BoolD: b = s_b.v;
+					default: return null;
+				}
+				return new BoolD(v = a||b);
+			}
+			case Ogt: {
+				int a, b;
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumD: a = s_a.val;
+					default: return null;
+				}
+				dstAST s_b = interpretDstAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumD: b = s_b.val;
+					default: return null;
+				}
+				return new BoolD(v = a>b);
+			}
+			case Olt: {
+				int a, b;
+				dstAST s_a = interpretDstAST(s.a);
+				if(s_a==null) return null;
+				switch(s_a){
+					case NumD: a = s_a.val;
+					default: return null;
+				}
+				dstAST s_b = interpretDstAST(s.b);
+				if(s_b==null) return null;
+				switch(s_b){
+					case NumD: b = s_b.val;
+					default: return null;
+				}
+				return new BoolD(v = a<b);
+			}
+			default: return null;	
+			}				
+		}
+		case IfD:
+		{
+			dstAST c  = interpretDstAST(s.a);
+			if(c==null) return null;
+			switch(c){
+				case BoolD:
+				{
+					if (c.v ==1) return interpretDstAST(s.b);
+					else return interpretDstAST(s.c);
+				}
+				default: return null;	
+			}
+		}
+		default: return s;
+	}
+}
+
+/**
+ * Checks that the srcAST and dstAST values represent the same value.
+ */
+bit equals(srcAST c1 ,dstAST c2){
+	switch(c1){
+		case NumS:
+		{
+			switch(c2){
+				case NumD: return c1.val == c2.val;
+				default: return false;
+			}
+		}
+		case TrueS:
+		{
+			switch(c2){
+				case BoolD:return c2.v==1;
+				default: return false;
+			}
+		}
+		case FalseS:
+		{
+			switch(c2){
+				case BoolD: return c2.v==0;
+				default: return false;
+			}
+		}
+		default: return false;
+	}
+}
+
+/**
+ * Function that produces a srcAST from the encoding of maximum depth bnd.
+ */
+srcAST produce(int[30] encoding, ref int idx, int bnd){
+	if(bnd <= 1 ){ 
+        if(encoding[idx]==0){ ++idx; return new NumS(val=encoding[idx++]); }
+        if(encoding[idx]==1){ ++idx; return new TrueS(); }else{ ++idx; return new FalseS(); }          
+    }
+    if(encoding[idx]==0){ ++idx; return new TrueS(); }
+    else if(encoding[idx]==1){ ++idx; return new FalseS();}
+    else if(encoding[idx]==2){ ++idx; return new NumS(val=encoding[idx++]); }
+    else if(encoding[idx]==3){ ++idx; return gOp(1, encoding[idx++],{ produce(encoding, idx, bnd-1)}); }
+    else if(encoding[idx]==4){++idx; return gOp(2, encoding[idx++],{ produce(encoding, idx, bnd-1),produce(encoding, idx, bnd-1)}); }
+    else if(encoding[idx]==5){ ++idx; return new IfS(a=produce(encoding, idx, bnd-1),b=produce(encoding, idx, bnd-1), c=produce(encoding, idx, bnd-1)); }
+    else{++idx; return new BetweenS(a=produce(encoding, idx, bnd-1),b=produce(encoding, idx, bnd-1),c=produce(encoding, idx, bnd-1)); }
+}
+
+srcAST gOp([int n], int op, srcAST[n] p){
+	opcode o = intToOpcode(op);
+	if(n==1){
+		return new Prim1S( op= o, a = p[0]);
+	}else{
+		return new Prim2S(op=o, a=p[0], b=p[1]);
+	}
+} 
+
+opcode intToOpcode (int op){
+	if (op == 0) return new Oplus();
+	if (op == 1) return new Ominus();
+	if (op == 2) return new Oneg();
+	if (op == 3) return new Oand();
+	if (op == 4) return new Oor();
+	if (op == 5) return new Onot();
+	if (op == 6) return new Olt();
+	return new Ogt();
+}
+

@@ -24,6 +24,10 @@ public class EliminateMacros extends SymbolTableVisitor{
     @Override
     public Object visitExprFieldMacro(ExprFieldMacro exp){
         Type t = exp.getType();
+        if (t.isStruct())
+            if (nres.isTemplate(((TypeStructRef) t).getName()))
+                return exp;
+
         if (getType(exp.getLeft()).isStruct()) {
             StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
             List<Expression> matchedFields = new ArrayList<Expression>();

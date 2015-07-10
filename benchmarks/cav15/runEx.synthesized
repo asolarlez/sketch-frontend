@@ -1,0 +1,53 @@
+void desugar (srcAST src, ref dstAST _out)/*runEx.sk:28*/
+{
+  _out = null;
+  if(src == (null))/*runEx.sk:29*/
+  {
+    _out = null;
+    return;
+  }
+  switch(src){/*runEx.sk:30*/
+    case NumS:
+    {
+      int v_s553 = src.v;
+      dstAST dstAST_s552 = new NumD@ANONYMOUS(v=v_s553);
+      _out = dstAST_s552;
+      return;
+    }
+    case PlusS:
+    {
+      dstAST@ANONYMOUS a_s562_s633 = null;
+      desugar(src.a, a_s562_s633);
+      dstAST@ANONYMOUS b_s563_s636 = null;
+      desugar(src.b, b_s563_s636);
+      opcode opcode_s565 = new PlusOp@ANONYMOUS();
+      dstAST dstAST_s559 = new BinopD@ANONYMOUS(op=opcode_s565, a=a_s562_s633, b=b_s563_s636);
+	  _out = dstAST_s559;
+      return;
+    }
+    case MinusS:
+    {
+      dstAST@ANONYMOUS a_s569_s642 = null;
+      desugar(src.a, a_s569_s642);
+      dstAST@ANONYMOUS b_s570_s645 = null;
+      desugar(src.b, b_s570_s645);
+      opcode opcode_s572 = new MinusOp@ANONYMOUS();
+      dstAST dstAST_s566 = new BinopD@ANONYMOUS(op=opcode_s572, a=a_s569_s642, b=b_s570_s645);
+      _out = dstAST_s566;
+      return;
+    }
+    case TrueS:
+    {
+      dstAST dstAST_s573 = new BoolD@ANONYMOUS(val=1);
+      _out = dstAST_s573;
+      return;
+    }
+    case FalseS:
+    {
+      dstAST dstAST_s580 = new BoolD@ANONYMOUS(val=0);
+      _out = dstAST_s580;
+      return;
+    }
+  }
+}
+	  

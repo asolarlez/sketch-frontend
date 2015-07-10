@@ -1,4 +1,4 @@
-pragma options "--fe-keep-tmp --bnd-inbits 1 --bnd-arr-size 1 --bnd-unroll-amnt 1 --bnd-inline-amnt 2";
+pragma options "--bnd-inbits 1 --bnd-arr-size 1 --bnd-unroll-amnt 1 --bnd-inline-amnt 2";
 
 package la;
 

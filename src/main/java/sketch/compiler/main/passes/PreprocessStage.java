@@ -11,9 +11,11 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
-import sketch.compiler.passes.preprocessing.EliminateTripleEquals;
+import sketch.compiler.passes.preprocessing.EliminateMacros;
 import sketch.compiler.passes.preprocessing.ExpandADTHoles;
+import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
+import sketch.compiler.passes.preprocessing.RemoveExprGet;
 import sketch.compiler.passes.preprocessing.ReplaceADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
 
@@ -46,8 +48,6 @@ public class PreprocessStage extends MetaStage {
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
-        prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
-        // prog.debugDump("after expand ===");
         prog = (Program) prog.accept(new SeparateInitializers());
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
@@ -56,8 +56,8 @@ public class PreprocessStage extends MetaStage {
 
         // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
         prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
-
-        prog = (Program) prog.accept(new EliminateRegens(varGen));
+        // prog.debugDump("before regens");
+        // prog = (Program) prog.accept(new EliminateRegens(varGen));
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
 
@@ -76,32 +76,31 @@ public class PreprocessStage extends MetaStage {
                         useInsertEncoding));
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
-        
 
+
+        // prog.debugDump("After remove expr get");
+
+        // Remove ExprGet will generate regens and adt holes
+        prog = (Program) prog.accept(new EliminateRegens(varGen));
+        // prog.debugDump();
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-
-
-        prog = (Program) prog.accept(new ExpandADTHoles());
+        // prog.debugDump();
 
 
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
+        prog = (Program) prog.accept(new ExpandADTHoles());
         // prog = ir1.run(prog);
         // prog.debugDump("before type inference");
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
-
-        prog = (Program) prog.accept(new EliminateFieldHoles());
-        //prog.debugDump("af");
+        // prog.debugDump("af");
         
-        prog = (Program) prog.accept(new ReplaceADTHoles());
+
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
             prog.accept(new PerformFlowChecks());
         }
-        // prog.debugDump("Before fun call");
-        // prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
-        // prog.debugDump("After fun call");
 
         prog = (Program) prog.accept(new EliminateUnboxedStructs(varGen));
 
@@ -111,13 +110,31 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
-        // prog.debugDump("before preprocess");
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
-            //prog.debugDump("after preprocess");
+            // prog.debugDump("after preprocess");
         }
+        prog = (Program) prog.accept(new ExpandRepeatCases());
+        // prog.debugDump();
+        prog = (Program) prog.accept(new EliminateMacros());
+        // prog.debugDump("af");
+
+        // TODO: ExpandADTHoles should deal with function parameters
+
+        prog = (Program) prog.accept(new ExpandADTHoles());
+
+        prog =
+                (Program) prog.accept(new RemoveExprGet(varGen, options.bndOpts.arrSize,
+                        options.bndOpts.gucDepth));
+        // prog.debugDump();
+        prog = (Program) prog.accept(new EliminateRegens(varGen));
+        prog = (Program) prog.accept(new ExpandADTHoles());
+        prog = (Program) prog.accept(new TypeInferenceForStars());
+        prog = (Program) prog.accept(new EliminateFieldHoles());
+        // prog.debugDump();
+        prog = (Program) prog.accept(new ReplaceADTHoles());
 
         return prog;
     }

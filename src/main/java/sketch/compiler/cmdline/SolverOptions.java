@@ -84,7 +84,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public CmdLineHashSet randdegrees = new CmdLineHashSet();
 
     @CliParameter(help = "Number of rounds on a single back-end invocation.")
-    public int ntimes = 0;
+    public int ntimes = -1;
 
     @CliParameter(help = "Strategy for parallel-running.")
     public Strategies strategy = Strategies.NOT_SET;
@@ -110,6 +110,15 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Maximum steps of random simulation to perform for every verification step.")
     public int simiters = 4;
+
+    @CliParameter(help = "Only randomize depth holes of GUC")
+    public boolean onlySpRand = false;
+
+    @CliParameter(help = "Bias for special randomize holes")
+    public int spRandBias = 1;
+
+    @CliParameter(help = "Don't optimize using specification")
+    public boolean unoptimized = false;
 
     public enum ReorderEncoding {
         exponential, quadratic

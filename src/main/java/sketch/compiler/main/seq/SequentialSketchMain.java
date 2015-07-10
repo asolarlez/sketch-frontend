@@ -69,14 +69,7 @@ import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
-import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
-import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
-import sketch.compiler.passes.preprocessing.EliminateMacros;
-import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
-import sketch.compiler.passes.preprocessing.MethodRename;
-import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
-import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
-import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
+import sketch.compiler.passes.preprocessing.*;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.solvers.SATBackend;
@@ -497,11 +490,12 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
     public Program preprocAndSemanticCheck(Program prog) {
 
-
-        prog = (Program) prog.accept(new ExpandRepeatCases());
+        prog =
+                (Program) prog.accept(new CreateHarnesses(varGen,
+                        !options.solverOpts.unoptimized, options.bndOpts.arrSize,
+                        options.bndOpts.srcTupleDepth));
         // prog.debugDump();
-        prog = (Program) prog.accept(new EliminateMacros());
-        // prog.debugDump("af");
+
         prog = (Program) prog.accept(new ConstantReplacer(null));
         
         prog = (Program) prog.accept(new MinimizeFcnCall());
@@ -510,8 +504,10 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         
         prog = (Program) prog.accept(new PidReplacer());
 
-
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+
+        prog = (Program) prog.accept(new ExpandRepeatCases());
+        prog = (Program) prog.accept(new EliminateMacros());
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
@@ -520,6 +516,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             throw new ProgramParseException("Semantic check failed");
         }
 
+        prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());
 
         // prog = (getBeforeSemanticCheckStage()).run(prog);

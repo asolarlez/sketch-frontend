@@ -1,0 +1,252 @@
+//@Description This sketch synthesizes optimizations on ASTs.
+
+bit Bit = 1; // To indicate whether a variable corresponds to Num or Bool
+bit Int = 0;
+
+/**
+ * AST nodes definitions
+ */
+adt AST {
+	Equal {AST a; AST b;}
+	Plus {AST a; AST b;}
+	Lt {AST a; AST b;}
+	Gt {AST a; AST b;}
+	Var {int id; bit type; }
+	Num {int val;}
+	And {AST a; AST b;}
+	Or {AST a; AST b;}
+	Not {AST a;}
+	Mux {AST v; AST a; AST b;}
+	Bool {bit x;}
+}
+
+/**
+ * This generator optimizes the given AST original by finding a predicate 
+ * and an optimized AST if that predicate is satisfied.
+ */
+generator AST optimize ([int n], AST original, int[n] assignment) {
+	AST predicate = ??(3, {}); // Find a random predicate
+	
+	// Make sure that there exists atleast one input that satisfies the predicate
+	int[4] tmp = ??;
+	int[n] posAssignment = tmp[0::n];
+	assert( check(n, predicate, posAssignment) );
+	
+	if (check(n, predicate, assignment)) {
+		AST optimized = ??(3, {});
+		// Make sure that both versions give the same result
+		assert(equals(run(n, original, assignment),run(n, optimized, assignment)));
+		// Make sure that the optimized version is actually smaller
+		int c = count(optimized);
+		assert(c < count(original));
+		return optimized;
+	} 
+	return original;
+}
+
+/**
+ * Test harnesses
+ * The above sketch is used to optimize 4 different ASTs.
+ */ 
+ 
+/*
+ *	a 	b  c   d
+ *   \ /    \ /
+ *    +     +
+ *     \   /
+ *       =
+ */
+harness AST plusEqualsOptim (int[4] assignment) {
+	AST original1 = new Equal(a = new Plus(a= new Var(id = 0), b = new Var(id = 1)), b = new Plus(a = new Var(id = 2), b= new Var(id =3)));
+	return optimize(4, original1, assignment);
+}
+
+/*
+ *	a 	b  c   d
+ *   \ /    \ /
+ *    <     <
+ *     \   /
+ *       &
+ */
+harness AST andLtOptim(int[4] assignment) {
+	AST original = new And(a = new Lt(a= new Var(id = 0), b = new Var(id = 1)), b = new Lt(a = new Var(id = 2), b= new Var(id =3)));
+	return optimize(4, original, assignment);
+}
+
+/*
+ *		   y
+ *         |   
+ *    x    !
+ *     \   /
+ *       &
+ */
+harness AST andNotOptim(int[2] assignment) {
+	AST original = new And(a= new Var(id = 0, type = Bit), b = new Not(a = new Var(id = 1, type = Bit)));
+	return optimize(2, original, assignment);
+}
+
+/*
+ *            a    b
+ *          __|____|__
+ *     x_!_|  0    1 |
+ *         |_________|
+ *
+ */
+harness AST muxOptim(int [3] assignment) {
+	AST original = new Mux(a = new Var(id =0), b = new Var(id = 1), v= new Not(a = new Var(id = 2, type = Bit)));
+	return optimize(3, original, assignment);	
+}
+
+///////////////////////////
+// Helper methods
+///////////////////////////
+
+/*
+ * This method executes the AST p on the assignment.
+ */
+AST run([int n], AST p, int[n] assignment) {
+	if (p == null) return null;
+	switch(p) {
+		case Equal: {
+			Num a = (Num)run(p.a, assignment);
+			Num b = (Num)run(p.b, assignment);
+			return new Bool(x = a.val  == b.val );
+		}	
+		
+		case Plus: {
+			Num a = (Num)run(p.a, assignment);
+			Num b = (Num)run(p.b, assignment);
+			return new Num(val =  a.val + b.val);
+		} 
+		
+		case Lt: {
+			Num a = (Num)run(p.a, assignment);
+			Num b = (Num)run(p.b, assignment);
+			return new Bool(x = a.val < b.val);
+		}
+		
+		case Gt: {
+			Num a = (Num)run(p.a, assignment);
+			Num b = (Num)run(p.b, assignment);
+			return new Bool (x = a.val > b.val);
+		}
+		
+		case Var : {
+			assert p.id < n;
+			if (p.type == Int) {
+				return new Num(val = assignment[p.id]);
+			} else {
+				return new Bool(x = assignment[p.id] == 1);
+			}
+		}
+		case And : {
+			Bool a = (Bool) run(p.a, assignment);
+			Bool b = (Bool) run(p.b, assignment);
+			return new Bool(x = a.x && b.x);
+		}
+		case Or : {
+			Bool a = (Bool) run(p.a, assignment);
+			Bool b = (Bool) run(p.b, assignment);
+			return new Bool(x = a.x || b.x);
+		}
+		case Not : {
+			Bool a = (Bool) run(p.a, assignment);
+			return new Bool(x = !a.x);
+		}
+		case Mux: {
+			Bool v = (Bool) run(p.v, assignment);
+			return v.x ?  run(p.a, assignment) : run(p.b, assignment);
+		}
+		default : return p;
+	}
+
+}
+
+/*
+ * This method counts the number of nodes in the AST d.
+ */
+int count(AST d) {
+	if (d == null) return 0;
+	switch(d) {
+		case Equal:{
+			int a = count(d.a);
+			int b = count(d.b);
+			return a + b +1;
+		}
+		case Plus: {
+			int a = count(d.a);
+			int b = count(d.b);
+			return a + b + 1;
+		}
+		case Lt: {
+			int a = count(d.a);
+			int b = count(d.b);
+			return a + b + 1;
+		}
+		case Gt: {
+			int a = count(d.a);
+			int b = count(d.b);
+			return a + b + 1;
+		}
+		case And: {
+			int a = count(d.a);
+			int b = count(d.b);
+			return a + b + 1;
+		}
+		case Or: {
+			int a = count(d.a);
+			int b = count(d.b);
+			return a + b + 1;
+		}
+		case Not: {
+			int a = count(d.a);
+			return a + 1;
+		}
+		case Mux: {
+			int a = count(d.a);
+			int b = count(d.b);
+			int c = count(d.v);
+			return a + b + c + 1;
+		}
+		default: {
+			return 1;
+		}
+	}
+}
+
+/*
+ * Checks if a predicate p is true on the given assignment.
+ */
+bit check([int n], AST p, int[n] assignment) {
+	AST r = run(p, assignment);
+	switch (r) {
+		case Bool: return r.x;
+		default: {assert false; return 0;}
+	}
+}
+
+/*
+ * Checks if two ASTs are equal.
+ * This method is simplified because it is only called after ASTs are run on assignments.
+ */
+bit equals(AST a, AST b) {
+	if (a == null){ return true;}
+	if (b == null){return false;}
+	
+	switch(a) {
+		case Num: {
+			switch(b) {
+				case Num: return a.val == b.val;
+				default: return false;
+			}
+		}
+		
+		case Bool: {
+			switch(b) {
+				case Bool: return a.x == b.x;
+				default: return false;
+			}
+		}
+		default: return true;
+	}
+}

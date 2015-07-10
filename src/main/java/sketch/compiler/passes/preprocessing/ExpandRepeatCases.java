@@ -20,6 +20,8 @@ class CloneHoles extends FEReplacer {
     public Object visitExprStar(ExprStar es) {
         ExprStar newStar = new ExprStar(es);
         es.renewName();
+        if (es.special())
+            newStar.makeSpecial(es.parentHoles());
         return newStar;
     }
 
@@ -53,32 +55,43 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
         TypeStructRef tres = (TypeStructRef) getType(stmt.getExpr());
         LinkedList<String> queue = new LinkedList<String>();
         String name = nres.getStruct(tres.getName()).getFullName();
+        if (nres.isTemplate(tres.getName()))
+            return stmt;
         queue.add(name);
         // List<String> children = nres.getStructChildren(tres.getName());
         if (stmt.getCaseConditions().size() == 0) {
             return stmt;
         }
-        String c = stmt.getCaseConditions().get(0);
+        for(String c : stmt.getCaseConditions()) {
         if ("repeat".equals(c)) {
 
-            while (!queue.isEmpty()) {
+                while (!queue.isEmpty()) {
 
-                String parent = queue.removeFirst();
-                List<String> children = nres.getStructChildren(parent);
-                if (children.isEmpty()) {
-                    Statement body = (Statement) stmt.getBody(c).accept(this);
-                    body = (Statement) (new CloneHoles()).process(body).accept(this);
-                    newStmt.addCaseBlock(parent.split("@")[0], body);
-                } else {
-                    queue.addAll(children);
+                    String parent = queue.removeFirst();
+                    String caseName = parent.split("@")[0];
+                    if (!newStmt.getCaseConditions().contains(caseName)) {
+                        List<String> children = nres.getStructChildren(parent);
+                        if (children.isEmpty()) {
+                            Statement body = (Statement) stmt.getBody(c).accept(this);
+                            body =
+                                    (Statement) (new CloneHoles()).process(body).accept(
+                                            this);
+                            newStmt.addCaseBlock(caseName, body);
+                        } else {
+                            queue.addAll(children);
 
+                        }
+                    }
                 }
-            }
 
-            return newStmt;
-        } else {
-            return stmt;
+                return newStmt;
+            } else {
+                Statement body = (Statement) stmt.getBody(c).accept(this);
+                body = (Statement) (new CloneHoles()).process(body).accept(this);
+                newStmt.addCaseBlock(c, body);
+            }
         }
+        return newStmt;
 
     }
 
