@@ -56,6 +56,7 @@ import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.util.datastructures.TypedHashMap;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -1076,21 +1077,28 @@ public class FEReplacer implements FEVisitor
 		List<ExprVar> newParameters = new ArrayList<ExprVar>();
 		Expression newExpression;
         
-        // Loop through all the parameters
-        for(ExprVar parameter : exprLambda.getParameters()) {
-        	// Analyze the parameter an return a new one
-        	ExprVar newParameter = (ExprVar) parameter.accept(this);
-        	
-        	// Add the new parameter to the list of new parameters
-            newParameters.add(newParameter);
-            
-            // If the new parameter is different from the original parameter
-            if(parameter != newParameter) {
-            	// There has been a change
-            	hasChanged = true;
-            }
-        }
-        
+		try {
+	        // Loop through all the parameters
+	        for(ExprVar parameter : exprLambda.getParameters()) {
+        		// Analyze the parameter an return a new one
+        		ExprVar newParameter = (ExprVar) parameter.accept(this);        		
+	        	
+				// Add the new parameter to the list of new parameters
+	            newParameters.add(newParameter);
+	            
+	            // If the new parameter is different from the original parameter
+	            if(parameter != newParameter) {
+	            	// There has been a change
+	            	hasChanged = true;
+	            }
+	        }
+      	}
+		catch(ClassCastException cce) {
+			// Most likely an actual value was mapped to a ExprVar. This occurs when there is
+			// shadowing of lambda expressions.
+			throw new ExceptionAtNode("Shadowing of local functions is not allowed: " + exprLambda, exprLambda);
+		} 
+		
         // Analyze the expression and return a new one
         newExpression = this.doExpression(exprLambda.getExpression());
         
