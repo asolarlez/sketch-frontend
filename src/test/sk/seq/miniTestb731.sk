@@ -1,0 +1,15 @@
+// Testing that we can call a lambda expression with in a local
+// function before it is hoisted out of scope
+
+harness void main() {
+	fun f = (,x) -> x + 1;
+	
+	int o = 1;
+	
+	int three(int i) {
+		int temp = f(1) + i;
+		return temp;
+	}
+	
+	assert three(o) == 3;
+}

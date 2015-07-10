@@ -1,4 +1,4 @@
-//
+// Testing that the expression of a lambda function can have another function
 
 harness void main(){	
     fun f1 = (,x) -> x + 1;

@@ -1303,7 +1303,17 @@ public class RemoveFunctionParameters extends FEReplacer {
             };
 
             for (int i = 0; i < svd.getNumVars(); ++i) {
-                frmap.declRepl(svd.getName(i), null);
+            	// If the statement is a lambda expression
+            	if (svd.getType(i) instanceof TypeFunction && svd.getInit(0) instanceof ExprLambda) {
+    				// Map the function call to the lambda expression
+    				localLambda.put(svd.getName(0), (ExprLambda) svd.getInit(0));
+    				
+					return null;
+
+    			}
+            	else {
+            		frmap.declRepl(svd.getName(i), null);            		
+            	}
             }
             List<Type> newTypes = new ArrayList<Type>();
             boolean changed = false;
@@ -1331,6 +1341,12 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
+			// If there is a local lambda expression
+			if (localLambda.containsKey(efc.getName())) {
+				// Return that inlined version of the lambda expression
+				 return inlineLocalLambda(efc, localLambda.get(efc.getName()));
+			}
+        	
             String oldName = efc.getName();
             String newName = frmap.findRepl(oldName);
             if (newName == null) {
