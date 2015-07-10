@@ -394,7 +394,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 	 */
 	public Object visitStmtVarDecl(StmtVarDecl svd) {
 		for (int i = 0; i < svd.getNumVars(); ++i) {
-			if (svd.getType(i) instanceof TypeFunction) {
+			if (svd.getType(i) instanceof TypeFunction && svd.getInit(0) instanceof ExprLambda) {
 				// Map the function call to the lambda expression
 				this.localLambda.put(svd.getName(0), (ExprLambda) svd.getInit(0));
 				
@@ -403,6 +403,13 @@ public class RemoveFunctionParameters extends FEReplacer {
 				// throw new ExceptionAtNode(
 				// "You can not declare a variable with fun type.", svd);
 			}
+			
+			// By this point, the variable is not of type fun, so if the assignment is a lambda, 
+			// then there is an error
+			if(svd.getInit(0) instanceof ExprLambda) {
+				throw new TypeErrorException("You are assigning a lambda expression to an invalid type: " + svd, svd);
+			}
+			
 		}
 
 		Object o = super.visitStmtVarDecl(svd);
