@@ -44,8 +44,9 @@ import sketch.util.exceptions.TypeErrorException;
 public class RemoveFunctionParameters extends FEReplacer {
 	final TempVarGen 			varGen;
 
-	private Map<String, ExprLambda> localLambda = new HashMap<String, ExprLambda>();
-	private Map<ExprVar, Expression> lambdaReplace = new HashMap<ExprVar, Expression>();
+	private Map<String, ExprLambda> 	localLambda = new HashMap<String, ExprLambda>();
+	private Map<ExprVar, Expression> 	lambdaReplace = new HashMap<ExprVar, Expression>();
+	private Map<String, List<ExprVar>> 	lambdaFunctionsNeededVariables = new HashMap<String, List<ExprVar>>();
 
 	Map<String, SymbolTable> 	tempSymtables = new HashMap<String, SymbolTable>();
 	Map<String, NewFunInfo> 	extractedInnerFuns = new HashMap<String, NewFunInfo>();
@@ -232,7 +233,11 @@ public class RemoveFunctionParameters extends FEReplacer {
 				if (fun == null && actual instanceof ExprLambda) {
 					// Create a new function similar to the original, that is, where the 
 					// function is being called
-					fun = this.createTempFunction(orig, nfn, cpkg);
+					fun = this.createTempFunction(orig, nfn, cpkg, orig.getParams());
+
+					// Get a list of the variables needed in this new function
+					this.lambdaFunctionsNeededVariables.put(fun.getName(), 
+							((ExprLambda) actual).getVariablesInScopeInExpression());
 
 				}
 				else if(fun == null) {
@@ -259,18 +264,20 @@ public class RemoveFunctionParameters extends FEReplacer {
 	}
 
 	/**
-	 * Create a temporary function when there is a lambda expression. The new function
-	 * will be similar to the one where the lambda expression function is being called.
+	 * Create a temporary function when there is a lambda expression. The new
+	 * function will be similar to the one where the lambda expression function
+	 * is being called.
 	 * 
 	 * @param origin
 	 * @param name
 	 * @param currentPackage
+	 * @param parameters
 	 * @return
 	 */
-	private Function createTempFunction(Function origin, String name, String currentPackage) {
+	private Function createTempFunction(Function origin, String name, String currentPackage, List<Parameter> parameters) {
 		return origin.creator()
 				.returnType(origin.getReturnType())
-				.params(origin.getParams())
+				.params(parameters)
 				.name(name)
 				.pkg(currentPackage)
 				.create();
@@ -378,7 +385,10 @@ public class RemoveFunctionParameters extends FEReplacer {
 		Program np = p.creator().streams(newPkges).create();
 
 		Program aftertc = (Program) np.accept(new ThreadClosure());
-		return aftertc.accept(new FixPolymorphism());
+
+		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
+
+		return afterLambdaClosure.accept(new FixPolymorphism());
 
 	}
 
@@ -1191,6 +1201,90 @@ public class RemoveFunctionParameters extends FEReplacer {
     }
 
     /**
+     * This is the last step of lambda expressions. Once a temp function was created out
+     * of a lambda expression, we check to make sure that the new functions have all
+     * the variables that they need. If lambda expressions need a variable, we pass those
+     * variables to the temp variables.
+     * 
+     * @author Miguel Velez
+     * @version 0.1
+     */
+	private class LambdaThread extends SymbolTableVisitor {
+
+		private Map<String, List<Parameter>> tempFunctionsParametersNeeded = new HashMap<String, List<Parameter>>();
+
+		public LambdaThread() {
+			super(null);
+		}
+
+		public Object visitFunction(Function function) {
+			// if there is a temp function that needs parameters
+			if(this.tempFunctionsParametersNeeded.containsKey(function.getName())) {
+				// New formal parameters
+				List<Parameter> formalParamters = new ArrayList<Parameter>();
+				
+				// Get the current formal parameters
+				formalParamters.addAll(function.getParams());
+				
+				// Loop through all the parameters that the function needs
+				for(Parameter parameter : this.tempFunctionsParametersNeeded.get(function.getName())) {
+					// add the parameter to the formal parameters
+					formalParamters.add(parameter);
+				}
+				
+				// Create a new function with the new parameters
+				function = createTempFunction(function, function.getName(), function.getPkg(), formalParamters);
+			}
+			
+			// Visit and return the function
+			return (Function) super.visitFunction(function);
+		}
+
+		public Object visitExprFunCall(ExprFunCall exprFunctionCall) {
+			// If this is a lambda call and it needs variables
+			if(lambdaFunctionsNeededVariables.containsKey(exprFunctionCall.getName())) {
+				// Get the variables that are needed in this call
+				List<ExprVar> variablesNeeded = lambdaFunctionsNeededVariables.get(exprFunctionCall.getName());
+				
+				// Lists for holding the parameters
+				List<Expression> actualParameters = new ArrayList<Expression>();
+				List<Parameter> formalParameters = new ArrayList<Parameter>();
+				
+				// Add the current actual parameters
+				actualParameters.addAll(exprFunctionCall.getParams());		 
+						 			
+				// Loop through the variables needed
+				for(ExprVar variable : variablesNeeded) {
+					// If this variable is already added
+					if(actualParameters.contains(variable)) {
+						// Skip this variable
+						continue;
+					}
+					
+					// Add the variable to the actual parameters
+					actualParameters.add(variable);
+					
+					// Get the type of variable
+					Type type = this.symtab.lookupVar(variable);
+					
+					// Add the parameter to the list of formal parameters of the function declaration
+					formalParameters.add(new Parameter(variable, type, variable.getName()));
+				}
+				
+				// Create a new function call with the new actual parameters
+				exprFunctionCall = new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), actualParameters);
+				
+				// Add the formal parameter to be replaced in the function call
+				this.tempFunctionsParametersNeeded.put(exprFunctionCall.getName(), formalParameters);
+			}
+			
+			// Visit and return the function call
+			return (ExprFunCall) super.visitExprFunCall(exprFunctionCall);
+		}
+
+	}
+
+    /**
      * Hoist out inner functions, and extract the information about which inner function
      * used what variables defined in its containing function (the "closure"). This
      * visitor will define the value of <code> extractedInnerFuns </code>.
@@ -1313,7 +1407,7 @@ public class RemoveFunctionParameters extends FEReplacer {
     			}
             	else {
             		frmap.declRepl(svd.getName(i), null);            		
-            	}
+            	}	
             }
             List<Type> newTypes = new ArrayList<Type>();
             boolean changed = false;
