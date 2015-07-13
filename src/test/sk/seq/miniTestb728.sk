@@ -6,5 +6,5 @@ int apply(fun f, int x) {
 }
 
 harness void main(int x){	
-    assert apply((,x) -> x + x, x) == 2*x + 5;
+    assert apply((,y) -> y + y, x) == 2*x + 5;
 }
