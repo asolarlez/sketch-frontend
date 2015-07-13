@@ -1,0 +1,13 @@
+// Testing passing a local variable inside a multiple lambda expressions
+
+int apply(fun f1, fun f2, int x) {
+	return f1(x) + f2(x);
+}
+
+harness void main(){	
+    int local1 = 1;
+    int local2 = 2;
+              
+    assert apply((,x) -> x + local1, (,y) -> local2 + y,  2) == 7;
+  
+}

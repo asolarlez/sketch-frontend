@@ -235,9 +235,24 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// function is being called
 					fun = this.createTempFunction(orig, nfn, cpkg, orig.getParams());
 
-					// Get a list of the variables needed in this new function
-					this.lambdaFunctionsNeededVariables.put(fun.getName(), 
-							((ExprLambda) actual).getVariablesInScopeInExpression());
+					// If this function already has some variables that it needs
+					if(this.lambdaFunctionsNeededVariables.containsKey(fun.getName())) {
+						// Get the current formal parameters
+						List<ExprVar> formalParameters = 
+								this.lambdaFunctionsNeededVariables.get(fun.getName());
+						
+						// Append the ones that it needs
+						formalParameters.addAll(((ExprLambda) actual).getVariablesInScopeInExpression());						
+						
+						// Add all the needed parameters
+						this.lambdaFunctionsNeededVariables.put(fun.getName(), formalParameters);
+					}
+					else {
+						// Get a list of the variables needed in this new function
+						this.lambdaFunctionsNeededVariables.put(fun.getName(), 
+								((ExprLambda) actual).getVariablesInScopeInExpression());												
+					}
+
 
 				}
 				else if(fun == null) {
