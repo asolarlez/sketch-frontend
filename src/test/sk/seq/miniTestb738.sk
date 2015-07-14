@@ -1,0 +1,19 @@
+// Testing a function (moo) that takes two functions. This function calls one by taking
+// the other as parameter.  Using a defined function and lambda as the functions
+// for the high order function (moo).
+
+int foo(fun f) {
+	return f(4);
+}
+
+int moo(fun f, fun g) {
+	return g(f);
+}
+
+harness void main(){
+	int four = 4;
+	
+	fun f = (,x) -> four + x;
+	
+	assert moo(f, foo) == 8;
+}
