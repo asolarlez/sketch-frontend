@@ -2,7 +2,7 @@
 
 harness void main(){	
     fun f1 = (,x) -> x + 1;
-    fun f2 = (,y) -> f1(y) + 1;
+    fun f2 = (,y) -> 1 + f1(y);
     fun f3 = (,z) -> f2(z) + 1;
     
     int temp = f3(2);

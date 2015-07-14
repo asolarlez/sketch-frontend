@@ -1,0 +1,17 @@
+// Testing passing a local lambda with variables a calls to other lambdas to a function that 
+// takes another function
+
+int apply(fun f, int x) {
+	return f(x);
+}
+
+harness void main(){
+	int four = 4;
+	int one = 1;
+			
+	fun f0 = (,z) -> one + 1 + z; 
+    fun f1 = (,y) -> y + f0(y) + four;
+    fun f2 = (,t) -> f1(t) + 1;
+              
+    assert apply(f2, 5) == 17;
+}
