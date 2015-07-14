@@ -1,0 +1,17 @@
+// Testing lambda calls a inner function
+
+int apply(fun f) {
+	return f(5);
+}
+
+harness void main(){
+	int four = 4;
+	
+	int foo() {
+		return four;	
+	}
+	
+	fun f = (,x) -> foo() + x;
+  
+    assert apply(f) == 9;
+}

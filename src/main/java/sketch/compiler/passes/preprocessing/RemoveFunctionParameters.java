@@ -1436,8 +1436,11 @@ public class RemoveFunctionParameters extends FEReplacer {
             for (int i = 0; i < svd.getNumVars(); ++i) {
             	// If the statement is a lambda expression
             	if (svd.getType(i) instanceof TypeFunction && svd.getInit(0) instanceof ExprLambda) {
-    				// Map the function call to the lambda expression
-    				localLambda.put(svd.getName(0), (ExprLambda) svd.getInit(0));
+    				// Visit the lambda in case some of the values in the expression need to change
+            		ExprLambda lambda = (ExprLambda) this.doExpression(svd.getInit(0));
+    				
+            		// Map the function call to the lambda expression
+    				localLambda.put(svd.getName(0),  lambda);
     				
 					return null;
 
