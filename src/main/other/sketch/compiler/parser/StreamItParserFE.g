@@ -650,7 +650,7 @@ special_assert_statement returns [StmtSpAssert s] { s = null; List<String> bindi
 				set.put(name1.getText(), x); 
 				bindingsInOrder.add(name1.getText()); })* )?
 	  ) LCURLY
-	  ((t1: TK_precond) preCond = right_expr)?
+	  ((t1: TK_assume) preCond = right_expr)?
 	  ((t2 : TK_assert) x = right_expr SEMI {
 			asserts.add(x);
 		})

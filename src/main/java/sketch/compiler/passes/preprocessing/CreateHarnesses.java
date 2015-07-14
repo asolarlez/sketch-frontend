@@ -118,6 +118,16 @@ public class CreateHarnesses extends FEReplacer {
                     StmtVarDecl stmt =
                             new StmtVarDecl(sa, TypePrimitive.inttype, var, exp);
                     body.add(stmt);
+                } else if (exp instanceof ExprNew) {
+                    Type t = ((ExprNew) exp).getTypeToConstruct();
+                    assert (t instanceof TypeStructRef);
+                    String pname =
+                            nres.getStructParentName(((TypeStructRef) t).getName());
+                    if (pname != null) {
+                        t = new TypeStructRef(pname, false);
+                    }
+                    StmtVarDecl stmt = new StmtVarDecl(sa, t, var, exp);
+                    body.add(stmt);
                 } else {
                     assert (false); // Not yet supported
                 }

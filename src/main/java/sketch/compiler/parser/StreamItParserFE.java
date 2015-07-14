@@ -1123,11 +1123,11 @@ inputState.guessing--;
 				match(LCURLY);
 				{
 				switch ( LA(1)) {
-				case TK_precond:
+				case TK_assume:
 				{
 					{
 					t1 = LT(1);
-					match(TK_precond);
+					match(TK_assume);
 					}
 					preCond=right_expr();
 					break;
