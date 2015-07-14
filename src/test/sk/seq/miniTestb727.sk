@@ -7,5 +7,5 @@ int five(fun f, int x) {
 harness void main(){	
 	int four = 4;
 	
-    assert five((,x) -> x + 1, four) == 5;
+    assert five((,z) -> z + 1, four) == 5;
 }

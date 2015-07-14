@@ -255,6 +255,18 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 
 				}
+				// If the actual parameters is a variable
+				else if(actual instanceof ExprVar) {
+					// Cast it as an expr var
+					ExprVar lambdaVariable = (ExprVar) actual;
+					
+					// If there is a local lambda function that was defined previously
+					// with the same name
+					if(localLambda.containsKey(lambdaVariable.getName())) {
+						// Create a special function
+						fun = this.createTempFunction(orig, nfn, cpkg, orig.getParams());
+					}
+				}
 				else if(fun == null) {
 					throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
 				}
