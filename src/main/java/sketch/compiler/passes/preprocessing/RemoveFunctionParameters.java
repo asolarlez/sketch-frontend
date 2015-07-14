@@ -263,8 +263,15 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// If there is a local lambda function that was defined previously
 					// with the same name
 					if(localLambda.containsKey(lambdaVariable.getName())) {
+						// Get the lambda expression
+						ExprLambda lambda = localLambda.get(lambdaVariable.getName());
+						
 						// Create a special function
 						fun = this.createTempFunction(orig, nfn, cpkg, orig.getParams());
+						
+						// Get a list of the variables needed in this new function
+						this.lambdaFunctionsNeededVariables.put(fun.getName(), 
+								((ExprLambda) lambda).getVariablesInScopeInExpression());		
 					}
 				}
 				else if(fun == null) {
