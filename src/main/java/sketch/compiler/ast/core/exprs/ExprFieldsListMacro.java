@@ -26,7 +26,7 @@ public class ExprFieldsListMacro extends Expression {
 
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v) {
-        return v.visitExprFieldMacro(this);
+        return v.visitExprFieldsListMacro(this);
     }
 
     public String toString() {

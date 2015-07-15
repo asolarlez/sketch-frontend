@@ -25,7 +25,7 @@ public class EliminateListOfFieldsMacro extends SymbolTableVisitor{
 
 
     @Override
-    public Object visitExprFieldMacro(ExprFieldsListMacro exp){
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
         Type t = exp.getType();
         if (t.isStruct())
             if (nres.isTemplate(((TypeStructRef) t).getName()))

@@ -45,7 +45,7 @@ class VarReplacer extends FEReplacer {
 /**
  * Generate harness directly from high level specification. Also extracts the hypothesis
  * for the inductive decomposition optimization. For cases where the optimization is
- * applicable, this class creates separate harness for each high level variant of the
+ * applicable, this class creates separate harnesses for each high level variant of the
  * first input (if it is an ADT).
  */
 public class CreateHarnesses extends FEReplacer {
