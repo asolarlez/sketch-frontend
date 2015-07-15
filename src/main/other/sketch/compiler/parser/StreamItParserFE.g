@@ -767,11 +767,14 @@ lambda_expr returns [Expression expression]  {
 	  (
 	    // Comma
 	  	COMMA
-	  	// Match an ID and set temp to it
-	  	temp:ID { 
-	  		// Create a new ExprVar and add it to the list of variables
-	  		list.add(new ExprVar(getContext(temp), temp.getText())); 
-	  	} 
+	  	// Group that occurs 0 or more times
+	  	(
+		  	// Match an ID and set temp to it
+		  	temp:ID { 
+		  		// Create a new ExprVar and add it to the list of variables
+		  		list.add(new ExprVar(getContext(temp), temp.getText())); 
+		  	}
+	  	)* 
 	  )+
 	  // Right parenthesis
 	  RPAREN
@@ -1020,7 +1023,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
-	|   (lambda_expr) => x = lambda_expr
+	|   (lambda_expr) => x = lambda_expr // Switch with the parenthesized expression.
 	|	x=var_expr
 	|	x=constantExpr
 	|   x=arr_initializer
