@@ -401,7 +401,6 @@ public class SymbolTable
         SymbolTable parent = this.getParent();
         
 		// Loop through the parent symbol table while it is not null
-        // TODO MIGUEL check how parent works in bigger programs.
         while(parent != null) {
         	// Loop through the formal parameters
 			for (Entry<String, VarInfo> parameter : parent.vars.entrySet()) {
