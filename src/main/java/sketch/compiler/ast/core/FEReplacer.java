@@ -299,13 +299,13 @@ public class FEReplacer implements FEVisitor
     public Object visitExprLiteral(ExprLiteral exp) { return exp; }
     public Object visitExprNullPtr(ExprNullPtr nptr){ return nptr; }
 
-    public Object visitExprFieldMacro(ExprFieldMacro exp) {
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
         Expression left = doExpression(exp.getLeft());
         Type t = (Type) exp.getType().accept(this);
         if (left == exp.getLeft() && t == exp.getType()) {
             return exp;
         } else {
-            return new ExprFieldMacro(exp, left, t);
+            return new ExprFieldsListMacro(exp, left, t);
         }
 
     }
@@ -319,7 +319,7 @@ public class FEReplacer implements FEVisitor
             return new ExprField(exp, left, exp.getName(), exp.isHole());
     }
 
-    public Object visitExprGet(ExprGet exp) {
+    public Object visitExprADTHole(ExprADTHole exp) {
         boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
         for (Expression param : exp.getParams()) {
@@ -330,7 +330,7 @@ public class FEReplacer implements FEVisitor
         }
         if (!hasChanged)
             return exp;
-        return new ExprGet(exp, newParams);
+        return new ExprADTHole(exp, newParams);
     }
 
     public Object visitExprFunCall(ExprFunCall exp)

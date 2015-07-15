@@ -4198,7 +4198,7 @@ inputState.guessing--;
 			l=expr_get_params();
 			match(RPAREN);
 			if ( inputState.guessing==0 ) {
-				x = new ExprGet(getContext(t), l);
+				x = new ExprADTHole(getContext(t), l);
 			}
 		}
 		catch (RecognitionException ex) {
@@ -5279,7 +5279,7 @@ inputState.guessing--;
 						match(LCURLY);
 						t=data_type();
 						if ( inputState.guessing==0 ) {
-							x = new ExprFieldMacro(x, x, t);
+							x = new ExprFieldsListMacro(x, x, t);
 						}
 						match(RCURLY);
 						break;

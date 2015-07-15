@@ -18,7 +18,10 @@ import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 
 
-
+/**
+ * Collects mutually exclusive function calls that are on different branches of if-else
+ * and switch statements. These are then merged in the backend.
+ */
 public class CollectFunCallsToCombine extends SymbolTableVisitor {
     int id = 1;
     List<String> recFuns;

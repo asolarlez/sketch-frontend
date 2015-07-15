@@ -17,7 +17,8 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
- * Replace s.??
+ * Expands field selector holes into a set of ExprFields based on the type from the
+ * context.
  */
 public class EliminateFieldHoles extends SymbolTableVisitor {
 

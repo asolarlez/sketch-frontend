@@ -43,6 +43,10 @@ class CloneHoles extends FEReplacer {
 
 }
 
+/**
+ * This class expands repeat_case construct by creating a new case for each variant and
+ * instantiates the holes in the body differently for each variant.
+ */
 public class ExpandRepeatCases extends SymbolTableVisitor {
     public ExpandRepeatCases() {
         super(null);

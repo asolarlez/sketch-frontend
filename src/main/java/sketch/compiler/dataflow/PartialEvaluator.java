@@ -1801,8 +1801,8 @@ nvarContext,
         return isReplacer? new StmtVarDecl(stmt, types, names, inits) : stmt;
     }
 
-    public Object visitExprGet(ExprGet exp) {
-        exprRV = (Expression) super.visitExprGet(exp);
+    public Object visitExprADTHole(ExprADTHole exp) {
+        exprRV = (Expression) super.visitExprADTHole(exp);
         return vtype.BOTTOM();
     }
     public Object visitExprNew(ExprNew expNew){

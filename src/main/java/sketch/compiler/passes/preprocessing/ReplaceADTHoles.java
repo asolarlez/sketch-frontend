@@ -20,6 +20,9 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
+/**
+ * Replaces general ADT holes like ?? TODO: Should combine this case with other ADT holes.
+ */
 public class ReplaceADTHoles extends SymbolTableVisitor{
     private final int DEPTH = 5;
     public ReplaceADTHoles(){

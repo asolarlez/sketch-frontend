@@ -25,7 +25,10 @@ import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 
-
+/**
+ * This class replaces immutable structs with tuples. Converts constructors to tuple
+ * creates and field accesses to tuple reads.
+ */
 public class EliminateImmutableStructs extends SymbolTableVisitor {
     private HashMap<String, StructTracker> structs;
     private TempVarGen varGen;

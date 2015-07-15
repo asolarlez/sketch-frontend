@@ -52,6 +52,11 @@ class ArrayTypeReplacer1 extends SymbolTableVisitor {
         return new ExprField(parentStruct, name);
     }
 }
+
+/**
+ * This class replaces === with relevant equals function calls that recursively compares
+ * two different ADT values.
+ */
 public class EliminateTripleEquals extends SymbolTableVisitor {
     final int DEPTH = 5;
     TempVarGen varGen;

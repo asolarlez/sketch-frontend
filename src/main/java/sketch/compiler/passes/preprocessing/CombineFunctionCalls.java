@@ -29,6 +29,9 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.FlattenStmtBlocks;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
+/**
+ * Not used anymore Older version of combining function calls directly in the frontend.
+ */
 public class CombineFunctionCalls extends SymbolTableVisitor {
     private TempVarGen varGen;
 

@@ -793,7 +793,7 @@ func_call returns [Expression x] { x = null; List l; }
 
 expr_get returns [Expression x] { x = null; List l; }
 	: t:NDVAL2 LPAREN l = expr_get_params  RPAREN
-		{ x = new ExprGet(getContext(t), l); }
+		{ x = new ExprADTHole(getContext(t), l); }
 	;
 	
 expr_get_params returns [List l] { l = new ArrayList(); Expression x; }

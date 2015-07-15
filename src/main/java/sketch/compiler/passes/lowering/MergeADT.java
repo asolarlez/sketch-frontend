@@ -29,6 +29,15 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.datastructures.HashmapList;
 
+/**
+ * This class merges different variants of an ADT into one combined version with field
+ * "type" to distinguish between different variants. 
+ * 
+ * Also, replaces new ??(...) into new CombinedADT_name(type = ??, ...). 
+ * 
+ * Also, extends relevant ADT definitions with "Special" cases that are used for the 
+ * Inductive Decomposition optimization.
+ */
 
 @CompilerPassDeps(runsBefore = {}, runsAfter = {})
 public class MergeADT extends SymbolTableVisitor {

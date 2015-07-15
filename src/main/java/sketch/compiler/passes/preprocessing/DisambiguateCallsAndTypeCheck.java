@@ -867,7 +867,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                         if (((ExprNew) newParam).isHole())
                             typeCheck = false;
                     }
-                    if (newParam instanceof ExprGet) {
+                    if (newParam instanceof ExprADTHole) {
                         typeCheck = false;
                     }
                     Type lt = getType(newParam);
@@ -900,7 +900,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     if (((ExprNew) newParam).isHole())
                         typeCheck = false;
                 }
-                if (newParam instanceof ExprGet) {
+                if (newParam instanceof ExprADTHole) {
                     typeCheck = false;
                 }
 
@@ -1880,7 +1880,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             if (((ExprNew) newRHS).isHole())
                 typeCheck = false;
         }
-        if (newRHS instanceof ExprGet) {
+        if (newRHS instanceof ExprADTHole) {
             typeCheck = false;
         }
         if (typeCheck) {
@@ -1915,7 +1915,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     if (((ExprNew) ie).isHole())
                         typeCheck = false;
                 }
-                if (ie instanceof ExprGet) {
+                if (ie instanceof ExprADTHole) {
                     typeCheck = false;
                 }
                 if (typeCheck) {

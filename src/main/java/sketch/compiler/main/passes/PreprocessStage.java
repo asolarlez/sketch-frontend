@@ -11,11 +11,11 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
-import sketch.compiler.passes.preprocessing.EliminateMacros;
-import sketch.compiler.passes.preprocessing.ExpandADTHoles;
+import sketch.compiler.passes.preprocessing.EliminateListOfFieldsMacro;
+import sketch.compiler.passes.preprocessing.TypeInferenceForADTHoles;
 import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
-import sketch.compiler.passes.preprocessing.RemoveExprGet;
+import sketch.compiler.passes.preprocessing.RemoveADTHoles;
 import sketch.compiler.passes.preprocessing.ReplaceADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
 
@@ -90,7 +90,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
-        prog = (Program) prog.accept(new ExpandADTHoles());
+        prog = (Program) prog.accept(new TypeInferenceForADTHoles());
         // prog = ir1.run(prog);
         // prog.debugDump("before type inference");
 
@@ -118,19 +118,19 @@ public class PreprocessStage extends MetaStage {
         }
         prog = (Program) prog.accept(new ExpandRepeatCases());
         // prog.debugDump();
-        prog = (Program) prog.accept(new EliminateMacros());
+        prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
         // prog.debugDump("af");
 
         // TODO: ExpandADTHoles should deal with function parameters
 
-        prog = (Program) prog.accept(new ExpandADTHoles());
+        prog = (Program) prog.accept(new TypeInferenceForADTHoles());
 
         prog =
-                (Program) prog.accept(new RemoveExprGet(varGen, options.bndOpts.arrSize,
+                (Program) prog.accept(new RemoveADTHoles(varGen, options.bndOpts.arrSize,
                         options.bndOpts.gucDepth));
         // prog.debugDump();
         prog = (Program) prog.accept(new EliminateRegens(varGen));
-        prog = (Program) prog.accept(new ExpandADTHoles());
+        prog = (Program) prog.accept(new TypeInferenceForADTHoles());
         prog = (Program) prog.accept(new TypeInferenceForStars());
         prog = (Program) prog.accept(new EliminateFieldHoles());
         // prog.debugDump();

@@ -81,7 +81,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprUnary(ExprUnary exp) { return null; }
     public Object visitExprVar(ExprVar exp) { return null; }
 
-    public Object visitExprGet(ExprGet exp) {
+    public Object visitExprADTHole(ExprADTHole exp) {
         return null;
     }
     public Object visitExprStar(ExprStar star) {
@@ -174,7 +174,7 @@ public class FENullVisitor implements FEVisitor
         return null;
     }
 
-    public Object visitExprFieldMacro(ExprFieldMacro exp) {
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
 
         return null;
     }

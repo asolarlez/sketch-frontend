@@ -309,7 +309,7 @@ public class GetExprType extends FENullVisitor
         return ts.getType(ts.getOrderedFields().get(index));
     }
 
-    public Object visitExprFieldMacro(ExprFieldMacro exp) {
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
         return new TypeArray(exp.getType(), null);
     }
 
@@ -386,7 +386,7 @@ public class GetExprType extends FENullVisitor
     }
 
     // TODO: deal with packages
-    public Object visitExprGet(ExprGet exp) {
+    public Object visitExprADTHole(ExprADTHole exp) {
         return new NotYetComputedType();
     }
 
