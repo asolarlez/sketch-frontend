@@ -1,7 +1,7 @@
 // Testing lambda calls a inner function
 
-int apply(fun f) {
-	return f();
+int apply(fun f, int x) {
+	return f(x);
 }
 
 harness void main(){
@@ -11,5 +11,5 @@ harness void main(){
 		return a;	
 	}
   
-    assert apply((,) -> foo()) == 4;
+    assert apply((,y) -> foo() + y, 1) == 5;
 }
