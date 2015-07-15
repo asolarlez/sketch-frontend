@@ -1,5 +1,5 @@
-// Testing passing a local lambda with variables a calls to other lambdas to a function that 
-// takes another function
+// Testing passing a lambda with variables and calls to other 
+// lambdas, to a high order function
 
 int apply(fun f, int x) {
 	return f(x);

@@ -5,13 +5,13 @@ int apply(fun f) {
 }
 
 harness void main(){
-	int four = 4;
+	int a = 4;
 	
 	int foo() {
-		return four;	
+		return a;	
 	}
 	
-	fun f = (,x) -> foo() + x;
+	fun f = (,x) -> foo() + x + a;
   
-    assert apply(f) == 9;
+    assert apply(f) == 13;
 }

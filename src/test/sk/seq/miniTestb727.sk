@@ -1,11 +1,11 @@
 // Testing that an lambda expression creates a specialized function by passing a local variable
 
-int five(fun f, int x) {	
+int apply(fun f, int x) {	
 	return f(x);
 }
 
 harness void main(){	
 	int four = 4;
 	
-    assert five((,z) -> z + 1, four) == 5;
+    assert apply((,z) -> z + 1, four) == 5;
 }

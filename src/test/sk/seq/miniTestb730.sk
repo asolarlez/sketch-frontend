@@ -1,11 +1,12 @@
 // Testing that the expression of a lambda function can have another function
 
 harness void main(){	
-    fun f1 = (,x) -> x + 1;
+	fun f0 = (,) -> 2;
+    fun f1 = (,x) -> x + f0() + 1;
     fun f2 = (,y) -> 1 + f1(y);
-    fun f3 = (,z) -> f2(z) + 1;
+    fun f3 = (,z, y) -> f2(z) + 1 + y;
     
-    int temp = f3(2);
+    int temp = f3(2, 3);
     
-    assert temp == 5;
+    assert temp == 10;
 }

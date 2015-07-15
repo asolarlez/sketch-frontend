@@ -5,9 +5,9 @@ int apply(fun f, int x) {
 }
 
 harness void main(){
-	int four = 4;
+	int a = 4;
 			
-    fun f1 = (,y) -> y + four + 1;
+    fun f1 = (,y) -> y + a + 1;
               
     assert apply(f1, 5) == 10;
 }

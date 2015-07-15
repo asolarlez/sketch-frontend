@@ -1,15 +1,15 @@
-// Testing that we can call a lambda expression with a local
-// function and variable before it is hoisted out of scope
+// Testing that we can call a local function with a lambda
+// expression and a local variable before it is hoisted out
 
 harness void main() {
 	fun f = (,x) -> x + 1;
 	
 	int one = 1;
 	
-	int three(int i) {
+	int g(int i) {
 		int temp = f(1) + i + one;
 		return temp;
 	}
 		
-	assert three(0) == 3;
+	assert g(5) == 8;
 }
