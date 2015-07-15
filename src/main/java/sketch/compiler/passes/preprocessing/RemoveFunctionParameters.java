@@ -47,6 +47,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 	private Map<String, ExprLambda> 	localLambda = new HashMap<String, ExprLambda>();
 	private Map<ExprVar, Expression> 	lambdaReplace = new HashMap<ExprVar, Expression>();
 	private Map<String, List<ExprVar>> 	lambdaFunctionsNeededVariables = new HashMap<String, List<ExprVar>>();
+	private Map<String, String> 		lambdaRenameMap = new HashMap<String, String>();
 
 	Map<String, SymbolTable> 	tempSymtables = new HashMap<String, SymbolTable>();
 	Map<String, NewFunInfo> 	extractedInnerFuns = new HashMap<String, NewFunInfo>();
@@ -445,6 +446,12 @@ public class RemoveFunctionParameters extends FEReplacer {
 				// Map the function call to the lambda expression
 				this.localLambda.put(svd.getName(0), (ExprLambda) svd.getInit(0));
 				
+				// Map the new name with the old
+				lambdaRenameMap.put(svd.getName(0), svd.getName(0) + tempFunctionsCount);
+				
+				// Increment the number of temp functions
+				tempFunctionsCount++;
+
 				return null;
 				// TODO MIGUEL be careful since now we are allowing fun as type
 				// throw new ExceptionAtNode(
@@ -470,6 +477,13 @@ public class RemoveFunctionParameters extends FEReplacer {
        if(this.lambdaReplace.containsKey(ev)) {
 			// Get the replacement value
 			Expression hold = this.lambdaReplace.get(ev);
+
+			// Check if the replaced value is the same object as the original.
+			if (ev.equals(hold)) {
+				// If that is the case, it means we are at a leaf replacement
+				// so there is nothing else to replace.
+				return hold;
+			}
 
 			// This replaced value can be mapped to other variables,
 			// so keep checking for replacements
@@ -574,15 +588,31 @@ public class RemoveFunctionParameters extends FEReplacer {
 					+ exprLambda.getParameters() + " - " + functionCall.getParams(), functionCall);
 		}
 
+		// Replacements should be local, so save the current map
+		Map<ExprVar, Expression> oldLambdaReplace = this.lambdaReplace;
+		
+		// create a new map
+		this.lambdaReplace = new HashMap<ExprVar, Expression>();
+
 		// Loop through the formal parameters of the lambda and the actual parameters
 		// of the call mapping them.
 		for (int i = 0; i < exprLambda.getParameters().size(); i++) {
 			this.lambdaReplace.put(exprLambda.getParameters().get(i), functionCall.getParams().get(i));
 		}
+		
+		// Visit the expression in case there needs to be some replacement before getting
+		// the previous replacement map
+		Expression newExpression = this.doExpression(exprLambda.getExpression());
+		
+		// Restore the replacement map
+		this.lambdaReplace = oldLambdaReplace;
+
+		// Check if there are any replacements left
+		newExpression = this.doExpression(newExpression);
 
 		// Return a new expression where all the variables are replaced with
 		// actual parameters
-		return this.doExpression(exprLambda.getExpression());
+		return newExpression;
 	}
 
 	private static final class FunctionParamRenamer extends FEReplacer {
@@ -1440,7 +1470,13 @@ public class RemoveFunctionParameters extends FEReplacer {
             		ExprLambda lambda = (ExprLambda) this.doExpression(svd.getInit(0));
     				
             		// Map the function call to the lambda expression
-    				localLambda.put(svd.getName(0),  lambda);
+    				localLambda.put(svd.getName(0) + tempFunctionsCount,  lambda);
+    				
+					// Map the new name with the old
+    				lambdaRenameMap.put(svd.getName(0), svd.getName(0) + tempFunctionsCount);
+    				
+					// Increment the number of temp functions
+    				tempFunctionsCount++;
     				
 					return null;
 
@@ -1474,18 +1510,31 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         }
 
-        public Object visitExprFunCall(ExprFunCall efc) {
-			// If there is a local lambda expression
-			if (localLambda.containsKey(efc.getName())) {
-				// Return that inlined version of the lambda expression
-				 return inlineLocalLambda(efc, localLambda.get(efc.getName()));
+		public Object visitExprVar(ExprVar exprVar) {
+			if (lambdaRenameMap.containsKey(exprVar.getName())) {
+				return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
 			}
+
+			return super.visitExprVar(exprVar);
+		}
+
+        public Object visitExprFunCall(ExprFunCall efc) {
         	
             String oldName = efc.getName();
             String newName = frmap.findRepl(oldName);
             if (newName == null) {
-                newName = oldName;
+				// Check if this is a call to a lambda that change names
+				newName = lambdaRenameMap.get(oldName);
+				if (newName == null) {
+					newName = oldName;
+				}
             }
+
+			// If there is a local lambda expression
+			if (localLambda.containsKey(newName)) {
+				// Return that inlined version of the lambda expression
+				return inlineLocalLambda(efc, localLambda.get(newName));
+			}
 
             List<Expression> actuals = new ArrayList<Expression>();
             for (Expression actual : efc.getParams()) {

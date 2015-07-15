@@ -4,8 +4,8 @@
 harness void main() {
 	fun f = (,x) -> x + 1;
 	
-	int g(int i) {
-		int temp = f(1) + i;
+	int g(int x) {
+		int temp = f(1) + x;
 		return temp;
 	}
 		

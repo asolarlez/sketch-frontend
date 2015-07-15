@@ -8,6 +8,6 @@ harness void main(){
 	int a = 4;
 			
     fun f1 = (,y) -> y + a + 1;
-              
+                  
     assert apply(f1, 5) == 10;
 }
