@@ -3,6 +3,7 @@ package sketch.compiler.dataflow.eliminateTransAssign;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.dataflow.MethodState;
@@ -177,6 +178,12 @@ public class transAssignAbsValue extends abstractValue {
             if(!ta.varsEqToMe.contains(it.next())) return false; 
         }
         return true;
+    }
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // TODO xzl should we refine this?
+        return null;
     }
 }
 

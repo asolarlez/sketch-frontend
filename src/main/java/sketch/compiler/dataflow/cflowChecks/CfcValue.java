@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.cflowChecks;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.dataflow.abstractValue;
 
@@ -182,6 +183,12 @@ public class CfcValue extends abstractValue {
         }
         }
         return "NULL";
+    }
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // TODO xzl should we refine this?
+        return null;
     }
 
 }

@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.cflowChecks;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -231,6 +232,12 @@ public class Cfctype extends abstractValueType {
             }           
         }
 
+    }
+
+    @Override
+    public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases) {
+        // TODO xzl should we refine this?
+        return BOTTOM();
     }
 
 }

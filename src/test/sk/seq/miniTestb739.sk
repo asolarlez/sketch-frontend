@@ -1,0 +1,24 @@
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 1";
+
+// test PartialEvaluator: correctly handle ChangeTrackers for StmtSwitch with a NOP branch
+
+struct Opr {}
+struct A extends Opr {}
+struct B extends Opr {}
+
+harness void f() {
+	Opr b = new B();
+	int x = 0;
+	switch(b) {
+	case A:
+		x = 1;
+	case B: {}
+	}
+	switch(b) {
+	case B:
+		x = x + 2;
+	case A: {}
+	}
+
+	assert x == 2;
+}

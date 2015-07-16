@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow;
 
 import java.util.List;
+import java.util.Map;
 /**
  * 
  * This is a value for abstract interpretation. 
@@ -23,4 +24,11 @@ public abstract class  abstractValue{
 	abstract public boolean hasIntVal();
 	abstract public void update(abstractValue v);
 	abstract public abstractValue clone();
+
+    /**
+     * returns the info we know about the ADT node.
+     * 
+     * @see abstractValueType#ADTnode(Map) for detailed explanation.
+     */
+    abstract public Map<String, Map<String, abstractValue>> getADTcases();
 }

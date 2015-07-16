@@ -33,7 +33,7 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
             return stmt;
         }
         for(String c : stmt.getCaseConditions()) {
-            if (c == "repeat") {
+        if ("repeat".equals(c)) {
 
                 while (!queue.isEmpty()) {
 

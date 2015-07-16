@@ -369,7 +369,7 @@ public class SymbolTableVisitor extends FEReplacer
         else
             pkg = ts.getPkg();
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (caseExpr != "default" && caseExpr != "repeat") {
+            if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
                 symtab.registerVar(var.getName(),

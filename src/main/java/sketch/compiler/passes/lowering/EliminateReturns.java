@@ -160,8 +160,9 @@ public class EliminateReturns extends SymbolTableVisitor{
     Set<String> currentRefParams = new HashSet<String>();
     
     @Override
-    public Object visitParameter(Parameter p){
-        symtab.registerVar(p.getName(), p.getType(), p, SymbolTable.KIND_FUNC_PARAM);
+    public Object visitParameter(Parameter par) {
+        // first let the superclass process the parameters, registering them into symtab
+        Parameter p = (Parameter) super.visitParameter(par);
         if(p.isParameterOutput()){
             currentRefParams.add(p.getName());
         }

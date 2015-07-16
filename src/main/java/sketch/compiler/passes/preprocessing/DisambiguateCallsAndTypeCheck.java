@@ -1390,6 +1390,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             report(stmt, "ExprVar in switch statement must be of type struct");
         }
         TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
+        // NOTE xzl: need to add the package suffix of the matched var to the case types
+        String pkg = nres.getStruct(tres.getName()).getPkg();
 
         String curName = tres.getName();
         if (nres.isTemplate(curName)) {
@@ -1420,13 +1422,14 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
         // visit each case body
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (caseExpr != "default" && caseExpr != "repeat") {
+            if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
                 if (!checkCaseExpr(caseExpr, children)) {
                     report(stmt, "Case must be a variant of the type " + tres);
                 }
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
-                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+                symtab.registerVar(var.getName(),
+                        new TypeStructRef(caseExpr, false).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);

@@ -1,0 +1,103 @@
+pragma options "--bnd-inbits 2 --bnd-arr-size 4 --bnd-unroll-amnt 8 --bnd-inline-amnt 5";
+
+// comprehensive test for ADT, StmtSwitch, and recursive generator inlining
+
+#define DataType int
+
+struct Vector {
+	int len;
+	DataType[len] data;
+}
+
+struct Opr {}
+
+struct BroadCast extends Opr {
+	DataType c;
+}
+generator BroadCast broadcast(DataType c) {
+	return new BroadCast(c = c);
+}
+
+struct Lift extends Opr {
+	Vector v;
+}
+generator Lift lift(Vector v) {
+	return new Lift(v = v);
+}
+
+struct Plus extends Opr {
+	Opr left;
+	Opr right;
+}
+generator Plus plus(Opr left, Opr right) {
+	return new Plus(left = left, right = right);
+}
+
+struct Minus extends Opr {
+	Opr left;
+	Opr right;
+}
+generator Minus minus(Opr left, Opr right) {
+	return new Minus(left = left, right = right);
+}
+
+struct Times extends Opr {
+	Opr left;
+	DataType right;
+}
+generator Times times(Opr left, DataType right) {
+	return new Times(left = left, right = right);
+}
+
+struct Dot extends Opr {
+	Opr left;
+	Opr right;
+}
+generator Dot dot(Opr left, Opr right) {
+	return new Dot(left = left, right = right);
+}
+
+generator DataType eval(Opr op, int i) {
+	switch(op) {
+	case BroadCast:
+		return op.c;
+	case Lift:
+		return op.v.data[i];
+	case Plus:
+		return eval(op.left, i) + eval(op.right, i);
+	case Minus:
+		return eval(op.left, i) - eval(op.right, i);
+	case Times:
+		return eval(op.left, i) * op.right;
+	case Dot:
+		return eval(op.left, i) * eval(op.right, i);
+	}
+}
+
+generator void assign(Vector lhs, Opr rhs) {
+	for (int i = 0; i < lhs.len; ++i) {
+		lhs.data[i] = eval(rhs, i);
+	}
+}
+
+DataType[len] f(int len, DataType[len] x, DataType[len] y, DataType alpha, DataType beta, DataType gamma) {
+	DataType[len] r;
+	for (int i = 0; i < len; ++i) {
+		r[i] = x[i] * y[i] + x[i] * alpha - y[i] * beta - gamma;
+	}
+	return r;
+}
+
+DataType[len] g(int len, DataType[len] x, DataType[len] y, DataType alpha, DataType beta, DataType gamma) implements f {
+	DataType[len] r;
+	Vector result = new Vector(len = len, data = r);
+	Opr X = lift(new Vector(len = len, data = x));
+	Opr Y = lift(new Vector(len = len, data = y));
+	Opr Gamma = broadcast(gamma);
+	Opr a = dot(X, Y);
+	Opr b = times(X, alpha), c = times(Y, beta);
+	Opr d = plus(a, b);
+	Opr e = minus(d, c), f = minus(e, Gamma);
+	assign(result, f);
+	return result.data;
+}

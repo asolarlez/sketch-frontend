@@ -1,0 +1,24 @@
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 2";
+
+// simple test for ADT, StmtSwitch, and recursive generator inlining
+
+struct Opr {}
+struct A extends Opr {}
+struct B extends Opr {}
+struct C extends Opr {}
+
+generator int eval(Opr op) {
+	switch(op) {
+	case A:
+		return 0;
+	case B:
+		return eval(new A()) + 1;
+	case C:
+		return eval(new A()) + 2;
+	}
+}
+
+harness void f() {
+	int x = eval(new C());
+	assert x == 2;
+}

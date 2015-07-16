@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.PlatformLocalization;
+import sketch.compiler.main.PlatformLocalization.ResolveFromFileAndPATH;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.optimization.AbstractCostFcnAssert;
 import sketch.compiler.passes.optimization.CostFcnAssert;
@@ -262,16 +263,41 @@ public class SATBackend {
         return worked;
     }
 
+    public void checkBackendInput(String fileName) {
+        String check = options.debugOpts.checkBackInput;
+        if (check != null) {
+            PlatformLocalization pl = PlatformLocalization.getLocalization();
+            ResolveFromFileAndPATH resolver =
+                    pl.new ResolveFromFileAndPATH(check, options.sketchFile);
+            String checkPath = resolver.resolve();
+            String[] cmdLine = new String[] { checkPath, fileName };
+            SynchronousTimedProcess proc;
+            try {
+                proc = new SynchronousTimedProcess(1, cmdLine);
+                ProcessStatus status = proc.run(false);
+                if (status.exitCode != 0) {
+                    throw new SketchSolverException("checkBackendInput failed with " +
+                            status.exitCode + ": " + check + " " + fileName);
+                }
+            } catch (Exception e) {
+                throw new SketchSolverException("checkBackendInput exception: " + check +
+                        " " + fileName + e);
+            }
+        }
+    }
+
     public void writeProgramToBackendFormat(Program prog) {
         try {
             OutputStream outStream = null;
+            String fileName = null;
             if (options.debugOpts.fakeSolver)
                 outStream = NullStream.INSTANCE;
-            else
+            else {
                 // if (options.getTmpName != null)
+                fileName = options.getTmpSketchFilename();
                 outStream =
-                        new BufferedOutputStream(new FileOutputStream(
-                                options.getTmpSketchFilename()), 4096);
+                        new BufferedOutputStream(new FileOutputStream(fileName), 4096);
+            }
             // else
             // DebugOut.assertFalse("no temporary filename defined.");
             // outStream = System.out;
@@ -281,7 +307,10 @@ public class SATBackend {
 
             outStream.flush();
             outStream.close();
-            assert (new File(options.getTmpSketchFilename())).isFile() : "didn't appear to write file";
+            if (!options.debugOpts.fakeSolver) {
+                assert (new File(fileName)).isFile() : "didn't appear to write file";
+                checkBackendInput(fileName);
+            }
         } catch (java.io.IOException e) {
             // e.printStackTrace(System.err);
             throw new RuntimeException(e);

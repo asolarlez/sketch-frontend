@@ -1,13 +1,13 @@
-adt NODE {
-    Op {NODE left; NODE right;}
-    Arr {int sz; int[sz] arr; int dflt;}
-}
+pragma options "--debug-check-back-input miniTestb734.inputCheck --bnd-inbits 3 --bnd-arr-size 8 --bnd-unroll-amnt 8 --bnd-inline-amnt 2";
 
-
-
-harness void main(){
-    int[2] ax = {1,2};
-    NODE e1 = new Arr(sz=2,arr=ax,dflt=0);
-    NODE e = ??(3,{});
-    assert(e1 === e);
+harness void f(int n, int[n] a) {
+	if (n > 1) {
+		int h = ??;
+		int sum = 0;
+		for (int i = 0; i < n; ++i) {
+			assert h < n: "this assertion should appear only #ONCE# in the backend input!";
+			sum = sum + a[i] + a[h] - a[i];
+		}
+		assert sum == a[1]*n;
+	}
 }

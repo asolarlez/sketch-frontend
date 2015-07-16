@@ -148,58 +148,76 @@ public class LoopInvariantAssertionHoisting extends FEReplacer {
     List<Statement> cloops;
     List<Statement> preLoop;
 
-    public Object visitStmtIfThen(StmtIfThen stmt) {
-        cloops.add(0, stmt);
-        Object o;
-        try {
-            o = super.visitStmtIfThen(stmt);
-        } finally {
-            cloops.remove(0);
-        }
-        return o;
-    }
+    boolean variantPathCond = false;
 
-    public Object visitStmtFor(StmtFor stmt) {
-        List<Statement> old = preLoop;
+    public Object visitStmtIfThen(StmtIfThen stmt) {
+        // NOTE xzl: very important fix. Asserts with variant path condition inside loops
+        // cannot be hoisted.
+        boolean oldVariantPathCond = variantPathCond;
         try {
-            preLoop = new ArrayList<Statement>();
+            if (stmt.getCond().accept(h) == null) {
+                variantPathCond = true;
+            }
             cloops.add(0, stmt);
-            Object o = null;
+            Object o;
             try {
-                o = super.visitStmtFor(stmt);
+                o = super.visitStmtIfThen(stmt);
             } finally {
                 cloops.remove(0);
             }
-            if (cloops.size() == 0) {
-                List<Statement> toadd = preLoop;
-                if (!toadd.isEmpty()) {
-                    Statement s =
-                            new StmtIfThen(stmt, stmt.getICond(), new StmtBlock(toadd),
-                                    null);
-                    addStatement(s);
+            return o;
+        } finally {
+            variantPathCond = oldVariantPathCond;
+        }
+    }
+
+    public Object visitStmtFor(StmtFor stmt) {
+        boolean oldVariantPathCond = variantPathCond;
+        try {
+            variantPathCond = false;
+            List<Statement> old = preLoop;
+            try {
+                preLoop = new ArrayList<Statement>();
+                cloops.add(0, stmt);
+                Object o = null;
+                try {
+                    o = super.visitStmtFor(stmt);
+                } finally {
+                    cloops.remove(0);
                 }
-                preLoop = old;
-            } else {
-                List<Statement> temp = preLoop;
-                preLoop = old;
-                List<Statement> toadd = new ArrayList<Statement>();
-                for (Statement s : temp) {
-                    Statement ns = (Statement) s.accept(this);
-                    if (ns != null) {
-                        toadd.add(ns);
+                if (cloops.size() == 0) {
+                    List<Statement> toadd = preLoop;
+                    if (!toadd.isEmpty()) {
+                        Statement s =
+                                new StmtIfThen(stmt, stmt.getICond(),
+                                        new StmtBlock(toadd), null);
+                        addStatement(s);
+                    }
+                    preLoop = old;
+                } else {
+                    List<Statement> temp = preLoop;
+                    preLoop = old;
+                    List<Statement> toadd = new ArrayList<Statement>();
+                    for (Statement s : temp) {
+                        Statement ns = (Statement) s.accept(this);
+                        if (ns != null) {
+                            toadd.add(ns);
+                        }
+                    }
+                    if (!toadd.isEmpty()) {
+                        Statement s =
+                                new StmtIfThen(stmt, stmt.getICond(),
+                                        new StmtBlock(toadd), null);
+                        addStatement(s);
                     }
                 }
-                if (!toadd.isEmpty()) {
-                    Statement s =
-                            new StmtIfThen(stmt, stmt.getICond(), new StmtBlock(toadd),
-                                    null);
-                    addStatement(s);
-                }
+                return o;
+            } catch (ContainsReturn cr) {
+                preLoop = old;
+                return stmt;
             }
-            return o;
-        } catch (ContainsReturn cr) {
-            preLoop = old;
-            return stmt;
+        } finally {
+            variantPathCond = oldVariantPathCond;
         }
     }
 
@@ -213,7 +231,7 @@ public class LoopInvariantAssertionHoisting extends FEReplacer {
     }
 
     public Object visitStmtAssert(StmtAssert sa) {
-        if (!inLoop()) {
+        if (variantPathCond || !inLoop()) {
             return sa;
         }
         Expression e = (Expression) sa.getCond().accept(h);
