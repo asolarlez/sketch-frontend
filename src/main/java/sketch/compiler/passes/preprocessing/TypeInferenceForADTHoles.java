@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprADTHole;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprStar;
@@ -136,7 +136,7 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
             Expression old = en.getExpr();
             Expression rhs = doExpression(old);
             if (rhs != old) {
-                enl.add(new ExprNamedParam(en, en.getName(), rhs));
+                enl.add(new ExprNamedParam(en, en.getName(), rhs, en.getVariantName()));
                 changed = true;
             } else {
                 enl.add(en);

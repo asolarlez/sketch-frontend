@@ -37,43 +37,6 @@ import sketch.util.datastructures.TypedHashMap;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.SketchException;
 
-class CloneHoles extends FEReplacer{
-
-    // TODO xzl: what's this?
-    public Object visitExprStar(ExprStar es){
-        ExprStar newStar = new ExprStar(es);
-        if (es.special())
-            newStar.makeSpecial(es.parentHoles());
-        es.renewName();
-        return newStar;
-    }
-
-    public Statement process(Statement s){
-        return (Statement) s.accept(this);
-    }
-
-    public Object visitExprFunCall(ExprFunCall exp){
-        List<Expression> newParams = new ArrayList<Expression>();
-        for (Iterator iter = exp.getParams().iterator(); iter.hasNext();) {
-            Expression param = (Expression) iter.next();
-            Expression newParam = doExpression(param);
-            newParams.add(newParam);
-        }
-        ExprFunCall rv = new ExprFunCall(exp, exp.getName(), newParams);
-        rv.resetCallid();
-        return rv;
-    }
-
-    public Object visitExprNew(ExprNew exp) {
-        ExprNew nexp = (ExprNew) super.visitExprNew(exp);
-        if (nexp.isHole()) {
-            ExprStar newStar = (ExprStar) nexp.getStar().accept(this);
-        }
-        return nexp;
-    }
-
-}
-
 public class PartialEvaluator extends SymbolTableVisitor {
     protected MethodState state;
     protected RecursionControl rcontrol;

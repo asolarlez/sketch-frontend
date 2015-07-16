@@ -12,11 +12,10 @@ import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
 import sketch.compiler.passes.preprocessing.EliminateListOfFieldsMacro;
-import sketch.compiler.passes.preprocessing.TypeInferenceForADTHoles;
 import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.RemoveADTHoles;
-import sketch.compiler.passes.preprocessing.ReplaceADTHoles;
+import sketch.compiler.passes.preprocessing.TypeInferenceForADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
 
 /**
@@ -121,7 +120,7 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
         // prog.debugDump("af");
 
-        // TODO: ExpandADTHoles should deal with function parameters
+        // TODO: TypeInferenceForADTHoles should deal with function parameters
 
         prog = (Program) prog.accept(new TypeInferenceForADTHoles());
 
@@ -133,9 +132,6 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new TypeInferenceForADTHoles());
         prog = (Program) prog.accept(new TypeInferenceForStars());
         prog = (Program) prog.accept(new EliminateFieldHoles());
-        // prog.debugDump();
-        prog = (Program) prog.accept(new ReplaceADTHoles());
-
         return prog;
     }
 }

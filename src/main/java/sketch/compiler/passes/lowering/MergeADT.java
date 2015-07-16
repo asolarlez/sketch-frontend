@@ -111,6 +111,7 @@ public class MergeADT extends SymbolTableVisitor {
         TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
         List newParams = new ArrayList();
         if (!sd.isInstantiable()) {
+            // This is a new ??() case.
             Expression expr = exprNew.getStar();
             if (tracker.ADT) {
                 newParams.add(new ExprNamedParam(exprNew.getContext(), "type", expr));
@@ -127,7 +128,13 @@ public class MergeADT extends SymbolTableVisitor {
                     StructCombinedTracker childtracker = structs.get(parent);
                     Map<String, Integer> map = new HashMap<String, Integer>();
                     for (ExprNamedParam p : exprNew.getParams()) {
-                        if (!map.containsKey(p.getName()) &&
+                        String variantName = p.getVariantName();
+                        if (variantName != null) {
+                            variantName = variantName.split("@")[0];
+                        }
+                        if (variantName != null &&
+                                variantName.equals(str.getName()) &&
+                                !map.containsKey(p.getName()) &&
                                 str.hasField(p.getName()) &&
                                 getType(p.getExpr()).promotesTo(
                                         str.getFieldTypMap().get(p.getName()), nres))

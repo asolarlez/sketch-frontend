@@ -17,6 +17,8 @@ import sketch.compiler.ast.core.typs.StructDef;
 public class ExprNamedParam extends Expression {
     private final String name;
     private final Expression expr;
+    private String variantName = null; // Used in new ??() to track which variant a field
+                                       // belongs to
 
     @SuppressWarnings("deprecation")
     public ExprNamedParam(FEContext context, String name, Expression expr) {
@@ -31,6 +33,13 @@ public class ExprNamedParam extends Expression {
         this.expr = expr;
     }
     
+    public ExprNamedParam(FENode prev, String name, Expression expr, String variantName) {
+        super(prev);
+        this.name = name;
+        this.expr = expr;
+        this.variantName = variantName;
+    }
+
     @Override
     public String toString() {
         return name + "=" + expr;
@@ -47,6 +56,10 @@ public class ExprNamedParam extends Expression {
 
     public Expression getExpr() {
         return expr;
+    }
+
+    public String getVariantName() {
+        return variantName;
     }
 
     public ExprNamedParam next(Expression sub) {

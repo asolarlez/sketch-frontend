@@ -211,7 +211,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 }
                 Expression rhs = doExpression(old);
                 if (rhs != old) {
-                    enl.add(new ExprNamedParam(en, en.getName(), rhs));
+                    enl.add(new ExprNamedParam(en, en.getName(), rhs, en.getVariantName()));
                     changed = true;
                 } else {
                     enl.add(en);
