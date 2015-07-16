@@ -1,4 +1,4 @@
-// 
+// Testing that a lambda creates a function with a unique name for similar functions
 
 int apply(fun f, int x) {
 	return f(x);
