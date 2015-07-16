@@ -13,6 +13,7 @@ import sketch.compiler.passes.cleanup.RemoveDumbArrays;
 import sketch.compiler.passes.cleanup.RemoveUselessCasts;
 import sketch.compiler.passes.lowering.AssembleInitializers;
 import sketch.compiler.passes.lowering.FlattenStmtBlocks;
+import sketch.compiler.passes.lowering.OptimizeADT;
 import sketch.compiler.passes.preprocessing.RemoveShallowTempVars;
 
 /**
@@ -82,6 +83,11 @@ public class CleanupFinalCode extends MetaStage {
                         !options.feOpts.killAsserts));
         // System.out.println("ElmDeadC2");
         // prog.accept(new SimpleCodePrinter());
+
+        prog = (Program) prog.accept(new OptimizeADT(varGen));
+        prog =
+                (Program) prog.accept(new EliminateDeadCode(varGen,
+                        !options.feOpts.killAsserts));
 
         prog = (Program) prog.accept(new SimplifyVarNames());
         // System.out.println("Simplify");

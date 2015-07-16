@@ -971,7 +971,7 @@ public class NodesToSuperCpp extends NodesToJava {
         name = name.split("@")[0];
         for (String c : stmt.getCaseConditions()) {
             // brakects around cases and constants with type.
-            if (c != "default") {
+            if (!("default".equals(c))) {
                 result +=
                         indent + "case " + sd.getPkg() + "::" + name + "::" +
                                 c.toUpperCase() + "_type" +

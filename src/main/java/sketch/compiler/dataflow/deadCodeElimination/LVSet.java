@@ -3,6 +3,7 @@ package sketch.compiler.dataflow.deadCodeElimination;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.dataflow.abstractValue;
@@ -57,5 +58,11 @@ public class LVSet extends abstractValue {
 			}
 		}
 	}
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // TODO xzl should we refine this?
+        return null;
+    }
 
 }

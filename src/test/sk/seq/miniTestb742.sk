@@ -1,0 +1,43 @@
+pragma options "--bnd-inbits 2 --bnd-inline-amnt 2";
+
+// test ADT, StmtSwitch, and recursive generator inlining: there is no "return" inside any branch
+
+struct Opr {}
+
+struct BroadCast extends Opr {
+	int c;
+}
+
+struct Plus extends Opr {
+	Opr left;
+	Opr right;
+}
+
+struct Dot extends Opr {
+	Opr left;
+	Opr right;
+}
+
+generator int eval(Opr op) {
+	int out;
+	switch(op) {
+	case BroadCast:
+		out = op.c;
+	case Dot:
+		out = eval(op.left) * eval(op.right);
+	case Plus:
+		out = eval(op.left) + eval(op.right);
+	}
+	return out;
+}
+
+int f(int x, int y) {
+	return x + y ;
+}
+
+int g(int x, int y) implements f {
+	Opr X = new BroadCast(c = x);
+	Opr Y = new BroadCast(c = y);
+	Opr a = new Plus(left = X, right = Y);
+	return eval(a);
+}

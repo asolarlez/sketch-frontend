@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
@@ -125,6 +126,12 @@ public class LiveVariableAV extends abstractValue {
     public boolean equals(Object obj){
         if(!(obj instanceof LiveVariableAV)) return false;
         return ((LiveVariableAV)obj).liveness == liveness;
+    }
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // TODO xzl should we refine this?
+        return null;
     }
 
 }

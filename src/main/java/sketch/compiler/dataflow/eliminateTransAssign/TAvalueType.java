@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
@@ -221,5 +222,11 @@ public class TAvalueType extends abstractValueType {
 	public abstractValue xor(abstractValue v1, abstractValue v2) {
 		return bottom;
 	}
+
+    @Override
+    public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases) {
+        // TODO xzl should we refine this?
+        return BOTTOM();
+    }
 
 }

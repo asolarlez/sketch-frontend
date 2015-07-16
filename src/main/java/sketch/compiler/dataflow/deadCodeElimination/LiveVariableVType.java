@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -583,5 +584,11 @@ public class LiveVariableVType extends abstractValueType {
 		}
 		return lv;
 	}
+
+    @Override
+    public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases) {
+        // TODO xzl should we refine this?
+        return BOTTOM();
+    }
 
 }

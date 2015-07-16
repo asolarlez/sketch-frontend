@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.dataflow.abstractValue;
 
@@ -65,5 +66,12 @@ public class taUpdater extends abstractValue {
 		// TODO Auto-generated method stub
 
 	}
+
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // TODO xzl should we refine this?
+        return null;
+    }
 
 }

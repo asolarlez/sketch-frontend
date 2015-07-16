@@ -39,6 +39,24 @@ public class MethodState {
          */
         protected boolean isPoisoned = false;
 
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder("CT: ");
+            sb.append(stateString());
+            for (ChangeTracker c = kid; c != null; c = c.kid) {
+                sb.append(">");
+                sb.append(c.stateString());
+            }
+            return sb.toString();
+        }
+        public String stateString() {
+            if (isPoisoned) {
+                return "!" + rvf.toString();
+            } else {
+                return deltas.toString();
+            }
+        }
+
         public void freturn(abstractValue v){
             if(rvf == null){
                 rvf = MethodState.this.getRvflag().getDeltaClone(vtype);
@@ -338,8 +356,16 @@ public class MethodState {
 
 
 
-
+    /**
+     * Process the ChangeTracker ch1 and merge changes with the current state. This does
+     * NON-destructive update, i.e. every new value is merged with old value in current
+     * state. Note that the effects also include return value (rvf). E.X. if (x) {y = 1;}
+     * without else branch, then any update must be non-destructive.
+     */
     public void procChangeTrackers (ChangeTracker ch1){
+        // TODO xzl: it seems that all these procChangeTracker* assume that the ch being
+        // merged are directly based on the current state, i.e., their "kid"s represent
+        // current state. Is this true? should add into the JavaDoc if it's true.
 
         if (ch1.isPoisoned()) {
             // If the changeTracker was poisoned, we can ignore all other updates that
@@ -377,6 +403,15 @@ public class MethodState {
         }
     }
 
+    /**
+     * Process the ChangeTrackers ch1 and ch2, merging them, and applying to the current
+     * state, assuming that ch1 and ch2 represent two branches of a StmtIfThen. This does
+     * Destructive update whenever possible, i.e. the new value (merged from ch1 and ch2)
+     * overwrites the old value in current state if the corresponding variable is updated
+     * in both branches. This is correct because the control flow only diverges to two
+     * branches upon an StmtIfThen, and the effects in those two branches are summarized
+     * by ch1 and ch2. Note that the effects also include return value (rvf).
+     */
     public void procChangeTrackers (ChangeTracker ch1, ChangeTracker ch2){
 
         if (ch1.rvf != null) {
@@ -483,6 +518,86 @@ public class MethodState {
         }
     }
 
+    /**
+     * Process the ChangeTrackers chs, merging them, and applying to the current state,
+     * assuming that chs exhaustively cover all branches of a StmtSwitch. This does
+     * Destructive update whenever possible, i.e. the new value (merged from all
+     * ChangeTrackers in chs) overwrites the old value in current state if the
+     * corresponding variable is updated in all branches. This is correct because we
+     * enforce that StmtSwitch must exhaustively match all cases. Note that the effects
+     * also include return value (rvf).
+     */
+    public void procChangeTrackers(Iterable<ChangeTracker> chs) {
+        // TODO xzl: there is a more efficient way of doing this. but let's do the simple
+        // way for now.
+
+        // NOTE xzl: we want to use the destructive update version of procChangeTrackers,
+        // so we want to assume that there are at least two branches. But this is not
+        // always true, even if we have reduced StmtSwitch with only one branch in
+        // VisitStmtSwitch, because in VisitStmtSwitch we have an optimization: if a
+        // branch can be reduced to "assert(0)", we do not include its ChangeTracker in
+        // chs. This may make chs a singleton or even empty!
+        Iterator<ChangeTracker> it = chs.iterator();
+        if (!it.hasNext()) {
+            // empty chs means all branches in StmtSwitch are invalid, then the whole
+            // thing can be reduced to "assert(0)", so don't care about changes
+            return;
+        }
+        ChangeTracker head = it.next();
+        if (!it.hasNext()) {
+            // chs contains only one ChangeTracker "head". this means that all other
+            // branches are "assert(0)", so destructively apply the changes in head.
+            procChangeTrackerDestructive(head);
+            return;
+        }
+        ChangeTracker current = it.next();
+        abstractValue cond = head.condition;
+
+        while (it.hasNext()) {
+            ChangeTracker c = it.next();
+            pushChangeTracker(cond, false);
+            try {
+                procChangeTrackers(current, c);
+            } finally {
+                current = popChangeTracker();
+            }
+        }
+
+        procChangeTrackers(head, current);
+    }
+
+    /**
+     * Destructively apply changes to the current state. USE WITH CAUTION: do not use if
+     * you cannot be sure that ch1 represent the only possible control flow. do not use if
+     * you don't understand.
+     */
+    public void procChangeTrackerDestructive(ChangeTracker ch1) {
+
+        if (ch1.rvf != null) {
+            this.freturn(ch1.rvf.state(vtype));
+        }
+        if (ch1.isPoisoned()) {
+            // If the changeTracker was poisoned, we can ignore all other updates that
+            // happened in it.
+            return;
+        }
+
+        // we unconditionally propagate the changes from ch1.
+        for (Entry<String, varState> me : ch1.deltas.entrySet()) {
+            String nm = me.getKey();
+            varState merged = me.getValue();
+            if (merged.isArr()) {
+                for (Iterator<Entry<Integer, abstractValue>> ttt = merged.iterator(); ttt.hasNext();)
+                {
+                    Entry<Integer, abstractValue> tmp = ttt.next();
+                    this.UTsetVarValue(me.getKey(), vtype.CONST(tmp.getKey()),
+                            tmp.getValue());
+                }
+            } else {
+                this.UTsetVarValue(me.getKey(), merged.state(vtype));
+            }
+        }
+    }
 
     public boolean compareChangeTrackers(ChangeTracker ch1, ChangeTracker ch2){
         {

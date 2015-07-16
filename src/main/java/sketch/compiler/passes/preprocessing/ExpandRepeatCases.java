@@ -59,7 +59,7 @@ public class ExpandRepeatCases extends SymbolTableVisitor {
             return stmt;
         }
         String c = stmt.getCaseConditions().get(0);
-        if (c == "repeat") {
+        if ("repeat".equals(c)) {
 
             while (!queue.isEmpty()) {
 
