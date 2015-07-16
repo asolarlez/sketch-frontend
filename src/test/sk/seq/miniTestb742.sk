@@ -1,16 +1,24 @@
 // Testing that a lambda creates a function with a unique name for similar functions
 
 int apply(fun f, int x) {	
-	int five = 5;
-	return f(x) + five;
+	return f(x);
 }
 
-void test() {
-	int a = apply((,y) -> y + y, 5); // Different function
-}
-
-harness void main(int x){	
-	test();
+int foo(int x) {
+	int a = apply((,y) -> y - 2, x); // Different function
 	
-    assert apply((,y) -> y + y, x) == 2*x + 5; // Different function
+	return a;
+}
+
+int moo(int x) {
+	int a = apply((,y) -> y + y, x); // Different function
+	
+	return a;
+}
+
+harness void main(){	
+	int a = foo(5);
+	int b = moo(2);
+	
+    assert a + b == 7; 
 }

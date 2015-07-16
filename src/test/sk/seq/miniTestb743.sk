@@ -4,17 +4,23 @@ int apply(fun f, int x) {
 	return f(x);
 }
 
-int test() {
+int foo() {
 	fun f = (,x) -> x - 5;
 	int a = apply(f, 10);
 	
 	return a;
 }
 
+int moo() {
+	fun f = (,x) -> x + 5;
+	int a = apply(f, 10);
+	
+	return a;
+}
+
 harness void main(){		
-    fun f = (,x) -> x + 5;
-    
-    int o = test();
-              
-    assert apply(f, 5) == 10;
+    int a = foo();
+    int b = moo();
+                  
+    assert a + b == 20;
 }
