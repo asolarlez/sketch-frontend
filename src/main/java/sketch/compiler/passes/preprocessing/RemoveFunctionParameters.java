@@ -423,7 +423,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 		Program np = p.creator().streams(newPkges).create();
 
 		Program aftertc = (Program) np.accept(new ThreadClosure());
-
+		
 		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
 
 		return afterLambdaClosure.accept(new FixPolymorphism());
@@ -880,12 +880,12 @@ public class RemoveFunctionParameters extends FEReplacer {
         public Object visitProgram(Program prog){
             CallGraph cg = new CallGraph(prog);
 			nres = new NameResolver(prog);
-            for(Map.Entry<String, NewFunInfo> eif : extractedInnerFuns.entrySet() ){ // Go in
+            for(Map.Entry<String, NewFunInfo> eif : extractedInnerFuns.entrySet() ){ 
                 String key = eif.getKey();
                 NewFunInfo nfi = eif.getValue();
                 Set<String> visited = new HashSet<String>();
                 Stack<String> toVisit = new Stack<String>(); 
-				if (equivalences.containsKey(key)) { // Jump
+				if (equivalences.containsKey(key)) { 
                     for(String fn : equivalences.get(key)){
                         toVisit.push(fn);
                         if (funsToVisit.containsKey(fn)) {
@@ -897,29 +897,29 @@ public class RemoveFunctionParameters extends FEReplacer {
                     }
                 }else{
                     toVisit.push(key);
-					if (funsToVisit.containsKey(key)) { // Jump
+					if (funsToVisit.containsKey(key)) { 
                         funsToVisit.put(key,
                                 mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(key)));
                     } else {
-						funsToVisit.put(key, nfi.cloneParamsToAdd()); // execute
+						funsToVisit.put(key, nfi.cloneParamsToAdd()); 
                     }
                 }
-				while (!toVisit.isEmpty()) { // Go in 1, 2
+				while (!toVisit.isEmpty()) { 
                     String cur = toVisit.pop();
-					if (visited.contains(cur)) { // Jump
+					if (visited.contains(cur)) { 
                         continue;
                     }
                     visited.add(cur);
-                    Set<Function> callers = cg.callersTo(nres.getFun(cur)); // TODO MIGUEL lambda returns empty
-					for (Function caller : callers) { // Go in 1, 2
+                    Set<Function> callers = cg.callersTo(nres.getFun(cur)); 
+					for (Function caller : callers) { 
                         String callerName = nres.getFunName(caller);
                         String callerOriName = callerName;
-						if (reverseEquiv.containsKey(callerName)) { // Jump 2
-							callerOriName = reverseEquiv.get(callerName); // Execute
-                        }
-                        if (!callerName.equals(nfi.containingFunction)) { // Go in, Jump 2
+						if (reverseEquiv.containsKey(callerName)) { 
+							callerOriName = reverseEquiv.get(callerName); 
+						}
+                        if (!callerName.equals(nfi.containingFunction)) { 
                             toVisit.push(callerName); 
-                            if (funsToVisit.containsKey(callerName)) { // Jump
+                            if (funsToVisit.containsKey(callerName)) { 
                                 // funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
                                 // should merge correctly
                                 Map<String, ParamInfo> c =
@@ -938,7 +938,30 @@ public class RemoveFunctionParameters extends FEReplacer {
                                     }
                                 }
                             } else {
-                                funsToVisit.put(callerName, nfi.cloneParamsToAdd()); // Execute
+                            	// Get the current function
+								Function currentFunction = cg.getByName(cur);
+								
+								// Loop through the formal parameters of the current function
+								for(Parameter parameter: currentFunction.getParams()) {
+									// If the current parameter is a reference and the function that calls 
+									// the current function needs some variables
+									if(parameter.isParameterReference() && 
+											lambdaFunctionsNeededVariables.containsKey(caller.getName())) {
+										
+										// Loop through each variable that is needed
+										for(ExprVar variable : lambdaFunctionsNeededVariables.get(caller.getName())) {
+											// Add a parameter to add to the caller 
+											TreeSet<String> dependent = new TreeSet<String>();
+											nfi.paramsToAdd.put(variable.getName(),
+													new ParamInfo(parameter.getType(), true, dependent));											
+										}
+
+
+									}
+								}
+
+								funsToVisit.put(callerName,
+										nfi.cloneParamsToAdd());
                             }
                         }
                     }
@@ -1003,7 +1026,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             return result;
         }
 
-        public Object visitExprFunCall(ExprFunCall efc) {
+		public Object visitExprFunCall(ExprFunCall efc) {
             String name = nres.getFunName(efc.getName());
             Function f = nres.getFun(efc.getName());
             if (funsToVisit.containsKey(name)) {
@@ -1012,6 +1035,23 @@ public class RemoveFunctionParameters extends FEReplacer {
                     List<Expression> pl = new ArrayList<Expression>(efc.getParams());
                     for (Parameter p : addedParams) {
                         pl.add(new ExprVar(efc, p.getName()));
+                        
+                        // If the function that we are calling needs a variable
+                        if(lambdaFunctionsNeededVariables.containsKey(efc.getName())) {
+                        	// Loop through the variables needed
+                        	for(ExprVar variable : lambdaFunctionsNeededVariables.get(efc.getName())) {
+                        		// If a needed variable is the same as the current parameter that we just added
+                        		if(variable.getName() == p.getName()) {
+                        			// Delete it from the needed variables
+                        			lambdaFunctionsNeededVariables.get(efc.getName()).remove(variable);
+									
+                        			// No need to look further since we added 1 variable
+                        			break;
+                        		}
+                        	}
+                        	
+                        }
+                        
                     }
                     efc = new ExprFunCall(efc, efc.getName(), pl);
                 }
@@ -1655,7 +1695,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         dependent.add(name);
                     }
                     Type t = symtab.lookupVarNocheck(exp);
-                    if (t == null) {
+					if (t == null) {
                         // if t is not null,
                         // it's local to stmtblock (thus should not be considered
                         // closure-passed variable that's defined outside the inner
@@ -1717,7 +1757,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         pt.accept(this);
                         isAssignee = oldIsA;
                         dependent = oldDependent;
-                    }
+					}
                     return exp;
                 }
 
