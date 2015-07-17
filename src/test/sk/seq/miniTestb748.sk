@@ -1,0 +1,10 @@
+// Using a local variable construct in a lambda expression
+
+harness void main(int x){
+	int a = 2;
+	int b = 3;
+	
+	fun f = (,) -> $$$ + $$$;
+	
+	assert f() == 2 * x;
+}
