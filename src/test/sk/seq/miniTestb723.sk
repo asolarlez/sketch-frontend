@@ -1,16 +1,15 @@
-pragma options "-V 0";
+// Finding variables of type int
 
 bit reverseSketch(bit[4] in) implements reverse {	
 	bit t=0;
 	int i=0;
 	int j = 0;
 	repeat(??){
-		t = in[$$$];
-		i = $$$+??;
+		t = in[$(int)];
+		i = $(int)+??;
 	}
 	return t;
 }
-
 
 bit reverse (bit[4] in) {
 	return in[2];

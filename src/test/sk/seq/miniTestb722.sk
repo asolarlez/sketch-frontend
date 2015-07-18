@@ -1,14 +1,12 @@
-pragma options "-V 0";
-
-//-P cleanup
+// Finding variables of type int
 
 harness void localVariable(int x, int y) 
 {
   int a = 2;
   int b = 3;
   int c = 4;
-      
-  int t = $$$*?? + $$$;
+       
+  int t = $(int)*?? + $(int);
   
   assert (t == x + x + 3);
 }
