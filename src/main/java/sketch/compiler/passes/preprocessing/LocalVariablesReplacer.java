@@ -1,7 +1,9 @@
 package sketch.compiler.passes.preprocessing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -9,7 +11,6 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTernary;
@@ -47,7 +48,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 
 	private TempVarGen tempVarGen;
 	protected List<Statement> globalDeclarations;
-	List<Expression> possibleVariables;
+	private Map<ExprLocalVariables, List<Expression>> localVariablesMap;
 
 	/**
 	 * Creates a local variables replacer
@@ -57,7 +58,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 
 		this.tempVarGen = varGen;
 		this.globalDeclarations = new ArrayList<Statement>();
-		this.possibleVariables = new ArrayList<Expression>();
+		this.localVariablesMap = new HashMap<ExprLocalVariables, List<Expression>>();
     }
 
     /**
@@ -67,21 +68,24 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
     public Object visitExprLocalVariables(ExprLocalVariables exp) {
 		// System.out.println("***************************visit in replacer");
         
-        // Create an arrayList of Expressions to store all the available variables to use
-		List<Expression> variablesInScope = this.symtab.getLocalVariablesOfType(exp);
+		// Map this expression to the variables that it can take
+		this.localVariablesMap.put(exp, this.symtab.getLocalVariablesOfType(exp));
 
-		// Loop through the variables in scope
-		for (Expression variable : variablesInScope) {
-			// If there is a variable in the scope that has the same name
-			// as a formal parameter of a lambda expression, don't add it
-			if (!this.possibleVariables.contains(variable)) {
-				// Add the variable
-				this.possibleVariables.add(variable);
-			}
-		}
+//        // Create an arrayList of Expressions to store all the available variables to use
+//		List<Expression> variablesInScope = this.symtab.getLocalVariablesOfType(exp);
+//
+//		// Loop through the variables in scope
+//		for (Expression variable : variablesInScope) {
+//			// If there is a variable in the scope that has the same name
+//			// as a formal parameter of a lambda expression, don't add it
+//			if (!this.possibleVariables.contains(variable)) {
+//				// Add the variable
+//				this.possibleVariables.add(variable);
+//			}
+//		}
 
 		// Check if we have possible variables to use
-		if (this.possibleVariables.size() < 1) {
+		if (this.localVariablesMap.get(exp).size() < 1) {
 			throw new ExceptionAtNode("You do not have any possible variables to use of type: " + exp.getType(), exp);
         }
 		
@@ -89,7 +93,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		StringBuilder variablesRegex = new StringBuilder("{|");
 
 		// Loop through the possible variables adding them to the regex
-		for (Expression variable : this.possibleVariables) {
+		for (Expression variable : this.localVariablesMap.get(exp)) {
 			variablesRegex.append(variable + "|");
 		}
 
@@ -103,23 +107,33 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 //		return this.getVariableConditional(exp, possibleVariables);
     }
 	
-	/**
-	 * Loop through the variables of the lambda expression since those should be
-	 * considered when solving.
-	 * 
-	 * @param exprLambda
-	 * @return
-	 */
-	@Override
-	public Object visitExprLambda(ExprLambda exprLambda) {
-		// Loop through the formal parameters
-		for (ExprVar formalParameter : exprLambda.getParameters()) {
-			// Add them to the list of possible variables
-			this.possibleVariables.add(formalParameter);
-		}
-
-		return super.visitExprLambda(exprLambda);
-	}
+//	/**
+//	 * Loop through the variables of the lambda expression since those should be
+//	 * considered when solving.
+//	 * 
+//	 * @param exprLambda
+//	 * @return
+//	 */
+//	@Override
+//	public Object visitExprLambda(ExprLambda exprLambda) {
+//		List<Expression> currentVariablesNeeded = new ArrayList<Expression>();
+//
+//		// Check if the
+//		if (this.localVariablesMap.containsKey(exprLambda)) {
+//			currentVariablesNeeded = this.localVariablesMap.get(exprLambda);
+//		}
+//
+//		// Loop through the formal parameters
+//		for (ExprVar formalParameter : exprLambda.getParameters()) {
+//			// Add them to the list of possible variables
+//			currentVariablesNeeded.add(formalParameter);
+//
+//		}
+//		
+//		// this.localVariablesMap.put(exprLambda, currentVariablesNeeded);
+//
+//		return super.visitExprLambda(exprLambda);
+//	}
 
 	@Override
 	public Object visitFunction(Function func) {

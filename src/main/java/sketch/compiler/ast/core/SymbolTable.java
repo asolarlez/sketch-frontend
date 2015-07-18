@@ -409,20 +409,22 @@ public class SymbolTable implements Cloneable
 	public ArrayList<Expression> getLocalVariablesOfType(ExprLocalVariables exp) {
 		ArrayList<Expression> localVariables = new ArrayList<Expression>();
 
-		Map<String, VarInfo> variables = new HashMap<String, SymbolTable.VarInfo>();
+//		Map<String, VarInfo> variables = new HashMap<String, SymbolTable.VarInfo>();
+		Map<String, VarInfo> variables = this.vars;
 
-		SymbolTable table = exp.getSymbolTableInContext();
+		
+		// SymbolTable table = exp.getSymbolTableInContext();
 		
 		// Get the symbol table parent
 		SymbolTable parent = this.getParent();
 
-		if(table == null) {
-			variables = this.vars;
-		}
-		else {
-			variables = table.vars;
-			parent = table.parent;
-		}
+		// if(table == null) {
+		// variables = this.vars;
+		// }
+		// else {
+		// variables = table.vars;
+		// parent = table.parent;
+		// }
 	
         // Loop through the variables
 		for (Entry<String, VarInfo> entry : variables.entrySet()) {

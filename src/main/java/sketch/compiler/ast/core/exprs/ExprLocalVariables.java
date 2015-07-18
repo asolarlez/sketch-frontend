@@ -1,5 +1,7 @@
 package sketch.compiler.ast.core.exprs;
 
+import java.util.List;
+
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
@@ -15,8 +17,8 @@ import sketch.compiler.ast.core.typs.Type;
  */
 public class ExprLocalVariables extends Expression {
 
-	private Type 		type;
-	private SymbolTable symbolTableInContext;
+	private Type 				type;
+	private SymbolTable 		symbolTableInContext;
 
 	/**
 	 * Creates a new local variable expression by passing a front end node.
@@ -92,12 +94,12 @@ public class ExprLocalVariables extends Expression {
 	 * @param symbolTableInContext
 	 */
 	public void setSymbolTableInContext(SymbolTable symbolTableInContext) {
-		// Get a clone of the symbol table and create a new table
-		SymbolTable temp = new SymbolTable((SymbolTable) symbolTableInContext.clone());
-		
-		// The constructor actually creates a new empty table with the passed parameter
-		// as the parent. So get the parent to have the same state as before.
-		this.symbolTableInContext = temp.getParent();
+//		// Get a clone of the symbol table and create a new table
+//		SymbolTable temp = new SymbolTable((SymbolTable) symbolTableInContext.clone());
+//		
+//		// The constructor actually creates a new empty table with the passed parameter
+//		// as the parent. So get the parent to have the same state as before.
+//		this.symbolTableInContext = temp.getParent();
 	}
 
 	@Override

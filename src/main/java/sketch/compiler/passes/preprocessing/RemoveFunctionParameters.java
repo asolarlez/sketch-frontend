@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprLambda;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -515,6 +516,15 @@ public class RemoveFunctionParameters extends FEReplacer {
 		return super.visitStmtAssign(stmt);
 	}
 
+	public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
+//		if (this.hoister.getSymbolTable().getParent() != null) {
+//			// Set the symbol table to this one
+//			exprLocalVariables.setSymbolTableInContext(this.hoister.getSymbolTable());			
+//		}
+
+		return super.visitExprLocalVariables(exprLocalVariables);
+	}
+
 	public Object visitExprFunCall(ExprFunCall efc) {
 		if (efc.getName().equals("minimize")) {
 			return super.visitExprFunCall(efc);
@@ -590,7 +600,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 		// Replacements should be local, so save the current map
 		Map<ExprVar, Expression> oldLambdaReplace = this.lambdaReplace;
-		
+
 		// create a new map
 		this.lambdaReplace = new HashMap<ExprVar, Expression>();
 
@@ -607,8 +617,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 		// Restore the replacement map
 		this.lambdaReplace = oldLambdaReplace;
 
-		// Check if there are any replacements left
-		newExpression = this.doExpression(newExpression);
+		// // Check if there are any replacements left
+		// newExpression = this.doExpression(newExpression);
 
 		// Return a new expression where all the variables are replaced with
 		// actual parameters
@@ -1563,13 +1573,22 @@ public class RemoveFunctionParameters extends FEReplacer {
 		}
 
 		public Object visitExprVar(ExprVar exprVar) {
+			// If there is a variable that needs to be replaced
 			if (lambdaRenameMap.containsKey(exprVar.getName())) {
+				// Replace the variable
 				return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
 			}
 
 			return super.visitExprVar(exprVar);
 		}
+		
+		public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
+//			// Set the symbol table to this one
+//			exprLocalVariables.setSymbolTableInContext(this.symtab);
 
+			return super.visitExprLocalVariables(exprLocalVariables);
+		}
+		
         public Object visitExprFunCall(ExprFunCall efc) {
         	
             String oldName = efc.getName();
