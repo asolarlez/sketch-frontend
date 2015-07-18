@@ -755,7 +755,7 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 		RPAREN
 	;
 
-// (x, y) -> x + y; 	
+// (,x, y) -> x + y; 	
 lambda_expr returns [Expression expression]  {
 	expression = null;
 	List list = new ArrayList();
@@ -1023,7 +1023,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
-	|   (lambda_expr) => x = lambda_expr // Switch with the parenthesized expression.
+	|   (lambda_expr) => x = lambda_expr // TODO Switch with the parenthesized expression.
 	|	x=var_expr
 	|	x=constantExpr
 	|   x=arr_initializer
@@ -1111,11 +1111,22 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	  x = new ExprStar(getContext(t2)); 
             	}
             }
-    |  t3:LOCAL_VARIABLES // MIGUEL this is where I need to modify the grammar so that my symbol is understood by the parser
-            {
-              x = new ExprLocalVariables(getContext(t3)); // MIGUEL just follow the same pattern from NDVAL, meaning reate a t3 temporary
-            }
+	// MIGUEL this is where I need to modify the grammar so that my symbol is understood by the parser
+    |  (local_variable) => x = local_variable
     ;
+    
+local_variable returns [Expression localVariable] {
+	localVariable = null;
+	Type type = null;
+}
+	: 	context:LOCAL_VARIABLES // $ 
+		LPAREN 
+		type = data_type 
+		RPAREN
+            {
+              localVariable = new ExprLocalVariables(getContext(context), type); 
+            }
+     ;
 
 adt_decl returns [List<StructDef> adtList]
 { adtList = new ArrayList<StructDef>(); List<StructDef> innerList; 

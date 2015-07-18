@@ -202,7 +202,7 @@ NDANGELIC: "**";
 AT: "@";
 BACKSLASH: "\\";
 LESS_COLON: "<:";
-LOCAL_VARIABLES: "$$$"; // MIGUEL just follow the same of ??. TODO decide what symbol we will use.
+LOCAL_VARIABLES: "$"; 
 
 REGEN   { int open = 0; }
     :   "{|"

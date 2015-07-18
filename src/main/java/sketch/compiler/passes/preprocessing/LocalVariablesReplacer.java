@@ -23,14 +23,15 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.Misc;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
- * This replacer takes a local variable expression <code>$$$</code> and replaces
- * it with an available local variable. <br>
+ * This replacer takes a local variable expression <code>$(type)</code> and
+ * replaces it with an available local variable. <br>
  * <br>
  * <code>
  * int a = 0; <br>
- * int b = $$$ + 2;<br>
+ * int b = $(type) + 2;<br>
  * <br>
  * <br>
  * int a = 0;<br>
@@ -82,7 +83,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 
 		// Check if we have possible variables to use
 		if (possibleVariables.size() < 1) {
-			throw new RuntimeException("You do not have any possible variables to use");
+			throw new ExceptionAtNode("You do not have any possible variables to use of type: " + exp.getType(), exp);
         }
 
 		// Genereate a regex so that the synthesizer figures out which variable to use

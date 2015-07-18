@@ -902,7 +902,7 @@ inputState.guessing--;
 			}
 			match(LCURLY);
 			{
-			_loop266:
+			_loop269:
 			do {
 				switch ( LA(1)) {
 				case TK_boolean:
@@ -935,7 +935,7 @@ inputState.guessing--;
 				}
 				default:
 				{
-					break _loop266;
+					break _loop269;
 				}
 				}
 			} while (true);
@@ -979,7 +979,7 @@ inputState.guessing--;
 			match(ID);
 			match(LCURLY);
 			{
-			_loop259:
+			_loop262:
 			do {
 				switch ( LA(1)) {
 				case TK_adt:
@@ -1014,7 +1014,7 @@ inputState.guessing--;
 						}
 					}
 				else {
-					break _loop259;
+					break _loop262;
 				}
 				}
 			} while (true);
@@ -5463,7 +5463,6 @@ inputState.guessing--;
 		Token  f = null;
 		Token  t1 = null;
 		Token  t2 = null;
-		Token  t3 = null;
 		x = null; Expression n1=null, n2=null;
 		
 		try {      // for error handling
@@ -5642,13 +5641,7 @@ inputState.guessing--;
 			}
 			case LOCAL_VARIABLES:
 			{
-				t3 = LT(1);
-				match(LOCAL_VARIABLES);
-				if ( inputState.guessing==0 ) {
-					
-					x = new ExprLocalVariables(getContext(t3)); // MIGUEL just follow the same pattern from NDVAL, meaning reate a t3 temporary
-					
-				}
+				x=local_variable();
 				break;
 			}
 			default:
@@ -5668,6 +5661,38 @@ inputState.guessing--;
 		return x;
 	}
 	
+	public final Expression  local_variable() throws RecognitionException, TokenStreamException {
+		Expression localVariable;
+		
+		Token  context = null;
+		
+			localVariable = null;
+			Type type = null;
+		
+		
+		try {      // for error handling
+			context = LT(1);
+			match(LOCAL_VARIABLES);
+			match(LPAREN);
+			type=data_type();
+			match(RPAREN);
+			if ( inputState.guessing==0 ) {
+				
+				localVariable = new ExprLocalVariables(getContext(context), type); 
+				
+			}
+		}
+		catch (RecognitionException ex) {
+			if (inputState.guessing==0) {
+				reportError(ex);
+				recover(ex,_tokenSet_41);
+			} else {
+			  throw ex;
+			}
+		}
+		return localVariable;
+	}
+	
 	public final StructDef  structInsideADT_decl() throws RecognitionException, TokenStreamException {
 		StructDef ts;
 		
@@ -5682,7 +5707,7 @@ inputState.guessing--;
 			match(ID);
 			match(LCURLY);
 			{
-			_loop262:
+			_loop265:
 			do {
 				switch ( LA(1)) {
 				case TK_boolean:
@@ -5715,7 +5740,7 @@ inputState.guessing--;
 				}
 				default:
 				{
-					break _loop262;
+					break _loop265;
 				}
 				}
 			} while (true);

@@ -117,13 +117,14 @@ public class PreprocessStage extends MetaStage {
 		// prog.debugDump("************************************** 9");
 
         // prog = ir1.run(prog);
+//        prog.debugDump("************************************** Before type inference");
 		// prog.debugDump("before type inference");
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
 
-		prog.debugDump("************************************** Before Local Variable replacer");
-		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
-		prog.debugDump("************************************** After Local Variable replacer");
+//		prog.debugDump("************************************** Before Local Variable replacer");
+//		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
+//		prog.debugDump("************************************** After Local Variable replacer");
         
         prog = (Program) prog.accept(new EliminateFieldHoles());
 		// prog.debugDump("af");
@@ -151,6 +152,8 @@ public class PreprocessStage extends MetaStage {
                             options.bndOpts.unrollAmnt, rctrl));
             //prog.debugDump("after preprocess");
         }
+        
+        prog.debugDump("************************************** After preprocess stage");
 
         return prog;
     }

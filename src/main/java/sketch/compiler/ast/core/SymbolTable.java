@@ -48,7 +48,7 @@ import sketch.util.exceptions.UnrecognizedVariableException;
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class SymbolTable
+public class SymbolTable implements Cloneable
 {
 
     public enum Finality {
@@ -370,6 +370,34 @@ public class SymbolTable
         return parent;
     }
 
+	/**
+	 * Perform a deep clone of the current symbol table.
+	 */
+	public Object clone() {
+		SymbolTable table = new SymbolTable(null);
+
+		table.fns = new HashMap<String, Function>();
+		for (Entry<String, Function> entry : this.fns.entrySet()) {
+			table.fns.put(entry.getKey(), entry.getValue());
+		}
+
+		table.vars = new HashMap<String, SymbolTable.VarInfo>();
+		for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
+			table.vars.put(entry.getKey(), entry.getValue());
+		}
+
+		table.includedFns = this.includedFns;
+		table.makeShared = this.makeShared;
+
+		if (this.parent != null) {
+			table.parent = (SymbolTable) this.parent.clone();
+		} else {
+			table.parent = null;
+		}
+
+		return table;
+	}
+
     /**
 	 * Return the variables from the symbol table as Expression based on the 
 	 * type of the provided expression. Be careful with this since this will include the 
@@ -380,9 +408,24 @@ public class SymbolTable
 	 */
 	public ArrayList<Expression> getLocalVariablesOfType(ExprLocalVariables exp) {
 		ArrayList<Expression> localVariables = new ArrayList<Expression>();
+
+		Map<String, VarInfo> variables = new HashMap<String, SymbolTable.VarInfo>();
+
+		SymbolTable table = exp.getSymbolTableInContext();
+		
+		// Get the symbol table parent
+		SymbolTable parent = this.getParent();
+
+		if(table == null) {
+			variables = this.vars;
+		}
+		else {
+			variables = table.vars;
+			parent = table.parent;
+		}
 	
         // Loop through the variables
-        for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
+		for (Entry<String, VarInfo> entry : variables.entrySet()) {
             // Get the information of the variable
             VarInfo varInformation = entry.getValue();
 
@@ -396,10 +439,7 @@ public class SymbolTable
 			}
 
         }
-        
-        // Get the symbol table parent
-        SymbolTable parent = this.getParent();
-        
+
 		// Loop through the parent symbol table while it is not null
         while(parent != null) {
         	// Loop through the formal parameters

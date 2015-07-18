@@ -1054,10 +1054,10 @@ public class FEReplacer implements FEVisitor
 			// If the type does not equal the expr type
 			if (type != expr.getType()) {
 				// Create a new local variables expr
-				ExprLocalVariables exprLocalVariables = new ExprLocalVariables(expr);
+				ExprLocalVariables exprLocalVariables = new ExprLocalVariables(expr, type);
 
-				// Set the type to the one we just found
-				exprLocalVariables.setType(type);
+				// Set the symbol table
+				exprLocalVariables.setSymbolTableInContext(expr.getSymbolTableInContext());
 
 				// Return the new expr
 				return exprLocalVariables;

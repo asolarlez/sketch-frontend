@@ -3,48 +3,45 @@ package sketch.compiler.ast.core.exprs;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.typs.Type;
 
 /**
- * An expression that represents the desire to use local variables in the context. The
- * symbol is <code>$$$</code>.
+ * An expression that represents the desire to use local variables in the
+ * context. The symbol is <code>$(type)</code>.
  * 
  * @author Miguel Velez
  * @version 0.2
  */
 public class ExprLocalVariables extends Expression {
-    // This is the class that extends an expression. Probably, I will not need to
-    // change it further, but look at other classes that extend expression to know what to
-    // do.
 
-	private Type type;
+	private Type 		type;
+	private SymbolTable symbolTableInContext;
 
-    /**
-     * Creates a new local variable expression by passing a front end node.
-     * 
-     * @param context
-     */
-    public ExprLocalVariables(FENode context) {
+	/**
+	 * Creates a new local variable expression by passing a front end node.
+	 * 
+	 * @param context
+	 * @param type
+	 */
+	public ExprLocalVariables(FENode context, Type type) {
         super(context);
         
-		this.type = null;
-        
-//        System.out.println("***************************Constructor node in expression");
+		this.type = type;
+		this.symbolTableInContext = null;
     }
 
-    /**
-     * Creates a new local variable expression by passing a front end context.
-     * 
-     * @param context
-     */
-    public ExprLocalVariables(FEContext context) {
+	/**
+	 * Creates a new local variable expression by passing a front end context.
+	 * 
+	 * @param context
+	 * @param type
+	 */
+	public ExprLocalVariables(FEContext context, Type type) {
         super(context);
 
-		this.type = null;
-
-//        System.out.println("***************************Constructor context in expression");
-//        System.out.println("We found a symbol at line: " + context.getLineNumber() +
-//                " that represents that the user wants to use local variables");
+		this.type = type;
+		this.symbolTableInContext = null;
     }
 
     /**
@@ -56,8 +53,6 @@ public class ExprLocalVariables extends Expression {
      */
     @Override
     public Object accept(FEVisitor visitor) {
-//		System.out.println("***************************Visitor in expression");
-
         // Visit a local variable expression
         return visitor.visitExprLocalVariables(this);
     }
@@ -80,12 +75,37 @@ public class ExprLocalVariables extends Expression {
 		this.type = type;
 	}
 
+	/**
+	 * Return the symbol table that the expression uses to choose among the
+	 * possible variables
+	 * 
+	 * @return
+	 */
+	public SymbolTable getSymbolTableInContext() {
+		return this.symbolTableInContext;
+	}
+
+	/**
+	 * Set the symbol table that the expression will use to derive possible
+	 * variables.
+	 * 
+	 * @param symbolTableInContext
+	 */
+	public void setSymbolTableInContext(SymbolTable symbolTableInContext) {
+		// Get a clone of the symbol table and create a new table
+		SymbolTable temp = new SymbolTable((SymbolTable) symbolTableInContext.clone());
+		
+		// The constructor actually creates a new empty table with the passed parameter
+		// as the parent. So get the parent to have the same state as before.
+		this.symbolTableInContext = temp.getParent();
+	}
+
 	@Override
 	public String toString() {
 		if (this.getType() == null) {
-			return "$$$:null";
+			return "$(null)";
 		} else {
-			return "$$$:" + this.getType();
+			return "$(" + this.getType() + ")";
 		}
 	}
 

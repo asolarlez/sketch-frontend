@@ -187,6 +187,10 @@ public class SymbolTableVisitor extends FEReplacer
         Type t = getType(expr);
         return (t == null) ? new NotYetComputedType(CudaMemoryType.UNDEFINED) : t;
     }
+    
+    public SymbolTable getSymbolTable() {
+    	return this.symtab;
+    }
 
     /**
      * Get the type of an <code>Expression</code>.
