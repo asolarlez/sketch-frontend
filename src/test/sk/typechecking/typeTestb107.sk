@@ -1,0 +1,11 @@
+// Cannot return lambda
+
+fun error() {
+	return (,x) -> x + 2;
+}
+
+harness void main() {
+ 	fun f = error();
+ 	
+ 	assert f(3) == 5;
+}

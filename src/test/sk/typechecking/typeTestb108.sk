@@ -1,0 +1,7 @@
+// Cannot have statments in lambda expression
+
+harness void main() {
+ 	fun f = (,x) -> x++;
+ 	
+ 	assert f(3) == 4;
+}
