@@ -792,7 +792,7 @@ func_call returns [Expression x] { x = null; List l; }
 	;
 
 expr_get returns [Expression x] { x = null; List l; }
-	: t:NDVAL2 LPAREN l = expr_get_params  RPAREN
+	: t:NDVAL2 LPAREN LCURLY l = expr_get_params RCURLY RPAREN
 		{ x = new ExprADTHole(getContext(t), l); }
 	;
 	
@@ -1034,7 +1034,7 @@ postfix_expr returns [Expression x] { x = null;  int untype = -1;}
 
 primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl;Type t = null; }
 	:	x=tminic_value_expr
-		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | LCURLY t = data_type  {x = new ExprFieldMacro(x, x, t);} RCURLY)
+		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | LCURLY t = data_type  {x = new ExprFieldsListMacro(x, x, t);} RCURLY)
 		|	l:LSQUARE
 					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
