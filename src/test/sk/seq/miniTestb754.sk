@@ -1,0 +1,12 @@
+// Finding variables of type int
+
+harness void localVariable(int x, int y) 
+{
+  int a = 2;
+  int b = 3;
+  int c = 4;
+         
+  int t = $(int)*??;
+  
+  assert (t == x + x);
+}

@@ -14,6 +14,7 @@ import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -67,27 +68,27 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
         // Create an arrayList of Expressions to store all the available variables to use
         ArrayList<Expression> possibleVariables = this.symtab.getLocalVariablesOfType(exp);
         
-//		// Loop through the possible variables to find if the statement with the
-//		// special symbol is in here
-//		for (Expression variable : possibleVariables) {
-//			// If the context of this variable is the same as the context
-//			// of the statement with the symbol
-//			if (variable.getCx().equals(exp.getCx())) {
-//				// Remove that variable from the possible list
-//				possibleVariables.remove(variable);
-//
-//				// Break this loop and continue
-//				break;
-//			}
-//		}
-
 		// Check if we have possible variables to use
 		if (possibleVariables.size() < 1) {
 			throw new ExceptionAtNode("You do not have any possible variables to use of type: " + exp.getType(), exp);
         }
+		
+		// Start building a regex of variables with "{|"
+		StringBuilder variablesRegex = new StringBuilder("{|");
 
-		// Genereate a regex so that the synthesizer figures out which variable to use
-		return this.getVariableConditional(exp, possibleVariables);
+		// Loop through the possible variables adding them to the regex
+		for (Expression variable : possibleVariables) {
+			variablesRegex.append(variable + "|");
+		}
+
+		// Close the regex with "}"
+		variablesRegex.append("}");
+		
+		// Return the regex with the possible variables and let future passes do the rest
+		return new ExprRegen(exp, variablesRegex.toString());
+
+		//		// Genereate a regex so that the synthesizer figures out which variable to use
+//		return this.getVariableConditional(exp, possibleVariables);
     }
 	
 	@Override
