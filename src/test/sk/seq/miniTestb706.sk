@@ -22,7 +22,7 @@ BinaryTree insertNode(BinaryTree tree, int x) {
 				if ({| 1 | x (<|>|<=|>=) tree.??|} ) { 
 					BinaryTree l = insertNode(tree.??,x);
 					BinaryTree r = insertNode(tree.??, x);
-					return ??(3, {tree.??, l, r, x});
+					return ??({tree.??, l, r, x});
 				}
 			}
 		}

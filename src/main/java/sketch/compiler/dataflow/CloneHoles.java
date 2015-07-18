@@ -45,7 +45,7 @@ public class CloneHoles extends FEReplacer {
 
     public Object visitExprNew(ExprNew exp) {
         ExprNew nexp = (ExprNew) super.visitExprNew(exp);
-        if (nexp.isHole()) {
+        if (nexp.isHole() && nexp.getStar() != null) {
             ExprStar newStar = (ExprStar) nexp.getStar().accept(this);
         }
         return nexp;

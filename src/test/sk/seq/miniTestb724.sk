@@ -7,6 +7,6 @@ adt NODE {
 
 harness void main(){
     NODE e1 = new Arr(sz=2,arr= {{1,2}, {1,3}},dflt=0);
-    NODE e = ??(3,{});
+    NODE e = ??({});
     assert(e1 === e);
 }

@@ -38,22 +38,22 @@ Constraint getConstraints(E e, Type t,  Type[32] envt, ref int id) {
 			
 			// If necessary, set the type of a variable in the environment.
 			if (??) {
-				envt[e.??] = ??(2, {t,new Unknown(id = {|id1|id2|})});				
+				envt[e.??] = ??({t,new Unknown(id = {|id1|id2|})});				
 			}
 			
 			// Recursively get constraints
 			Constraint a = getConstraints( e.??,
-										 ??(2, {t, new Unknown(id = {|id1|id2|})}),
+										 ??({t, new Unknown(id = {|id1|id2|})}),
 										 envt, id); 
 			Constraint b = getConstraints( e.??, 
-										   ??(2, {t, new Unknown(id = {|id1|id2|})}),
+										   ??({t, new Unknown(id = {|id1|id2|})}),
 										    envt, id);
 			
 			// Construct a new constraint
-			Type tl = ??(2, {t, new Unknown(id ={|id1|id2|})});
-			Type tr = ??(2, {t, new Unknown(id ={|id1|id2|})});
-			return new ??( l = ??(2, {t, t1}), r = ??(2, {t, t1}),
-				a =??(2, {tl, tr, a, b}), b = ??(2, {tl, tr, a, b}));
+			Type tl = ??({t, new Unknown(id ={|id1|id2|})});
+			Type tr = ??({t, new Unknown(id ={|id1|id2|})});
+			return new ??( l = ??({t, t1}), r = ??({t, t1}),
+				a =??({tl, tr, a, b}), b = ??({tl, tr, a, b}));
 				
 		}	
 	}	

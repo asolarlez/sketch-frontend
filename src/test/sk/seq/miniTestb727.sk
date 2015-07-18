@@ -29,7 +29,9 @@ dstAST desugar(srcAST src){
 	if (src == null) return null;
 	switch(src) {
 		repeat_case: {
-			return ??(2, {desugar(src.??), src.??});
+			dstAST a = desugar(src.??);
+			dstAST b = desugar(src.??);
+			return ??({a, b, src.??});
 		}
 	}
 }

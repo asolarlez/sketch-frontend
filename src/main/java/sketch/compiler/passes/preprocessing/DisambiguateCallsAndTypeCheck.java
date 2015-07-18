@@ -1400,11 +1400,11 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
-        String parentName = curName;
-        while (parentName != null) {
-            curName = parentName;
-            parentName = nres.getStructParentName(parentName);
-        }
+        // String parentName = curName;
+        // while (parentName != null) {
+        // curName = parentName;
+        // parentName = nres.getStructParentName(parentName);
+        // }
         List<String> children = nres.getStructChildren(curName);
 
         if (children == null || children.isEmpty()) {

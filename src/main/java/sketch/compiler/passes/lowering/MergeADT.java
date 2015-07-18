@@ -132,8 +132,7 @@ public class MergeADT extends SymbolTableVisitor {
                         if (variantName != null) {
                             variantName = variantName.split("@")[0];
                         }
-                        if (variantName != null &&
-                                variantName.equals(str.getName()) &&
+                        if ((variantName == null || (variantName != null && variantName.equals(str.getName()))) &&
                                 !map.containsKey(p.getName()) &&
                                 str.hasField(p.getName()) &&
                                 getType(p.getExpr()).promotesTo(
@@ -356,7 +355,7 @@ public class MergeADT extends SymbolTableVisitor {
                 }
             }
         }
-        // Now add the structs
+        // Now add all structs
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             List newStructs = new ArrayList();
@@ -382,16 +381,18 @@ public class MergeADT extends SymbolTableVisitor {
             allStructs.addAll(pkg.getStructs());
             allStructs.addAll(newStructs);
 
-            // Package newpkg = (Package) super.visitPackage(pkg);
             Package newpkg =
                     new Package(pkg, pkg.getName(), allStructs, pkg.getVars(),
                             pkg.getFuncs(), pkg.getSpAsserts());
-            newpkg = (Package) super.visitPackage(newpkg);
             // newpkg.getStructs().addAll(newStructs);
             newStreams.add(new Package(newpkg, newpkg.getName(), newStructs,
                     newpkg.getVars(), newpkg.getFuncs(), newpkg.getSpAsserts()));
         }
-        Program newprog = p.creator().streams(newStreams).create();
+        List<Package> pkges = new ArrayList<Package>();
+        for (int i = 0; i < newStreams.size(); i++) {
+            pkges.add((Package) super.visitPackage(newStreams.get(i)));
+        }
+        Program newprog = p.creator().streams(pkges).create();
         return newprog;
         // return super.visitProgram(newprog);
     }
