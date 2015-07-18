@@ -1,0 +1,12 @@
+// Variable c is not included in the local variable regex
+
+harness void main(){
+	int a = 2;
+	int b = 3;
+	
+	fun f = (,x) -> x + $(int);
+	
+	int c = 8;
+	
+	assert f(2) == 10;
+}
