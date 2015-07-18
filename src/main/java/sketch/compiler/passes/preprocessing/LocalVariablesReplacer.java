@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprTernary;
@@ -46,6 +47,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 
 	private TempVarGen tempVarGen;
 	protected List<Statement> globalDeclarations;
+	List<Expression> possibleVariables;
 
 	/**
 	 * Creates a local variables replacer
@@ -55,7 +57,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 
 		this.tempVarGen = varGen;
 		this.globalDeclarations = new ArrayList<Statement>();
-		// System.out.println("***************************Constructor in replacer");
+		this.possibleVariables = new ArrayList<Expression>();
     }
 
     /**
@@ -66,10 +68,10 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// System.out.println("***************************visit in replacer");
         
         // Create an arrayList of Expressions to store all the available variables to use
-        ArrayList<Expression> possibleVariables = this.symtab.getLocalVariablesOfType(exp);
-        
+		this.possibleVariables.addAll(this.symtab.getLocalVariablesOfType(exp));
+
 		// Check if we have possible variables to use
-		if (possibleVariables.size() < 1) {
+		if (this.possibleVariables.size() < 1) {
 			throw new ExceptionAtNode("You do not have any possible variables to use of type: " + exp.getType(), exp);
         }
 		
@@ -77,7 +79,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		StringBuilder variablesRegex = new StringBuilder("{|");
 
 		// Loop through the possible variables adding them to the regex
-		for (Expression variable : possibleVariables) {
+		for (Expression variable : this.possibleVariables) {
 			variablesRegex.append(variable + "|");
 		}
 
@@ -91,6 +93,24 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 //		return this.getVariableConditional(exp, possibleVariables);
     }
 	
+	/**
+	 * Loop through the variables of the lambda expression since those should be
+	 * considered when solving.
+	 * 
+	 * @param exprLambda
+	 * @return
+	 */
+	@Override
+	public Object visitExprLambda(ExprLambda exprLambda) {
+		// Loop through the formal parameters
+		for (ExprVar formalParameter : exprLambda.getParameters()) {
+			// Add them to the list of possible variables
+			this.possibleVariables.add(formalParameter);
+		}
+
+		return super.visitExprLambda(exprLambda);
+	}
+
 	@Override
 	public Object visitFunction(Function func) {
 		// Initialized the global declarations list
