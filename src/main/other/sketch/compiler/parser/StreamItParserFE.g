@@ -780,8 +780,8 @@ lambda_expr returns [Expression expression]  {
 	  RPAREN
 	  // ->
 	  ARROW
-	  // Operation is a
-	  operation = addExpr
+	  // Operation is any expression
+	  operation = right_expr
 	  {
 	  	// Create a new expression
 	  	expression = new ExprLambda(getContext(prefix), list, operation);
