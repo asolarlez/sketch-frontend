@@ -4,7 +4,9 @@ harness void main(){
 	int a = 2;
 	int b = 3;
 	
-	fun f = (,x) -> x + $$$;
+	fun f = (,x) -> x + $(int);
 	
-	assert f(2) == 5;
+	int c = 8; // This is not included in the local variable
+	
+	assert f(7) == 10;
 }

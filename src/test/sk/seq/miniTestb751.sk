@@ -1,0 +1,17 @@
+// Local variable inside of inner function that is passed to high order
+// function
+
+int apply(fun f) {
+	return f();
+}
+
+harness void main(int x){
+	int a = 2;
+	int b = 3;
+	
+	int foo() {
+		return $(int);
+	}
+
+	assert apply(foo) == x; 
+}

@@ -1,0 +1,11 @@
+// Testing that y = $(int) == f = (,) -> $(int); y = f();
+
+harness void main() {
+	int a = 4;
+	int x = $(int);
+	
+	fun f = (,) -> $(int);
+	int y = f();
+	
+	assert y == x;
+}

@@ -1,0 +1,16 @@
+// Using lambdas and local variables in generators
+
+generator int exprGen(fun f) {
+	if(??) {
+		return f() + f();
+	}
+	else {
+		return f() * f();
+	}
+}
+
+harness void main() {
+	int a = 7;
+		
+	assert exprGen((,) -> $(int)) == 14;
+}
