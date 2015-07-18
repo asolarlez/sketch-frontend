@@ -1,0 +1,10 @@
+// Testing that the local variable picks only the formal parameter
+// and the local variable with the same name
+
+harness void main(){	
+	int x = 5;
+		
+    fun f = (,x) -> $(int) + 2;
+                  
+    assert f(10) == 12;
+}

@@ -68,7 +68,17 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// System.out.println("***************************visit in replacer");
         
         // Create an arrayList of Expressions to store all the available variables to use
-		this.possibleVariables.addAll(this.symtab.getLocalVariablesOfType(exp));
+		List<Expression> variablesInScope = this.symtab.getLocalVariablesOfType(exp);
+
+		// Loop through the variables in scope
+		for (Expression variable : variablesInScope) {
+			// If there is a variable in the scope that has the same name
+			// as a formal parameter of a lambda expression, don't add it
+			if (!this.possibleVariables.contains(variable)) {
+				// Add the variable
+				this.possibleVariables.add(variable);
+			}
+		}
 
 		// Check if we have possible variables to use
 		if (this.possibleVariables.size() < 1) {
