@@ -38,9 +38,9 @@ int[2*N] karatsuba(int N, int[N] x, int[N] y)  implements mult  {
     
     repeat(??){
         //int[N] t = {| a | b | c |};
-        int[N] t = $$$;
+        int[N] t = $(int[N]);
         //out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , {|N | No2 | 0|} )  );   
-        out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , $$$ )  );   
+        out = plus(2*N,  out, shiftVect(2*N, {| t | minus(N, t) |}  , $(int) )  );   
     }
     out = normalize(2*N, out);
     return out;

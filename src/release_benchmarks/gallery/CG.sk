@@ -42,18 +42,18 @@ Vec CG(Mat A, Mat Minv, Vec b, Vec x, double epsilon){
 
 generator Vec Gen(bit domul, Mat a, Mat b, Vec w, Vec x, Vec y, Vec z, double d1, double d2){
     //Vec tt = {| w | x | y |z |};
-    Vec tt = $$$;
+    Vec tt = $(Vec);
     if(??){
         //tt = scale(tt, {|d1 | d2 |});
-        tt = scale(tt, $$$);
+        tt = scale(tt, $(double));
     }
     if(domul && ??){
         //tt = mvmul({|a | b|}, tt);
-        tt = mvmul($$$, tt);
+        tt = mvmul($(Mat), tt);
     }
-    if(??){ // TODO MIGUEL in this case, a possibility is the variable itself
+    if(??){ 
         //tt = vsub({|w|x|y|z|tt|}, {|w|x|y|z|tt|});
-        tt = vsub($$$, $$$);
+        tt = vsub($(Vec), $(Vec));
     }
     return tt;
 }
