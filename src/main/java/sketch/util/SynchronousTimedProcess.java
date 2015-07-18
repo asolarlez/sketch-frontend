@@ -57,6 +57,9 @@ public class SynchronousTimedProcess {
             tmpFile.deleteOnExit();
             pb.redirectOutput(ProcessBuilder.Redirect.to(tmpFile));
         }
+        if (options.solverOpts.ntimes > 1) {
+            pb.redirectErrorStream(true);
+        }
         startMs = System.currentTimeMillis ();
         proc = pb.start ();
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -96,7 +99,6 @@ public class SynchronousTimedProcess {
         ProcessKillerThread killer = null;
         ProcessStatus status = new ProcessStatus();
         System.gc();
-
         try {
             if (timeoutMins > 0) {
                 killer = new ProcessKillerThread(proc, timeoutMins);
