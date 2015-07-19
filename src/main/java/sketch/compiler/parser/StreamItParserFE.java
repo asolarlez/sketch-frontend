@@ -1685,7 +1685,7 @@ inputState.guessing--;
 						case COMMA:
 						{
 							if ( inputState.guessing==0 ) {
-								throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine());
+								params.add(null); maxlens.add(maxlen);
 							}
 							break;
 						}

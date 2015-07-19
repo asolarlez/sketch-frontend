@@ -417,7 +417,7 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
 					)?
 				{ params.add(x); maxlens.add(maxlen); }
 				)
-                | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
+				| {params.add(null); maxlens.add(maxlen); })
 
                 ( { maxlen = 0; }
                 COMMA x=expr_named_param  

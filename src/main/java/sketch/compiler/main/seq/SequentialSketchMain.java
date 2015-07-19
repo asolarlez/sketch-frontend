@@ -508,6 +508,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         prog = (Program) prog.accept(new ExpandRepeatCases());
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
+        prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
         prog = (Program) prog.accept(dtc);
