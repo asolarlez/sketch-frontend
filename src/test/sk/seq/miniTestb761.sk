@@ -9,8 +9,11 @@ generator int exprGen(fun f) {
 	}
 }
 
-harness void main() {
+harness void main(int x) {
 	int a = 7;
+	int b = 3;
+	bit c = 1;
+	char d = 'd';	
 		
-	assert exprGen((,) -> $(int)) == 14;
+	assert exprGen((,) -> $(int)) == 2*x;
 }
