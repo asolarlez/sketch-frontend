@@ -1,7 +1,11 @@
-// Cannot have statments in lambda expression
+// Cannot have statements in lambda expression
 
 harness void main() {
- 	fun f = (,x) -> x++;
+	int x = 2;
+	int t = 3;
+		
+ 	//fun f = (,x) -> t + x++;
+ 	fun f = (,x) -> x = x + 2;
  	
  	assert f(3) == 4;
 }

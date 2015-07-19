@@ -1560,18 +1560,6 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         }
 
-		public Object visitExprLambda(ExprLambda exprLambda) {
-			// Get the expression
-			Expression lambdaExpression = exprLambda.getExpression();
-
-			// Check if it is a unary expression
-			if(lambdaExpression instanceof ExprUnary) {
-				throw new ExceptionAtNode("You cannot have an statment in a lambda: " + exprLambda.getExpression() ,exprLambda);
-			}
-			
-			return super.visitExprLambda(exprLambda);
-		}
-
 		public Object visitExprVar(ExprVar exprVar) {
 			// If there is a variable that needs to be replaced
 			if (lambdaRenameMap.containsKey(exprVar.getName())) {
