@@ -62,12 +62,12 @@ public class ExprLambda extends Expression {
 	}
 
 	/**
-	 * Return a lis of the variables in scope of the lambda expression that are
-	 * used but are not part of the formal parameters.
+	 * Return a list of the variables in the scope of the lambda expression that
+	 * are used but are not part of the formal parameters.
 	 * 
 	 * @return
 	 */
-	public List<ExprVar> getVariablesInScopeInExpression() {
+	public List<ExprVar> getMissingFormalParameters() {
 		List<ExprVar> variablesInScopeInExpression = new ArrayList<ExprVar>();
 		
 		// Create an expression analyzer
@@ -132,17 +132,19 @@ public class ExprLambda extends Expression {
 
 	private class ExpressionAnalyzer extends FEReplacer {
 
-		private final List<ExprVar> variablesInScopeInExpression;
+		private final List<ExprVar> missingFormalParameters;
 
 		public ExpressionAnalyzer() {
-			this.variablesInScopeInExpression = new ArrayList<ExprVar>();
+			this.missingFormalParameters = new ArrayList<ExprVar>();
 		}
 
 		public Object visitExprVar(ExprVar exprVar) {
 			// If the parameters does not contain the variable in the expression
-			if (!parameters.contains(exprVar)) {
-				// Added to the lis of variables in expression
-				this.variablesInScopeInExpression.add(exprVar);
+			// and the variable has not been already added to the list
+			if (!parameters.contains(exprVar)
+					&& !this.missingFormalParameters.contains(exprVar)) {
+				// Added to the list of variables in expression
+				this.missingFormalParameters.add(exprVar);
 			}
 
 			return super.visitExprVar(exprVar);
@@ -152,7 +154,7 @@ public class ExprLambda extends Expression {
 		 * Return a list of variables in scope that the expression uses
 		 */
 		public List<ExprVar> getVariablesInScopeInExpression() {
-			return this.variablesInScopeInExpression;
+			return this.missingFormalParameters;
 		}
 
 	}

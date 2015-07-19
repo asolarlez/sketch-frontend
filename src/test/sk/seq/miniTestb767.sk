@@ -1,0 +1,12 @@
+// Casting an expression to a function
+
+int apply(fun f, int x, int y) {
+	return f();
+}
+
+harness void main() {
+
+	int t = 7;
+	
+	assert apply((,) -> t*t, 4, 3) == 49;
+}

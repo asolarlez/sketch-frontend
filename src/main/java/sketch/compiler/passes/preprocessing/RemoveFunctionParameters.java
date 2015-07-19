@@ -244,7 +244,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 								this.lambdaFunctionsNeededVariables.get(fun.getName());
 						
 						// Append the ones that it needs
-						formalParameters.addAll(((ExprLambda) actual).getVariablesInScopeInExpression());						
+						formalParameters.addAll(((ExprLambda) actual).getMissingFormalParameters());						
 						
 						// Add all the needed parameters
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), formalParameters);
@@ -252,7 +252,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 					else {
 						// Get a list of the variables needed in this new function
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), 
-								((ExprLambda) actual).getVariablesInScopeInExpression());												
+								((ExprLambda) actual).getMissingFormalParameters());												
 					}
 
 
@@ -276,7 +276,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 												
 						// Get a list of the variables needed in this new function
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), 
-								((ExprLambda) lambda).getVariablesInScopeInExpression());		
+								((ExprLambda) lambda).getMissingFormalParameters());		
 					}
 				}
 				else if(fun == null) {
@@ -1368,7 +1368,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 				List<Parameter> formalParameters = new ArrayList<Parameter>();
 				
 				// Add the current actual parameters
-				actualParameters.addAll(exprFunctionCall.getParams());		 
+				actualParameters.addAll(exprFunctionCall.getParams());	
+				
+				List<Parameter> calleeFormalParameters = this.nres.getFun(exprFunctionCall.getName()).getParams();
 						 			
 				// Loop through the variables needed
 				for(ExprVar variable : variablesNeeded) {
@@ -1376,6 +1378,19 @@ public class RemoveFunctionParameters extends FEReplacer {
 					if(actualParameters.contains(variable)) {
 						// Skip this variable
 						continue;
+					}
+					
+					// Loop through the formal parameters of the callee
+					for(Parameter formalParameter : calleeFormalParameters) {
+						// If this variables that we are trying to thread is already defined in
+						// this function
+						if(formalParameter.getName().equals(variable.getName())) {
+							// Throw exception
+							throw new ExceptionAtNode("You are inlining a lambda function that has"
+											+ " variables already defined in the original function"
+									, exprFunctionCall);
+						}
+						
 					}
 					
 					// Add the variable to the actual parameters
