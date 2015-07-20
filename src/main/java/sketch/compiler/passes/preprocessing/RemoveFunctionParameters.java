@@ -49,6 +49,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 	private Map<ExprVar, Expression> 	lambdaReplace = new HashMap<ExprVar, Expression>();
 	private Map<String, List<ExprVar>> 	lambdaFunctionsNeededVariables = new HashMap<String, List<ExprVar>>();
 	private Map<String, String> 		lambdaRenameMap = new HashMap<String, String>();
+	private ExprLambda 					currentExprLambda = null;
 
 	Map<String, SymbolTable> 	tempSymtables = new HashMap<String, SymbolTable>();
 	Map<String, NewFunInfo> 	extractedInnerFuns = new HashMap<String, NewFunInfo>();
@@ -269,14 +270,14 @@ public class RemoveFunctionParameters extends FEReplacer {
 						fun = this.createTempFunction(orig, nfn, cpkg, orig.getParams());
 
 						// Get the lambda expression
-						ExprLambda lambda = localLambda.get(lambdaVariable.getName());
+						this.currentExprLambda = localLambda.get(lambdaVariable.getName());
 
 						// Visit this lambda in case the expression uses other functions or lambdas 
-						lambda = (ExprLambda) this.doExpression(lambda);
+						this.currentExprLambda = (ExprLambda) this.doExpression(this.currentExprLambda);
 												
 						// Get a list of the variables needed in this new function
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), 
-								((ExprLambda) lambda).getMissingFormalParameters());		
+								((ExprLambda) this.currentExprLambda).getMissingFormalParameters());		
 					}
 				}
 				else if(fun == null) {
@@ -298,6 +299,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 		}
 
 		FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg);
+
+		// Set the current lambda expression to null
+		this.currentExprLambda = null;
 
 		return (Function) orig.accept(renamer);
 	}
@@ -436,6 +440,32 @@ public class RemoveFunctionParameters extends FEReplacer {
 	 */
 	public Object visitPackage(Package spec) {
 		return null;
+	}
+
+	/**
+	 * Visit an exprUnary an check if its part of a lambda expression. If it is,
+	 * check that it is not modifying a parameter of a lambda.
+	 */
+	public Object visitExprUnary(ExprUnary exprUnary) {
+		// If we are not analyzing a lambda expression
+		if(this.currentExprLambda == null) {
+			// Call the super class to visit the unary expression
+			return super.visitExprUnary(exprUnary);
+		}
+			
+		// Loop through the formal parameters of the lambda expression
+		for(ExprVar formalParameter : this.currentExprLambda.getParameters()) {
+			// If the unary expression has a formal parameter
+			if(formalParameter.equals(exprUnary.getExpr())) {
+				// Thrown exception since we cannot modify a formal parameter of 
+				// a lambda expression
+				throw new ExceptionAtNode("You cannot have an unary expression of "
+						+ "a formal parameter in a lambda", exprUnary);
+			}
+		}
+		
+		return super.visitExprUnary(exprUnary);
+		
 	}
 
 	/**
@@ -598,6 +628,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 					+ exprLambda.getParameters() + " - " + functionCall.getParams(), functionCall);
 		}
 
+		// Set the current lambda
+		this.currentExprLambda = exprLambda;
+
 		// Replacements should be local, so save the current map
 		Map<ExprVar, Expression> oldLambdaReplace = this.lambdaReplace;
 
@@ -619,6 +652,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 		// // Check if there are any replacements left
 		// newExpression = this.doExpression(newExpression);
+
+		// Set the current lambda to null
+		this.currentExprLambda = null;
 
 		// Return a new expression where all the variables are replaced with
 		// actual parameters
@@ -1532,10 +1568,12 @@ public class RemoveFunctionParameters extends FEReplacer {
             	// If the statement is a lambda expression
             	if (svd.getType(i) instanceof TypeFunction && svd.getInit(0) instanceof ExprLambda) {
     				// Visit the lambda in case some of the values in the expression need to change
-            		ExprLambda lambda = (ExprLambda) this.doExpression(svd.getInit(0));
+					currentExprLambda = (ExprLambda) svd.getInit(0);
+
+					currentExprLambda = (ExprLambda) this.doExpression(currentExprLambda);
     				
             		// Map the function call to the lambda expression
-    				localLambda.put(svd.getName(0) + tempFunctionsCount,  lambda);
+    				localLambda.put(svd.getName(0) + tempFunctionsCount,  currentExprLambda);
     				
 					// Map the new name with the old
     				lambdaRenameMap.put(svd.getName(0), svd.getName(0) + tempFunctionsCount);
@@ -1543,6 +1581,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// Increment the number of temp functions
     				tempFunctionsCount++;
     				
+					// Set the current lambda to null
+					currentExprLambda = null;
+
 					return null;
 
     			}
@@ -1590,6 +1631,32 @@ public class RemoveFunctionParameters extends FEReplacer {
 //			exprLocalVariables.setSymbolTableInContext(this.symtab);
 
 			return super.visitExprLocalVariables(exprLocalVariables);
+		}
+		
+		/**
+		 * Visit an exprUnary an check if its part of a lambda expression. If it is,
+		 * check that it is not modifying a parameter of a lambda.
+		 */
+		public Object visitExprUnary(ExprUnary exprUnary) {
+			// If we are not analyzing a lambda expression
+			if (currentExprLambda == null) {
+				// Call the super class to visit the unary expression
+				return super.visitExprUnary(exprUnary);
+			}
+				
+			// Loop through the formal parameters of the lambda expression
+			for (ExprVar formalParameter : currentExprLambda.getParameters()) {
+				// If the unary expression has a formal parameter
+				if(formalParameter.equals(exprUnary.getExpr())) {
+					// Thrown exception since we cannot modify a formal parameter of 
+					// a lambda expression
+					throw new ExceptionAtNode("You cannot have an unary expression of "
+							+ "a formal parameter in a lambda", exprUnary);
+				}
+			}
+			
+			return super.visitExprUnary(exprUnary);
+			
 		}
 		
         public Object visitExprFunCall(ExprFunCall efc) {

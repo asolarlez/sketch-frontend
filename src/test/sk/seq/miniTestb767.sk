@@ -1,12 +1,13 @@
-// Casting an expression to a function
+// Unary expressions of non formal parameters of lambda functions is allowed
 
-int apply(fun f, int x, int y) {
-	return f();
+int apply(fun f, int y) {
+	return f(y);
 }
 
 harness void main() {
+	int bob = 3;
 
-	int t = 7;
+	fun f = (,t) -> t + ++bob;
 	
-	assert apply((,) -> t*t, 4, 3) == 49;
+	assert apply(f, 8) == 12;
 }
