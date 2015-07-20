@@ -1,0 +1,10 @@
+// Casting an expression to a function
+
+int apply(fun f, int x, int y) {
+	return f(y);
+}
+
+harness void main() {
+	
+	assert apply(x+x, 4, 3) == 6;
+}

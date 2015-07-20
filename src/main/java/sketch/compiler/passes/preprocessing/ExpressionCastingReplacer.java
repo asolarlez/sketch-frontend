@@ -17,6 +17,8 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeFunction;
 
 /**
@@ -130,40 +132,87 @@ public class ExpressionCastingReplacer extends FEReplacer {
 		// Get the current actual parameters
 		Iterator<Expression> actualParameters = exprFunctionCall.getParams().iterator();
 		
-		// Loop through the formal parameters of the function that is being
-		// called
+		// We will use this variable to check if the type of the
+		// variable is fun
+		boolean typeFunction = false;
+		
+		// Loop through the formal parameters of the function that is being called
 		for(Parameter formalParameter : callee.getParams()) {
 			// Get the next actual parameter
 			Expression actualParameter = actualParameters.next();
 			
+			// Loop through the new statements
+			for(Statement statement : this.newStatements) {
+				// If the current statement is a variable declaration
+				if(statement instanceof StmtVarDecl) {
+					StmtVarDecl variableDeclaration = ((StmtVarDecl)statement);
+					
+					// TODO
+					if(actualParameter.toString().equals(variableDeclaration.getName(0)) &&
+							variableDeclaration.getType(0) instanceof TypeFunction) {
+						// The current actual parameter is a function declaration	
+						typeFunction = true;
+						
+						// Break and continue logic
+						break;
+					}
+
+				}
+			}
+			
 			// If the formal parameter wants a function and the corresponding
 			// actual parameter is not an instance of a lambda function
 			if (formalParameter.getType() instanceof TypeFunction
-					&& !(actualParameter instanceof ExprLambda)) {
+					&& !(actualParameter instanceof ExprLambda) && !typeFunction) {
 				// We need to cast. Create a new lambda with empty formal
-				// parameters,
-				// but passing the actual expression
-				ExprLambda castedLambda = new ExprLambda(
-						actualParameter.getCx(), new ArrayList<ExprVar>(),
-						actualParameter);
+				// parameters, but passing the actual expression
+				ExprLambda castedLambda = new ExprLambda(actualParameter.getCx(), 
+						new ArrayList<ExprVar>(), actualParameter);
 				
 				// Get the formal parameters that are needed
-				List<ExprVar> lambdaFormalParameters = castedLambda
-						.getMissingFormalParameters();
+				List<ExprVar> lambdaFormalParameters = castedLambda.getMissingFormalParameters();
+				List<ExprVar> doubleCountedParameters = new ArrayList<ExprVar>();
 				
-				castedLambda = new ExprLambda(actualParameter.getCx(),
-						lambdaFormalParameters, actualParameter);
+				for(ExprVar missingFormalParameter : lambdaFormalParameters) {
+					// Loop through the new statements
+					for(Statement statement : this.newStatements) {
+						// If the current statement is a variable declaration
+						if(statement instanceof StmtVarDecl) {
+							StmtVarDecl variableDeclaration = ((StmtVarDecl)statement);
+							
+							// If the missing parameter is actually a local variable
+							if(missingFormalParameter.toString().equals(variableDeclaration.getName(0))) {
+								// Add the double counted parameter
+								doubleCountedParameters.add(missingFormalParameter);
+								
+								// Break and continue logic
+								break;
+							}
+
+						}
+					}
+					
+				}
 				
+				// Remove the double counted variables
+				for (ExprVar doubleCountedVariable : doubleCountedParameters) {
+					lambdaFormalParameters.remove(doubleCountedVariable);
+				}
+
+				// Create a new lambda
+				castedLambda = new ExprLambda(actualParameter.getCx(), lambdaFormalParameters, actualParameter);
+				
+				// Add it to the new actual parameters
 				newActualParameters.add(castedLambda);
 			}
 			else {
+				// Add the parameter to new list
 				newActualParameters.add(actualParameter);
 			}
 		}
-		
-		return new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(),
-				newActualParameters);
-	
+		// Return a new function call
+		return new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newActualParameters);
+
 	}
 
 }
