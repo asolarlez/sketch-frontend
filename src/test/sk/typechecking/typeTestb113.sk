@@ -1,0 +1,13 @@
+// Cannot have statements in lambda expression
+
+harness void main() {
+	int t = 3;
+	
+	int test() {
+		fun f = (,) -> t = t + 5;
+		
+		return f();
+	}
+		 	 	
+ 	assert test() == 8;
+}
