@@ -1,0 +1,12 @@
+// Casting an expression to a function that uses local variables
+
+int apply(fun f, int x, int y) {
+	return f(x,y);
+}
+
+harness void main() {
+
+	int t = 7;
+	
+	assert apply(x * $(int) - y, 4, 3) == 25;
+}
