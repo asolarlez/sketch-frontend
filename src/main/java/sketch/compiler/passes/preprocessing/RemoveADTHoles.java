@@ -328,7 +328,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
         boolean first = true;
         Expression curExp = null;
         for (Expression e : baseExprs) {
-            String tmp = varGen.nextVar();
+            String tmp = varGen.nextVar("tmp");
             stmts.add(new StmtVarDecl(context, type, tmp, e));
             if (first) {
                 curExp = new ExprVar(context, tmp);
@@ -370,7 +370,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                     arrelems.add(getGeneralExprOfType(ta.getBase(), params, stmts,
                             considerNonRec));
                 }
-                String tmp = varGen.nextVar();
+                String tmp = varGen.nextVar("tmp");
                 stmts.add(new StmtVarDecl(context, ta,tmp, new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
                         new ExprArrayRange.RangeLen(ExprConstInt.zero, length))));
                 return new ExprVar(context, tmp);
