@@ -11,6 +11,6 @@ harness void main(){
     }
     
     shape t = sh();
-    assert ((circle) t).x == 10;        
+    assert ((circle) t).x == 11;        
     
 }
