@@ -481,14 +481,14 @@ public class SymbolTable implements Cloneable
         }
 
 		
-		// If the type is an int, we want to also consider 0
-		if (exp.getType().equals(TypePrimitive.int32type)) {
-			// Create a new 0 constant expression
-			ExprConstInt zero = (ExprConstInt) ExprConstant.createConstant(new DummyFENode(exp.getCx()), "0");
-
-			// Added to the possible variables
-			localVariables.add(zero);
-		}
+//		// If the type is an int, we want to also consider 0
+//		if (exp.getType().equals(TypePrimitive.int32type)) {
+//			// Create a new 0 constant expression
+//			ExprConstInt zero = (ExprConstInt) ExprConstant.createConstant(new DummyFENode(exp.getCx()), "0");
+//
+//			// Added to the possible variables
+//			localVariables.add(zero);
+//		}
 
         return localVariables;
     }
