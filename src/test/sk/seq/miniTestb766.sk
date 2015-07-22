@@ -1,19 +1,15 @@
 // Using ternary expression in lambda
 
-harness void main() {
-	int a = 1;
-	int b = 2;
-	int c = 3;
-	
-	bit f = 0;
+harness void main(int x) {
 	bit t = 1;
-	
+	int a = 2;
+	int b = 3;
 	
 	int foo() {
-		fun g = (,) -> ?? ? 5 : $(bit);
+		fun g = (,) -> $(bit) ? 5 : $(int);
 		
 		return g();
 	}
 	
-	assert foo() == 1;
+	assert foo() == 5;
 }
