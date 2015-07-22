@@ -7,6 +7,6 @@ int apply(fun f, int x, int y) {
 harness void main() {
 
 	int t = 7;
-	
+	// SHOULD NOT WORK
 	assert apply(x * $(int) - y, 4, 3) == 25;
 }
