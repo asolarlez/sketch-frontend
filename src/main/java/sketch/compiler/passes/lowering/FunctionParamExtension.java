@@ -477,18 +477,19 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 		}
         final String bad = "BAD";
-        final Type retType = func.getReturnType();
-        SymbolTableVisitor retVarPop = new SymbolTableVisitor(symtab) {
+        Type retType = func.getReturnType();
+        // Don't replace retVar with output var if the type is an ADT.
+        final boolean repRetVar =
+                !retType.isStruct() ||
+                        nres.getStruct(((TypeStructRef) retType).getName()).isInstantiable();
+        FEReplacer retVarPop = new FEReplacer() {
             public Object visitStmtReturn(StmtReturn sr) {
                 if (retVar == bad) {
                     return sr;
                 }
-                if (sr.getValue() instanceof ExprVar) {
+                if (repRetVar && sr.getValue() instanceof ExprVar) {
                     String cname = ((ExprVar) sr.getValue()).getName();
-                    boolean sameType = getType(sr.getValue()).equals(retType);
-                    if (!sameType) {
-                        retVar = bad;
-                    } else if (retVar == null) {
+                    if (retVar == null) {
                         retVar = cname;
                     } else {
                         if (!cname.equals(retVar)) {
