@@ -17,12 +17,16 @@
 package sketch.compiler.passes.lowering;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -41,6 +45,7 @@ import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.passes.lowering.SymbolTableVisitor.TypeRenamer;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -344,6 +349,7 @@ public class GetExprType extends FENullVisitor
         }
     }
 
+
     public Object visitExprFunCall(ExprFunCall exp)
     {
     	// Has SymbolTable given us a function declaration?
@@ -366,6 +372,18 @@ public class GetExprType extends FENullVisitor
                 TypeStructRef tsr = (TypeStructRef) retType;
                 return tsr.addDefaultPkg(fn.getPkg(), nres);
             }
+
+            if (retType instanceof TypeArray) {
+                Map<String, Expression> mm = new HashMap<String, Expression>();
+                Iterator<Parameter> ip = fn.getParams().iterator();
+                for (Expression p : exp.getParams()) {
+                    Parameter formal = ip.next();
+                    mm.put(formal.getName(), p);
+                }
+                VarReplacer vr = new VarReplacer(mm);
+                return retType.accept(vr);
+            }
+
             return retType;
     	} catch (UnrecognizedVariableException e) {
     		// ignore

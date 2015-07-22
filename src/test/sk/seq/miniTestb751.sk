@@ -1,0 +1,22 @@
+include "string.skh";
+
+pragma options "--bnd-unroll-amnt 20";
+
+char[n+4] appnd([int n], char[n] in, int v){
+        char[n+4] out = in;
+        for(int i=0; i<4; ++i){
+            if(v > 0){
+               int d = v % 10;
+               v = v / 10;
+               out[i+n-1] = (char)d;            
+            }       
+        }
+        return out; 
+    } 
+    
+    
+    harness void main(){
+        newStr(appnd("hello", 3));
+        
+        
+    }

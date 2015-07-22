@@ -524,7 +524,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                     Type formalType = tren.rename(formal.getType());
                     Type ftt = formalType;
-                    Type att = getType(actual);
+                    Expression newParam = doExpression(actual);
+                    Type att = getType(newParam);
                     while (ftt instanceof TypeArray) {
                         TypeArray ta = (TypeArray) ftt;
                         Expression actLen = null;
@@ -551,7 +552,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                             }
                         }
                     }
-                    Expression newParam = doExpression(actual);
+
                     Type lt = getType(newParam);
                     if (lt == null || !lt.promotesTo((formalType), nres)) {
                         report(exp, "Bad parameter type: Formal type=" + formal +
