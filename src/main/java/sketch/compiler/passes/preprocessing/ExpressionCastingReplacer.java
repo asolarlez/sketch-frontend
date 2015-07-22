@@ -2,9 +2,11 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import sketch.compiler.ast.core.FEReplacer;
@@ -20,6 +22,7 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * This replacer provides support for casting of expression passed as arguments
@@ -37,6 +40,7 @@ public class ExpressionCastingReplacer extends FEReplacer {
 
 	private Stack<String> 			functionsToVisit;
 	private Map<String, Package> 	packages;
+	private Set<String> 			visitedFunctions;
 	
 	/**
 	 * Create a new expression casting replacer
@@ -44,6 +48,7 @@ public class ExpressionCastingReplacer extends FEReplacer {
 	public ExpressionCastingReplacer() {
 		this.functionsToVisit = new Stack<String>();
 		this.packages = new HashMap<String, Package>();
+		this.visitedFunctions = new HashSet<String>();
 	}
 	
 	/**
@@ -56,12 +61,37 @@ public class ExpressionCastingReplacer extends FEReplacer {
 
 		// Loop through all packages
 		for (Package programPackage : program.getPackages()) {
+			// Set the package in the name resolver
+			nres.setPackage(programPackage);
+			Set<String> nameCheck = new HashSet<String>();
+
 			// Loop through all functions
 			for (Function function : programPackage.getFuncs()) {
+				
+				// Check if name check has the same name as the current function
+				if (nameCheck.contains(function.getName())) {
+					throw new ExceptionAtNode("Duplicated Name in Package", function);
+				}
+				
 				// If the function is a harness
 				if (function.isSketchHarness()) {
 					// Add it to the list of functions to visit
-					this.functionsToVisit.push(function.getName());
+					this.functionsToVisit.push(nres.getFunName(function.getName()));
+				}
+
+				// If the function implements some other function
+				if (function.getSpecification() != null) {
+
+					String spec = nres.getFunName(function.getSpecification());
+					if (spec == null)
+						throw new ExceptionAtNode(
+								"Function " + function.getSpecification()
+										+ ", the spec of " + function.getName()
+										+ " is can not be found. did you put the wrong name?",
+								function);
+
+					this.functionsToVisit.add(spec);
+					this.functionsToVisit.add(nres.getFunName(function));
 				}
 			}
 		}
@@ -84,11 +114,16 @@ public class ExpressionCastingReplacer extends FEReplacer {
 			String currentFunctionName = this.functionsToVisit.pop();
 			Function current = this.nres.getFun(currentFunctionName);
 
-			// Visit the function
-			current = (Function) this.visitFunction(current);
-			
-			// Add the new function to the to the list of functions of this package
-			newFunctionMap.get(current.getPkg()).add(current);
+			// If the current function has not been visited
+			if (!this.visitedFunctions.contains(currentFunctionName)) {
+				// Visit the function
+				current = (Function) this.visitFunction(current);
+
+				this.visitedFunctions.add(currentFunctionName);
+				// Add the new function to the to the list of functions of this
+				// package
+				newFunctionMap.get(current.getPkg()).add(current);
+			}
 		}
 
 		// Create a new list of packages
@@ -121,10 +156,10 @@ public class ExpressionCastingReplacer extends FEReplacer {
 			// call to a function that is being passed
 			return super.visitExprFunCall(exprFunctionCall);
 		}
-		
+				
 		// Since this is a defined function, add it to the list of
 		// functions to visit
-		this.functionsToVisit.push(exprFunctionCall.getName());
+		this.functionsToVisit.push(nres.getFunName(exprFunctionCall.getName()));
 
 		// Create a list for the new actual parameters
 		List<Expression> newActualParameters = new ArrayList<Expression>();
@@ -147,7 +182,8 @@ public class ExpressionCastingReplacer extends FEReplacer {
 				if(statement instanceof StmtVarDecl) {
 					StmtVarDecl variableDeclaration = ((StmtVarDecl)statement);
 					
-					// TODO
+					// If the actual parameter is the same as the variable declaration in the 
+					// formal parameter and the type of that parameter is fun
 					if(actualParameter.toString().equals(variableDeclaration.getName(0)) &&
 							variableDeclaration.getType(0) instanceof TypeFunction) {
 						// The current actual parameter is a function declaration	
@@ -173,6 +209,7 @@ public class ExpressionCastingReplacer extends FEReplacer {
 				List<ExprVar> lambdaFormalParameters = castedLambda.getMissingFormalParameters();
 				List<ExprVar> doubleCountedParameters = new ArrayList<ExprVar>();
 				
+				// Loop through the lambda formal parameter
 				for(ExprVar missingFormalParameter : lambdaFormalParameters) {
 					// Loop through the new statements
 					for(Statement statement : this.newStatements) {
@@ -210,9 +247,13 @@ public class ExpressionCastingReplacer extends FEReplacer {
 				newActualParameters.add(actualParameter);
 			}
 		}
+		
 		// Return a new function call
-		return new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newActualParameters);
+		exprFunctionCall = new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newActualParameters);
 
+		// Visit this function call since there might be other function calls
+		// within this one
+		return super.visitExprFunCall(exprFunctionCall);
 	}
 
 }
