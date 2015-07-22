@@ -1,0 +1,184 @@
+//@Description This sketch synthesizes an algorithm to produce type constraints for Lambda Calculus ASTs constrained with inputs output examples
+
+/**
+ * Data definitions.
+ */
+adt E{
+	Num{int val;}
+	Var{int name;}
+	Abs{int var; E a; }
+	App{E a; E b;}
+}
+
+adt Type{
+	Int{}
+	Function{Type in; Type out;}
+	Unknown {int id;}
+} 
+
+adt Constraint {
+	Equals{Type l; Type r;}
+	And{Constraint a; Constraint b;}
+}
+
+/*
+ * Function to synthesize.
+ * Generate constraints for [[envt -> e : t ]] 
+ * Here, paramater id (which is incremented in each step of recursion ) is used for generating unique ids for Unknown types.
+ */
+Constraint getConstraints(E e, Type t,  Type[32] envt, ref int id) {
+	if(e == null ) return null;
+	int id1 = id++;
+	int id2 = id++;
+	
+	switch(e) {
+		repeat_case:{
+			// Get a type from environment
+			Type t1 = envt[{|e.?? | ?? |}];
+			
+			// If necessary, set the type of a variable in the environment.
+			if (??) {
+				envt[e.??] = ??(2, {t,new Unknown(id = {|id1|id2|})});				
+			}
+			
+			// Recursively get constraints
+			Constraint a = getConstraints( e.??,
+				??(2, {t, new Unknown(id = {|id1|id2|})}),
+				envt, id); 
+			Constraint b = getConstraints( e.??, 
+				??(2, {t, new Unknown(id = {|id1|id2|})}),
+				envt, id);
+			
+			// Construct a new constraint
+			Type tl = ??(2, {t, new Unknown(id ={|id1|id2|})});
+			Type tr = ??(2, {t, new Unknown(id ={|id1|id2|})});
+			return new ??( l = ??(2, {t, t1}), r = ??(2, {t, t1}),
+				a =??(2, {tl, tr, a, b}), b = ??(2, {tl, tr, a, b}));
+				
+		}	
+	}	
+}
+
+/*
+ * Test harnesses.
+ * Uses 8 input-output examples.
+ */
+// [[envt; y = T4 :: ((lambda x. 1) y) : T0]] = (((Int = T2) ^ ( T3 -> T0 = T1 -> T2)) ^ (T4 = T3))
+harness void main1() {
+	// Setup the environment
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	envt[1] = new Unknown(id = 5);
+	
+	// Get constraints
+	int id =  1;
+	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Num(val = 1)), b = new Var(name = 1)),  new Unknown(id = 33),envt,id) ;	
+	
+	// Assert equivalence
+	int id1 = ??, id2 = ??, id3 = ??;
+	assert(id1 != id2 && id2 != id3 && id1 != id3);
+	Constraint exp =new And(a= new And(a = new Equals( l = new Int(), r = new Unknown(id = id2)), b = new Equals(l = new Function(in = new Unknown(id = id3), out = new Unknown(id = 33)), r = new Function(in = new Unknown(id = id1), out = new Unknown(id = id2)))), b = new Equals(l = new Unknown(id = 5), r = new Unknown(id = id3))) ;
+	assert(exp === out);
+}
+
+// [[envt; y = T4 :: ((lambda x. 1) 2) : T0]] = (((Int = T2) ^ ( T3 -> T0 = T1 -> T2)) ^ (Int = T3))
+harness void main2() {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	envt[1] = new Unknown(id = 5);
+	
+	int id =  1;
+	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Num(val = 1)), b = new Num(val = 2)),  new Unknown(id = 33), envt,id) ;	
+	
+	int id1 = ??, id2 = ??, id3 = ??;
+	assert(id1 != id2 && id2 != id3 && id1 != id3);
+	Constraint exp =new And(a= new And(a = new Equals( l = new Int(), r = new Unknown(id = id2)), b = new Equals(l = new Function(in = new Unknown(id = id3), out = new Unknown(id = 33)), r = new Function(in = new Unknown(id = id1), out = new Unknown(id = id2)))), b = new Equals(l = new Int(), r = new Unknown(id = id3))) ;
+	assert(exp === out);
+}
+
+
+// [[envt; y = T4 :: ((lambda x. x) y) : T0]] = (((T1 = T2) ^ ( T3 -> T0 = T1 -> T2)) ^ (T4 = T3))
+harness void main3() {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	envt[1] = new Unknown(id = 5);
+	
+	int id =  1; 
+	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Var(name = 0)), b = new Var(name = 1)),  new Unknown(id = 33),envt,id) ;	
+	
+	int id1 = ??, id2 = ??, id3 = ??;
+	assert(id1 != id2 && id2 != id3 && id1 != id3);
+	Constraint exp =new And(a= new And(a = new Equals( l = new Unknown(id = id1), r = new Unknown(id = id2)), b = new Equals(l = new Function(in = new Unknown(id = id3), out = new Unknown(id = 33)), r = new Function(in = new Unknown(id = id1), out = new Unknown(id = id2)))), b = new Equals(l = new Unknown(id = 5), r = new Unknown(id = id3))) ;
+	assert(exp === out);
+}
+
+
+// [[envt :: ((lambda x. x) 1) : T0]] = (((T1 = T2) ^ ( T3 -> T0 = T1 -> T2)) ^ (Int = T3))
+harness void main4() {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	
+	int id = 1;
+	Constraint out = getConstraints(new App(a= new Abs(var = 0, a = new Var(name = 0)), b = new Num(val = 1)),  new Unknown(id = 33), envt,id) ;	
+	
+	int id1 = ??, id2 = ??, id3 = ??; 
+	assert(id1 != id2 && id2 != id3 && id1 != id3);
+	Constraint exp =new And(a= new And(a = new Equals( l = new Unknown(id = id1), r = new Unknown(id = id2)), b = new Equals(l = new Function(in = new Unknown(id = id3), out = new Unknown(id = 33)), r = new Function(in = new Unknown(id = id1), out = new Unknown(id = id2)))), b = new Equals(l = new Int(), r = new Unknown(id = id3))) ;
+	assert(exp === out);
+}
+
+// [[envt :: lambda x. 0 : T0]] = (( Int = T1) ^ ( T0 = T2->T1))
+harness void main5() {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	
+	int id = 1; 
+	Constraint out = getConstraints(new Abs(var = 0, a = new Num(val = 0)), new Unknown(id = 33),  envt, id);	
+	
+	int id1 = ??, id2 = ??;
+	assert (id1 != id2);
+	Constraint exp = new And(a = new Equals( l = new Int(), r = new Unknown(id = id1)), b = new Equals(l = new Unknown(id = 33), r = new Function(in = new Unknown(id = id2), out = new Unknown(id = id1)))) ;
+	assert(exp === out);
+}
+
+// [[envt :: lambda x. x : T0]] = (( T1 = T2) ^ ( T0 = T1->T2))
+harness void main6() {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	
+	int id = 1;
+	Constraint out = getConstraints(new Abs(var = 0, a = new Var(name = 0)), new Unknown(id = 33),  envt, id);	
+	
+	int id1 = ??, id2 = ??;
+	assert(id1 != id2);
+	Constraint exp = new And(a = new Equals( l = new Unknown(id = id1), r = new Unknown(id = id2)), b = new Equals(l = new Unknown(id = 33), r = new Function(in = new Unknown(id = id1), out = new Unknown(id = id2)))) ;
+	assert(exp === out);
+}
+
+// [[envt :: 1 : T0 ]] = (Int = T0)
+harness void main7(int id_0) {
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	
+	int id = 1;
+	Constraint out = getConstraints(new Num(val = 1), new Unknown(id = id_0), envt, id);
+		
+	Constraint exp = new Equals(l = new Int(), r = new Unknown(id = id_0));
+	assert(exp === out);
+}
+
+// [[envt; x:T1 :: x:T0]] = (T1 = T0)
+harness void main8(int id_0) {
+	// Setup the environment
+	Type[32] envt= {};
+	for(int i = 0; i <32; i++) {envt[i] = null;}
+	envt[0] = new Unknown(id = 1);
+	
+	// Get constraints
+	int id = 1;
+	Constraint out = getConstraints(new Var(name = 0), new Unknown(id = id_0),  envt, id);	
+	
+	// Assert equivalence
+	Constraint exp = new Equals(l = new Unknown(id = 1), r = new Unknown(id = id_0));
+	assert(exp === out);
+}

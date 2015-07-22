@@ -59,7 +59,7 @@ public class MainMethodCreateNospec extends FEReplacer {
             }
             return new Package(spec, spec.getName(), spec.getStructs(),
                     spec.getVars(),
-                    Collections.unmodifiableList(newFcns));
+                    Collections.unmodifiableList(newFcns), spec.getSpAsserts());
         } else {
             return spec;
         }
@@ -76,7 +76,8 @@ public class MainMethodCreateNospec extends FEReplacer {
         List<Parameter> lp = new ArrayList<Parameter>();
         for (Parameter p : pl) {
             if (p.isParameterOutput()) {
-                lp.add(new Parameter(p, p.getType(), p.getName(), Parameter.IN));
+                lp.add(new Parameter(p, p.getSrcTupleDepth(), p.getType(), p.getName(),
+                        Parameter.IN));
             } else {
                 lp.add(p);
             }

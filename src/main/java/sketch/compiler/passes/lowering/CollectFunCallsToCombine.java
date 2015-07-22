@@ -1,8 +1,14 @@
 package sketch.compiler.passes.lowering;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
@@ -11,10 +17,75 @@ import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 
+
+/**
+ * Collects mutually exclusive function calls that are on different branches of if-else
+ * and switch statements. These are then merged in the backend.
+ */
 public class CollectFunCallsToCombine extends SymbolTableVisitor {
     int id = 1;
+    List<String> recFuns;
     public CollectFunCallsToCombine() {
         super(null);
+        recFuns = new ArrayList<String>();
+    }
+
+    class CheckRecursive extends FEReplacer {
+        final List<String> parents;
+        boolean isRec;
+        NameResolver nres;
+
+        public CheckRecursive(List<String> names, NameResolver nres) {
+            this.parents = names;
+            this.isRec = false;
+            this.nres = nres;
+        }
+
+        @Override
+        public Object visitExprFunCall(ExprFunCall exp) {
+            if (this.parents.contains(exp.getName())) {
+                isRec = true;
+            } else if (recFuns.contains(exp.getName())) {
+                isRec = true;
+            } else {
+                List<String> newParents = new ArrayList<String>();
+                newParents.addAll(parents);
+                newParents.add(exp.getName());
+
+                Function fun = nres.getFun(exp.getName());
+                if (fun.getBody() != null) {
+                    CheckRecursive cr = new CheckRecursive(newParents, nres);
+                    nres.getFun(exp.getName()).getBody().accept(cr);
+                    if (cr.isRec) {
+                        recFuns.add(exp.getName());
+                        isRec = true;
+                    }
+                }
+            }
+            return exp;
+        }
+    }
+
+    @Override
+    public Object visitProgram(Program p) {
+        nres = new NameResolver(p);
+        for (Package pkg : p.getPackages()) {
+            nres.setPackage(pkg);
+            for (Function f : pkg.getFuncs()) {
+                if (!recFuns.contains(f.getName())) {
+                    List<String> parents = new ArrayList<String>();
+                    parents.add(f.getName());
+                    if (f.getBody() != null) {
+                        CheckRecursive cr = new CheckRecursive(parents, nres);
+                        f.getBody().accept(cr);
+                        if (cr.isRec)
+                            recFuns.add(f.getName());
+                    }
+                }
+            }
+        }
+
+        return super.visitProgram(p);
     }
 
     @Override
@@ -25,16 +96,18 @@ public class CollectFunCallsToCombine extends SymbolTableVisitor {
                 (fn.getBody() != null) ? (Statement) fn.getBody().accept(this) : null;
         if (newBody == null)
             return fn;
-        CollectFunCallsFromBody cfc = new CollectFunCallsFromBody(fn.getName(), id);
-        newBody = (Statement) fn.getBody().accept(cfc);
-        id = cfc.id;
+        for (String fname : recFuns) {
+            CollectFunCallsFromBody cfc = new CollectFunCallsFromBody(fname, id);
+            newBody = (Statement) fn.getBody().accept(cfc);
+            id = cfc.id;
+        }
         if (newBody != fn.getBody()) {
             return fn.creator().body(newBody).create();
         } else {
             return fn;
         }
     }
-    
+
     private class CollectFunCallsFromBody extends SymbolTableVisitor {
         String funName;
         int id;

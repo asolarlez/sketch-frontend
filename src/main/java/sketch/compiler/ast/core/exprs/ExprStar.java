@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.ast.core.exprs;
+
+import java.util.List;
 import java.util.Vector;
 
 import sketch.compiler.ast.core.FEContext;
@@ -56,6 +58,8 @@ public class ExprStar extends Expression
     private static String ANGJ_BASE = "AH__";
 	
     private Kind kind = Kind.NORMAL;
+    private boolean isSpecial = false;
+    private List<ExprStar> parentHoles; // required for special depth holes
 
     // private Expression exprMax = null;
 
@@ -76,6 +80,8 @@ public class ExprStar extends Expression
         hasrange = old.hasrange;
         this.starName = old.starName;
         this.kind = old.kind;
+        this.isSpecial = old.isSpecial;
+        this.parentHoles = old.parentHoles;
 
     }
 
@@ -135,9 +141,9 @@ public class ExprStar extends Expression
     /**
     *
     */
-    public ExprStar(FENode context, int rstart, int rend) {
+    public ExprStar(FENode context, int rstart, int rend, int size) {
         super(context);
-        size = 1;
+        this.size = size;
         isGlobal = false;
         isFixed = true;
         rangelow = rstart;
@@ -361,6 +367,19 @@ public class ExprStar extends Expression
 
     public int upperBound() {
         return this.rangehigh;
+    }
+
+    public void makeSpecial(List<ExprStar> parentDepths) {
+        isSpecial = true;
+        this.parentHoles = parentDepths;
+    }
+
+    public List<ExprStar> parentHoles() {
+        return this.parentHoles;
+    }
+
+    public boolean special() {
+        return isSpecial;
     }
     // public Expression getExprMax() {
     // return exprMax;

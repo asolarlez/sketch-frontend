@@ -20,10 +20,10 @@ harness void main1(){
     assert gety() == 10;
     checky(gety());
     {
-        int y;
-        y = ??;
-        y = y + 90;
-        assert y == 95;
+        int yy;
+        yy = ??;
+        yy = yy + 90;
+        assert yy == 95;
     }
     checky(gety());
     int[3] v = foo({1,2,3});

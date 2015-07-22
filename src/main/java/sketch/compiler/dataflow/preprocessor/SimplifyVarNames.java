@@ -16,8 +16,8 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
-import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.Type;
 
 public class SimplifyVarNames extends FEReplacer {
 
@@ -116,7 +116,8 @@ public class SimplifyVarNames extends FEReplacer {
     		Parameter param = it.next();    		
     		{
     			Type ntype = (Type)param.getType().accept(this);
-                nparams.add(new Parameter(param, ntype, transName(param.getName()),
+                nparams.add(new Parameter(param, param.getSrcTupleDepth(), ntype,
+                        transName(param.getName()),
                         param.getPtype()));
     		}
     	}

@@ -1,0 +1,137 @@
+//@Description This sketch inserts a node into an immutable binary tree and uses general harness to constrain the sketch
+
+/**
+ * Command line arguments that help control the depth of inlining for recursive functions. 
+ */
+pragma options "--bnd-inline-amnt 3";
+
+/**
+ * Data definitions
+ */
+adt BinaryTree {
+	Branch { int value; BinaryTree l; BinaryTree r; }
+	Leaf {int value;}
+	Empty {}
+}
+
+/**
+ * Function to synthesize
+ * This sketch first recurses on its children and then uses a GUC
+ * to generate the new BinaryTree after insertion. The sketch has more
+ * recursive calls than necessary, but these will not impact correctness
+ * because of immutability. 
+ * The minrepeat construct indicates that a minimal set of if-statements
+ * should be synthesized.
+ */
+BinaryTree insertNode(BinaryTree tree, int x) {
+	if (tree == null) return null;
+	switch(tree){
+		repeat_case:
+		{
+			BinaryTree l = insertNode(tree.??,x);
+			BinaryTree r = insertNode(tree.??, x);
+			minrepeat{
+				if ({| 1| x (<|>|<=|>=) tree.??|} ) { 
+					return ??(3, {tree.??, l, r, x});					
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Test harness using symbolic trees of depth 2.
+ */
+harness void main(int [20] encoding, int x) {
+	int idx = 0;
+	// Produce a symbolic binary tree from encoding.
+	BinaryTree in = produce(encoding, idx, 2);
+	int[3] in_arr = {}; int i = 0;
+	// Do inorder traversal on original tree.
+	inOrderTraversal(in, in_arr, i);
+	// Insert x in the tree.
+	BinaryTree out = insertNode(in, x);
+	int[4] out_arr = {}; int j = 0;
+	// Do inorder traversal on the new tree.
+	inOrderTraversal(out, out_arr, j);
+	// Check if the original tree is sorted
+	if (isSorted(in_arr[0::i])) {
+		// Check if new tree is sorted
+		assert(isSorted(out_arr[0::j]));
+		// Check if new tree contains all elements in original tree and x.
+		assert(contains(out_arr[0::j], in_arr[0::i], x));
+	}
+}
+
+/////////////////////////////////////////
+// Helper functions used in the test harness
+//////////////////////////////////////////
+
+/**
+ * Function that produces a BinaryTree of maximum depth bnd from an array encoding.
+ */
+BinaryTree produce(int[20] encoding, ref int idx, int bnd){
+	if(bnd <= 1 ){ 
+        if(encoding[idx]==0){ ++idx; return new Empty(); }
+        else{ ++idx; return new Leaf(value = encoding[idx++]); }          
+    }
+    if(encoding[idx]==0){ ++idx; return new Empty(); }
+    else if(encoding[idx]==1){ ++idx; return new Leaf(value=encoding[idx++]); }
+    else{++idx; return new Branch(value =  encoding[idx++], l=produce(encoding, idx, bnd-1), r=produce(encoding, idx, bnd-1)); }
+}
+
+/*
+ * Do an inorder traversal on the tree and store the result in arr.
+ */
+void inOrderTraversal([int n], BinaryTree tree, ref int[n] arr, ref int i) {
+	switch(tree){
+		case Branch: {
+			inOrderTraversal(tree.l, arr, i);
+			assert (i<n);
+			arr[i++] = tree.value;
+			inOrderTraversal(tree.r, arr, i);
+		}
+		case Leaf : {
+			assert (i<n);
+			arr[i++] = tree.value;
+		}
+		default : {}	
+	}
+} 
+
+/*
+ * Check if arr is sorted.
+ */
+bit isSorted([int n], int[n] arr) {
+	int prev;
+	bit first = true;
+	for (int i =0; i < n; i++) {
+		if (first) { prev = arr[i]; first = false;}
+		else {
+			if (prev > arr[i]) 	return false;
+			prev = arr[i];
+		}
+	}
+	return true;
+}
+
+/*
+ * Checks if all the elements in b exists in a.
+ */
+bit contains ([int m, int n], int[m]  a, int[n] b, int x) {
+	assert(m == n +1);
+	bit skipped = 0;
+	int i = 0;
+	for (; i < n; i++) {
+		if (a[i+skipped] != b[i]){
+			if (skipped) return false;
+			else if (a[i+skipped] == x) {skipped = 1; i--;}
+			else return false;
+		}
+	}
+	assert(i==n);
+	if (!skipped) {
+		return a[i] == x; 	
+	}
+	return true;
+}

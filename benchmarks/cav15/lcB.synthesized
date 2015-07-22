@@ -1,0 +1,97 @@
+void desugar (srcAST s, ref dstAST _out)/*lcB.sk:28*/
+{
+  _out = null;
+  if(s == (null))/*lcB.sk:29*/
+  {
+    _out = null;
+    return;
+  }
+  switch(s){/*lcB.sk:30*/
+    case AndS:
+    {
+      dstAST@ANONYMOUS v1_s1364 = null;
+      desugar(s.b, v1_s1364);
+      dstAST@ANONYMOUS v2_s1366 = null;
+      desugar(s.a, v2_s1366);
+      dstAST a_s4 = new AppD@ANONYMOUS(a=v1_s1364, b=v2_s1366);
+      dstAST a_s109 = new VarD@ANONYMOUS(name=25);
+      VarD var_s108 = new VarD(name=25);
+      dstAST a_s105 = new AbsD@ANONYMOUS(var=var_s108, a=a_s109);
+      dstAST a_s158 = new VarD@ANONYMOUS(name=16);
+      VarD var_s157 = new VarD(name=16);
+      dstAST a_s154 = new AbsD@ANONYMOUS(var=var_s157, a=a_s158);
+      VarD VarD_s194 = new VarD(name=15);
+      dstAST b_s106 = new AbsD@ANONYMOUS(var=VarD_s194, a=a_s154);
+      dstAST b_s5 = new AppD@ANONYMOUS(a=a_s105, b=b_s106);
+      dstAST dstAST_s1 = new AppD@ANONYMOUS(a=a_s4, b=b_s5);
+      _out = dstAST_s1;
+      return;
+    }
+    case OrS:
+    {
+      dstAST@ANONYMOUS v1_s1368 = null;
+      desugar(s.b, v1_s1368);
+      dstAST@ANONYMOUS v2_s1370 = null;
+      desugar(s.a, v2_s1370);
+      dstAST a_s263 = new VarD@ANONYMOUS(name=8);
+      VarD var_s262 = new VarD(name=9);
+      dstAST a_s259 = new AbsD@ANONYMOUS(var=var_s262, a=a_s263);
+      VarD var_s258 = new VarD(name=8);
+      dstAST b_s211 = new AbsD@ANONYMOUS(var=var_s258, a=a_s259);
+      dstAST a_s206 = new AppD@ANONYMOUS(a=v1_s1368, b=b_s211);
+      dstAST dstAST_s203 = new AppD@ANONYMOUS(a=a_s206, b=v2_s1370);
+      _out = dstAST_s203;
+      return;
+    }
+    case NotS:
+    {
+      dstAST@ANONYMOUS v1_s1372 = null;
+      desugar(s.a, v1_s1372);
+      dstAST@ANONYMOUS v2_s1374 = null;
+      desugar(s.a, v2_s1374);
+      dstAST a_s465 = new VarD@ANONYMOUS(name=10);
+      VarD var_s464 = new VarD(name=10);
+      dstAST a_s461 = new AbsD@ANONYMOUS(var=var_s464, a=a_s465);
+      VarD VarD_s501 = new VarD(name=9);
+      dstAST b_s413 = new AbsD@ANONYMOUS(var=VarD_s501, a=a_s461);
+      dstAST a_s408 = new AppD@ANONYMOUS(a=v1_s1372, b=b_s413);
+      dstAST a_s513 = new VarD@ANONYMOUS(name=30);
+      VarD var_s512 = new VarD(name=16);
+      dstAST a_s509 = new AbsD@ANONYMOUS(var=var_s512, a=a_s513);
+      VarD VarD_s601 = new VarD(name=30);
+      dstAST b_s409 = new AbsD@ANONYMOUS(var=VarD_s601, a=a_s509);
+      dstAST dstAST_s405 = new AppD@ANONYMOUS(a=a_s408, b=b_s409);
+      _out = dstAST_s405;
+      return;
+    }
+    case TrueS:
+    {
+      dstAST@ANONYMOUS v1_s1376 = null;
+      desugar(null, v1_s1376);
+      dstAST@ANONYMOUS v2_s1378 = null;
+      desugar(null, v2_s1378);
+      dstAST a_s614 = new VarD@ANONYMOUS(name=20);
+      VarD var_s613 = new VarD(name=16);
+      dstAST a_s610 = new AbsD@ANONYMOUS(var=var_s613, a=a_s614);
+      VarD var_s609 = new VarD(name=20);
+      dstAST dstAST_s607 = new AbsD@ANONYMOUS(var=var_s609, a=a_s610);
+      _out = dstAST_s607;
+      return;
+    }
+    case FalseS:
+    {
+      dstAST@ANONYMOUS v1_s1380 = null;
+      desugar(null, v1_s1380);
+      dstAST@ANONYMOUS v2_s1382 = null;
+      desugar(null, v2_s1382);
+      dstAST a_s816 = new VarD@ANONYMOUS(name=28);
+      VarD var_s815 = new VarD(name=28);
+      dstAST a_s812 = new AbsD@ANONYMOUS(var=var_s815, a=a_s816);
+      VarD var_s811 = new VarD(name=27);
+      dstAST dstAST_s809 = new AbsD@ANONYMOUS(var=var_s811, a=a_s812);
+      _out = dstAST_s809;
+      return;
+    }
+  }
+}
+      

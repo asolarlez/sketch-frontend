@@ -1,0 +1,27 @@
+adt Statement {
+	StmtVarDecl{}
+	StmtAssert{}
+	StmtExpr{}
+}
+
+struct outStmt {
+	@Immutable("")
+	Statement[1] stmts;	
+}
+
+outStmt foo (Statement s) {
+	if (s == null) return null;
+	switch(s) {
+		case StmtVarDecl: return new outStmt(stmts = {s});
+		case StmtAssert: return new outStmt(stmts = {s});
+		case StmtExpr: return new outStmt(stmts = {s});	
+	}	
+}
+
+harness void main(bit x) {
+	Statement s = x ? new StmtExpr() : new StmtAssert();
+	outStmt out = foo(s);
+	out = foo(s);
+	if (x) { (StmtExpr)(out.stmts[0]); }
+	else { (StmtAssert) (out.stmts[0]); }
+}

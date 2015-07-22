@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
@@ -549,11 +550,24 @@ public class RemoveFunctionParameters extends FEReplacer {
                 nl.add(s);
             }
             Function rf = (Function) fout.creator().typeParams(nl).create().accept(tren);
+            substitute(oldtren, tren);
             tren = oldtren;
             namesset = oldnamesset;
             elimset = oldelimset;
             doneFunctions.put(f.getFullName(), rf);
             return rf;
+        }
+
+        private void substitute(TypeRenamer oldtren, TypeRenamer tren) {
+            if (oldtren == null)
+                return;
+            for (String k : oldtren.tmap.keySet()) {
+                String t = oldtren.tmap.get(k).toString();
+                if (tren.tmap.containsKey(t)) {
+                    oldtren.tmap.put(k, tren.tmap.get(t));
+                }
+            }
+
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
@@ -636,6 +650,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                 right = ((TypeArray) right).getBase();
             }
             String lname = left.toString();
+            if (lname.equals(right.toString())) {
+                return;
+            }
             if (namesset.contains(lname)) {
                 unifyGeneric(lname, right, ctxt);
             }
@@ -1204,6 +1221,26 @@ public class RemoveFunctionParameters extends FEReplacer {
                     funsToVisit.add(nres.getFunName(fun.getName()));
                 }
             }
+            // Need to visit all functions in the special assert
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ExprFunCall f1 = sa.getFirstFun();
+                funsToVisit.add(nres.getFunName(f1.getName()));
+                for (Expression param : f1.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funsToVisit.add(nres.getFunName(pa.getName()));
+                    }
+                }
+
+                ExprFunCall f2 = sa.getSecondFun();
+                funsToVisit.add(nres.getFunName(f2.getName()));
+                for (Expression param : f2.getParams()) {
+                    if (param instanceof ExprFunCall) {
+                        ExprFunCall pa = (ExprFunCall) param;
+                        funsToVisit.add(nres.getFunName(pa.getName()));
+                    }
+                }
+            }
         }
 
         Map<String, List<Function>> nflistMap = new HashMap<String, List<Function>>();
@@ -1239,7 +1276,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         List<Package> newPkges = new ArrayList<Package>();
         for (Package pkg : p.getPackages()) {
             newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
-                    pkg.getVars(), nflistMap.get(pkg.getName())));
+                    pkg.getVars(), nflistMap.get(pkg.getName()), pkg.getSpAsserts()));
         }
         Program np = p.creator().streams(newPkges).create();
 

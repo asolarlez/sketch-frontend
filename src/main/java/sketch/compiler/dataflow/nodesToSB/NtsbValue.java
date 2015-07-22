@@ -136,7 +136,13 @@ public class NtsbValue extends IntAbsValue {
                             for (Iterator<abstractValue> it =
                                     ((List<abstractValue>) obj).iterator(); it.hasNext();)
                             {
-                                rval.append(it.next().toString() + " ");
+                                abstractValue av = it.next();
+
+                                if (av.isVect()) {
+                                    rval.append("( {" + av.toString() + "} ) ");
+                                } else {
+                                    rval.append(av.toString() + " ");
+                                }
                             }
                             rval.append(">}");
                             return rval.toString();

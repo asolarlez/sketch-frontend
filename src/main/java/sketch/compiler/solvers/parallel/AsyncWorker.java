@@ -64,6 +64,7 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
         PrintStream out = new PrintStream(System.out, false);
         if (worker_stat != null && worker_stat.successful()) {
             synchronized (lock) {
+                options.setSolFileIdx(Integer.toString(fileIdx));
                 manager.found(degree);
                 manager.plog(out, prefix + " start ===");
                 out.println(worker_stat.out);

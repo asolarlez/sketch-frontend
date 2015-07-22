@@ -823,7 +823,7 @@ public class SATSynthesizer implements Synthesizer {
 
 		List<Package> streams = Collections.singletonList(
 new Package(current, "MAIN",
-                        Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs));
+                        Collections.EMPTY_LIST, Collections.EMPTY_LIST, funcs, Collections.EMPTY_LIST));
         current =
  current.creator().streams(streams).create();
 

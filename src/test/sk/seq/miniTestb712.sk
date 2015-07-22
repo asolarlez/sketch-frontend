@@ -1,4 +1,3 @@
-
 package P2{
     
     T apply<T, Q>(T t1, Q t2, fun f){

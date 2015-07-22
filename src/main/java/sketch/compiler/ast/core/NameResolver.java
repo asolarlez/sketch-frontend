@@ -42,6 +42,15 @@ public class NameResolver {
         tempStructNames.pop();
     }
 
+    public boolean isTemplate(String name) {
+        for (Set<String> sts : tempStructNames) {
+            if (sts.contains(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Package curPkg() {
         return pkg;
     }

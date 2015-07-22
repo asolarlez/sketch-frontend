@@ -1,4 +1,4 @@
-pragma options "--fe-keep-tmp --bnd-inbits 2 --bnd-arr-size 4 --bnd-unroll-amnt 8 --bnd-inline-amnt 5";
+pragma options "--bnd-inbits 2 --bnd-arr-size 4 --bnd-unroll-amnt 8 --bnd-inline-amnt 5";
 
 // test condjoin of IntAbsValue with known ADT cases
 // comprehensive test for ADT, StmtSwitch, and recursive generator inlining

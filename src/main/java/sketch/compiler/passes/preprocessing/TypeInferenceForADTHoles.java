@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.exprs.ExprADTHole;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -19,11 +24,15 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
+/*
+ * Do relevant type inference for new ??() and GUC.
+ */
 
-public class ExpandADTHoles extends SymbolTableVisitor {
+public class TypeInferenceForADTHoles extends SymbolTableVisitor {
     TypeStructRef ts = null;
+    Type returnType = null;
 
-    public ExpandADTHoles() {
+    public TypeInferenceForADTHoles() {
         super(null);
     }
 
@@ -40,6 +49,50 @@ public class ExpandADTHoles extends SymbolTableVisitor {
         }
         return s;
     }
+
+    @Override
+    public Object visitExprFunCall(ExprFunCall exp) {
+        TypeStructRef ori = ts;
+        Function callee = nres.getFun(exp.getName());
+        List<Expression> params = exp.getParams();
+        for (int i = 0; i < params.size(); i++) {
+            Expression actual = params.get(i);
+            Parameter p = callee.getParams().get(i);
+            Type t = p.getType();
+            if (t.isStruct()) {
+                ts = (TypeStructRef) t;
+            }
+            doExpression(actual);
+        }
+        ts = ori;
+        return super.visitExprFunCall(exp);
+    }
+
+    @Override
+    public Object visitExprADTHole(ExprADTHole exp) {
+        if (exp.getName() == null) {
+            exp.setName(ts.getName());
+        }
+        return exp;
+    }
+
+    @Override
+    public Object visitStmtReturn(StmtReturn stmt) {
+        if (returnType.isStruct()) {
+            ts = (TypeStructRef) returnType;
+        }
+        return super.visitStmtReturn(stmt);
+    }
+
+    @Override
+    public Object visitFunction(Function f) {
+        Type prevReturnType = returnType;
+        returnType = f.getReturnType();
+        Object o = super.visitFunction(f);
+        returnType = prevReturnType;
+        return o;
+    }
+
     @Override
     public Object visitExprNew(ExprNew exp){
         if (exp.isHole() && exp.getTypeToConstruct() == null){
@@ -83,7 +136,7 @@ public class ExpandADTHoles extends SymbolTableVisitor {
             Expression old = en.getExpr();
             Expression rhs = doExpression(old);
             if (rhs != old) {
-                enl.add(new ExprNamedParam(en, en.getName(), rhs));
+                enl.add(new ExprNamedParam(en, en.getName(), rhs, en.getVariantName()));
                 changed = true;
             } else {
                 enl.add(en);

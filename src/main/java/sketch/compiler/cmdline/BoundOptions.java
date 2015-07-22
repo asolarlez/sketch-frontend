@@ -77,4 +77,13 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Maximum absolute value of integers modeled by the system; -1 means there is no bound.")
     public int intRange = -1;
 
+    @CliParameter(help = "Maximum depth of src tuples")
+    public int srcTupleDepth = 2;
+
+    @CliParameter(help = "Maximum depth of angelic tuples")
+    public int angTupleDepth = 1;
+
+    @CliParameter(help = "Maximum depth of GUC")
+    public int gucDepth = 3;
+
 }

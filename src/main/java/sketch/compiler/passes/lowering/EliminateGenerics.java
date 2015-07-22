@@ -84,7 +84,8 @@ public class EliminateGenerics extends SymbolTableVisitor {
                 }
             }
             Package npkg =
-                    new Package(pk, pk.getName(), pk.getStructs(), pk.getVars(), nl);
+                    new Package(pk, pk.getName(), pk.getStructs(), pk.getVars(), nl,
+                            pk.getSpAsserts());
             newStreams.add((Package) npkg.accept(this));
         }
         for (Package pk : newStreams) {

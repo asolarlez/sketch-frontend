@@ -76,7 +76,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
 				if(!unmodifiedParams.containsValue(param)) {
 					String newName=getNewInCpID(param.getName());
                     Parameter newPar =
-                            new Parameter(param, param.getType(), newName,
+                            new Parameter(param, param.getSrcTupleDepth(),
+                                    param.getType(), newName,
                                     param.getPtype());
 					parameters.set(i,newPar);
 					func=addVarCopy(func,param,newName);
@@ -388,7 +389,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
             Package tpkg =
                     new Package(spec, spec.getName(), spec.getStructs(),
-                            spec.getVars(), funs);
+                            spec.getVars(), funs, spec.getSpAsserts());
             nres.populate(tpkg);
             oldStreams.add(tpkg);
 
@@ -476,12 +477,17 @@ public class FunctionParamExtension extends SymbolTableVisitor
 			}
 		}
         final String bad = "BAD";
+        Type retType = func.getReturnType();
+        // Don't replace retVar with output var if the type is an ADT.
+        final boolean repRetVar =
+                !retType.isStruct() ||
+                        nres.getStruct(((TypeStructRef) retType).getName()).isInstantiable();
         FEReplacer retVarPop = new FEReplacer() {
             public Object visitStmtReturn(StmtReturn sr) {
                 if (retVar == bad) {
                     return sr;
                 }
-                if (sr.getValue() instanceof ExprVar) {
+                if (repRetVar && sr.getValue() instanceof ExprVar) {
                     String cname = ((ExprVar) sr.getValue()).getName();
                     if (retVar == null) {
                         retVar = cname;

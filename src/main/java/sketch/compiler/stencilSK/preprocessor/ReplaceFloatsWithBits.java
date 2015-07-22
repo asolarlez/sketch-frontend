@@ -176,7 +176,7 @@ public class ReplaceFloatsWithBits extends SymbolTableVisitor{
             List<Function> lf = new ArrayList<Function>(spec.getFuncs());
             lf.addAll(floatConstants.values());
             return new Package(spec, spec.getName(), spec.getStructs(),
-                    spec.getVars(), lf);
+                    spec.getVars(), lf, spec.getSpAsserts());
         }
     }
 	

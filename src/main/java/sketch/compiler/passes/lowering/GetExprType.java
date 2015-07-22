@@ -98,7 +98,8 @@ public class GetExprType extends FENullVisitor
     public Object visitExprArrayRange(ExprArrayRange exp) {    	
     	Type base = (Type)exp.getBase().accept(this);
     	
-		
+        if (base.equals(new NotYetComputedType()))
+            return base;
 		Expression expr = null;
             RangeLen range=exp.getSelection();
             Type start = (Type)range.start().accept(this);
@@ -297,6 +298,10 @@ public class GetExprType extends FENullVisitor
 	}
     }
 
+    public Object visitExprTuple(ExprTuple exp) {
+        return new TypeStructRef(exp.getName(), false);
+    }
+
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
         // Make it more robust
         Type base = (Type) exp.getBase().accept(this);
@@ -308,6 +313,11 @@ public class GetExprType extends FENullVisitor
         int index = exp.getIndex();
         return ts.getType(ts.getOrderedFields().get(index));
     }
+
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
+        return new TypeArray(exp.getType(), null);
+    }
+
     public Object visitExprField(ExprField exp)
     {
         final ExprField fexp = exp;
@@ -393,6 +403,11 @@ public class GetExprType extends FENullVisitor
     	return null;
     }
 
+    // TODO: deal with packages
+    public Object visitExprADTHole(ExprADTHole exp) {
+        return new NotYetComputedType();
+    }
+
     public Object visitExprParen (ExprParen ep) {
     	return ep.getExpr ().accept (this);
     }
@@ -410,14 +425,20 @@ public class GetExprType extends FENullVisitor
         Type tb = (Type)exp.getB().accept(this);
         Type tc = (Type)exp.getC().accept(this);
         Type lub;
-        if (tb != null && tc != null) {
+        if (tb == null) {
+            assert tc != null;
+            return tc;
+        } else if (tc == null) {
+            assert tb != null;
+            return tb;
+        } else if (tb.equals(new NotYetComputedType())) {
+            lub = tc;
+        } else if (tc.equals(new NotYetComputedType())) {
+            lub = tb;
+        } else {
             lub = tb.leastCommonPromotion(tc, nres);
             exp.assertTrue(lub != null, "incompatible types for '" + exp.getB() + "', '" +
                     exp.getC() + "'");
-        } else if (tb != null) {
-            lub = tb;
-        } else {
-            lub = tc;
         }
         // what if both are null?
 
@@ -457,6 +478,8 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprNew(ExprNew expNew){
         Type t = expNew.getTypeToConstruct();
+        if (t == null)
+            return new NotYetComputedType();
         if(t instanceof TypeStructRef){
             return ((TypeStructRef)t).addDefaultPkg(nres.curPkg().getName(), nres);
         }

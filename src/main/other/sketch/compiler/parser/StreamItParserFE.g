@@ -223,6 +223,8 @@ program	 returns [Program p]
     String file = null;
     String pkgName = null;
     FEContext pkgCtxt = null;
+    List<StmtSpAssert> specialAsserts = new ArrayList<StmtSpAssert>();
+	StmtSpAssert sa;
 }
 	:	(  (annotation_list (/*TK_device  | TK_global |*/  TK_serial | TK_harness |
                      TK_generator |  TK_stencil | TK_model)*
@@ -231,6 +233,7 @@ program	 returns [Program p]
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
+           |    sa = special_assert_statement { specialAsserts.add(sa); }
            |    file=include_stmt { handleInclude (file, namespaces); }
            |    TK_package id:ID { currPkg = (id.getText()); curPkgCx = getContext(id);}
                             (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id);} | pk = pkgbody {namespaces.add(pk);  } ) 
@@ -249,7 +252,7 @@ program	 returns [Program p]
 				fun.setPkg(pkgName);	
 			}
 			
-		        Package ss=new Package(pkgCtxt, pkgName, structs, vars, funcs);
+		        Package ss=new Package(pkgCtxt, pkgName, structs, vars, funcs, specialAsserts);
  				namespaces.add(ss);
                 if (!hasError) {
                     if (p == null) {
@@ -272,6 +275,8 @@ pkgbody returns [Package pk]
 	StructDef ts; List<StructDef> structs = new ArrayList<StructDef>();
 	List<StructDef> adtList;
 	FEContext pkgCtxt = null;
+	List<StmtSpAssert> specialAsserts = new ArrayList<StmtSpAssert>();
+	StmtSpAssert sa;
 }
 : 
 	LCURLY
@@ -282,6 +287,7 @@ pkgbody returns [Package pk]
 		   | 	fd=field_decl SEMI { vars.add(fd); }
            |    ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
+           |    sa = special_assert_statement { specialAsserts.add(sa); }
    )*
    RCURLY
    {			
@@ -293,7 +299,7 @@ pkgbody returns [Package pk]
 			fun.setPkg(currPkg);	
 		}
 		
-	    pk=new Package(pkgCtxt, currPkg, structs, vars, funcs);
+	    pk=new Package(pkgCtxt, currPkg, structs, vars, funcs, specialAsserts);
     }
    ;
 
@@ -352,6 +358,7 @@ statement returns [Statement s] { s = null; }
 	|	s=assume_statement SEMI
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
+	|   s=hassert_statement SEMI
 	|(annotation_list (TK_device | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil | TK_model)*
                     return_type ID LPAREN) =>s=fdecl_statement  
@@ -410,7 +417,7 @@ data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Ex
 					)?
 				{ params.add(x); maxlens.add(maxlen); }
 				)
-                | { throw new SemanticException("missing array bounds in type declaration", getFilename(), l.getLine()); })
+				| {params.add(null); maxlens.add(maxlen); })
 
                 ( { maxlen = 0; }
                 COMMA x=expr_named_param  
@@ -634,6 +641,30 @@ assume_statement returns [StmtAssume s] { s = null; Expression cond; }
 			}
 		}
 	;
+
+special_assert_statement returns [StmtSpAssert s] { s = null; List<String> bindingsInOrder = new ArrayList<String>(); Map<String, Expression> set = new HashMap<String, Expression>(); Expression preCond = null; List<Expression> asserts = new ArrayList<Expression>(); Expression x; }
+	: ((t : TK_let) ((name:ID ASSIGN x = right_expr) {
+			set.put(name.getText(), x);
+			bindingsInOrder.add(name.getText());
+		} (COMMA name1:ID ASSIGN x = right_expr {
+				set.put(name1.getText(), x); 
+				bindingsInOrder.add(name1.getText()); })* )?
+	  ) LCURLY
+	  ((t1: TK_assume) preCond = right_expr)?
+	  ((t2 : TK_assert) x = right_expr SEMI {
+			asserts.add(x);
+		})
+	  ((t3 : TK_assert) x = right_expr SEMI {
+			asserts.add(x);
+		})* {
+		s = new StmtSpAssert(getContext(t), set, preCond, asserts, bindingsInOrder);
+		}
+		RCURLY
+	| ((t4 : TK_assert) x = right_expr SEMI {
+			asserts.add(x);
+			s = new StmtSpAssert(getContext(t4), set, preCond, asserts, bindingsInOrder);
+		})
+	;
 	
 assert_statement returns [StmtAssert s] { s = null; Expression x; }
 	:	(t1:TK_assert | t2:TK_h_assert) x=right_expr (COLON ass:STRING_LITERAL)?{
@@ -647,6 +678,19 @@ assert_statement returns [StmtAssert s] { s = null; Expression x; }
 			msg = cx + "   "+ ps;	
 		}
 		s = new StmtAssert(cx, x, msg, t2!=null); }	
+	;
+
+hassert_statement returns [StmtAssert s] { s = null; Expression x; }
+	:	(t1:TK_hassert) x=right_expr (COLON ass:STRING_LITERAL)?{
+		String msg = null;
+		Token t = t1;
+		FEContext cx =getContext(t); 
+		if(ass!=null){
+			String ps = ass.getText();
+	        ps = ps.substring(1, ps.length()-1);
+			msg = cx + "   "+ ps;	
+		}
+		s = new StmtAssert(cx, x, msg, false, true); }	
 	;
 	
 assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
@@ -666,15 +710,15 @@ switch_statement returns [Statement s]
 	:	u:TK_switch LPAREN name:ID RPAREN LCURLY
 	 
 		{x = new ExprVar(getContext(name), name.getText()); s= new StmtSwitch(getContext(u), x); }
-		((TK_case caseName:ID COLON b= pseudo_block
+		(TK_case caseName:ID COLON b= pseudo_block
 		{((StmtSwitch)s).addCaseBlock(caseName.getText(), b);}
 		)*
-		(TK_default COLON b = pseudo_block
+		((TK_default COLON b = pseudo_block
 		{((StmtSwitch)s).addCaseBlock("default",b);}
-		)?
+		)
 		|
-		TK_repeat_case COLON b = pseudo_block
-		{((StmtSwitch)s).addCaseBlock("repeat", b);})
+		(TK_repeat_case COLON b = pseudo_block
+		{((StmtSwitch)s).addCaseBlock("repeat", b);}))?
 		RCURLY
 		
 	;
@@ -747,6 +791,19 @@ func_call returns [Expression x] { x = null; List l; }
 	
 	;
 
+expr_get returns [Expression x] { x = null; List l; }
+	: t:NDVAL2 LPAREN LCURLY l = expr_get_params RCURLY RPAREN
+		{ x = new ExprADTHole(getContext(t), l); }
+	;
+	
+expr_get_params returns [List l] { l = new ArrayList(); Expression x; }
+	:	
+		(	x=expr_named_param { l.add(x); }
+			(COMMA x=expr_named_param { l.add(x); })*
+		)?
+		
+	;
+	
 func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
 		(	x=expr_named_param { l.add(x); }
@@ -784,10 +841,9 @@ right_expr_not_agmax returns [Expression x] { x = null; }
 	;
 right_expr returns [Expression x] { x = null; }
 	:	x=right_expr_not_agmax
-	|   x=agmax_expr
 	;
 
-agmax_expr returns [Expression x] { x = null; }
+/*agmax_expr returns [Expression x] { x = null; }
  	:	t:NDANGELIC (LPAREN n:NUMBER RPAREN)?
     	{
     		if (n != null) {
@@ -796,7 +852,7 @@ agmax_expr returns [Expression x] { x = null; }
     			x = new ExprStar(getContext(t), Kind.ANGELIC);
     		}
     	} 
-	;
+	;*/
 	
 /*
 TODO we don't add exprMax now
@@ -978,7 +1034,7 @@ postfix_expr returns [Expression x] { x = null;  int untype = -1;}
 
 primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl;Type t = null; }
 	:	x=tminic_value_expr
-		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | LCURLY t = data_type  {x = new ExprFieldMacro(x, x, t);} RCURLY)
+		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | LCURLY t = data_type  {x = new ExprFieldsListMacro(x, x, t);} RCURLY)
 		|	l:LSQUARE
 					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
@@ -988,6 +1044,7 @@ primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> 
 
 tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
+	|   (expr_get) => x = expr_get
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
 	|	x=var_expr
@@ -1077,6 +1134,8 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	  x = new ExprStar(getContext(t2)); 
             	}
             }
+    |	t3:NDANGELIC
+			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
     ;
 
 adt_decl returns [List<StructDef> adtList]
@@ -1094,7 +1153,7 @@ adt_decl returns [List<StructDef> adtList]
 	| an=annotation {annotations.append(an.tag, an);}
 	)*
 	RCURLY
-	{str = StructDef.creator(getContext(t), id.getText(), null, false, names, types, annotations).create();
+	{str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, annotations).create();
      str.setImmutable();
 	 adtList.add(0, str);
 	}

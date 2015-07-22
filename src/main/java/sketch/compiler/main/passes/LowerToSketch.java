@@ -122,12 +122,12 @@ public class LowerToSketch extends MetaStage {
         // prog.debugDump("After es");
 
         prog = (Program) prog.accept(new EliminateNestedTuples(varGen));
-        prog = (Program) prog.accept(new EliminateNestedTupleReads(varGen));
-
-
-        prog = (Program) prog.accept(new ExtractRightShifts(varGen));
-
-
+        prog =
+                (Program) prog.accept(new EliminateNestedTupleReads(varGen,
+                        new ExprConstInt(options.bndOpts.arrSize)));
+        prog =
+                (Program) prog.accept(new ExtractRightShifts(varGen));
+        // prog.debugDump();
         // dump (prog, "Extract Vectors in Casts:");
         prog = (Program) prog.accept(new ExtractVectorsInCasts(varGen));
 

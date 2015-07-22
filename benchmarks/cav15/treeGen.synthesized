@@ -1,0 +1,75 @@
+void insertNode (BinaryTree tree, int x, ref BinaryTree _out)/*treeGen.sk:26*/
+{
+  _out = null;
+  if(tree == (null))/*treeGen.sk:27*/
+  {
+    _out = null;
+    return;
+  }
+  switch(tree){/*treeGen.sk:28*/
+    case Branch:
+    {
+      BinaryTree@ANONYMOUS l_s83 = null;
+      insertNode(tree.l, x, l_s83);
+      BinaryTree@ANONYMOUS r_s85 = null;
+      insertNode(tree.r, x, r_s85);
+      if(x < (tree.value))/*treeGen.sk:34*/
+      {
+        int value_s10 = tree.value;
+        BinaryTree r_s12 = tree.r;
+        BinaryTree BinaryTree_s9 = new Branch@ANONYMOUS(value=value_s10, l=l_s83, r=r_s12);
+        _out = BinaryTree_s9;
+        return;
+      }
+      if(x >= (tree.value))/*treeGen.sk:34*/
+      {
+        int value_s10_0 = tree.value;
+        BinaryTree l_s11 = tree.l;
+        BinaryTree BinaryTree_s9_0 = new Branch@ANONYMOUS(value=value_s10_0, l=l_s11, r=r_s85);
+        _out = BinaryTree_s9_0;
+        return;
+      }
+    }
+    case Leaf:
+    {
+      BinaryTree@ANONYMOUS l_s87 = null;
+      insertNode(null, x, l_s87);
+      BinaryTree@ANONYMOUS r_s89 = null;
+      insertNode(null, x, r_s89);
+      if(x <= (tree.value))/*treeGen.sk:34*/
+      {
+        BinaryTree l_s21 = new Empty@ANONYMOUS();
+        int value_s26 = tree.value;
+        BinaryTree r_s22 = new Leaf@ANONYMOUS(value=value_s26);
+        BinaryTree BinaryTree_s19 = new Branch@ANONYMOUS(value=x, l=l_s21, r=r_s22);
+        _out = BinaryTree_s19;
+        return;
+      }
+      if(x >= (tree.value))/*treeGen.sk:34*/
+      {
+        int value_s23 = tree.value;
+        BinaryTree l_s21_0 = new Leaf@ANONYMOUS(value=value_s23);
+        BinaryTree r_s22_0 = new Empty@ANONYMOUS();
+        BinaryTree BinaryTree_s19_0 = new Branch@ANONYMOUS(value=x, l=l_s21_0, r=r_s22_0);
+        _out = BinaryTree_s19_0;
+        return;
+      }
+    }
+    case Empty:
+    {
+      BinaryTree@ANONYMOUS l_s91 = null;
+      insertNode(null, x, l_s91);
+      BinaryTree@ANONYMOUS r_s93 = null;
+      insertNode(null, x, r_s93);
+      if(x >= 0)/*treeGen.sk:34*/
+      {
+        BinaryTree l_s31 = new Empty@ANONYMOUS();
+        BinaryTree r_s32 = new Empty@ANONYMOUS();
+        BinaryTree BinaryTree_s29 = new Branch@ANONYMOUS(value=x, l=l_s31, r=r_s32);
+        _out = BinaryTree_s29;
+        return;
+      }
+    }
+  }
+}
+      

@@ -1,4 +1,3 @@
-
 package P1{
     int foo<T>(fun f, T t){
         return f(t);

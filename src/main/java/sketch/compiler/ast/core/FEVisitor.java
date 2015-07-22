@@ -60,6 +60,7 @@ public interface FEVisitor
     public Object visitExprTuple(ExprTuple exp);
     public Object visitExprArrayInit(ExprArrayInit exp);
 
+    public Object visitExprADTHole(ExprADTHole exp);
     public Object visitExprTupleAccess(ExprTupleAccess exp);
     public Object visitExprArrayRange(ExprArrayRange exp);
     public Object visitExprBinary(ExprBinary exp);
@@ -117,7 +118,7 @@ public interface FEVisitor
     public Object visitStmtMinimize(StmtMinimize stmtMinimize);
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop);
 
-    public Object visitExprFieldMacro(ExprFieldMacro exp);
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp);
 
     public Object visitExprSpecialStar(ExprSpecialStar exprSpecialStar);
 

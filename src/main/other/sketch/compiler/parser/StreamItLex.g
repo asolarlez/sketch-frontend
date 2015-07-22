@@ -48,6 +48,7 @@ tokens {
 	"reorder";
 	
 	"assume";
+	"hassert";
 
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";
@@ -100,6 +101,9 @@ tokens {
     
     //ADT
     "extends";
+    
+    "let";
+    "precond";
 }
 {
   public static String lastComment = null;
