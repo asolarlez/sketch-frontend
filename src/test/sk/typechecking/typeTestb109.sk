@@ -6,7 +6,7 @@ harness void localVariable(int x, int y)
   int b = 3;
   int c = 4;
   
-  int t = $(bit)*??
+  int t = $(bit)*??;
   
   assert (t == x + x);
 }

@@ -1,4 +1,5 @@
 // Testing lambda calls a inner function
+// TODO MIGUEL should this work?
 
 int apply(fun f) {
 	return f(5);
@@ -10,7 +11,7 @@ harness void main(){
 	int foo() {
 		return a;	
 	}
-	
+		
 	fun f = (,x) -> foo() + x + a;
   
     assert apply(f) == 13;

@@ -245,7 +245,14 @@ public class RemoveFunctionParameters extends FEReplacer {
 								this.lambdaFunctionsNeededVariables.get(fun.getName());
 						
 						// Append the ones that it needs
-						formalParameters.addAll(((ExprLambda) actual).getMissingFormalParameters());						
+						List<ExprVar> needed = ((ExprLambda) actual).getMissingFormalParameters();
+						
+						for(ExprVar variable : needed) {
+							if(!formalParameters.contains(variable)) {
+								formalParameters.add(variable);														
+							}
+						}
+						
 						
 						// Add all the needed parameters
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), formalParameters);
@@ -429,7 +436,11 @@ public class RemoveFunctionParameters extends FEReplacer {
 
 		Program aftertc = (Program) np.accept(new ThreadClosure());
 		
+		aftertc.debugDump("Before threading");
+
 		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
+
+		afterLambdaClosure.debugDump("After threading");
 
 		return afterLambdaClosure.accept(new FixPolymorphism());
 
@@ -1410,23 +1421,32 @@ public class RemoveFunctionParameters extends FEReplacer {
 						 			
 				// Loop through the variables needed
 				for(ExprVar variable : variablesNeeded) {
+
+					// TODO This check is to make sure that we are not double
+					// adding
+					// variables
 					// If this variable is already added
-					if(actualParameters.contains(variable)) {
-						// Skip this variable
-						continue;
-					}
+//					if(actualParameters.contains(variable)) {
+//						// Skip this variable
+//						continue;
+//					}
 					
+					// TODO This check is to make sure that we are not double
+					// adding
+					// variables
 					// Loop through the formal parameters of the callee
-					for(Parameter formalParameter : calleeFormalParameters) {
-						// If this variables that we are trying to thread is already defined in
-						// this function
-						if(formalParameter.getName().equals(variable.getName())) {
+					for (Parameter formalParameter : calleeFormalParameters) {
+						// If this variables that we are trying to thread is
+						// already defined in this function
+						if (formalParameter.getName()
+								.equals(variable.getName())) {
 							// Throw exception
-							throw new ExceptionAtNode("You are inlining a lambda function that has"
-											+ " variables already defined in the original function"
-									, exprFunctionCall);
+							throw new ExceptionAtNode(
+									"You are inlining a lambda function that has"
+											+ " variables already defined in the original function",
+									exprFunctionCall);
 						}
-						
+
 					}
 					
 					// Add the variable to the actual parameters
