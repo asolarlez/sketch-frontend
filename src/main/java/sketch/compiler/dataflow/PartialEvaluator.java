@@ -50,6 +50,9 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public boolean isPrecise = true;
     protected int throwAssertionsFalse = 0;
     protected int throwAssertionsTrue = 0;
+    protected boolean combineFunCalls = false;
+    private List<String> recFuns = new ArrayList<String>();
+    private List<Integer> funGroupIds = new ArrayList<Integer>();
 
     protected void pushTrue() {
         throwAssertionsTrue++;
@@ -593,6 +596,14 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitExprFunCall(ExprFunCall exp)
     {
         String name = exp.getName();
+        if (combineFunCalls) {
+            int idx = recFuns.indexOf(name);
+            if (idx != -1) {
+                int groupId = funGroupIds.get(idx);
+                exp.setClusterId(groupId * recFuns.size() + idx);
+                funGroupIds.set(idx, groupId + 1);
+            }
+        }
         Iterator<Expression> actualParams = exp.getParams().iterator();
         List<abstractValue> avlist = new ArrayList<abstractValue>(exp.getParams().size());
 
@@ -1457,6 +1468,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
         Statement nvtrue = null;
         Statement nvfalse = null;
         boolean oldTA = false;
+
+        List<Integer> tempFunIds = new ArrayList<Integer>();
+        tempFunIds.addAll(funGroupIds);
+
         if( rcontrol.testBlock(cons) ){
             try{
                 try {
@@ -1504,6 +1519,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
         ChangeTracker ipms = state.popChangeTracker();
         assert state.getCTlevel() == ctlevel : "Somewhere we lost a ctlevel!! " + ctlevel + " != " + state.getCTlevel();
 
+        List<Integer> conFunIds = new ArrayList<Integer>();
+        conFunIds.addAll(funGroupIds);
+        funGroupIds = tempFunIds;
+
         ChangeTracker epms = null;
         if (alt != null){
             /* Attach inverse conditional to change tracker. */
@@ -1540,6 +1559,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 state.pushChangeTracker(vcond, true);
             }
             epms = state.popChangeTracker();
+        }
+
+        for (int i = 0; i < funGroupIds.size(); i++) {
+            funGroupIds.set(i, Math.max(conFunIds.get(i), funGroupIds.get(i)));
         }
         if(epms != null){
             state.procChangeTrackers(ipms, epms);
@@ -1999,6 +2022,42 @@ nvarContext,
         }
     }
 
+    class CheckRecursive extends FEReplacer {
+        final List<String> parents;
+        boolean isRec;
+        NameResolver nres;
+
+        public CheckRecursive(List<String> names, NameResolver nres) {
+            this.parents = names;
+            this.isRec = false;
+            this.nres = nres;
+        }
+
+        @Override
+        public Object visitExprFunCall(ExprFunCall exp) {
+            if (this.parents.contains(exp.getName())) {
+                isRec = true;
+            } else if (recFuns.contains(exp.getName())) {
+                isRec = true;
+            } else {
+                List<String> newParents = new ArrayList<String>();
+                newParents.addAll(parents);
+                newParents.add(exp.getName());
+
+                Function fun = nres.getFun(exp.getName());
+                if (fun.getBody() != null) {
+                    CheckRecursive cr = new CheckRecursive(newParents, nres);
+                    nres.getFun(exp.getName()).getBody().accept(cr);
+                    if (cr.isRec) {
+                        recFuns.add(exp.getName());
+                        funGroupIds.add(1);
+                        isRec = true;
+                    }
+                }
+            }
+            return exp;
+        }
+    }
 
     public Object visitProgram(Program p) {
         // List<StreamSpec> nstr = new ArrayList<StreamSpec>();
@@ -2010,6 +2069,22 @@ nvarContext,
         Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
+            if (combineFunCalls) {
+                for (Function f : pkg.getFuncs()) {
+                    if (!recFuns.contains(f.getName())) {
+                        List<String> parents = new ArrayList<String>();
+                        parents.add(f.getName());
+                        if (f.getBody() != null) {
+                            CheckRecursive cr = new CheckRecursive(parents, nres);
+                            f.getBody().accept(cr);
+                            if (cr.isRec) {
+                                recFuns.add(f.getName());
+                                funGroupIds.add(1);
+                            }
+                        }
+                    }
+                }
+            }
             List<Function> toAnalyze = functionsToAnalyze(pkg);
             funcsToAnalyze.addAll(toAnalyze);
             if (pkgs.containsKey(pkg.getName())) {
