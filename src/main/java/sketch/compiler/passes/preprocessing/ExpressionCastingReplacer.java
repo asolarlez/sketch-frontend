@@ -19,8 +19,7 @@ import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtFunDecl;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -38,222 +37,249 @@ import sketch.util.exceptions.ExceptionAtNode;
  */
 public class ExpressionCastingReplacer extends FEReplacer {
 
-	private Stack<String> 			functionsToVisit;
-	private Map<String, Package> 	packages;
-	private Set<String> 			visitedFunctions;
-	
+	private Function						currentFunction;
+	private Stack<String> 					functionsToVisit;
+	private Map<String, Package> 			packages;
+	private Set<String> 					visitedFunctions;
+	private Map<Function, List<Function>> 	functionsInnerFunctions;
+		
 	/**
 	 * Create a new expression casting replacer
 	 */
 	public ExpressionCastingReplacer() {
+		this.currentFunction = null;
 		this.functionsToVisit = new Stack<String>();
 		this.packages = new HashMap<String, Package>();
 		this.visitedFunctions = new HashSet<String>();
+		this.functionsInnerFunctions = new HashMap<Function, List<Function>>();
 	}
 	
-	/**
-	 * Visit the program and go through it checking if there is any place to
-	 * cast an expression as a lambda function
-	 */
 	public Object visitProgram(Program program) {
-		// Create a name resolver
 		this.nres = new NameResolver(program);
 
-		// Loop through all packages
-		for (Package programPackage : program.getPackages()) {
+		// Loop each package
+		for (Package pkg : program.getPackages()) {
 			// Set the package in the name resolver
-			nres.setPackage(programPackage);
-			Set<String> nameCheck = new HashSet<String>();
+			nres.setPackage(pkg);
 
-			// Loop through all functions
-			for (Function function : programPackage.getFuncs()) {
-				
+			// Create function set
+			Set<String> functionSet = new HashSet<String>();
+
+			// Loop through each function
+			for (Function function : pkg.getFuncs()) {
 				// Check if name check has the same name as the current function
-				if (nameCheck.contains(function.getName())) {
-					throw new ExceptionAtNode("Duplicated Name in Package", function);
+				if (functionSet.contains(function.getName())) {
+					throw new ExceptionAtNode("Duplicated name: " + function.getName() + 
+							" in package: " + pkg.getName(), function);
 				}
-				
+
+				// Add the function name to name check
+				functionSet.add(function.getName());
+
 				// If the function is a harness
 				if (function.isSketchHarness()) {
-					// Add it to the list of functions to visit
-					this.functionsToVisit.push(nres.getFunName(function.getName()));
+					// Add the harness to the functions to visit
+					this.functionsToVisit.push(this.nres.getFunName(function.getName()));
 				}
 
 				// If the function implements some other function
 				if (function.getSpecification() != null) {
 
-					String spec = nres.getFunName(function.getSpecification());
-					if (spec == null)
-						throw new ExceptionAtNode(
-								"Function " + function.getSpecification()
+					String specification = nres.getFunName(function.getSpecification());
+					if (specification == null)
+						throw new ExceptionAtNode("Function " + function.getSpecification()
 										+ ", the spec of " + function.getName()
-										+ " is can not be found. did you put the wrong name?",
-								function);
+										+ " is can not be found. Did you put the "
+										+ "wrong name?", function);
 
-					this.functionsToVisit.add(spec);
-					this.functionsToVisit.add(nres.getFunName(function));
+					// Pust both the function and the implementation to visit
+					this.functionsToVisit.push(specification);
+					this.functionsToVisit.push(nres.getFunName(function.getName()));
 				}
 			}
 		}
-
-		// Create a map for new function
-		Map<String, List<Function>> newFunctionMap = new HashMap<String, List<Function>>();
+		
+		// Create a map of packages and their new functions
+		Map<String, List<Function>> newPackageFunctionList = new HashMap<String, List<Function>>();
 
 		// Loop each package
 		for (Package pkg : program.getPackages()) {
-			// Add this package and a list of functions
-			newFunctionMap.put(pkg.getName(), new ArrayList<Function>());
-
-			// Add this package to the list of packages
+			// Add package with an empty list of function
+			newPackageFunctionList.put(pkg.getName(), new ArrayList<Function>());
 			this.packages.put(pkg.getName(), pkg);
 		}
+		
+		// While we have function to visit.
+		while (!this.functionsToVisit.isEmpty()) {
+			// Get the latest function information
+			String functionName = this.functionsToVisit.pop();
+			String pkgName = this.getPkgName(functionName);
+			Function function = nres.getFun(functionName);
 
-		// While there are functions to visit
-		while (!this.functionsToVisit.empty()) {
-			// Pop the function out of the stack and get the function
-			String currentFunctionName = this.functionsToVisit.pop();
-			Function current = this.nres.getFun(currentFunctionName);
-
-			// If the current function has not been visited
-			if (!this.visitedFunctions.contains(currentFunctionName)) {
-				// Visit the function
-				current = (Function) this.visitFunction(current);
-
-				this.visitedFunctions.add(currentFunctionName);
-				// Add the new function to the to the list of functions of this
-				// package
-				newFunctionMap.get(current.getPkg()).add(current);
+			// If the function has been visited
+			if (this.visitedFunctions.contains(functionName)) {
+				// Get the next iteration of the loop
+				continue;
 			}
-		}
+			this.currentFunction = function;
 
-		// Create a new list of packages
+			this.functionsInnerFunctions.put(this.currentFunction, new ArrayList<Function>());
+
+			// Visit this function
+			function = (Function) function.accept(this);
+			
+
+			// Add it to the set of visited functions
+			this.visitedFunctions.add(functionName);
+
+			// Add it to the map of packages and their new function
+			newPackageFunctionList.get(pkgName).add(function);
+		}
+		
+		// Create a list of new packages
 		List<Package> newPkges = new ArrayList<Package>();
-
-		// Loop through the program packages
+		
+		// Loop through each package
 		for (Package pkg : program.getPackages()) {
-			// Create a new package
-			newPkges.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
-					pkg.getVars(), newFunctionMap.get(pkg.getName())));
+			// Create a new package with the new functions
+			newPkges.add(new Package(pkg, pkg.getName(), 
+					pkg.getStructs(), pkg.getVars(), 
+					newPackageFunctionList.get(pkg.getName())));
 		}
-
+		
 		// Create a new program with the new packages
-		return program.creator().streams(newPkges).create();
-
+		Program newProgram = program.creator().streams(newPkges).create();
+		return newProgram;
 	}
 
 	/**
-	 * Visit an expression function call and if there is an expression where a
-	 * function should be, create a lambda function
+	 * Visit an expression function call to put the functions in the list of
+	 * functions to visit.
 	 */
 	public Object visitExprFunCall(ExprFunCall exprFunctionCall) {
-		// Find the function that is being called
-		Function callee = this.nres.getFun(exprFunctionCall.getName());
-		
-		// If there is no function with that name
-		if (callee == null) { 
-			// Make the super class visit the function call since it is not
-			// calling a function defined by the user. It is probably a
-			// call to a function that is being passed
-			return super.visitExprFunCall(exprFunctionCall);
-		}
-				
-		// Since this is a defined function, add it to the list of
-		// functions to visit
-		this.functionsToVisit.push(nres.getFunName(exprFunctionCall.getName()));
+		// Get the function name from the list of function
+		String functionName = this.nres.getFunName(exprFunctionCall.getName());
 
-		// Create a list for the new actual parameters
-		List<Expression> newActualParameters = new ArrayList<Expression>();
-
-		// Get the current actual parameters
-		Iterator<Expression> actualParameters = exprFunctionCall.getParams().iterator();
-		
-		// We will use this variable to check if the type of the
-		// variable is fun
-		boolean typeFunction = false;
-		
-		// Loop through the formal parameters of the function that is being called
-		for(Parameter formalParameter : callee.getParams()) {
-			// Get the next actual parameter
-			Expression actualParameter = actualParameters.next();
-			
-			// Loop through the new statements
-			for(Statement statement : this.newStatements) {
-				// If the current statement is a variable declaration
-				if(statement instanceof StmtVarDecl) {
-					StmtVarDecl variableDeclaration = ((StmtVarDecl)statement);
-					
-					// If the actual parameter is the same as the variable declaration in the 
-					// formal parameter and the type of that parameter is fun
-					if(actualParameter.toString().equals(variableDeclaration.getName(0)) &&
-							variableDeclaration.getType(0) instanceof TypeFunction) {
-						// The current actual parameter is a function declaration	
-						typeFunction = true;
-						
-						// Break and continue logic
-						break;
-					}
-
-				}
+		// If the function was found
+		if (functionName != null) {
+			// If the function has not been visited before
+			if (!this.visitedFunctions.contains(functionName)) {
+				// Add it to the list of functions to visit
+				this.functionsToVisit.push(functionName);
 			}
-			
-			// If the formal parameter wants a function and the corresponding
-			// actual parameter is not an instance of a lambda function
-			if (formalParameter.getType() instanceof TypeFunction
-					&& !(actualParameter instanceof ExprLambda) && !typeFunction) {
-				// We need to cast. Create a new lambda with empty formal
-				// parameters, but passing the actual expression
-				ExprLambda castedLambda = new ExprLambda(actualParameter.getCx(), 
-						new ArrayList<ExprVar>(), actualParameter);
+		}
+		
+		// Loop through each actual parameter
+		for (Expression actualParameter : exprFunctionCall.getParams()) {
+			// If the actual parameter is a variable
+			if(actualParameter instanceof ExprVar) {
+				// Get the variable
+				ExprVar variable = (ExprVar) actualParameter;
 				
-				// Get the formal parameters that are needed
-				List<ExprVar> lambdaFormalParameters = castedLambda.getMissingFormalParameters();
-				List<ExprVar> doubleCountedParameters = new ArrayList<ExprVar>();
+				// Check if there is a function with that name
+				functionName = this.nres.getFunName(variable.getName());
 				
-				// Loop through the lambda formal parameter
-				for(ExprVar missingFormalParameter : lambdaFormalParameters) {
-					// Loop through the new statements
-					for(Statement statement : this.newStatements) {
-						// If the current statement is a variable declaration
-						if(statement instanceof StmtVarDecl) {
-							StmtVarDecl variableDeclaration = ((StmtVarDecl)statement);
-							
-							// If the missing parameter is actually a local variable
-							if(missingFormalParameter.toString().equals(variableDeclaration.getName(0))) {
-								// Add the double counted parameter
-								doubleCountedParameters.add(missingFormalParameter);
-								
-								// Break and continue logic
-								break;
-							}
+				// If the function was found
+				if (functionName != null) {
+					// If the function has not been visited before
+					if (!this.visitedFunctions.contains(functionName)) {
+						// Add it to the list of functions to visit
+						this.functionsToVisit.push(functionName);
+					}
+				}
+				
+			}
+        }
 
+		// Get the function name from the list of function
+		functionName = this.nres.getFunName(exprFunctionCall.getName());
+		
+		if(functionName == null) {
+			return super.visitExprFunCall(exprFunctionCall);			
+		}
+		
+		Function callee = this.nres.getFun(functionName);
+		Iterator<Parameter> formalParameters = callee.getParams().iterator();
+		Parameter formalParameter = null;
+		
+		// Loop through each actual parameter
+		for (Expression actualParameter : exprFunctionCall.getParams()) {
+			formalParameter = formalParameters.next();
+					
+			// If the actual parameter is a variable
+			if(formalParameter.getType() instanceof TypeFunction) {
+				if(actualParameter instanceof ExprLambda) {
+					continue;
+				}
+				
+				if(actualParameter instanceof ExprVar) {
+					ExprVar variable = (ExprVar) actualParameter;
+					
+					// Check if there is a function with that name
+					functionName = this.nres.getFunName(variable.getName());
+					
+					// If the function was found
+					if (functionName != null) {
+						continue;
+					}
+					
+					// Check if there is a function with that name
+					List<Function> innerFunctions = this.functionsInnerFunctions.get(this.currentFunction);
+					
+					for(Function function : innerFunctions) {
+						if (function.getName().equals(variable.getName())) {
+							functionName = function.getName();
+							break;
 						}
 					}
 					
+					// If the function was found
+					if (functionName != null) {
+						continue;
+					}
 				}
 				
-				// Remove the double counted variables
-				for (ExprVar doubleCountedVariable : doubleCountedParameters) {
-					lambdaFormalParameters.remove(doubleCountedVariable);
-				}
+				System.out.println("I think we need to cas t");
 
-				// Create a new lambda
-				castedLambda = new ExprLambda(actualParameter.getCx(), lambdaFormalParameters, actualParameter);
-				
-				// Add it to the new actual parameters
-				newActualParameters.add(castedLambda);
 			}
-			else {
-				// Add the parameter to new list
-				newActualParameters.add(actualParameter);
-			}
-		}
+        }
 		
-		// Return a new function call
-		exprFunctionCall = new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newActualParameters);
+		return super.visitExprFunCall(exprFunctionCall);		
 
-		// Visit this function call since there might be other function calls
-		// within this one
-		return super.visitExprFunCall(exprFunctionCall);
+	}
+
+	public Object visitStmtFunDecl(StmtFunDecl stmtFuncDecl) {
+		// Register that the current function has a local function
+		this.functionsInnerFunctions.get(this.currentFunction).add(stmtFuncDecl.getDecl());
+		
+		// Get the current function
+		Function oldFunction = this.currentFunction;
+		
+		// The new current function is this local function
+		this.currentFunction = stmtFuncDecl.getDecl();
+		
+		// Create a new entry of local functions since it might have some
+		this.functionsInnerFunctions.put(this.currentFunction, new ArrayList<Function>());
+		
+		// Visit this local function
+		stmtFuncDecl = (StmtFunDecl) super.visitStmtFunDecl(stmtFuncDecl);
+		
+		// Reset the old function
+		this.currentFunction = oldFunction;
+		
+		// Return the stmtFunDecl
+		return stmtFuncDecl;
+	}
+
+	/**
+	 * Get the package name from the function name
+	 * 
+	 * @param functionName
+	 * @return
+	 */
+	private String getPkgName(String functionName) {
+		int i = functionName.indexOf("@");
+		return functionName.substring(i + 1);
 	}
 
 }
