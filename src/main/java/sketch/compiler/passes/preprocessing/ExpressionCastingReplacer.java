@@ -6,21 +6,23 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 
-import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
 import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
@@ -35,23 +37,29 @@ import sketch.util.exceptions.ExceptionAtNode;
  * @author Miguel Velez
  * @version 0.1
  */
-public class ExpressionCastingReplacer extends FEReplacer {
+public class ExpressionCastingReplacer extends SymbolTableVisitor {
 
 	private Function						currentFunction;
 	private Stack<String> 					functionsToVisit;
 	private Map<String, Package> 			packages;
 	private Set<String> 					visitedFunctions;
 	private Map<Function, List<Function>> 	functionsInnerFunctions;
+	private Map<String, ExprLambda>			functionCastedFunctionsMap;
+	private Map<String, String>				formalFunctionMap;
 		
 	/**
 	 * Create a new expression casting replacer
 	 */
 	public ExpressionCastingReplacer() {
+		super(null);
+
 		this.currentFunction = null;
 		this.functionsToVisit = new Stack<String>();
 		this.packages = new HashMap<String, Package>();
 		this.visitedFunctions = new HashSet<String>();
 		this.functionsInnerFunctions = new HashMap<Function, List<Function>>();
+		this.functionCastedFunctionsMap = new HashMap<String, ExprLambda>();
+		this.formalFunctionMap = new HashMap<String, String>();
 	}
 	
 	public Object visitProgram(Program program) {
@@ -136,6 +144,15 @@ public class ExpressionCastingReplacer extends FEReplacer {
 			newPackageFunctionList.get(pkgName).add(function);
 		}
 		
+		// Loop through each package
+		for (Package pkg : program.getPackages()) {
+			for (Function function : pkg.getFuncs()) {
+				if (!this.visitedFunctions.contains(function.getFullName())) {
+					newPackageFunctionList.get(pkg.getName()).add(function);
+				}
+			}
+		}
+
 		// Create a list of new packages
 		List<Package> newPkges = new ArrayList<Package>();
 		
@@ -190,6 +207,24 @@ public class ExpressionCastingReplacer extends FEReplacer {
 				
 			}
         }
+		
+		if (this.formalFunctionMap.containsKey(exprFunctionCall.getName())) {
+			Random random = new Random();
+
+			String lambdaName = this.formalFunctionMap.get(exprFunctionCall.getName());
+			ExprLambda castedLambda = this.functionCastedFunctionsMap.get(lambdaName);
+					
+			int numberFormalParamerters = exprFunctionCall.getParams().size();
+			
+			List<ExprVar> variables = new ArrayList<ExprVar>();
+			
+			for(int i = 0; i < numberFormalParamerters; i++) {
+				variables.add(new ExprVar(exprFunctionCall,
+						"dummyVariable" + random.nextInt()));
+			}
+			
+			castedLambda.setParameteres(variables);
+		}
 
 		// Get the function name from the list of function
 		functionName = this.nres.getFunName(exprFunctionCall.getName());
@@ -202,49 +237,91 @@ public class ExpressionCastingReplacer extends FEReplacer {
 		Iterator<Parameter> formalParameters = callee.getParams().iterator();
 		Parameter formalParameter = null;
 		
+		List<Expression> newParams = new ArrayList<Expression>();
+		
+		int i = -1;
+
 		// Loop through each actual parameter
 		for (Expression actualParameter : exprFunctionCall.getParams()) {
+			i++;
+
 			formalParameter = formalParameters.next();
 					
 			// If the actual parameter is a variable
-			if(formalParameter.getType() instanceof TypeFunction) {
-				if(actualParameter instanceof ExprLambda) {
+			if (!(formalParameter.getType() instanceof TypeFunction)) {
+				newParams.add(this.doExpression(actualParameter));
+
+				continue;
+			}
+			
+			if(actualParameter instanceof ExprLambda) {
+				newParams.add(this.doExpression(actualParameter));
+				
+				continue;
+			}
+			
+			if (actualParameter instanceof ExprArrayInit) {
+				newParams.add(this.doExpression(actualParameter));
+
+				continue;
+			}
+			
+			// If the actual parameter is a variable
+			if(actualParameter instanceof ExprVar) {
+				// Get the variable
+				ExprVar variable = (ExprVar) actualParameter;
+				
+				// Check if there is a function with that name
+				functionName = this.nres.getFunName(variable.getName());
+
+				// Check if there is a function with that name
+				List<Function> innerFunctions = this.functionsInnerFunctions.get(this.currentFunction);
+				
+				// Loop through the inner functions
+				for(Function function : innerFunctions) {
+					// If the variable is a reference to a local function
+					if (function.getName().equals(variable.getName())) {
+						// Set the function name and break
+						functionName = function.getName();
+						break;
+					}
+				}
+				
+				if (this.symtab.hasVar(variable.getName()) && this.symtab
+						.lookupVar(variable) instanceof TypeFunction) {
+					functionName = variable.getName();
+				}
+
+				// If the function was found
+				if (functionName != null) {
+					newParams.add(this.doExpression(actualParameter));
 					continue;
 				}
-				
-				if(actualParameter instanceof ExprVar) {
-					ExprVar variable = (ExprVar) actualParameter;
-					
-					// Check if there is a function with that name
-					functionName = this.nres.getFunName(variable.getName());
-					
-					// If the function was found
-					if (functionName != null) {
-						continue;
-					}
-					
-					// Check if there is a function with that name
-					List<Function> innerFunctions = this.functionsInnerFunctions.get(this.currentFunction);
-					
-					for(Function function : innerFunctions) {
-						if (function.getName().equals(variable.getName())) {
-							functionName = function.getName();
-							break;
-						}
-					}
-					
-					// If the function was found
-					if (functionName != null) {
-						continue;
-					}
-				}
-				
-				System.out.println("I think we need to cas t");
-
 			}
+
+			// We need to cast only where you do not use the parameters inside
+			// the function
+			ExprLambda castedLambda = new ExprLambda(actualParameter,new ArrayList<ExprVar>(), actualParameter);
+
+			List<ExprVar> variablesUsedInExpression = castedLambda.getMissingFormalParameters();
+			
+			for(ExprVar variable : variablesUsedInExpression) {
+				if(!this.symtab.hasVar(variable.getName())) {
+					throw new ExceptionAtNode("You are passing an expression to a"
+							+ " high-order function and you are using a variable "
+									+ "that is not defined within scope: "
+									+ variable
+							, actualParameter);
+				}
+			}
+			
+			this.functionCastedFunctionsMap.put(exprFunctionCall.getName() + i, castedLambda);
+
+			newParams.add(castedLambda);
+			
         }
 		
-		return super.visitExprFunCall(exprFunctionCall);		
+		return new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newParams);		
 
 	}
 
@@ -269,6 +346,22 @@ public class ExpressionCastingReplacer extends FEReplacer {
 		
 		// Return the stmtFunDecl
 		return stmtFuncDecl;
+	}
+
+	public Object visitFunction(Function function) {
+		int i = -1;
+		// Loop through the parameters
+		for (Parameter p : function.getParams()) {
+			i++;
+			// If the parameter is type fun
+			if (p.getType() instanceof TypeFunction) {
+				if(this.functionCastedFunctionsMap.containsKey(function.getName()+ i)) {
+					this.formalFunctionMap.put(p.getName(), function.getName()+ i);					
+				}
+			}
+		}
+
+		return super.visitFunction(function);
 	}
 
 	/**

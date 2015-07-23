@@ -435,12 +435,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 		Program np = p.creator().streams(newPkges).create();
 
 		Program aftertc = (Program) np.accept(new ThreadClosure());
-		
-		aftertc.debugDump("Before threading");
 
 		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
-
-		afterLambdaClosure.debugDump("After threading");
 
 		return afterLambdaClosure.accept(new FixPolymorphism());
 
