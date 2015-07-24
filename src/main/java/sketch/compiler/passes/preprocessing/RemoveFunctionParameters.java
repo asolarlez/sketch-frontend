@@ -241,19 +241,20 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// If this function already has some variables that it needs
 					if(this.lambdaFunctionsNeededVariables.containsKey(fun.getName())) {
 						// Get the current formal parameters
-						List<ExprVar> formalParameters = 
-								this.lambdaFunctionsNeededVariables.get(fun.getName());
+						List<ExprVar> formalParameters = this.lambdaFunctionsNeededVariables.get(fun.getName());
 						
-						// Append the ones that it needs
+						// Gret the list of missing parameters
 						List<ExprVar> needed = ((ExprLambda) actual).getMissingFormalParameters();
 						
+						// Loop through each variable needed
 						for(ExprVar variable : needed) {
+							// If the variable is not included yet
 							if(!formalParameters.contains(variable)) {
+								// Add it
 								formalParameters.add(variable);														
 							}
 						}
-						
-						
+
 						// Add all the needed parameters
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), formalParameters);
 					}
@@ -262,7 +263,6 @@ public class RemoveFunctionParameters extends FEReplacer {
 						this.lambdaFunctionsNeededVariables.put(fun.getName(), 
 								((ExprLambda) actual).getMissingFormalParameters());												
 					}
-
 
 				}
 				// If the actual parameters is a variable
@@ -1371,6 +1371,7 @@ public class RemoveFunctionParameters extends FEReplacer {
      */
 	private class LambdaThread extends SymbolTableVisitor {
 
+		private boolean callingLocalFunction = false;
 		private Map<String, List<Parameter>> tempFunctionsParametersNeeded = new HashMap<String, List<Parameter>>();
 
 		public LambdaThread() {
@@ -1426,25 +1427,44 @@ public class RemoveFunctionParameters extends FEReplacer {
 //						// Skip this variable
 //						continue;
 //					}
-					
-					// TODO This check is to make sure that we are not double
-					// adding
-					// variables
+
 					// Loop through the formal parameters of the callee
 					for (Parameter formalParameter : calleeFormalParameters) {
 						// If this variables that we are trying to thread is
 						// already defined in this function
-						if (formalParameter.getName()
-								.equals(variable.getName())) {
+						if (formalParameter.getName().equals(variable.getName())) {
+							// Get the function that we are calling
+							Function function = this.nres.getFun(exprFunctionCall.getName());
+							
+							// Visit it
+							function = (Function) function.accept(this);
+//							// Get the name of the lammbda that we are calling,
+//							// which is
+//							String functionCallName = exprFunctionCall.getName();
+//							functionCallName = functionCallName.substring(functionCallName.indexOf("_"));
+//							functionCallName = functionCallName.substring(1);
+//							
+							// If we are calling a local function
+							if (this.callingLocalFunction) {
+								// Don't go any further
+								break;
+							}
+							
 							// Throw exception
 							throw new ExceptionAtNode(
 									"You are inlining a lambda function that has"
-											+ " variables already defined in the original function",
+									+ " variables already defined in the original function",
 									exprFunctionCall);
 						}
 
 					}
 					
+					// If we are calling a local function
+					if (this.callingLocalFunction) {
+						// Don't go any further
+						break;
+					}
+
 					// Add the variable to the actual parameters
 					actualParameters.add(variable);
 					
@@ -1453,6 +1473,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 					
 					// Add the parameter to the list of formal parameters of the function declaration
 					formalParameters.add(new Parameter(variable, type, variable.getName()));
+
+					// Reset variable to default
+					this.callingLocalFunction = false;
 				}
 				
 				// Create a new function call with the new actual parameters
@@ -1460,6 +1483,11 @@ public class RemoveFunctionParameters extends FEReplacer {
 				
 				// Add the formal parameter to be replaced in the function call
 				this.tempFunctionsParametersNeeded.put(exprFunctionCall.getName(), formalParameters);
+			}
+
+			if (extractedInnerFuns.containsKey(exprFunctionCall.getName() + "@"
+					+ nres.curPkg().getName())) {
+				this.callingLocalFunction = true;
 			}
 			
 			// Visit and return the function call

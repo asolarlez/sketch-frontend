@@ -73,15 +73,7 @@ import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
-import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
-import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
-import sketch.compiler.passes.preprocessing.EliminateMacros;
-import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
-import sketch.compiler.passes.preprocessing.LocalVariablesReplacer;
-import sketch.compiler.passes.preprocessing.MethodRename;
-import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
-import sketch.compiler.passes.preprocessing.RemoveFunctionParameters;
-import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
+import sketch.compiler.passes.preprocessing.*;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.solvers.SATBackend;
@@ -497,19 +489,22 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 
     public Program preprocAndSemanticCheck(Program prog) {
-//		prog.debugDump("********************************************* Before remove Function Parameters");
         prog = (Program) prog.accept(new ExpandRepeatCases());
 
         prog = (Program) prog.accept(new EliminateMacros());
-                
+
         prog = (Program) prog.accept(new ConstantReplacer(null));
-        
+
         prog = (Program) prog.accept(new MinimizeFcnCall());
-        
+
         prog = (Program) prog.accept(new SpmdbarrierCall());
-        
+
         prog = (Program) prog.accept(new PidReplacer());
         
+		prog.debugDump("************************************** Before Expression Casting");
+        
+		prog = (Program) prog.accept(new ExpressionCastingReplacer());
+
 		prog.debugDump("************************************** Before Local Variable replacer");
 		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
 		prog.debugDump("************************************** After Local Variable replacer");
@@ -597,6 +592,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = synthResult.lowered.result;
 
 		Program finalCleaned = synthResult.lowered.highLevelC;
+		
         // (Program) (new
         // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
 
@@ -612,6 +608,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         } else {
             substituted = finalCleaned;
         }
+        
+		substituted.debugDump("************************************** after substitution");
 
         Program substitutedCleaned =
  (new CleanupFinalCode(varGen, options,

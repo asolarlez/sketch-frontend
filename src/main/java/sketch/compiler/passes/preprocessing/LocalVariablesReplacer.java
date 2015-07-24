@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -34,7 +36,9 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 
 	private TempVarGen tempVarGen;
 	protected List<Statement> globalDeclarations;
-	private Map<ExprLocalVariables, List<Expression>> localVariablesMap;
+	
+	private Map<ExprLocalVariables, List<Expression>> 	localVariablesMap;
+	private ExprLocalVariables							currentLocalVariable;
 
 	/**
 	 * Creates a local variables replacer
@@ -45,6 +49,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		this.tempVarGen = varGen;
 		this.globalDeclarations = new ArrayList<Statement>();
 		this.localVariablesMap = new HashMap<ExprLocalVariables, List<Expression>>();
+		this.currentLocalVariable = null;
     }
 
     /**
@@ -81,6 +86,9 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 			throw new ExceptionAtNode("You do not have any possible variables to use of type: " + exp.getType(), exp);
         }
 		
+		// Set the current local variable expression
+		this.currentLocalVariable = exp;
+
 		// Start building a regex of variables with "{|"
 		StringBuilder variablesRegex = new StringBuilder("{|");
 
@@ -99,6 +107,27 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 //		return this.getVariableConditional(exp, possibleVariables);
     }
 	
+	public Object visitExprLambda(ExprLambda exprLambda) {
+		exprLambda = (ExprLambda) super.visitExprLambda(exprLambda);
+		
+		// If we did a replacement, this variable will not be null
+		if(this.currentLocalVariable != null) {
+			List<Expression> localVariables = this.localVariablesMap.get(this.currentLocalVariable);
+			
+			// Loop thorugh the parameters of the lambda
+			for (ExprVar formalParameter : exprLambda.getParameters()) {
+				if(localVariables.contains(formalParameter)) {
+					throw new ExceptionAtNode("A local variable that could be chosen"
+							+ " has the same name as a formal parameter of the lamnda."
+							+ " This is not allowed: " + formalParameter, exprLambda);
+				}
+			}
+
+			this.currentLocalVariable = null;
+		}
+		return exprLambda;
+	}
+
 //	/**
 //	 * Loop through the variables of the lambda expression since those should be
 //	 * considered when solving.

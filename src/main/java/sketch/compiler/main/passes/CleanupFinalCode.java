@@ -46,7 +46,8 @@ public class CleanupFinalCode extends MetaStage {
         // prog.debugDump("After Preproc");
         // System.out.println("preproc");
         // prog.accept(new SimpleCodePrinter());
-		prog.debugDump("********************************** After preprocess sketch");
+		// prog.debugDump("********************************** After preprocess
+		// sketch");
         prog = (Program) prog.accept(new FlattenStmtBlocks());
 
         prog = (Program) prog.accept(new MakeCastsExplicit());

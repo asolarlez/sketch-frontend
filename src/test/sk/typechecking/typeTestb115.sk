@@ -1,14 +1,12 @@
 // Cannot pass a local variable to a function that has that same 
 // variable name as a parameter
 
-// TODO MIGUEL this should fail, but check 740 since it is similar
-
 int apply(fun f, int x) {
 	return f(x);
 }
 
 harness void main() {
-	int x = 7;
-	
+	bit x = 7;
+
 	assert apply((,yup) -> 5 + x, 48) == 12;
 }
