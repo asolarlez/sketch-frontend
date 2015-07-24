@@ -8,5 +8,5 @@ int apply(fun f, int y) {
 harness void main() {
 	int joe = 3;
 	
-	assert apply(joe + x, 8) == 11;
+	assert apply(joe, 8) == 3;
 }

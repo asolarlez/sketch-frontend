@@ -1,10 +1,12 @@
 // Casting an expression to a function
 
 int apply(fun f, int x, int y) {
-	return f(y);
+	return f(x, y);
 }
 
 harness void main() {
+	int a = 3;
+	int b = 4;
 	
-	assert apply(x+x, 4, 3) == 6;
+	assert apply(a + b, 0, 0) == 7;
 }

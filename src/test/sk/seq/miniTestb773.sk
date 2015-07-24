@@ -1,12 +1,12 @@
 // Casting an expression to a function that uses local variables
 
-int apply(fun f, int x, int y) {
-	return f(x,y);
+int apply(fun f, int var, fun g) {
+	int tops = g(moo, foo);
+	return f(var);
 }
 
-harness void main() {
-
+harness void main(int x) {
 	int t = 7;
-	// SHOULD NOT WORK
-	assert apply(x * $(int) - y, 4, 3) == 25;
+	
+	assert apply(5 + t, 45, t * t) == 12;
 }
