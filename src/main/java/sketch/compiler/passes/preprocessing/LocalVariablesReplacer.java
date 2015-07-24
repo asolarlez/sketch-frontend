@@ -5,27 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprConstant;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
-import sketch.compiler.ast.core.exprs.ExprStar;
-import sketch.compiler.ast.core.exprs.ExprTernary;
-import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtLoop;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
-import sketch.util.Misc;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
@@ -67,7 +53,25 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 	@Override
     public Object visitExprLocalVariables(ExprLocalVariables exp) {
 		// Map this expression to the variables that it can take
-		this.localVariablesMap.put(exp, this.symtab.getLocalVariablesOfType(exp));
+		this.localVariablesMap.put(exp, this.symtab.getLocalVariablesOfType(exp.getType()));
+				
+		// If the type is int
+		if(exp.getType() == TypePrimitive.inttype) {
+			// Get the bit local variables since we can use those
+			List<Expression> bitLocalVariables = this.symtab.getLocalVariablesOfType(TypePrimitive.bittype);
+			
+			// Get the current local variables for this expression
+			List<Expression> currentLocalVariables = this.localVariablesMap.get(exp);
+			
+			// Loop through the bit local variables
+			for(Expression variable : bitLocalVariables) {
+				// If the variables is not already included
+				if(!currentLocalVariables.contains(variable)) {
+					// Add it
+					currentLocalVariables.add(variable);
+				}
+			}
+		}
 
 		// Add the default value of this type to the local variables to use
 		this.localVariablesMap.get(exp).add(exp.getType().defaultValue());

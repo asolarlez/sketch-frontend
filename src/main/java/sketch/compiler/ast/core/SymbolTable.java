@@ -22,14 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprLocalVariables;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
 /**
@@ -406,7 +402,7 @@ public class SymbolTable implements Cloneable
 	 * 
 	 * @return
 	 */
-	public ArrayList<Expression> getLocalVariablesOfType(ExprLocalVariables exp) {
+	public ArrayList<Expression> getLocalVariablesOfType(Type type) {
 		ArrayList<Expression> localVariables = new ArrayList<Expression>();
 
 //		Map<String, VarInfo> variables = new HashMap<String, SymbolTable.VarInfo>();
@@ -432,7 +428,7 @@ public class SymbolTable implements Cloneable
             VarInfo varInformation = entry.getValue();
 
 			// If the current variable has the same type that we want
-			if (exp.getType().equals(varInformation.type)) {
+			if (type.equals(varInformation.type)) {
 				// Get the statement from the information
 				StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
 				
@@ -450,7 +446,7 @@ public class SymbolTable implements Cloneable
         		VarInfo varInformation = parameter.getValue();
         		
         		// If the current variable has the same type that we want
-        		if (exp.getType().equals(varInformation.type)) {
+				if (type.equals(varInformation.type)) {
         			
         			// If the variable is of type Parameter
         			if(varInformation.origin.getClass().equals(Parameter.class)) {

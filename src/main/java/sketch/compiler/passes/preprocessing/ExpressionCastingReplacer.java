@@ -41,11 +41,11 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 
 	private Function						currentFunction;
 	private Stack<String> 					functionsToVisit;
-	private Map<String, Package> nameToPackage;
+	private Map<String, Package> 			nameToPackage;
 	private Set<String> 					visitedFunctions;
-	private Map<Function, List<Function>> functionToLocalFunctions;
-	private Map<String, List<ExprLambda>> functionToCastedExpression;
-	private Map<String, String> parameterToFunction;
+	private Map<Function, List<Function>> 	functionToLocalFunctions;
+	private Map<String, List<ExprLambda>> 	functionToCastedExpression;
+	private Map<String, String> 			parameterToFunction;
 		
 	/**
 	 * Create a new expression casting replacer
