@@ -36,6 +36,7 @@ import sketch.util.exceptions.ExceptionAtNode;
  * @author liviu
  */
 public class ConstantReplacer extends FEReplacer {
+
     static class ShadowStack {
         final HashSet<String> shadow = new HashSet<String>();
         final ShadowStack prev;

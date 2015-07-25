@@ -1,0 +1,7 @@
+// Assigning a lambda to an int. 
+
+harness void main(int x){
+    int a = (,x) -> x + 1;
+    
+    assert a(4) == 5;
+}

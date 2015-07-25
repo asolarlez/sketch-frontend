@@ -407,6 +407,16 @@ public class EliminateRegens extends SymbolTableVisitor {
             exps.add(exp);
             return exps;
         }
+        
+        /**
+         * Visit method for local variables expressions that does the same logic
+         * as the visit method for a star.
+         */
+		public Object visitExprLocalVariables(ExprLocalVariables expr) {
+			List<Expression> exprs = new ArrayList<Expression>();
+			exprs.add(expr);
+			return exprs;
+		}
 
         public Object visitExprVar (ExprVar exp) {
             List<Expression> exps = new ArrayList<Expression> ();

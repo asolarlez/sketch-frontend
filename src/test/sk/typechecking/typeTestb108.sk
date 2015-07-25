@@ -1,0 +1,9 @@
+// Cannot have statements in lambda expression
+
+harness void main() {
+	int t = 3;
+		
+ 	fun f = (,x) -> t + x++;
+ 	 	
+ 	assert f(3) == 4;
+}

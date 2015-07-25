@@ -1,0 +1,21 @@
+// Testing calling a local function from a lambda to mimic statement
+
+void apply(fun f) {
+	f();
+}
+
+harness void main(){
+	int t;
+	int one = 1;
+		
+	void increment(ref int x) {
+		x = x + one;
+		x--;
+	}
+	
+	t = 7;
+	
+	apply((,) -> increment(t));
+	
+	assert t == 7;	
+}

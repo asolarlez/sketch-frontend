@@ -14,6 +14,7 @@ import sketch.compiler.dataflow.CloneHoles;
  * instantiates the holes in the body differently for each variant.
  */
 public class ExpandRepeatCases extends SymbolTableVisitor {
+
     public ExpandRepeatCases() {
         super(null);
 

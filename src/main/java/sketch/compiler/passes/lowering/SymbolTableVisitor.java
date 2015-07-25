@@ -180,12 +180,16 @@ public class SymbolTableVisitor extends FEReplacer
     public SymbolTableVisitor(SymbolTable symtab)
     {
         this.symtab = (symtab == null ? new SymbolTable(null) : symtab);
-
+ 
     }
 
     public Type getTypeOrNotYetComputed(Expression expr) {
         Type t = getType(expr);
         return (t == null) ? new NotYetComputedType(CudaMemoryType.UNDEFINED) : t;
+    }
+    
+    public SymbolTable getSymbolTable() {
+    	return this.symtab;
     }
 
     /**

@@ -1,0 +1,12 @@
+// Using a local variable construct in a lambda expression
+
+harness void main(){
+	int a = 2;
+	int b = 3;
+	
+	fun f = (,x) -> x + $(int);
+	
+	int c = 8; // This is not included in the local variable
+	
+	assert f(7) == 10;
+}

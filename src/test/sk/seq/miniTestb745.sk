@@ -1,0 +1,15 @@
+// Calling a function that executes some lambda function
+
+int apply(fun f) {
+	return f();
+}
+
+int lambda1() {
+	fun f = (,x) -> x;
+	
+	return f(2);
+}
+
+harness void main(){
+	assert apply(lambda1) == 2;
+}

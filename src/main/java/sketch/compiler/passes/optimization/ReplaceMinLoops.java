@@ -53,6 +53,7 @@ import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
  */
 @CompilerPassDeps(runsAfter = { MainMethodCreateNospec.class }, runsBefore = { GlobalsToParams.class })
 public class ReplaceMinLoops extends FEReplacer {
+	// TOOD MIGUEL this preprocess class has EXPRSTAR
     protected final TempVarGen vargen;
     protected Function minimizeFcn = null;
 

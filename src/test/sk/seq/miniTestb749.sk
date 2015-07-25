@@ -1,0 +1,13 @@
+// Local variable inside an inner function
+
+harness void main(int x){
+	int a = 2;
+	int b = 3;
+	
+	int foo() {
+		return $(int);
+	}
+		
+	assert foo() == x;
+}
+

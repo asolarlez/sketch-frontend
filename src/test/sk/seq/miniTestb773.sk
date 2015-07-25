@@ -1,0 +1,12 @@
+// Casting an expression to a function that uses local variables
+
+int apply(fun f, int var, fun g) {
+	int tops = g(moo, foo);
+	return f(var);
+}
+
+harness void main(int x) {
+	int t = 7;
+	
+	assert apply(5 + t, 45, t * t) == 12;
+}

@@ -1,0 +1,17 @@
+// Testing that an lambda expression is identified and created in line 5.
+// The good thing is that the  lambda is recognized
+// and created after the RemoveFunctionParameters pass
+
+int apply(fun function, int x){
+	int y = 9;
+	fun a = (,y) -> y + 1;
+    return function(x);
+}
+
+int timesTwo(int x){
+    return x+x;
+}
+
+harness void main(int x){
+    assert apply(timesTwo, x) == 2*x;
+}

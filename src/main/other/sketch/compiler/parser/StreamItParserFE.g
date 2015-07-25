@@ -811,6 +811,39 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 		)?
 		RPAREN
 	;
+
+// (,x, y) -> x + y; 	
+lambda_expr returns [Expression expression]  {
+	expression = null;
+	List list = new ArrayList();
+	Expression operation = null;
+}
+	: // Left parenthesis 
+	  prefix:LPAREN 
+	  // Group that occurs 1 or more times
+	  (
+	    // Comma
+	  	COMMA
+	  	// Group that occurs 0 or more times
+	  	(
+		  	// Match an ID and set temp to it
+		  	temp:ID { 
+		  		// Create a new ExprVar and add it to the list of variables
+		  		list.add(new ExprVar(getContext(temp), temp.getText())); 
+		  	}
+	  	)* 
+	  )+
+	  // Right parenthesis
+	  RPAREN
+	  // ->
+	  ARROW
+	  // Operation is any expression
+	  operation = right_expr
+	  {
+	  	// Create a new expression
+	  	expression = new ExprLambda(getContext(prefix), list, operation);
+	  }
+	;
 	
 constr_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
@@ -1047,6 +1080,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 	|   (expr_get) => x = expr_get
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr
+	|   (lambda_expr) => x = lambda_expr // TODO Switch with the parenthesized expression.
 	|	x=var_expr
 	|	x=constantExpr
 	|   x=arr_initializer
@@ -1136,7 +1170,22 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             }
     |	t3:NDANGELIC
 			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
+	// MIGUEL this is where I need to modify the grammar so that my symbol is understood by the parser
+    |  (local_variable) => x = local_variable
     ;
+    
+local_variable returns [Expression localVariable] {
+	localVariable = null;
+	Type type = null;
+}
+	: 	context:LOCAL_VARIABLES // $ 
+		LPAREN 
+		type = data_type 
+		RPAREN
+            {
+              localVariable = new ExprLocalVariables(getContext(context), type); 
+            }
+     ;
 
 adt_decl returns [List<StructDef> adtList]
 { adtList = new ArrayList<StructDef>(); List<StructDef> innerList; 

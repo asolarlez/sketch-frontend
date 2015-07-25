@@ -1,0 +1,13 @@
+// No casting since it is passing a function
+
+int apply(fun f, int y) {
+	return f(y);
+}
+
+harness void main() {
+	int joe = 3;
+
+	fun f = (,t) -> t * 2;
+	
+	assert apply(f, 8) == 16;
+}

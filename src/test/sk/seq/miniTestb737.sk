@@ -1,0 +1,17 @@
+// Testing passing a lambda with variables and calls to other 
+// lambdas, to a high order function
+
+int apply(fun f, int x) {
+	return f(x);
+}
+
+harness void main(){
+	int four = 4;
+	int one = 1;
+			
+	fun f0 = (,x) -> one + 1 + x; 
+    fun f1 = (,x) -> x + f0(x) + four;
+    fun f2 = (,t) -> f1(t) + 1;
+              
+    assert apply(f2, 5) == 17;
+}

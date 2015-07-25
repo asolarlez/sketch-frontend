@@ -1,0 +1,13 @@
+// Testing that we can call a local function with a lambda 
+// expression before it is hoisted out
+
+harness void main() {
+	fun f = (,x) -> x + 1;
+	
+	int g(int x) {
+		int temp = f(1) + x;
+		return temp;
+	}
+		
+	assert g(1) == 3;
+}

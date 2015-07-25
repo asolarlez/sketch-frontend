@@ -1,0 +1,12 @@
+// Finding variables of type bit[4]
+
+bit firstElementSketch(bit[4] in, bit[4] a, bit[5] b) implements firstElement {	
+	bit[4] tmp = $(bit[4]);
+	tmp[2] = 1;
+	tmp[3] = 0;
+	return tmp[??];
+}
+
+bit firstElement (bit[4] in, bit[4] a, bit[5] b) {
+	return in[0];
+}

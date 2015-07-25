@@ -1,0 +1,15 @@
+// Using ternary expression in lambda
+
+harness void main(int x) {
+	bit t = 1;
+	int a = 2;
+	int b = 3;
+	
+	int foo() {
+		fun g = (,) -> $(bit) ? 5 : $(int);
+		
+		return g();
+	}
+	
+	assert foo() == 5;
+}

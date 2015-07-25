@@ -271,6 +271,20 @@ public class GetExprType extends FENullVisitor
     	}
     }
 
+    /**
+	 * Returns the type of the local variable expression based on the context.
+	 */
+	public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
+		// If the expression already has a type
+		if (exprLocalVariables.getType() != null) {
+			// Return that type
+			return exprLocalVariables.getType();
+		} else {
+			// Else return a bottom type
+			return TypePrimitive.bottomtype;
+		}
+	}
+
     public Object visitExprNullPtr(ExprNullPtr exp){
     	return nullType;
     }

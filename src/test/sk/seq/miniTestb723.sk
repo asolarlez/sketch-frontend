@@ -1,3 +1,20 @@
+// Finding variables of type int
+
+bit reverseSketch(bit[4] in) implements reverse {	
+	bit t=0;
+	int i=0;
+	int j = 0;
+	repeat(??){
+		t = in[$(int)];
+		i = $(int)+??;
+	}
+	return t;
+}
+
+bit reverse (bit[4] in) {
+	return in[2];
+}
+
 adt NODE {
     Op {NODE left; NODE right;}
     Arr {int sz; int[sz] arr; int dflt;}
@@ -12,3 +29,4 @@ harness void main(){
     NODE e = ??({});
     assert(e1 === e);
 }
+
