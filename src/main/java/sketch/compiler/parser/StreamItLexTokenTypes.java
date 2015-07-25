@@ -113,7 +113,7 @@ public interface StreamItLexTokenTypes {
 	int AT = 107;
 	int BACKSLASH = 108;
 	int LESS_COLON = 109;
-	int LOCAL_VARIABLES = 110;
+	int DOLLAR = 110;
 	int REGEN = 111;
 	int CHAR_LITERAL = 112;
 	int STRING_LITERAL = 113;

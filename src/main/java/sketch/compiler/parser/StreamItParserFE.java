@@ -1447,7 +1447,7 @@ inputState.guessing--;
 						case NDVAL:
 						case NDVAL2:
 						case NDANGELIC:
-						case LOCAL_VARIABLES:
+						case DOLLAR:
 						case REGEN:
 						case CHAR_LITERAL:
 						case STRING_LITERAL:
@@ -2687,7 +2687,7 @@ inputState.guessing--;
 			case NDVAL:
 			case NDVAL2:
 			case NDANGELIC:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -2895,7 +2895,7 @@ inputState.guessing--;
 			case NDVAL:
 			case NDVAL2:
 			case NDANGELIC:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -2979,7 +2979,7 @@ inputState.guessing--;
 			case NDVAL:
 			case NDVAL2:
 			case NDANGELIC:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -3035,7 +3035,7 @@ inputState.guessing--;
 			case BANG:
 			case NDVAL:
 			case NDVAL2:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -3628,7 +3628,7 @@ inputState.guessing--;
 			case BANG:
 			case NDVAL:
 			case NDVAL2:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -3926,7 +3926,7 @@ inputState.guessing--;
 			case NDVAL:
 			case NDVAL2:
 			case NDANGELIC:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -4302,7 +4302,7 @@ inputState.guessing--;
 			case NDVAL:
 			case NDVAL2:
 			case NDANGELIC:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case REGEN:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
@@ -5165,7 +5165,7 @@ inputState.guessing--;
 			case TK_false:
 			case NDVAL:
 			case NDVAL2:
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			case CHAR_LITERAL:
 			case STRING_LITERAL:
 			case HQUAN:
@@ -5304,7 +5304,7 @@ inputState.guessing--;
 				case NDVAL:
 				case NDVAL2:
 				case NDANGELIC:
-				case LOCAL_VARIABLES:
+				case DOLLAR:
 				case REGEN:
 				case CHAR_LITERAL:
 				case STRING_LITERAL:
@@ -5654,7 +5654,7 @@ inputState.guessing--;
 				}
 				break;
 			}
-			case LOCAL_VARIABLES:
+			case DOLLAR:
 			{
 				x=local_variable();
 				break;
@@ -5687,7 +5687,7 @@ inputState.guessing--;
 		
 		try {      // for error handling
 			context = LT(1);
-			match(LOCAL_VARIABLES);
+			match(DOLLAR);
 			match(LPAREN);
 			type=data_type();
 			match(RPAREN);
@@ -5890,7 +5890,7 @@ inputState.guessing--;
 		"AT",
 		"BACKSLASH",
 		"LESS_COLON",
-		"LOCAL_VARIABLES",
+		"DOLLAR",
 		"REGEN",
 		"CHAR_LITERAL",
 		"STRING_LITERAL",

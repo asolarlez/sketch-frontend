@@ -1119,7 +1119,7 @@ local_variable returns [Expression localVariable] {
 	localVariable = null;
 	Type type = null;
 }
-	: 	context:LOCAL_VARIABLES // $ 
+	: 	context:DOLLAR // $ 
 		LPAREN 
 		type = data_type 
 		RPAREN

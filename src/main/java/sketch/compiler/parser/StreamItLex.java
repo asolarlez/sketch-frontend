@@ -205,7 +205,7 @@ tryAgain:
 				}
 				case '$':
 				{
-					mLOCAL_VARIABLES(true);
+					mDOLLAR(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -1417,9 +1417,9 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	public final void mLOCAL_VARIABLES(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+	public final void mDOLLAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = LOCAL_VARIABLES;
+		_ttype = DOLLAR;
 		int _saveIndex;
 		
 		match("$");
