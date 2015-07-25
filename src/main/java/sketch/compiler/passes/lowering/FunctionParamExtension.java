@@ -479,8 +479,15 @@ public class FunctionParamExtension extends SymbolTableVisitor
         final String bad = "BAD";
         Type retType = func.getReturnType();
         // Don't replace retVar with output var if the type is an ADT.
+        List<String> tp = func.getTypeParams();
+        boolean isGeneric = false;
+        if (tp.contains(retType.toString())) {
+            isGeneric = true;
+        }
+
         final boolean repRetVar =
                 !retType.isStruct() ||
+                        isGeneric ||
                         nres.getStruct(((TypeStructRef) retType).getName()).isInstantiable();
         FEReplacer retVarPop = new FEReplacer() {
             public Object visitStmtReturn(StmtReturn sr) {

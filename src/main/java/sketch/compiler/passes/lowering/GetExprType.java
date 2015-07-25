@@ -378,7 +378,7 @@ public class GetExprType extends FENullVisitor
                 retType = tr.rename(retType);
             }
 
-            if (fn.getReturnType() instanceof TypeStructRef) {
+            if (retType instanceof TypeStructRef) {
                 TypeStructRef tsr = (TypeStructRef) retType;
                 return tsr.addDefaultPkg(fn.getPkg(), nres);
             }
