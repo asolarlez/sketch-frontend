@@ -15,7 +15,7 @@ harness void main(){
 	
 	t = 7;
 	
-	apply((,) -> increment(t));
+	apply(() -> increment(t));
 	
 	assert t == 7;	
 }

@@ -4,7 +4,7 @@ harness void main() {
 	int a = 4;
 	int x = $(int);
 	
-	fun f = (,) -> $(int);
+	fun f = () -> $(int);
 	int y = f();
 	
 	assert y == x;

@@ -6,7 +6,7 @@ harness void main(int x) {
 	int b = 3;
 	
 	int foo() {
-		fun g = (,) -> $(bit) ? 5 : $(int);
+		fun g = () -> $(bit) ? 5 : $(int);
 		
 		return g();
 	}

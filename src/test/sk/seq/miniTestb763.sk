@@ -3,7 +3,7 @@
 harness void main() {
 	int t = 3;
 	
-	fun f = (,) -> t + t;
+	fun f = () -> t + t;
 	
 	assert f() == 6;
 }

@@ -5,7 +5,7 @@ harness void main(int x) {
 	int b = 2;
 	int t = 3;
 	
-	fun f = (,) -> ?? ? $(int)*$(int) : $(int) - 2;
+	fun f = () -> ?? ? $(int)*$(int) : $(int) - 2;
 	
 	assert f() == x + x;
 }

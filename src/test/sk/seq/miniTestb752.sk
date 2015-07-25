@@ -12,7 +12,7 @@ generator int exprGen(fun f) {
 harness void main() {
 	int a = 7;
 		
-	fun f = (,) -> $(int);
+	fun f = () -> $(int);
 	
 	assert exprGen(f) == 49;
 }
