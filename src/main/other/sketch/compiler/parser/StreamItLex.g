@@ -202,7 +202,7 @@ NDANGELIC: "**";
 AT: "@";
 BACKSLASH: "\\";
 LESS_COLON: "<:";
-DOLLAR: "$"; 
+DOLLAR: '$'; 
 
 REGEN   { int open = 0; }
     :   "{|"
