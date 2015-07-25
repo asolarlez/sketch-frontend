@@ -763,19 +763,26 @@ lambda_expr returns [Expression expression]  {
 }
 	: // Left parenthesis 
 	  prefix:LPAREN 
-	  // Group that occurs 1 or more times
+  	  COMMA
+  	  
+  	  // Group that occurs 0 or 1 times
+  	  (
+	  	// Match an ID and set temp to it
+	  	temp:ID { 
+	  		// Create a new ExprVar and add it to the list of variables
+	  		list.add(new ExprVar(getContext(temp), temp.getText())); 
+	  	}
+  	  )?
+	
+	  // Group that occurs 0 or more times
 	  (
-	    // Comma
 	  	COMMA
-	  	// Group that occurs 0 or more times
-	  	(
-		  	// Match an ID and set temp to it
-		  	temp:ID { 
-		  		// Create a new ExprVar and add it to the list of variables
-		  		list.add(new ExprVar(getContext(temp), temp.getText())); 
-		  	}
-	  	)* 
-	  )+
+		// Match an ID and set temp to it
+		temp1:ID { 
+			// Create a new ExprVar and add it to the list of variables
+		  	list.add(new ExprVar(getContext(temp1), temp1.getText())); 
+		}
+      )*	  	 
 	  // Right parenthesis
 	  RPAREN
 	  // ->
