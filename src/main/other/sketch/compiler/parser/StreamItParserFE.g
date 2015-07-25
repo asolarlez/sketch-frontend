@@ -764,8 +764,7 @@ lambda_expr returns [Expression expression]  {
 	: // Left parenthesis 
 	  prefix:LPAREN 
   	  
-  	  
-  	  // Group that occurs 0 or 1 times
+  	  // Group that occurs 0 or more times
   	  (
   	    COMMA
 	  	// Match an ID and set temp to it
