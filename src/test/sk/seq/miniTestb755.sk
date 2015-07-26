@@ -1,16 +1,18 @@
 // Testing using lambdas inside of inner functions
 
+int apply(fun f) {
+	return f();
+}
+
 harness void localVariable(int x, bit y) 
 {
   int a = 2;
   int b = 3;
   int c = 4;
   
-  int foo() {
-  	return $(int);
-  }
-         
+  fun foo = () -> $(int);
+          
   int t = foo()*??;
   
-  assert (t == x + x);
+  assert t == x + x;
 }

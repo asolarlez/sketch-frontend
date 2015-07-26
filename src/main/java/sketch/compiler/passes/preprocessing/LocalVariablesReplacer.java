@@ -125,7 +125,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 			for (ExprVar formalParameter : exprLambda.getParameters()) {
 				if(localVariables.contains(formalParameter)) {
 					throw new ExceptionAtNode("A local variable that could be chosen"
-							+ " has the same name as a formal parameter of the lamnda."
+							+ " has the same name as a formal parameter of the lambda."
 							+ " This is not allowed: " + formalParameter, exprLambda);
 				}
 			}
