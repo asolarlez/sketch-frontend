@@ -11,10 +11,11 @@ harness void localVariable(int x, bit y)
   int c = 4;
   
   int foo() {
-  	return $(int);
+  	fun f = () -> $(int);
+  	return f();
   }
   
-  int t = apply(foo)*?? + $(int);
+  int t = apply(foo)*??;
   
-  assert t == x + x + 3;
+  assert t == x + x;
 }
