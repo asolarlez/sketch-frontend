@@ -8,6 +8,7 @@ import java.util.Map;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
@@ -78,8 +79,14 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 			}
 		}
 
-		// Add the default value of this type to the local variables to use
-		this.localVariablesMap.get(exp).add(exp.getType().defaultValue());
+		// Get the default value of this type
+		Expression defaultValue = exp.getType().defaultValue();
+		
+		// If it is not null
+		if (!(defaultValue instanceof ExprNullPtr)) {
+			// Add it
+			this.localVariablesMap.get(exp).add(defaultValue);			
+		}
 
 		// Check if we have possible variables to use
 		if (this.localVariablesMap.get(exp).size() < 1) {

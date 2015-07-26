@@ -1,11 +1,11 @@
 // Testing inlining a lambda expression
 
 harness void main(){	
-    fun f = () -> 1;
+    fun f = (,x) -> x + 1;
     
-    int x = f();
-    int y = f();
-    int z = f();
+    int x = f(3);
+    int y = f(4);
+    int z = f(x);
         
-    assert x + y + z == 3;
+    assert x + y + z == 14;
 }
