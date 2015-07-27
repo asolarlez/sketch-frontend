@@ -1,12 +1,14 @@
 // Casting an expression to a function that passes a local variable
 // and a formal parameter
 
-int apply(fun f, int y) {
+int apply(fun f) {
+	int y = 8;
+	
 	return f(y);
 }
 
 harness void main() {
 	int joe = 3;
 	
-	assert apply(joe, 8) == 3;
+	assert apply(joe) == 3;
 }
