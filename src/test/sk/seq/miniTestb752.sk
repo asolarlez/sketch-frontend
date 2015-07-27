@@ -1,0 +1,20 @@
+pragma options "--bnd-inline-amnt 4";
+
+adt NamedType {
+	int name;
+	Type type;
+}
+
+adt Type {
+	IntType {}
+	ADTType {int id; int n; NamedType[n] fields;}
+}
+
+
+harness void main (bit x) {
+	Type adt1 = new ADTType(id = 1, n = 1, fields = {new NamedType(name = 1, type = new IntType())});
+	Type adt2 = new ADTType(id = 2, n = 2, fields = {new NamedType(name = 1, type = adt1), new NamedType(name = 2, type = new IntType())});
+	if (x)
+	assert(adt2 === adt2);
+}
+
