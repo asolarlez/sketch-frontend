@@ -20,6 +20,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
@@ -28,6 +29,7 @@ import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.nodesToSB.IntVtype;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.EliminateReturns;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.spin.IdentifyModifiedVars;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.SketchNotResolvedException;
@@ -53,6 +55,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             ExprStar old = (ExprStar)exprRV;
             ExprStar n = new ExprStar(old);
             n.extendName(rcontrol.callStack());
+            if (old.special())
+                n.makeSpecial(old.parentHoles());
             exprRV = n;
         }
         return obj;
@@ -140,7 +144,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             msg = stmt.getMsg();
             state.Assert(vcond, stmt);
             return isReplacer ?(
-                    (vcond.hasIntVal() && vcond.getIntVal()==1) ? null : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(), stmt.getAssertMax())
+(vcond.hasIntVal() && vcond.getIntVal() == 1) ? null
+                : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
+                        stmt.getAssertMax(), stmt.isHard)
                     )
                     : stmt
                     ;
@@ -185,6 +191,16 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 elimr.setNres(nres);
                 fun = (Function) fun.accept(elimr);
                 
+                List<String> tps = fun.getTypeParams();
+                if (!tps.isEmpty()) {
+                    List<Type> lt = new ArrayList<Type>();
+                    for (Expression actual : exp.getParams()) {
+                        lt.add(getType(actual));
+                    }
+                    TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt);
+                    fun = (Function) fun.accept(tr);
+                }
+
                 if (rcontrol.testCall(exp)) {
                     inliner2(exp, fun);
                 }else{

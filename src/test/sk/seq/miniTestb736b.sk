@@ -1,0 +1,22 @@
+adt Foo{
+    A{}
+    B{}
+}
+
+
+generator Q moo<T, Q>(fun ff, T t, Q q){
+Foo a = new A();
+Q b = ff(a);
+return b;
+}
+
+harness void main(){
+    A ff = new A();
+    B gg = new B();
+    Foo foo(Foo x){
+        return new B();
+    }
+    moo(foo, ff, gg);
+
+}
+

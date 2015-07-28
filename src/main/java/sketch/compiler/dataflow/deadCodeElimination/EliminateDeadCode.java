@@ -17,15 +17,7 @@ import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprTypeCast;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssert;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtAtomicBlock;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtEmpty;
-import sketch.compiler.ast.core.stmts.StmtExpr;
-import sketch.compiler.ast.core.stmts.StmtMinimize;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.promela.stmts.StmtFork;
@@ -337,6 +329,32 @@ public class EliminateDeadCode extends BackwardDataflow {
     	}
 	}
 	
+    @Override
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        stmt = (StmtSwitch) super.visitStmtSwitch(stmt);
+        boolean live = false;
+        for (String cond : stmt.getCaseConditions()) {
+            Statement body = stmt.getBody(cond);
+            if (body == null) {
+                continue;
+            } else if (body instanceof StmtBlock) {
+                StmtBlock block = (StmtBlock) body;
+                if (block.size() == 0) {
+                    continue;
+                }
+            }
+            // body is not null and not empty, we should keep the StmtSwitch
+            live = true;
+            break;
+        }
+        if (live) {
+            abstractValue var = (abstractValue) stmt.getExpr().accept(this);
+            enliven(var);
+            return stmt;
+        }
+        return null;
+    }
+
     // public Object visitStmtFor(StmtFor stmt) {
     // // TODO xzl:
     // // sometimes the initializer of for loop will be dead code and eliminated, and

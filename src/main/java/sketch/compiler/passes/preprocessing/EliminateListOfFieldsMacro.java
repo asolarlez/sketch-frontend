@@ -5,7 +5,7 @@ import java.util.List;
 
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFieldMacro;
+import sketch.compiler.ast.core.exprs.ExprFieldsListMacro;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
@@ -14,16 +14,23 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
-public class EliminateMacros extends SymbolTableVisitor{
+/**
+ * This class eliminates the list of fields macro of the form e.{T}
+ */
+public class EliminateListOfFieldsMacro extends SymbolTableVisitor{
 
-    public EliminateMacros() {
+    public EliminateListOfFieldsMacro() {
         super(null);
     }
 
 
     @Override
-    public Object visitExprFieldMacro(ExprFieldMacro exp){
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
         Type t = exp.getType();
+        if (t.isStruct())
+            if (nres.isTemplate(((TypeStructRef) t).getName()))
+                return exp;
+
         if (getType(exp.getLeft()).isStruct()) {
             StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
             List<Expression> matchedFields = new ArrayList<Expression>();

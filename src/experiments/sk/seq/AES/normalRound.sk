@@ -269,7 +269,7 @@ generator bit[8] row4Fil(bit[32] input){ /* automatically rewritten */
 ********************************************************************************
 *******************************************************************************/
 
-generator bit[W] CypherOpt(bit[W] in, bit[W*(Nr+1)] keys){ /* automatically rewritten */
+bit[W] CypherOpt(bit[W] in, bit[W*(Nr+1)] keys){ /* automatically rewritten */
 	bit[W] state;
 	state = in;
 	state = state^keys[0::W];

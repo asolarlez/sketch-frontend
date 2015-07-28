@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow.eliminateTransAssign;
 
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.dataflow.abstractValue;
 
@@ -42,5 +43,11 @@ public class TAsupperBottom extends abstractValue {
 	public void update(abstractValue v) {
 
 	}
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // TODO xzl should we refine this?
+        return null;
+    }
 
 }

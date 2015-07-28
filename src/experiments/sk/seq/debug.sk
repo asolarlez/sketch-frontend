@@ -1,10 +1,181 @@
 
+generator int exp([int nvars, int nconsts], int bnd, int[nvars] vars, int[nconsts] consts){
+    //In this generator, nvars is the number of variables and nconsts is the number of constants.
+    //the array vars contains the values of all the variables and the array consts of all the constants.
+    //Note that unlike problem 1, where you were generating ASTs, here you are synthesizing the actual function.
+    //Also note that you will probably need a separate generator for the boolean expressions.
 
-include "generators.skh";
+    if (bnd == 0) {
+      return {| vars[??] | consts[??] |};
+    }
 
-harness 
-int avg(int x, int y){    
-    int t = expr({x/2, y/2, x%2, y%2, 2 }, {PLUS, DIV});
-    assert t == (x+y)/2;
-    return t;    
+    int t = ??;
+
+    if (t == 0) return vars[??];
+    if (t == 1) return consts[??];
+
+    int a = exp(bnd-1, vars, consts); 
+    int b = exp(bnd-1, vars, consts);
+
+    if (t == 2) return a + b;
+    if (t == 3) return a * b;
+
+    bit c = boolExp(bnd-1, vars, consts);
+    return c ? a : b;
+}
+
+generator bit boolExp([int nvars, int nconsts], int bnd, int[nvars] vars, int[nconsts] consts) {
+    if (bnd == 0) {
+      return false;
+    }
+
+    int t = ??;
+
+    if (t == 0) return false;
+
+    bit a = boolExp(bnd-1, vars, consts);
+    
+    if (t == 1) return !a;
+
+    bit b = boolExp(bnd-1, vars, consts);
+
+    if (t == 2) return a && b;
+
+    return exp(bnd-1, vars, consts) < exp(bnd-1, vars, consts);    
+}
+
+/*
+harness void experiment2(){
+    //Use this harness for the example from 1.e
+    //Assume that x is the first variable and y is the second variable, so the
+    //input x=10 and y=7, for example will correspond to an array {10,7}.
+
+    int g(int x, int y) {
+      return exp(3, {x, y}, {-1});
+    };
+
+    assert g(10,7) == 17;
+    assert g(4,7) == -7;
+    assert g(10,3) == 13;
+    assert g(1, -7)== -6;
+    assert g(1, 8) == -8;
+}
+
+harness void experiment1(){
+    //Use this harness for the example from 1.b
+    //Assume that x is the first variable and y is the second variable, so the
+    //input x=8 and y=3, for example will correspond to an array {8,3}.
+
+    int f(int x, int y) {
+      return exp(3, {x, y}, {});
+    };
+    
+    assert f(5,5) == 15;
+    assert f(8,3) == 14;
+    assert f(1234,227) ==  1688;
+}
+*/
+generator int exp2([int nvars, int nconsts], int bnd, int[nvars] vars, int[nconsts] consts){
+    int t = ??;
+
+    if (t == 0 || bnd == 0) return nonAdditionExp(bnd, vars, consts);
+
+    // Addition restrictions
+    return nonAdditionExp(bnd-1, vars, consts) + nonAdditionExp(bnd-1, vars, consts);
+}
+
+generator int nonAdditionExp([int nvars, int nconsts], int bnd, int[nvars] vars, int[nconsts] consts){
+    if (bnd == 0) {
+      return {| vars[??] | consts[??] |};
+    }
+
+    int t = ??;
+
+    if (t == 0) return vars[??];
+    if (t == 1) return consts[??];
+    
+    // Multiplication restrictions
+    if (t == 2) return vars[??] * vars[??];
+    if (t == 3) return consts[??] * vars[??];
+
+    bit c = boolExp(bnd-1, vars, consts);
+    int a = exp2(bnd-1, vars, consts);
+    int b = exp2(bnd-1, vars, consts);
+    return c ? a : b;
+}
+
+generator bit atomicBoolExp([int nvars, int nconsts], int bnd, int[nvars] vars, int[nconsts] consts) {
+    int t = ??;
+
+    if (t == 0 || bnd == 0) return false;
+
+    bit a = atomicBoolExp(bnd-1, vars, consts);
+    if (t == 1) return !a;
+
+    return exp2(bnd-1, vars, consts) < exp2(bnd-1, vars, consts);
+    
+}
+
+generator bit boolExp2([int nvars, int nconsts], int bnd, int[nvars] vars, int[nconsts] consts) {
+    if (bnd == 0) {
+      return false;
+    }
+
+    int t = ??;
+
+    // Boolean restriction
+    if (t == 0) return atomicBoolExp(bnd, vars, consts);
+
+    bit a = boolExp(bnd-1, vars, consts);
+    bit b = boolExp(bnd-1, vars, consts);
+    return a && b;
+}
+
+
+/*
+harness void experiment2_2(){
+    //Use this harness for the example from 1.e
+    //Assume that x is the first variable and y is the second variable, so the
+    //input x=10 and y=7, for example will correspond to an array {10,7}.
+
+    int g2(int x, int y) {
+      return exp2(3, {x, y}, {-1});
+    };
+
+    assert g2(10,7) == 17;
+    assert g2(4,7) == -7;
+    assert g2(10,3) == 13;
+    assert g2(1, -7)== -6;
+    assert g2(1, 8) == -8;
+}
+
+harness void experiment1_2(){
+    //Use this harness for the example from 1.b
+    //Assume that x is the first variable and y is the second variable, so the
+    //input x=8 and y=3, for example will correspond to an array {8,3}.
+
+    int f2(int x, int y) {
+      return exp2(3, {x, y}, {2});
+    };
+    
+    assert f2(5,5) == 15;
+    assert f2(8,3) == 14;
+    assert f2(1234,227) ==  1688;
+}*/
+
+
+harness void large_1() {
+    int l1(int x) {
+      return exp(3, {x}, {0,1,2,3,4,5,8,16});
+    };
+
+    assert l1(1) == 1;
+    /*assert l1(2) == 1;
+    assert l1(3) == 2;
+    assert l1(4) == 2;
+    assert l1(5) == 3;
+    assert l1(9) == 4;
+    assert l1(17) == 5;
+    assert l1(33) == 6;
+    assert l1(65) == 7;*/
 }

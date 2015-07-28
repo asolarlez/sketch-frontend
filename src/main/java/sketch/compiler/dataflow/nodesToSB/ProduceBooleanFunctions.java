@@ -18,6 +18,7 @@ import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtReturn;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
@@ -114,7 +115,10 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
                 List<Function> callees = ssk.getCallees();
                 for (Function callee : callees) {
-                    int callee_sz = callee.getBody().size();
+                    // FIXME xzl: is this the correct behaviro? uninterp functions have
+                    // size 0
+                    Statement body = callee.getBody();
+                    int callee_sz = body == null ? 0 : body.size();
                     sz += callee_sz;
                     buf.append("callee " + callee.getName() + " : " + callee_sz);
                     buf.append(System.lineSeparator());
@@ -328,6 +332,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     }
                 }
             }
+            if (param.getSrcTupleDepth() != -1) {
+                out.print("<" + param.getSrcTupleDepth() + " > ");
+            }
         }
         // Add the output parameter
         if (hasOutput) {
@@ -364,6 +371,42 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             } else {
                 return base + "[" + iv + "]";
             }
+        }
+        if (type instanceof TypeStructRef) {
+            TypeStructRef ts = (TypeStructRef) type;
+            StructDef struct = nres.getStruct(ts.getName());
+            if (struct.immutable()) {
+                return struct.getName().toUpperCase() + "_" +
+                        struct.getPkg().toUpperCase();
+            }
+        }
+
+        if (type.equals(TypePrimitive.bittype)) {
+            return "bit";
+        } else {
+            if (type.equals(TypePrimitive.floattype) ||
+                    type.equals(TypePrimitive.doubletype))
+            {
+                return "float";
+            } else {
+                return "int";
+            }
+        }
+    }
+
+    private String printTupleType(Type type) {
+        if (type instanceof TypeArray) {
+            TypeArray array = (TypeArray) type;
+            String base = printType(array.getBase());
+            abstractValue iv;
+            if (array.getLength() instanceof ExprConstInt) {
+                iv = (abstractValue) array.getLength().accept(this);
+            } else {
+                iv = vtype.BOTTOM("FARRAY");
+            }
+
+            return base + "[*" + maxArrSize + "]";
+
         }
         if (type instanceof TypeStructRef) {
             TypeStructRef ts = (TypeStructRef) type;
@@ -583,8 +626,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 if (t.immutable()) {
                     out.print(t.getName().toUpperCase() + "_" + t.getPkg().toUpperCase() +
                             " ( ");
+                    int actFields = t.getActFields();
+                    if (actFields <= 0)
+                        actFields = t.getNumFields();
+                    out.print(actFields + " ");
                     for (StructFieldEnt e : t.getFieldEntriesInOrder()) {
-                        out.print(printType(e.getType()) + " ");
+                        out.print(printTupleType(e.getType()) + " ");
                     }
                     out.println(")");
                 }
@@ -621,7 +668,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                                 }
 
                             } else {
-                                out.print(printType(ta.getBase()) + "_arr" + " ");
+                                Type base = ta.getBase();
+                                if (base.isStruct()) {
+                                    out.print(printType(ta.getBase()) + "[*" +
+                                            maxArrSize + "]" + " ");
+                                } else {
+                                    out.print(printType(ta.getBase()) + "_arr" + " ");
+                                }
                             }
                         } else {
                             out.print(printType(param.getType()) + " ");
@@ -635,6 +688,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         out.println("}");
 
         Object o = super.visitProgram(p);
+        for (Package pkg : p.getPackages()) {
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ((NtsbVtype) this.vtype).out.println("replace " + printSpAssert(sa) + ";");
+            }
+        }
+
 
         SpecSketchComparator cp = new SpecSketchComparator();
         cp.estimate(assertions);
@@ -643,9 +702,38 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         for (SpecSketch s : assertions) {
             ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
         }
+
         return o;
     }
 
+    private String printSpAssert(StmtSpAssert sa) {
+        String res = "";
+        ExprFunCall f1 = sa.getFirstFun();
+        res += f1.getName();
+        for (Expression param : f1.getParams()) {
+            if (param instanceof ExprFunCall) {
+                ExprFunCall pa = (ExprFunCall) param;
+                res += " * ";
+                res += pa.getName();
+            }
+        }
+
+        res += " EQUALS ";
+
+        ExprFunCall f2 = sa.getSecondFun();
+        res += f2.getName();
+        for (Expression param : f2.getParams()) {
+            if (param instanceof ExprFunCall) {
+                ExprFunCall pa = (ExprFunCall) param;
+                res += " * ";
+                res += pa.getName();
+            }
+        }
+
+        res += " (" + sa.getStateCount() + ")";
+
+        return res;
+    }
     public Object visitExprFunCall(ExprFunCall exp) {
         String name = exp.getName();
         // Local function?

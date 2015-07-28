@@ -489,9 +489,11 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 
     public Program preprocAndSemanticCheck(Program prog) {
-        prog = (Program) prog.accept(new ExpandRepeatCases());
-
-        prog = (Program) prog.accept(new EliminateMacros());
+        prog =
+                (Program) prog.accept(new CreateHarnesses(varGen,
+                        !options.solverOpts.unoptimized, options.bndOpts.arrSize,
+                        options.bndOpts.srcTupleDepth));
+        // prog.debugDump();
 
         prog = (Program) prog.accept(new ConstantReplacer(null));
 
@@ -513,6 +515,10 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 		prog.debugDump("********************************************* After remove Function Parameters");
 
+        prog = (Program) prog.accept(new ExpandRepeatCases());
+        prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
+        prog = (Program) prog.accept(new EliminateEmptyArrayLen());
+
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
 
 		// prog.debugDump("After disambiguate calls and type check");
@@ -522,6 +528,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             throw new ProgramParseException("Semantic check failed");
         }
 
+        prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());
 
         // prog = (getBeforeSemanticCheckStage()).run(prog);

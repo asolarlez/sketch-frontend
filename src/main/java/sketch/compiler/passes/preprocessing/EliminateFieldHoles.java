@@ -16,6 +16,10 @@ import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
+/**
+ * Expands field selector holes into a set of ExprFields based on the type from the
+ * context.
+ */
 public class EliminateFieldHoles extends SymbolTableVisitor {
 
     public EliminateFieldHoles() {
@@ -26,6 +30,9 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
     public Object visitExprField(ExprField exp) {
         if (exp.isHole()) {
             Type t = exp.getTypeOfHole();
+            if (t.isStruct())
+                if (nres.isTemplate(((TypeStructRef) t).getName()))
+                    return exp;
             if (getType(exp.getLeft()).isStruct()) {
                 StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
                 List<Expression> matchedFields = new ArrayList<Expression>();

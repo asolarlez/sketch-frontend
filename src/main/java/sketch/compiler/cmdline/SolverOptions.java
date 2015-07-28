@@ -2,6 +2,7 @@ package sketch.compiler.cmdline;
 
 import sketch.util.cli.CliAnnotatedOptionGroup;
 import sketch.util.cli.CliParameter;
+import sketch.util.datastructures.CmdLineHashSet;
 
 /**
  * options which are mostly passed to cegis; a few lowering stages are in the
@@ -79,8 +80,11 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Degree of randomness for hole concretization.")
     public int randdegree = 0;
 
+    @CliParameter(help = "Degrees of randomness for hole concretization.", hide_default = true, inlinesep = ",")
+    public CmdLineHashSet randdegrees = new CmdLineHashSet();
+
     @CliParameter(help = "Number of rounds on a single back-end invocation.")
-    public int ntimes = 0;
+    public int ntimes = -1;
 
     @CliParameter(help = "Strategy for parallel-running.")
     public Strategies strategy = Strategies.NOT_SET;
@@ -106,6 +110,15 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Maximum steps of random simulation to perform for every verification step.")
     public int simiters = 4;
+
+    @CliParameter(help = "Only randomize depth holes of GUC")
+    public boolean onlySpRand = false;
+
+    @CliParameter(help = "Bias for special randomize holes")
+    public int spRandBias = 1;
+
+    @CliParameter(help = "Don't optimize using specification")
+    public boolean unoptimized = false;
 
     public enum ReorderEncoding {
         exponential, quadratic

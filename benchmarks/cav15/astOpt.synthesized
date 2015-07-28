@@ -1,0 +1,182 @@
+void andLtOptim (int[4] assignment, ref AST _out)/*astOpt.sk:71*/
+{
+  _out = null;
+  AST original = new And(a=new Lt(a=new Var(id=0), b=new Var(id=1)), b=new Lt(a=new Var(id=2), b=new Var(id=3)));
+  AST@ANONYMOUS _out_s128 = null;
+  AST a_s1 = new Var@ANONYMOUS(id=3, type=0);
+  AST b_s2 = new Num@ANONYMOUS(val=1);
+  AST AST_s0 = new Lt@ANONYMOUS(a=a_s1, b=b_s2);
+  int[4] tmp = {12,0,0,0};
+  int[4] posAssignment = tmp[0::4];
+  bit _out_s45 = 0;
+  check(4, AST_s0, posAssignment, _out_s45);
+  assert (_out_s45); //Assert at astOpt.sk:33 (-6269104037928283312)
+  bit _out_s47 = 0;
+  check(4, AST_s0, assignment, _out_s47);
+  bit _has_out_ = 0;
+  if(_out_s47)/*astOpt.sk:35*/
+  {
+    AST a_s22 = new Num@ANONYMOUS(val=3);
+    AST b_s23 = new Num@ANONYMOUS(val=0);
+    AST AST_s21 = new Equal@ANONYMOUS(a=a_s22, b=b_s23);
+    AST@ANONYMOUS _out_s49 = null;
+    run(4, original, assignment, _out_s49);
+    AST@ANONYMOUS _out_s51 = null;
+    run(4, AST_s21, assignment, _out_s51);
+    bit _out_s53 = 0;
+    equals(_out_s49, _out_s51, _out_s53);
+    assert (_out_s53); //Assert at astOpt.sk:38 (7753556239651162368)
+    int c_s55 = 0;
+    count(AST_s21, c_s55);
+    int _out_s57 = 0;
+    count(original, _out_s57);
+    assert (c_s55 < _out_s57); //Assert at astOpt.sk:41 (3145125395817367645)
+    _out_s128 = AST_s21;
+    _has_out_ = 1;
+  }
+  if(_has_out_ == 0)/*astOpt.sk:44*/
+  {
+    _out_s128 = original;
+  }
+  _out = _out_s128;
+  return;
+}
+
+
+
+void andNotOptim (int[2] assignment, ref AST _out)/*astOpt.sk:83*/
+{
+  _out = null;
+  AST original = new And(a=new Var(id=0, type=1), b=new Not(a=new Var(id=1, type=1)));
+  AST@ANONYMOUS _out_s126 = null;
+  AST a_s1 = new Var@ANONYMOUS(id=1, type=0);
+  AST b_s2 = new Var@ANONYMOUS(id=0, type=0);
+  AST AST_s0 = new Gt@ANONYMOUS(a=a_s1, b=b_s2);
+  int[4] tmp = {0,1,16,20};
+  int[2] posAssignment = tmp[0::2];
+  bit _out_s45 = 0;
+  check(2, AST_s0, posAssignment, _out_s45);
+  assert (_out_s45); //Assert at astOpt.sk:33 (-6269104037928283312)
+  bit _out_s47 = 0;
+  check(2, AST_s0, assignment, _out_s47);
+  bit _has_out_ = 0;
+  if(_out_s47)/*astOpt.sk:35*/
+  {
+    AST a_s22 = new Var@ANONYMOUS(id=0, type=0);
+    AST b_s23 = new Num@ANONYMOUS(val=1);
+    AST AST_s21 = new Equal@ANONYMOUS(a=a_s22, b=b_s23);
+    AST@ANONYMOUS _out_s49 = null;
+    run(2, original, assignment, _out_s49);
+    AST@ANONYMOUS _out_s51 = null;
+    run(2, AST_s21, assignment, _out_s51);
+    bit _out_s53 = 0;
+    equals(_out_s49, _out_s51, _out_s53);
+    assert (_out_s53); //Assert at astOpt.sk:38 (7753556239651162368)
+    int c_s55 = 0;
+    count(AST_s21, c_s55);
+    int _out_s57 = 0;
+    count(original, _out_s57);
+    assert (c_s55 < _out_s57); //Assert at astOpt.sk:41 (3145125395817367645)
+    _out_s126 = AST_s21;
+    _has_out_ = 1;
+  }
+  if(_has_out_ == 0)/*astOpt.sk:44*/
+  {
+    _out_s126 = original;
+  }
+  _out = _out_s126;
+  return;
+}
+
+
+
+
+void muxOptim (int[3] assignment, ref AST _out)/*astOpt.sk:95*/
+{
+  _out = null;
+  AST original = new Mux(a=new Var(id=0), b=new Var(id=1), v=new Not(a=new Var(id=2, type=1)));
+  AST@ANONYMOUS _out_s43 = null;
+  AST a_s1 = new Num@ANONYMOUS(val=1);
+  AST b_s2 = new Var@ANONYMOUS(id=2, type=0);
+  AST AST_s0 = new Gt@ANONYMOUS(a=a_s1, b=b_s2);
+  int[4] tmp = {12,0,0,26};
+  int[3] posAssignment = tmp[0::3];
+  bit _out_s45 = 0;
+  check(3, AST_s0, posAssignment, _out_s45);
+  assert (_out_s45); //Assert at astOpt.sk:33 (-6269104037928283312)
+  bit _out_s47 = 0;
+  check(3, AST_s0, assignment, _out_s47);
+  bit _has_out_ = 0;
+  if(_out_s47)/*astOpt.sk:35*/
+  {
+    AST a_s22 = new Bool@ANONYMOUS(x=0);
+    AST b_s23 = new Var@ANONYMOUS(id=0, type=0);
+    AST AST_s21 = new Mux@ANONYMOUS(a=a_s22, b=b_s23, v=a_s22);
+    AST@ANONYMOUS _out_s49 = null;
+    run(3, original, assignment, _out_s49);
+    AST@ANONYMOUS _out_s51 = null;
+    run(3, AST_s21, assignment, _out_s51);
+    bit _out_s53 = 0;
+    equals(_out_s49, _out_s51, _out_s53);
+    assert (_out_s53); //Assert at astOpt.sk:38 (7753556239651162368)
+    int c_s55 = 0;
+    count(AST_s21, c_s55);
+    int _out_s57 = 0;
+    count(original, _out_s57);
+    assert (c_s55 < _out_s57); //Assert at astOpt.sk:41 (3145125395817367645)
+    _out_s43 = AST_s21;
+    _has_out_ = 1;
+  }
+  if(_has_out_ == 0)/*astOpt.sk:44*/
+  {
+    _out_s43 = original;
+  }
+  _out = _out_s43;
+  return;
+}
+
+
+
+void plusEqualsOptim (int[4] assignment, ref AST _out)/*astOpt.sk:59*/
+{
+  _out = null;
+  AST original1 = new Equal(a=new Plus(a=new Var(id=0), b=new Var(id=1)), b=new Plus(a=new Var(id=2), b=new Var(id=3)));
+  AST@ANONYMOUS _out_s130 = null;
+  AST a_s1 = new Var@ANONYMOUS(id=0, type=1);
+  AST b_s2 = new Var@ANONYMOUS(id=2, type=1);
+  AST AST_s0 = new And@ANONYMOUS(a=a_s1, b=b_s2);
+  int[4] tmp = {1,0,1,8};
+  int[4] posAssignment = tmp[0::4];
+  bit _out_s45 = 0;
+  check(4, AST_s0, posAssignment, _out_s45);
+  assert (_out_s45); //Assert at astOpt.sk:33 (-6269104037928283312)
+  bit _out_s47 = 0;
+  check(4, AST_s0, assignment, _out_s47);
+  bit _has_out_ = 0;
+  if(_out_s47)/*astOpt.sk:35*/
+  {
+    AST a_s22 = new Var@ANONYMOUS(id=3, type=0);
+    AST b_s23 = new Var@ANONYMOUS(id=1, type=0);
+    AST AST_s21 = new Equal@ANONYMOUS(a=a_s22, b=b_s23);
+    AST@ANONYMOUS _out_s49 = null;
+    run(4, original1, assignment, _out_s49);
+    AST@ANONYMOUS _out_s51 = null;
+    run(4, AST_s21, assignment, _out_s51);
+    bit _out_s53 = 0;
+    equals(_out_s49, _out_s51, _out_s53);
+    assert (_out_s53); //Assert at astOpt.sk:38 (7753556239651162368)
+    int c_s55 = 0;
+    count(AST_s21, c_s55);
+    int _out_s57 = 0;
+    count(original1, _out_s57);
+    assert (c_s55 < _out_s57); //Assert at astOpt.sk:41 (3145125395817367645)
+    _out_s130 = AST_s21;
+    _has_out_ = 1;
+  }
+  if(_has_out_ == 0)/*astOpt.sk:44*/
+  {
+    _out_s130 = original1;
+  }
+  _out = _out_s130;
+  return;
+}

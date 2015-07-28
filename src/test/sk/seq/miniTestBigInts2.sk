@@ -1,0 +1,30 @@
+//@Description Toy benchmarks to show complex recursive generators.
+
+generator int rec(int x, int y, int z){ /* automatically rewritten */
+   int t = ??;
+   if(t == 0){
+     return x;
+   }   
+   if(t == 1){
+     return y;
+   }
+
+   if(t == 2){
+     return z;
+   }
+   int a = rec(x,y,z);
+   int b = rec(x,y,z);
+
+   if(t == 3){
+     return a * b;
+   }
+
+   if(t == 4){
+     return a + b;
+   } 
+     
+}
+
+harness void sketch( int x, int y, int z ){
+   assert rec(x,y, z) == (x + x) * (y + z);
+}

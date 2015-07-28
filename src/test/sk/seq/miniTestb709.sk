@@ -1,0 +1,15 @@
+//variable length array in tuple
+struct A{
+	@Immutable("")
+	int x;	
+	A nxt;
+	int n;
+	int [n] y;
+}
+
+harness void main(int x){
+	A a = new A(x = 2, y = {??, ??}, n = 2);
+	A b = new A(x =3, nxt =  a);
+	assert (b.nxt.x == 2 && b.nxt.y[0] == 3);
+	
+}

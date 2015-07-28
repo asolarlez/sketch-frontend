@@ -1,8 +1,10 @@
 package sketch.compiler.dataflow.nodesToSB;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -415,6 +417,83 @@ public class IntVtype extends abstractValueType {
 		}
 	}
 
+    public Map<String, abstractValue> joinFields(abstractValue cond,
+            Map<String, abstractValue> fieldsTrue, Map<String, abstractValue> fieldsFalse)
+    {
+        if (fieldsTrue == null) {
+            return IntAbsValue.cloneFields(fieldsFalse);
+        }
+        if (fieldsFalse == null) {
+            return IntAbsValue.cloneFields(fieldsTrue);
+        }
+        Map<String, abstractValue> fields =
+                new HashMap<String, abstractValue>(fieldsTrue.size());
+        for (Map.Entry<String, abstractValue> e : fieldsTrue.entrySet()) {
+            String name = e.getKey();
+            abstractValue valueTrue = e.getValue();
+            if (!fieldsFalse.containsKey(name)) {
+                fields.put(name, valueTrue.clone());
+            } else {
+                abstractValue valueFalse = fieldsFalse.get(name);
+                abstractValue valueJoined = condjoin(cond, valueTrue, valueFalse);
+                fields.put(name, valueJoined);
+            }
+        }
+        for (Map.Entry<String, abstractValue> e : fieldsFalse.entrySet()) {
+            String name = e.getKey();
+            if (!fieldsTrue.containsKey(name)) {
+                abstractValue value = e.getValue();
+                fields.put(name, value.clone());
+            }
+        }
+        return fields;
+    }
+
+    public Map<String, Map<String, abstractValue>> joinADTcases(abstractValue cond,
+            Map<String, Map<String, abstractValue>> casesTrue,
+            Map<String, Map<String, abstractValue>> casesFalse)
+    {
+        Map<String, Map<String, abstractValue>> cases =
+                new HashMap<String, Map<String, abstractValue>>(casesTrue.size());
+        for (Map.Entry<String, Map<String, abstractValue>> c : casesTrue.entrySet()) {
+            String caseName = c.getKey();
+            Map<String, abstractValue> fieldsTrue = c.getValue();
+            if (!casesFalse.containsKey(caseName)) {
+                cases.put(caseName, IntAbsValue.cloneFields(fieldsTrue));
+            } else {
+                Map<String, abstractValue> fieldsFalse = casesFalse.get(caseName);
+                Map<String, abstractValue> fields =
+                        joinFields(cond, fieldsTrue, fieldsFalse);
+                cases.put(caseName, fields);
+            }
+        }
+
+        for (Map.Entry<String, Map<String, abstractValue>> c : casesFalse.entrySet()) {
+            String caseName = c.getKey();
+            if (!casesTrue.containsKey(caseName)) {
+                Map<String, abstractValue> value = c.getValue();
+                cases.put(caseName, IntAbsValue.cloneFields(value));
+            }
+        }
+        return cases;
+    }
+
+    public abstractValue tryJoinADT(abstractValue cond, abstractValue vtrue,
+            abstractValue vfalse)
+    {
+        Map<String, Map<String, abstractValue>> casesTrue = vtrue.getADTcases();
+        if (casesTrue != null) {
+            Map<String, Map<String, abstractValue>> casesFalse = vfalse.getADTcases();
+            if (casesFalse != null) {
+                Map<String, Map<String, abstractValue>> cases =
+                        joinADTcases(cond, casesTrue, casesFalse);
+                return IntAbsValue.ADTnode(cases);
+            }
+        }
+        return BOTTOM("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
+                vtrue.knownGeqZero() && vfalse.knownGeqZero());
+    }
+
 	public abstractValue condjoin(abstractValue cond, abstractValue vtrue, abstractValue vfalse) {
 		if(cond == null) return join(vtrue, vfalse);
 
@@ -428,8 +507,7 @@ public class IntVtype extends abstractValueType {
             if (vtrue.equals(vfalse)) {
                 return vtrue;
             }
-            return BOTTOM("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
-                    vtrue.knownGeqZero() && vfalse.knownGeqZero());
+            return tryJoinADT(cond, vtrue, vfalse);
 		}
 	}
 
@@ -445,5 +523,10 @@ public class IntVtype extends abstractValueType {
     		}
     	}
 	}
+
+    @Override
+    public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases) {
+        return IntAbsValue.ADTnode(cases);
+    }
 
 }

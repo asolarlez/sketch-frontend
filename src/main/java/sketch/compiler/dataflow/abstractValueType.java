@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow;
 
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -35,6 +36,15 @@ public abstract class abstractValueType{
 	 * @return
 	 */
 	abstract public varState cleanState(String var, Type t, MethodState mstate);
+
+    /**
+     * an ADT with some known info (CaseName -> (FieldName -> FieldValue)* )* . Note that
+     * cases == null means BOTTOM (we know nothing). cases[caseName] == null means that we
+     * know the ADTnode can be of caseName type, but we know nothing about its inner
+     * structure (its composing fields). cases[caseName][fieldName] is the info we know
+     * about the value of ADTnode.fieldName when the ADTnode falls into caseName type.
+     */
+    abstract public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases);
 
     abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);

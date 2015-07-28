@@ -80,11 +80,15 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 	 *
 	 *
 	 */
-	private int needsCopy(Expression lhs, Expression rhs){
+    private int needsCopy(Expression lhs, Expression rhs) {
 		Type lt = getType(lhs);
 		if( !(lt instanceof TypeArray ) ) return 0;
 		Type rt = getType(rhs);
 		if( !(rt instanceof TypeArray )  ) return 2;
+        TypeArray rta = (TypeArray) rt;
+        if (rhs instanceof ExprTupleAccess) {
+            return 0;
+        }
 		if( (new OpFinder()).hasOp(rhs) ) return 3;
         if (lt.equals(rt) && !agressive && (lhs instanceof ExprVar) &&
                 (rhs instanceof ExprVar))
@@ -188,6 +192,9 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
  defval);
 				}
 			}else{
+                if (tt.isStruct()) {
+                    return exp;
+                }
 			    Integer iv = len.getIValue();
 				if( iv != null && iv <= 1  ){
 					return exp;
@@ -467,9 +474,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
     		}
     	}
 
-        Expression minLen = rtlen; // Thanks to the assertions, we can be sure the RHS len
-                                   // is always smaller than the LHS len
-                                   // minLength(ltlen, rtlen);
+        Expression minLen = rtlen;
+        if (rhs instanceof ExprTupleAccess && rtlen.getIValue() == null) {
+            minLen = ltlen;
+        }
         // We need to generate a for loop, since from our point of
         // view, the array bounds may not be constant.
         String indexName = varGen.nextVar();
@@ -487,6 +495,7 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
         // addStatement(); visiting a StmtBlock will save this.
         // So, create a block containing a shallow copy, then
         // visit:
+        // TODO: change this to deal with exprTupleAccess correctly
         Indexify indexifier = new Indexify(index, minLen, lt.defaultValue(), true);
         Expression fel = (Expression) rhs.accept(indexifier);
         Indexify indexifier2 = new Indexify(index, minLen, lt.defaultValue(), false);

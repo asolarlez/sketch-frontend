@@ -2,6 +2,7 @@ package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -94,7 +95,9 @@ public class EliminateArrayRange extends SymbolTableVisitor {
 
 
 
-	public Object visitExprArrayRange(ExprArrayRange exp){    	
+    public Object visitExprArrayRange(ExprArrayRange exp) {
+        if (exp.getBase() instanceof ExprNullPtr)
+            return new ExprNullPtr();
     	RangeLen rl =  exp.getSelection();
     	if( !rl.hasLen() ){
     		Expression newBase=doExpression(exp.getBase());

@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow.deadCodeElimination;
 
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.dataflow.abstractValue;
 
@@ -50,5 +51,11 @@ public class joinAV extends abstractValue {
 	public void update(abstractValue v) {
 		assert false;
 	}
+
+    @Override
+    public Map<String, Map<String, abstractValue>> getADTcases() {
+        // FIXME xzl should refine this
+        return null;
+    }
 
 }

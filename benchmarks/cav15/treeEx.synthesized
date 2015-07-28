@@ -1,0 +1,73 @@
+void insertNode (BinaryTree tree, int x, ref BinaryTree _out)/*treeEx.sk:21*/
+{
+  _out = null;
+  if(tree == (null))/*treeEx.sk:22*/
+  {
+    _out = null;
+    return;
+  }
+  switch(tree){/*treeEx.sk:24*/
+    case Branch:
+    {
+      BinaryTree@ANONYMOUS l_s534 = null;
+      insertNode(tree.l, x, l_s534);
+      BinaryTree@ANONYMOUS r_s536 = null;
+      insertNode(tree.r, x, r_s536);
+      if(x > (tree.value))/*treeEx.sk:30*/
+      {
+        int value_s469 = tree.value;
+        BinaryTree l_s470 = tree.l;
+        BinaryTree BinaryTree_s468 = new Branch@ANONYMOUS(value=value_s469, l=l_s470, r=r_s536);
+        _out = BinaryTree_s468;
+        return;
+      }
+      if(x <= (tree.value))/*treeEx.sk:30*/
+      {
+        int value_s469_0 = tree.value;
+        BinaryTree r_s471 = tree.r;
+        BinaryTree BinaryTree_s468_0 = new Branch@ANONYMOUS(value=value_s469_0, l=l_s534, r=r_s471);
+        _out = BinaryTree_s468_0;
+        return;
+      }
+    }
+    case Leaf:
+    {
+      BinaryTree@ANONYMOUS l_s538 = null;
+      insertNode(null, x, l_s538);
+      BinaryTree@ANONYMOUS r_s540 = null;
+      insertNode(null, x, r_s540);
+      if(x < (tree.value))/*treeEx.sk:30*/
+      {
+        int value_s479 = tree.value;
+        BinaryTree l_s480 = new Leaf@ANONYMOUS(value=x);
+        BinaryTree r_s481 = new Empty@ANONYMOUS();
+        BinaryTree BinaryTree_s478 = new Branch@ANONYMOUS(value=value_s479, l=l_s480, r=r_s481);
+        _out = BinaryTree_s478;
+        return;
+      }
+      if(x > (tree.value))/*treeEx.sk:30*/
+      {
+        int value_s479_0 = tree.value;
+        BinaryTree l_s480_0 = new Empty@ANONYMOUS();
+        BinaryTree r_s481_0 = new Leaf@ANONYMOUS(value=x);
+        BinaryTree BinaryTree_s478_0 = new Branch@ANONYMOUS(value=value_s479_0, l=l_s480_0, r=r_s481_0);
+        _out = BinaryTree_s478_0;
+        return;
+      }
+    }
+    case Empty:
+    {
+      BinaryTree@ANONYMOUS l_s542 = null;
+      insertNode(null, x, l_s542);
+      BinaryTree@ANONYMOUS r_s544 = null;
+      insertNode(null, x, r_s544);
+      if(x >= 0)/*treeEx.sk:30*/
+      {
+        BinaryTree BinaryTree_s488 = new Leaf@ANONYMOUS(value=x);
+        _out = BinaryTree_s488;
+        return;
+      }
+    }
+  }
+}
+        

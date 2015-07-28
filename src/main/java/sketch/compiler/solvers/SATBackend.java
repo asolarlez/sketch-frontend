@@ -1,7 +1,9 @@
 package sketch.compiler.solvers;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -11,6 +13,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.PlatformLocalization;
+import sketch.compiler.main.PlatformLocalization.ResolveFromFileAndPATH;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.optimization.AbstractCostFcnAssert;
 import sketch.compiler.passes.optimization.CostFcnAssert;
@@ -47,11 +50,28 @@ public class SATBackend {
         this.options = options;
         this.rcontrol = rcontrol;
         this.varGen = varGen;
+
+        // convert comma-separated degree of String into int
+        this.randdegrees = new ArrayList<Integer>();
+        if (!options.solverOpts.randdegrees.isEmpty()) {
+            Iterator<String> iter = options.solverOpts.randdegrees.iterator();
+            while (iter.hasNext()) {
+                String degreeStr = iter.next();
+                try {
+                    int d = Integer.parseInt(degreeStr);
+                    this.randdegrees.add(d);
+                } catch (NumberFormatException ne) {
+                    log(10, "non-integer randdegree: " + degreeStr);
+                }
+            }
+        }
     }
 
     public void activateTracing(){
         tracing = true;
     }
+
+    protected List<Integer> randdegrees;
 
     @SuppressWarnings("unchecked")
     public String[] getBackendCommandline(int i, Vector<String> commandLineOptions_,
@@ -74,7 +94,14 @@ public class SATBackend {
             commandLineOptions.add("" + abs_seed);
         }
 
-        if (options.solverOpts.randdegree > 0) {
+        // pick degree either from options...randdegrees
+        if (!this.randdegrees.isEmpty()) {
+            commandLineOptions.add("-randdegree");
+            int idx = i % this.randdegrees.size();
+            commandLineOptions.add("" + this.randdegrees.get(idx));
+        }
+        // or ...randdegree (chosen/given by a strategy/user)
+        else if (options.solverOpts.randdegree > 0) {
             commandLineOptions.add("-randdegree");
             commandLineOptions.add("" + options.solverOpts.randdegree);
         }
@@ -236,16 +263,41 @@ public class SATBackend {
         return worked;
     }
 
+    public void checkBackendInput(String fileName) {
+        String check = options.debugOpts.checkBackInput;
+        if (check != null) {
+            PlatformLocalization pl = PlatformLocalization.getLocalization();
+            ResolveFromFileAndPATH resolver =
+                    pl.new ResolveFromFileAndPATH(check, options.sketchFile);
+            String checkPath = resolver.resolve();
+            String[] cmdLine = new String[] { checkPath, fileName };
+            SynchronousTimedProcess proc;
+            try {
+                proc = new SynchronousTimedProcess(1, cmdLine);
+                ProcessStatus status = proc.run(false);
+                if (status.exitCode != 0) {
+                    throw new SketchSolverException("checkBackendInput failed with " +
+                            status.exitCode + ": " + check + " " + fileName);
+                }
+            } catch (Exception e) {
+                throw new SketchSolverException("checkBackendInput exception: " + check +
+                        " " + fileName + e);
+            }
+        }
+    }
+
     public void writeProgramToBackendFormat(Program prog) {
         try {
             OutputStream outStream = null;
+            String fileName = null;
             if (options.debugOpts.fakeSolver)
                 outStream = NullStream.INSTANCE;
-            else
+            else {
                 // if (options.getTmpName != null)
+                fileName = options.getTmpSketchFilename();
                 outStream =
-                        new BufferedOutputStream(new FileOutputStream(
-                                options.getTmpSketchFilename()), 4096);
+                        new BufferedOutputStream(new FileOutputStream(fileName), 4096);
+            }
             // else
             // DebugOut.assertFalse("no temporary filename defined.");
             // outStream = System.out;
@@ -255,7 +307,10 @@ public class SATBackend {
 
             outStream.flush();
             outStream.close();
-            assert (new File(options.getTmpSketchFilename())).isFile() : "didn't appear to write file";
+            if (!options.debugOpts.fakeSolver) {
+                assert (new File(fileName)).isFile() : "didn't appear to write file";
+                checkBackendInput(fileName);
+            }
         } catch (java.io.IOException e) {
             // e.printStackTrace(System.err);
             throw new RuntimeException(e);
@@ -394,6 +449,7 @@ public class SATBackend {
         be_stat.killedByTimeout = false;
         be_stat.elapsedTimeMs = status.execTimeMs;
         be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
+        be_stat.decided = (2 != status.exitCode);
         lastSolveStats = be_stat;
         if (!options.solverOpts.parallel) {
             log(2, "Stats for last run:\n" + lastSolveStats);

@@ -1,0 +1,107 @@
+void desugar (srcAST s, ref dstAST _out)/*lang.sk:43*/
+{
+  _out = null;
+  if(s == (null))/*lang.sk:44*/
+  {
+    _out = null;
+    return;
+  }
+  switch(s){/*lang.sk:46*/
+    case NumS:
+    {
+      dstAST@ANONYMOUS a_s427 = null;
+      desugar(null, a_s427);
+      dstAST@ANONYMOUS b_s429 = null;
+      desugar(null, b_s429);
+      dstAST@ANONYMOUS c_s431 = null;
+      desugar(null, c_s431);
+      int val_s5 = s.val;
+      dstAST dstAST_s4 = new NumD@ANONYMOUS(val=val_s5);
+      _out = dstAST_s4;
+      return;
+    }
+    case TrueS:
+    {
+      dstAST@ANONYMOUS a_s433 = null;
+      desugar(null, a_s433);
+      dstAST@ANONYMOUS b_s435 = null;
+      desugar(null, b_s435);
+      dstAST@ANONYMOUS c_s437 = null;
+      desugar(null, c_s437);
+      dstAST dstAST_s33 = new BoolD@ANONYMOUS(v=1);
+      _out = dstAST_s33;
+      return;
+    }
+    case FalseS:
+    {
+      dstAST@ANONYMOUS a_s439 = null;
+      desugar(null, a_s439);
+      dstAST@ANONYMOUS b_s441 = null;
+      desugar(null, b_s441);
+      dstAST@ANONYMOUS c_s443 = null;
+      desugar(null, c_s443);
+      dstAST a_s66 = new BoolD@ANONYMOUS(v=0);
+      dstAST b_s67 = new BoolD@ANONYMOUS(v=0);
+      dstAST c_s68 = new BoolD@ANONYMOUS(v=0);
+      dstAST dstAST_s62 = new IfD@ANONYMOUS(a=a_s66, b=b_s67, c=c_s68);
+      _out = dstAST_s62;
+      return;
+    }
+    case Prim1S:
+    {
+      dstAST@ANONYMOUS a_s445 = null;
+      desugar(s.a, a_s445);
+      dstAST@ANONYMOUS b_s447 = null;
+      desugar(s.a, b_s447);
+      dstAST@ANONYMOUS c_s449 = null;
+      desugar(s.a, c_s449);
+      opcode op_s94 = s.op;
+      dstAST dstAST_s91 = new Prim1D@ANONYMOUS(op=op_s94, a=b_s447);
+      _out = dstAST_s91;
+      return;
+    }
+    case Prim2S:
+    {
+      dstAST@ANONYMOUS a_s451 = null;
+      desugar(s.a, a_s451);
+      dstAST@ANONYMOUS b_s453 = null;
+      desugar(s.a, b_s453);
+      dstAST@ANONYMOUS c_s455 = null;
+      desugar(s.b, c_s455);
+      opcode op_s123 = s.op;
+      dstAST dstAST_s120 = new Prim2D@ANONYMOUS(op=op_s123, a=b_s453, b=c_s455);
+      _out = dstAST_s120;
+      return;
+    }
+    case BetweenS:
+    {
+      dstAST@ANONYMOUS a_s457 = null;
+      desugar(s.a, a_s457);
+      dstAST@ANONYMOUS b_s459 = null;
+      desugar(s.c, b_s459);
+      dstAST@ANONYMOUS c_s461 = null;
+      desugar(s.b, c_s461);
+      opcode opcode_s162 = new Ogt@ANONYMOUS();
+      dstAST a_s153 = new Prim2D@ANONYMOUS(op=opcode_s162, a=c_s461, b=a_s457);
+      opcode opcode_s169 = new Ogt@ANONYMOUS();
+      dstAST b_s154 = new Prim2D@ANONYMOUS(op=opcode_s169, a=b_s459, b=c_s461);
+      opcode op_s152 = new Oand@ANONYMOUS();
+      dstAST dstAST_s149 = new Prim2D@ANONYMOUS(op=op_s152, a=a_s153, b=b_s154);
+      _out = dstAST_s149;
+      return;
+    }
+    case IfS:
+    {
+      dstAST@ANONYMOUS a_s463 = null;
+      desugar(s.b, a_s463);
+      dstAST@ANONYMOUS b_s465 = null;
+      desugar(s.a, b_s465);
+      dstAST@ANONYMOUS c_s467 = null;
+      desugar(s.c, c_s467);
+      dstAST dstAST_s178 = new IfD@ANONYMOUS(a=b_s465, b=a_s463, c=c_s467);
+      _out = dstAST_s178;
+      return;
+    }
+  }
+}
+      

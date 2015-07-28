@@ -316,7 +316,8 @@ public class SymbolTableVisitor extends FEReplacer
         if (t == par.getType()) {
             return par;
         } else {
-            return new Parameter(par, t, par.getName(), par.getPtype());
+            return new Parameter(par, par.getSrcTupleDepth(), t, par.getName(),
+                    par.getPtype());
         }
     }
 
@@ -364,9 +365,15 @@ public class SymbolTableVisitor extends FEReplacer
 
         // visit each case body
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
-        String pkg = nres.getStruct(((TypeStructRef) getType(var)).getName()).getPkg();
+        String name = ((TypeStructRef) getType(var)).getName();
+        StructDef ts = nres.getStruct(name);
+        String pkg;
+        if (ts == null)
+            pkg = nres.curPkg().getName();
+        else
+            pkg = ts.getPkg();
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (caseExpr != "default" && caseExpr != "repeat") {
+            if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
                 symtab.registerVar(var.getName(),
@@ -461,7 +468,10 @@ public class SymbolTableVisitor extends FEReplacer
         symtab = oldSymTab;
 
         if (changed) {
-            return ts.creator().fields(map).create();
+            StructDef new_struct = ts.creator().fields(map).create();
+            if (ts.immutable())
+                new_struct.setImmutable();
+            return new_struct;
         } else {
             return ts;
         }

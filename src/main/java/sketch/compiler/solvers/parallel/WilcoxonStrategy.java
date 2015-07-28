@@ -251,6 +251,7 @@ public class WilcoxonStrategy extends ParallelBackend {
             int degree = binarySearch(degree_l, degree_h);
             plog(name + " degree choice: " + degree);
             options.solverOpts.randdegree = degree;
+            randdegrees.clear();
         } catch (Lucky e) {
             plog(e.getMessage());
             return true;

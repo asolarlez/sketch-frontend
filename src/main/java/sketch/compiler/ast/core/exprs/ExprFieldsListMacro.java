@@ -4,11 +4,11 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.typs.Type;
 
-public class ExprFieldMacro extends Expression {
+public class ExprFieldsListMacro extends Expression {
     private Expression left;
     private Type type;
 
-    public ExprFieldMacro(FENode node, Expression left, Type type) {
+    public ExprFieldsListMacro(FENode node, Expression left, Type type) {
         super(node);
         this.left = left;
         this.type = type;
@@ -26,7 +26,7 @@ public class ExprFieldMacro extends Expression {
 
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v) {
-        return v.visitExprFieldMacro(this);
+        return v.visitExprFieldsListMacro(this);
     }
 
     public String toString() {

@@ -25,6 +25,7 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
+import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeComparisonResult;
@@ -107,6 +108,319 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     }
 
+    private Program checkReplaceFunCall(Program prog) {
+        List<Package> newStreams = new ArrayList<Package>();
+        for (Package pkg : prog.getPackages()) {
+            List<StmtSpAssert> newSpAssertStmts = new ArrayList<StmtSpAssert>();
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                if (true || checkSpAssert(sa, pkg.getName())) {
+                    newSpAssertStmts.add(sa);
+                }
+            }
+            newStreams.add(new Package(pkg, pkg.getName(), pkg.getStructs(),
+                    pkg.getVars(), pkg.getFuncs(), newSpAssertStmts));
+        }
+        return prog.creator().streams(newStreams).create();
+    }
+
+
+    private boolean checkSpAssert(StmtSpAssert sa, String pkg) {
+        // TODO: should also check that both lhs and rhs take same type of inputs and produces same type output
+        ExprFunCall lhs = sa.getFirstFun();
+        if (lhs.getParams().get(0) instanceof ExprFunCall) {
+            // nested funcall
+            Type t = getType(lhs.getParams().get(0));
+            if (!t.isStruct()) report (sa.getContext(), "Not yet supported");
+            String fname = nres.getFunName(lhs.getName());
+            Function f = nres.getFun(fname);
+            String expName = f.getParams().get(0).getName();
+            CheckFunction cf =
+                    new CheckFunction((TypeStructRef) t, f, expName, new SymbolTable(
+                            symtab), nres, pkg);
+            f.getBody().accept(cf);
+            if (!cf.checkPassed()) {
+                System.err.println("Optimization not applicable because of " +
+                        cf.failContext());
+                return false;
+            }
+        } 
+        return true;
+    }
+
+    private class CheckFunction extends SymbolTableVisitor {
+        final TypeStructRef type;
+        final String fname;
+        Map<String, Boolean> varsToTrack;
+        boolean safe;
+        boolean finalSafe;
+        boolean fieldAccess;
+        FEContext failContext;
+        String pkg;
+        public CheckFunction(TypeStructRef t, Function func, String expName,
+                SymbolTable symtab, NameResolver nres, String pkg)
+        {
+            super(symtab);
+            this.type = t;
+            this.fname = func.getName();
+            varsToTrack = new HashMap<String, Boolean>();
+            varsToTrack.put(expName, false);
+            safe = true;
+            finalSafe = true;
+            fieldAccess = false;
+            this.nres = nres;
+            this.pkg = pkg;
+
+            for (Parameter par : func.getParams()) {
+                this.symtab.registerVar(par.getName(), par.getType(), par,
+                        SymbolTable.KIND_FUNC_PARAM);
+            }
+        }
+
+        public boolean checkPassed() {
+            return safe && finalSafe;
+        }
+
+        public FEContext failContext() {
+            return failContext;
+        }
+
+        @Override
+        public Object visitStmtAssign(StmtAssign stmt) {
+            if (!safe || !finalSafe)
+                return stmt;
+            super.visitStmtAssign(stmt);
+            safe = true;
+            finalSafe = true;
+            fieldAccess = false;
+            Expression rhs = stmt.getRHS().doExpr(this);
+            Expression lhs = stmt.getLHS();
+            if (!safe) {
+                // unsafe expr can only be assigned to a var
+                if ((lhs instanceof ExprVar)) {
+                    varsToTrack.put(((ExprVar) lhs).getName(), fieldAccess);
+                    safe = true;
+                    fieldAccess = false;
+                } else {
+                    finalSafe = false;
+                    failContext = stmt.getContext();
+                }
+            } 
+            return stmt;
+        }
+
+        @Override
+        public Object visitStmtVarDecl(StmtVarDecl stmt) {
+            if (!safe || !finalSafe)
+                return stmt;
+            super.visitStmtVarDecl(stmt);
+            safe = true;
+            finalSafe = true;
+            fieldAccess = false;
+            int n = stmt.getNumVars();
+            for (int i = 0; i < n; i++) {
+                if (!safe || !finalSafe)
+                    return stmt;
+                fieldAccess = false;
+                if (stmt.getInit(i) != null) {
+                    Expression init = stmt.getInit(i).doExpr(this);
+                    if (!safe) {
+                        varsToTrack.put(stmt.getName(i), fieldAccess);
+                        safe = true;
+                        fieldAccess = false;
+                    }
+                }
+            }
+            return stmt;
+        }
+
+        @Override
+        public Object visitStmtSwitch(StmtSwitch stmt) {
+            ExprVar var = (ExprVar) stmt.getExpr();
+            if (varsToTrack.containsKey(var.getName()) && varsToTrack.get(var.getName()))
+            {
+                // switch on a field access is bad
+                safe = false;
+                finalSafe = false;
+                return stmt;
+            }
+            List<String> cases = new ArrayList<String>();
+            for (String caseExpr : stmt.getCaseConditions()) {
+                if (caseExpr != "default" && caseExpr != "repeat") {
+                    cases.add(caseExpr);
+                    SymbolTable oldSymTab1 = symtab;
+                    symtab = new SymbolTable(symtab);
+                    symtab.registerVar(var.getName(),
+                            (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+
+                    Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                    symtab = oldSymTab1;
+                } else {
+                    if (caseExpr == "default" && varsToTrack.containsKey(var.getName()))
+                    {
+                        TypeStructRef tt = (TypeStructRef) (getType(var));
+
+                        boolean hasRec = false;
+                        StructDef cur = nres.getStruct(tt.getName());
+                        for (StructFieldEnt f : cur.getFieldEntriesInOrder()) {
+                            if (f.getType().promotesTo(type, nres)) {
+                                hasRec = true;
+                            }
+                        }
+                        if (!hasRec) {
+                            List<String> defCases = findDefaultCases(cases, tt.getName());
+
+                        for (String c : defCases) {
+                            if (hasRecursiveFields(c))
+                                    hasRec = true;
+                            }
+                        }
+
+                        if (!hasRec) {
+                            // can remove the var from unsafe var list for this case
+                            varsToTrack.remove(var.getName());
+                            Statement body =
+                                    (Statement) stmt.getBody(caseExpr).accept(this);
+                            varsToTrack.put(var.getName(), false);
+
+                        } else {
+                            Statement body =
+                                    (Statement) stmt.getBody(caseExpr).accept(this);
+                        }
+                    } else {
+                        Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
+                    }
+                }
+            }
+            return stmt;
+        }
+
+        private List<String> findDefaultCases(List<String> cases, String string) {
+            List<String> allCases = new ArrayList<String>();
+
+            LinkedList<String> queue = new LinkedList<String>();
+            queue.add(string);
+            while (!queue.isEmpty()) {
+                String n = queue.removeFirst();
+                List<String> children = nres.getStructChildren(n);
+                if (children.isEmpty()) {
+                    allCases.add(n.split("@")[0]);
+                } else {
+                    queue.addAll(children);
+                }
+            }
+
+            for (String c : cases) {
+                allCases.remove(c);
+            }
+            return allCases;
+        }
+
+        @Override
+        public Object visitExprBinary(ExprBinary exp) {
+            if (!safe || !finalSafe)
+                return exp;
+            if (exp.getOp() == ExprBinary.BINOP_EQ) {
+                if (exp.getLeft() instanceof ExprVar) {
+                    ExprVar lvar = (ExprVar) exp.getLeft();
+                    if (varsToTrack.containsKey(lvar.getName())) {
+                        if (varsToTrack.get(lvar.getName())) {
+                            safe = false;
+                            finalSafe = false;
+                        }
+                    }
+                } else {
+                    exp.getLeft().doExpr(this);
+                }
+                if (!safe || !finalSafe)
+                    return exp;
+                if (exp.getRight() instanceof ExprVar) {
+                    ExprVar rvar = (ExprVar) exp.getRight();
+                    if (varsToTrack.containsKey(rvar.getName())) {
+                        if (varsToTrack.get(rvar.getName())) {
+                            safe = false;
+                            finalSafe = false;
+                        }
+                    }
+                } else {
+                    exp.getRight().doExpr(this);
+                }
+                return exp;
+            }
+
+            return super.visitExprBinary(exp);
+        }
+
+        @Override
+        public Object visitExprField(ExprField exp) {
+            if (!safe || !finalSafe)
+                return exp;
+            Type t = getType(exp);
+            if (!t.promotesTo(type, nres)) {
+                safe = true;
+                return exp;
+            }
+            super.visitExprField(exp);
+            if (!safe)
+                fieldAccess = true;
+            return exp;
+        }
+
+        @Override
+        public Object visitExprVar(ExprVar exp) {
+            if (!safe || !finalSafe)
+                return exp;
+
+            if (varsToTrack.containsKey(exp.getName())) {
+                TypeStructRef t = (TypeStructRef) (getType(exp));
+                if (varsToTrack.get(exp.getName()) || hasRecursiveFields(t.getName())) {
+                    safe = false;
+                    failContext = exp.getContext();
+                }
+            }
+            return exp;
+        }
+
+        private boolean hasRecursiveFields(String name) {
+            LinkedList<String> queue = new LinkedList<String>();
+            queue.addLast(name);
+            while (!queue.isEmpty()) {
+                String n = queue.removeFirst();
+                StructDef cur = nres.getStruct(n);
+                for (StructFieldEnt f : cur.getFieldEntriesInOrder()) {
+                    if (f.getType().promotesTo(type, nres)) {
+                        return true;
+                    }
+                }
+
+                queue.addAll(nres.getStructChildren(n));
+            }
+            return false;
+        }
+
+        @Override
+        public Object visitExprFunCall(ExprFunCall exp) {
+            if (!safe || !finalSafe)
+                return exp;
+            if (exp.getName().equals(fname)) {
+                List<Expression> params = exp.getParams();
+                // first params can be unsafe
+                for (int i = 1; i < params.size(); i++) {
+                    params.get(i).doExpr(this);
+                    if (!safe) {
+                        finalSafe = false;
+                        failContext = exp.getContext();
+                    }
+                }
+            } else {
+                super.visitExprFunCall(exp);
+                if (!safe) {
+                    finalSafe = false;
+                    failContext = exp.getContext();
+                }
+            }
+            return exp;
+        }
+    }
 
     /**
      * Checks that no structures have duplicated field names. In particular, a field in a
@@ -135,11 +449,6 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 while (current != null) {
                     for (Entry<String, Type> entry : current) {
                         if (ts.immutable()) {
-                            //disallow arrays in immutable structs
-                            if(entry.getValue().isArray()){
-                                report(ts.getContext(),
-                                        "Arrays are not allowed in immutable structs");
-                            }
                             if (entry.getValue().isStruct()) {
                                 TypeStructRef tt = (TypeStructRef) entry.getValue();
                                 StructDef fieldStruct = nres.getStruct(tt.getName());
@@ -282,7 +591,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             Type curType = getType(newExpr);
             // Make sure that curType is a super type of castedType
             if (!castedType.promotesTo(curType, nres)) {
-                report(exp, "Invalid explicit typecasting");
+                return new ExprNullPtr();
+                // report(exp, "Invalid explicit typecasting");
             }
         }
         if (newExpr == exp.getExpr() && castedType == exp.getType())
@@ -473,8 +783,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         checkDupFieldNames(prog);
         checkPackageNames(prog);
 
-
-        return super.visitProgram(prog);
+        Program newProg = (Program) super.visitProgram(prog);
+        return checkReplaceFunCall(newProg);
     }
 
     public Object visitExprFunCall(ExprFunCall exp) {
@@ -524,7 +834,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                     Type formalType = tren.rename(formal.getType());
                     Type ftt = formalType;
-                    Type att = getType(actual);
+                    Expression newParam = doExpression(actual);
+                    Type att = getType(newParam);
                     while (ftt instanceof TypeArray) {
                         TypeArray ta = (TypeArray) ftt;
                         Expression actLen = null;
@@ -551,9 +862,18 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                             }
                         }
                     }
-                    Expression newParam = doExpression(actual);
+
+                    boolean typeCheck = true;
+                    if (newParam instanceof ExprNew) {
+                        if (((ExprNew) newParam).isHole())
+                            typeCheck = false;
+                    }
+                    if (newParam instanceof ExprADTHole) {
+                        typeCheck = false;
+                    }
                     Type lt = getType(newParam);
-                    if (lt == null || !lt.promotesTo((formalType), nres)) {
+
+                    if (typeCheck && (lt == null || !lt.promotesTo((formalType), nres))) {
                         report(exp, "Bad parameter type: Formal type=" + formal +
                                 "\n Actual type=" + lt + "  " + f);
                     }
@@ -576,23 +896,35 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                 }
 
-                Type lt = getType(newParam);
-                Type formalType = tren.rename(formal.getType());
-                formalType = formalType.addDefaultPkg(f.getPkg(), nres);
-                if (formalType instanceof TypeStructRef &&
-                        ((TypeStructRef) formalType).getName() == null)
-                {
-                    report(exp, "Bad parameter type: Formal type=" + formal +
-                            "\n Actual type=" + lt + "  " + f);
+                boolean typeCheck = true;
+                if (newParam instanceof ExprNew) {
+                    if (((ExprNew) newParam).isHole())
+                        typeCheck = false;
                 }
-                if (lt == null || !lt.promotesTo(formalType, nres)) {
-                    report(exp, "Bad parameter type: Formal type=" + formal +
-                            "\n Actual type=" + lt + "  " + f);
+                if (newParam instanceof ExprADTHole) {
+                    typeCheck = false;
+                }
+
+                if (typeCheck) {
+                    Type lt = getType(newParam);
+                    Type formalType = tren.rename(formal.getType());
+                    formalType = formalType.addDefaultPkg(f.getPkg(), nres);
+                    if (formalType instanceof TypeStructRef &&
+                            ((TypeStructRef) formalType).getName() == null)
+                    {
+                        report(exp, "Bad parameter type: Formal type=" + formal +
+                                "\n Actual type=" + lt + "  " + f);
+                    }
+                    if (lt == null || !lt.promotesTo(formalType, nres)) {
+                        report(exp, "Bad parameter type: Formal type=" + formal +
+                                "\n Actual type=" + lt + "  " + f);
+                    }
                 }
                 if (newParam instanceof ExprNamedParam) {
                     throw new ExceptionAtNode(
                             "Named function parameters not supported. ", newParam);
                 }
+
                 newParams.add(newParam);
                 if (param != newParam)
                     hasChanged = true;
@@ -663,17 +995,19 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
             for (Parameter f1 : func.getParams()) {
                 if (f1.getType() instanceof TypeStructRef) {
-                    report(func,
-                            "A harness function can not have a structure or array of structures as input: " +
-                                    f1);
+                        // TODO: should only allow immutable structs
+                    //report(func,
+                     //       "A harness function can not have a structure or array of structures as input: " +
+                        // f1);
                     return super.visitFunction(func);
                 }
                 if (f1.getType() instanceof TypeArray) {
                     if (((TypeArray) f1.getType()).getAbsoluteBase() instanceof TypeStructRef)
                     {
-                        report(func,
-                                "A harness function can not have a structure or array of structures as input: " +
-                                        f1);
+                            // report(func,
+                            // "A harness function can not have a structure or array of structures as input: "
+                            // +
+                            // f1);
                         return super.visitFunction(func);
                     }
                 }
@@ -1049,8 +1383,6 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
     // ADT
     public Object visitStmtSwitch(StmtSwitch stmt) {
-        SymbolTable oldSymTab = symtab;
-        symtab = new SymbolTable(symtab);
         ExprVar var = (ExprVar) stmt.getExpr().accept(this);
 
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
@@ -1059,28 +1391,46 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             report(stmt, "ExprVar in switch statement must be of type struct");
         }
         TypeStructRef tres = (TypeStructRef) (symtab.lookupVar(var));
+        // NOTE xzl: need to add the package suffix of the matched var to the case types
+        String pkg = nres.getStruct(tres.getName()).getPkg();
 
-        List<String> children = nres.getStructChildren(tres.getName());
+        String curName = tres.getName();
+        if (nres.isTemplate(curName)) {
+            return super.visitStmtSwitch(stmt);
+        }
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
+        // String parentName = curName;
+        // while (parentName != null) {
+        // curName = parentName;
+        // parentName = nres.getStructParentName(parentName);
+        // }
+        List<String> children = nres.getStructChildren(curName);
 
         if (children == null || children.isEmpty()) {
             report(stmt, "Pattern matching on variable " + var + " of type " + tres +
                     " but that type has no variants");
         }
-        if(!stmt.getCaseConditions().contains("default")){
+        if (!stmt.getCaseConditions().contains("default") &&
+                !stmt.getCaseConditions().contains("repeat"))
+        {
             if (!isExhaustive(children, stmt.getCaseConditions())) {
                 report(stmt, "Switch cases must be exclusive and exhaustive");
             }
         }
 
+
         // visit each case body
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (caseExpr != "default") {
+            if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
                 if (!checkCaseExpr(caseExpr, children)) {
                     report(stmt, "Case must be a variant of the type " + tres);
                 }
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
-                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false));
+                symtab.registerVar(var.getName(),
+                        new TypeStructRef(caseExpr, false).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);
@@ -1090,6 +1440,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 newStmt.addCaseBlock(caseExpr, body);
             }
         }
+
         symtab = oldSymTab;
         return newStmt;
 
@@ -1528,11 +1879,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         if (lhsExp instanceof ExprVar) {
             lhsn = ((ExprVar) lhsExp).getName();
         }
-        boolean isHole = false;
+        boolean typeCheck = true;
         if (newRHS instanceof ExprNew) {
-            isHole = ((ExprNew) newRHS).isHole();
+            if (((ExprNew) newRHS).isHole())
+                typeCheck = false;
         }
-        if (!isHole) {
+        if (newRHS instanceof ExprADTHole) {
+            typeCheck = false;
+        }
+        if (typeCheck) {
             matchTypes(stmt, lt, rt);
         }
         if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
@@ -1559,11 +1914,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             Expression ie = result.getInit(i);
             if (ie != null) {
                 Type rt = getType(ie);
-                boolean isHole = false;
+                boolean typeCheck = true;
                 if (ie instanceof ExprNew) {
-                    isHole = ((ExprNew) ie).isHole();
+                    if (((ExprNew) ie).isHole())
+                        typeCheck = false;
                 }
-                if (!isHole) {
+                if (ie instanceof ExprADTHole) {
+                    typeCheck = false;
+                }
+                if (typeCheck) {
                     matchTypes(result, (result.getType(i)), rt);
                 }
             }

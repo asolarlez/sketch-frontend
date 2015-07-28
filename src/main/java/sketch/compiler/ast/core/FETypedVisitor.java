@@ -103,6 +103,10 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, exp);
     }
 
+    public T visitExprADTHole(ExprADTHole exp) {
+        throw new FEVisitorException(this, exp);
+    }
+
     public T visitExprLiteral(ExprLiteral exp) {
         throw new FEVisitorException(this, exp);
     }
@@ -346,8 +350,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, exprtyp);
     }
 
-    public Object visitExprFieldMacro(ExprFieldMacro exp) {
-        // TODO Auto-generated method stub
+    public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
         throw new FEVisitorException(this, exp);
     }
 

@@ -1,0 +1,11 @@
+
+harness void main(int x, int y){
+    int t = {| ??*x | ??*y | x * y | x + y |};
+    int u = {| ??*x | ??*y | x * y | x + y |};
+    int v = {| t * u | t + u | t * x | t * t * u |};
+    if(x > y){
+        assert v == 7*x + x*y;
+    }
+    
+    
+}

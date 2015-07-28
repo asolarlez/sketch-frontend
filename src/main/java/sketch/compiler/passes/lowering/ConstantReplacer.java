@@ -300,7 +300,7 @@ public class ConstantReplacer extends FEReplacer {
                     Expression len = arr.getLength();
                     Expression newlen = (Expression) len.accept(this);
                     if (newlen != len) {
-                        params.set(i, new Parameter(par, new TypeArray(arr.getBase(),
+                        params.set(i, new Parameter(par, par.getSrcTupleDepth(), new TypeArray(arr.getBase(),
                                 newlen),
                                 par.getName(), par.getPtype()));
                         changed = true;

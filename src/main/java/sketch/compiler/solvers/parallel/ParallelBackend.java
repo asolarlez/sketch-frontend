@@ -21,6 +21,7 @@ import sketch.util.exceptions.SketchSolverException;
 public class ParallelBackend extends SATBackend {
 
     protected boolean parallel_solved = false;
+    protected boolean parallel_failed = false;
     private List<Process> cegiss;
     protected Object lock;
 
@@ -60,7 +61,7 @@ public class ParallelBackend extends SATBackend {
                         "=== parallel trial w/ degree " + options.solverOpts.randdegree +
                                 " (" + fileIdx + ")";
                 synchronized (lock) {
-                    if (parallel_solved) {
+                    if (parallel_solved || parallel_failed) {
                         plog(prefix + " aborted ===");
                         return null;
                     }
@@ -78,12 +79,18 @@ public class ParallelBackend extends SATBackend {
                         parallel_solved = true;
                     }
                     synchronized (lock) {
+                        options.setSolFileIdx(Integer.toString(fileIdx));
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
                         log(2, "Stats for last run:\n" + worker_stat);
                         plog(out, prefix + " solved ===");
                     }
                 } else {
+                    if (worker_stat != null && worker_stat.decided()) {
+                        synchronized (lock) {
+                            parallel_failed = true;
+                        }
+                    }
                     String failed_solution = options.getSolutionsString(fileIdx);
                     try {
                         Files.delete(Paths.get(failed_solution));
@@ -126,7 +133,7 @@ public class ParallelBackend extends SATBackend {
             for (nTrial = 0; nTrial < max_trials; nTrial++) {
                 // while submitting tasks, check whether it's already solved
                 synchronized (lock) {
-                    if (parallel_solved) {
+                    if (parallel_solved || parallel_failed) {
                         es.shutdown(); // no more tasks accepted
                         break;
                     }
@@ -161,6 +168,13 @@ public class ParallelBackend extends SATBackend {
                     // found a worker that finishes the job
                     if (r != null && r.successful()) {
                         plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
+                        es.shutdownNow(); // attempts to stop active tasks
+                        // break the iteration and go to finally block
+                        break;
+                    }
+                    if (r != null && r.decided()) {
+                        plog("=== resolved within " + (i + 1) +
+                                " complete parallel trial(s)");
                         es.shutdownNow(); // attempts to stop active tasks
                         // break the iteration and go to finally block
                         break;

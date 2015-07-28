@@ -110,7 +110,7 @@ public class ReinterpretAssumes extends FEReplacer {
                 }
             }
             newNewPkgs.add(new Package(pk, pk.getName(), pk.getStructs(), pk.getVars(),
-                    lf));
+                    lf, pk.getSpAsserts()));
         }
         
         return prog.creator().streams(newNewPkgs).create();

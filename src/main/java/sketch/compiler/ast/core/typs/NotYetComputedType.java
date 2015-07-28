@@ -14,7 +14,7 @@ public class NotYetComputedType extends Type {
     @Override
     public TypeComparisonResult compare(Type that) {
         if (that instanceof NotYetComputedType) {
-            return TypeComparisonResult.MAYBE;
+            return TypeComparisonResult.EQ;
         }
         return TypeComparisonResult.NEQ;
     }

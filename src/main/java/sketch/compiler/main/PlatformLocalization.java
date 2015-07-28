@@ -263,6 +263,24 @@ public class PlatformLocalization {
                     "../sketch-backend/src/SketchSolver", "../sketch-backend/bindings");
         }
     }
+    
+    static File[] convertFiles(String name, File[] files) {
+        Vector<File> dirs = new Vector<File>(1);
+        for (File f : files) {
+            if (f.isDirectory()) {
+                dirs.add(new File(f, name));
+            } else if (f.isFile()) {
+                dirs.add(new File(f.getParentFile(), name));
+            }
+        }
+        return dirs.toArray(new File[0]);
+    }
+
+    public class ResolveFromFileAndPATH extends ResolveFromPATH {
+        public ResolveFromFileAndPATH(String name, File... files) {
+            super(name, convertFiles(name, files));
+        }
+    }
 
     public class ResolveRuntime extends ResolvePath {
         public ResolveRuntime(String name, File... otherPaths) {

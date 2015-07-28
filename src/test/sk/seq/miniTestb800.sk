@@ -1,0 +1,17 @@
+adt bar {
+	bar1 { }
+	bar2 {int[2] arr; }
+}
+
+void moo(bar x){ }
+
+harness void foo () {
+	bar b;
+	bar b1 = new bar1();
+	bar b2 = new bar2(arr = {2, 3});
+	b = {b1, b2}[??];
+	switch(b) {
+		case bar1: { moo(b); }
+		case bar2: {assert (b.arr[0] == 2); }
+	}	
+}
