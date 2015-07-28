@@ -1158,7 +1158,6 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             }
     |	t3:NDANGELIC
 			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
-	// MIGUEL this is where I need to modify the grammar so that my symbol is understood by the parser
     |  (local_variable) => x = local_variable
     ;
     

@@ -13,7 +13,6 @@ import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
 import sketch.compiler.passes.preprocessing.EliminateListOfFieldsMacro;
 import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
-import sketch.compiler.passes.preprocessing.LocalVariablesReplacer;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.RemoveADTHoles;
 import sketch.compiler.passes.preprocessing.TypeInferenceForADTHoles;
@@ -110,7 +109,7 @@ public class PreprocessStage extends MetaStage {
 		// prog.debugDump("************************************** 8");
 
 
-        prog = (Program) prog.accept(new GlobalsToParams(varGen)); // TODO MIGUEL this is where something special happens
+		prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
 		// prog.debugDump("************************************** 9");
 

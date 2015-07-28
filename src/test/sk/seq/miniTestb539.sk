@@ -1,8 +1,6 @@
 include "miniTestb539c.skh";
 include "miniTestb539b.skh";
 
-// TODO Miguel fix
-
 package c;
 
 struct A{

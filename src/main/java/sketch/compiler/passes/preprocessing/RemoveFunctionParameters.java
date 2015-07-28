@@ -2,10 +2,26 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.*;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -381,7 +397,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             // Get the latest function
             String fname = funsToVisit.pop();
             String pkgName = getPkgName(fname);
-
+			nres.setPackage(pkges.get(pkgName));
             Function next = nres.getFun(fname);
 
             // If visited function does not contains the current function
@@ -412,8 +428,10 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
         // This is where the new program is created
         Program np = p.creator().streams(newPkges).create();
+		np.debugDump();
 
         Program aftertc = (Program) np.accept(new ThreadClosure());
+		aftertc.debugDump();
 
         Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
 
@@ -472,7 +490,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                 tempFunctionsCount++;
 
                 return null;
-                // TODO MIGUEL be careful since now we are allowing fun as type
+				// TODO be careful since now we are allowing fun as type
+
                 // throw new ExceptionAtNode(
                 // "You can not declare a variable with fun type.", svd);
             }
@@ -1611,7 +1630,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         public Object visitStmtVarDecl(StmtVarDecl svd) {
             final InnerFunReplacer localIFR = this; 
-            final TempVarGen varGen = RemoveFunctionParameters.this.varGen;
+			final TempVarGen varGen = RemoveFunctionParameters.this.varGen;
             FEReplacer remREGinDecl = new FEReplacer() {
                 public Object visitTypeArray(TypeArray t){
                     Type nbase = (Type)t.getBase().accept(this);

@@ -1,5 +1,4 @@
 include "miniTestb293a.skh";
-// TODO MIGUEL fix
 
 int boo(int x, int y, fun f){
     return ?? * f(x) + ?? * f(y);

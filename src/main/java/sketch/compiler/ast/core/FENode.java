@@ -119,7 +119,6 @@ public abstract class FENode
         return (T) (accept((FEVisitor) v));
     }
 
-	// TODO MIGUEL this might help us when we do the casting part
     @SuppressWarnings("unchecked")
     public <T> T acceptAndCast(FEVisitor v) {
         Object rv = this.accept(v);
