@@ -173,7 +173,7 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 			// Create a new package with the new functions
 			newPkges.add(new Package(pkg, pkg.getName(), 
 					pkg.getStructs(), pkg.getVars(), 
-					newPackageFunctionList.get(pkg.getName())));
+                    newPackageFunctionList.get(pkg.getName()), pkg.getSpAsserts()));
 		}
 		
 		// Create a new program with the new packages

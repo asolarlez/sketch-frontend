@@ -319,11 +319,11 @@ pragma_stmt { String args = ""; }
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
 	List xs = new ArrayList(); FEContext ctx = null; }
-	:	t=data_type id:ID (ASSIGN x=var_initializer)?
+	:	t=data_type id:ID (ASSIGN x=expr_or_lambda)?
 		{ ctx = getContext(id); ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
 			{ x = null; }
-			COMMA id2:ID (ASSIGN x=var_initializer)?
+			COMMA id2:ID (ASSIGN x=expr_or_lambda)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
 		{ f = new FieldDecl(ctx, ts, ns, xs); }
@@ -458,20 +458,22 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	List xs = new ArrayList(); }
 	:	t=data_type
 		id:ID
-		(ASSIGN x=var_initializer)?
+		(ASSIGN x=expr_or_lambda)?
 		{ ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
 			{ x = null; }
-			COMMA id2:ID (ASSIGN x=var_initializer)?
+			COMMA id2:ID (ASSIGN x=expr_or_lambda)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-// implicit_type_variable_decl returns [Statement s] { s = null; Expression init = null; }
-//     : id:ID DEF_ASSIGN init=type_or_var_initializer
-//     { s = new StmtImplicitVarDecl(getContext(id), id.getText(), init); }
-// ;
+
+expr_or_lambda returns [Expression e] { e = null; }
+:
+   (LPAREN COMMA) => e = lambda_expr
+   | e=right_expr
+;
 
 annotation returns [Annotation an]{
 	an = null;
@@ -855,7 +857,7 @@ constr_params returns [List l] { l = new ArrayList(); Expression x; }
 
 expr_named_param returns [ Expression x ] { x = null; Token t = null; }
     :   (id:ID ASSIGN)? { t = id; }
-        x=right_expr
+        x= expr_or_lambda
         {
             if (t != null) {
                 x = new ExprNamedParam(getContext(t), t.getText(), x);
@@ -901,26 +903,15 @@ agmax_expr returns [Expression x] { x = null; Expression exprMax = null; }
 	;
 */
 
-var_initializer returns [Expression x] { x = null; }
-: (arr_initializer) => x=arr_initializer
-| 	x=right_expr
-	;
 
-type_or_var_initializer returns [Expression x] { x = null; }
-: (arr_initializer) => x=arr_initializer
-| 	x=right_expr
-	;
 
-// type_or_var_initializer returns [Expression x] { x = null; }
-// : (var_initializer) => x=var_initializer
-//  | x=TypeExpression;
 
 arr_initializer returns [Expression x] { ArrayList l = new ArrayList();
                                          x = null;
                                          Expression y; }
     : lc:LCURLY
-      ( y=var_initializer { l.add(y); }
-            (COMMA y=var_initializer { l.add(y); })*
+      ( y=right_expr { l.add(y); }
+            (COMMA y=right_expr { l.add(y); })*
       )?
       RCURLY
         { x = new ExprArrayInit(getContext(lc), l); }
@@ -1079,8 +1070,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|   (expr_get) => x = expr_get
 	|	(func_call) => x=func_call
-	| 	(constructor_expr) => x = constructor_expr
-	|   (lambda_expr) => x = lambda_expr // TODO Switch with the parenthesized expression.
+	| 	(constructor_expr) => x = constructor_expr	
 	|	x=var_expr
 	|	x=constantExpr
 	|   x=arr_initializer

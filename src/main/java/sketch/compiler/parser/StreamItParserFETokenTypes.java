@@ -157,15 +157,16 @@ public interface StreamItParserFETokenTypes {
 	int AT = 110;
 	int BACKSLASH = 111;
 	int LESS_COLON = 112;
-	int REGEN = 113;
-	int CHAR_LITERAL = 114;
-	int STRING_LITERAL = 115;
-	int ESC = 116;
-	int DIGIT = 117;
-	int HQUAN = 118;
-	int NUMBER = 119;
-	int ID = 120;
-	int TK_device = 121;
-	int TK_library = 122;
-	int TK_printfcn = 123;
+	int LOCAL_VARIABLES = 113;
+	int REGEN = 114;
+	int CHAR_LITERAL = 115;
+	int STRING_LITERAL = 116;
+	int ESC = 117;
+	int DIGIT = 118;
+	int HQUAN = 119;
+	int NUMBER = 120;
+	int ID = 121;
+	int TK_device = 122;
+	int TK_library = 123;
+	int TK_printfcn = 124;
 }
