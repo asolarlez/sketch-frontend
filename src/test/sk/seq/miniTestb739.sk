@@ -11,5 +11,5 @@ harness void main(){
 		return a;	
 	}
   
-    assert apply((,y) -> foo() + y, 1) == 5;
+    assert apply((y) -> foo() + y, 1) == 5;
 }

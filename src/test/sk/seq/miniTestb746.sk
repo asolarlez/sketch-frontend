@@ -6,7 +6,7 @@ harness void main(){
 		return x + 1;
 	}
 	
-	fun f = (,y) -> foo(y) + 1;
+	fun f = (y) -> foo(y) + 1;
 	
 	assert f(3) == 5;
 }

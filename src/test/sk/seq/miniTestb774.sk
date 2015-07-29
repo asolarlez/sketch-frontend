@@ -10,6 +10,7 @@ harness void main() {
 	assert apply(5 + a, 5 * a) == 35;
 }
 
+/*
 adt NODE {
     Op {NODE left; NODE right;}
     Arr {int sz; int[sz][2] arr; int dflt;}
@@ -22,3 +23,4 @@ harness void main(){
     NODE e = ??({});
     assert(e1 === e);
 }
+*/

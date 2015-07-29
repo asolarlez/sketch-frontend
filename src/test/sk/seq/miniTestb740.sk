@@ -13,7 +13,7 @@ harness void main(){
 	
 	a = 10;
 		
-	fun f = (,x) -> foo() + x + a;
+	fun f = (x) -> foo() + x + a;
   
     assert apply(f) == 25;
 }

@@ -5,14 +5,14 @@ int apply(fun f, int x) {
 }
 
 int foo() {
-	fun f = (,y) -> y - 5;
+	fun f = (y) -> y - 5;
 	int a = apply(f, 6);
 	
 	return a;
 }
 
 int moo() {
-	fun f = (,x) -> x + 5;
+	fun f = (x) -> x + 5;
 	int a = apply(f, 10);
 	
 	return a;

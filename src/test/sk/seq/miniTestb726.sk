@@ -4,7 +4,7 @@
 
 int apply(fun function, int x){
 	int y = 9;
-	fun a = (,y) -> y + 1;
+	fun a = (y) -> y + 1;
     return function(x);
 }
 

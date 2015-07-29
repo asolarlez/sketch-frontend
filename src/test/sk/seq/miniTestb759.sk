@@ -5,7 +5,7 @@ int apply(fun f, int x) {
 }
 
 harness void main(){		
-    fun f = (,y) -> y + 5;
+    fun f = (y) -> y + 5;
                   
     assert apply(f, 5) == 10;
 }

@@ -1,7 +1,7 @@
 // Testing lambda expressions with local variable
 
 harness void main(){	
-    fun f = (,t) -> t + 1;
+    fun f = (t) -> t + 1;
     
     int x = f(3);
     int y = f(1);

@@ -1,7 +1,7 @@
 // Testing inlining a lambda expression
 
 harness void main(){	
-    fun f = (,x) -> x + 1;
+    fun f = (x) -> x + 1;
     
     int x = f(3);
     int y = f(4);

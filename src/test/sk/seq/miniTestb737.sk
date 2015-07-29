@@ -9,9 +9,9 @@ harness void main(){
 	int four = 4;
 	int one = 1;
 			
-	fun f0 = (,x) -> one + 1 + x; 
-    fun f1 = (,x) -> x + f0(x) + four;
-    fun f2 = (,t) -> f1(t) + 1;
+	fun f0 = (x) -> one + 1 + x; 
+    fun f1 = (x) -> x + f0(x) + four;
+    fun f2 = (t) -> f1(t) + 1;
               
     assert apply(f2, 5) == 17;
 }

@@ -5,7 +5,7 @@ int apply(fun f) {
 }
 
 int lambda1() {
-	fun f = (,x) -> x;
+	fun f = (x) -> x;
 	
 	return f(2);
 }

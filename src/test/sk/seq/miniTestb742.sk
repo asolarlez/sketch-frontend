@@ -5,13 +5,13 @@ int apply(fun f, int y) {
 }
 
 int foo(int x) {
-	int a = apply((,y) -> y - 2, x); // Different function
+	int a = apply((y) -> y - 2, x); // Different function
 	
 	return a;
 }
 
 int moo(int x) {
-	int a = apply((,y) -> y + y, x); // Different function
+	int a = apply((y) -> y + y, x); // Different function
 	
 	return a;
 }

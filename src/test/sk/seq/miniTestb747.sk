@@ -4,7 +4,7 @@ harness void main(){
 	int a = 2;
 	int b = 3;
 	
-	fun f = (,x) -> x + $(int);
+	fun f = (x) -> x + $(int);
 	
 	int c = 8; // This is not included in the local variable
 	

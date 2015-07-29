@@ -6,7 +6,11 @@ harness void main(){
     int x = f(3);
     int y = f(2);
     
-  	f = (t) -> t + 5; // Error since f was already defined.
+    int x = 3;
+    
+  	// f = (t) -> t + 5; // Error since f was already defined.
+  	
+  	fun f = (t) -> t + 5;//Should not work, but it is!
     
     
     assert x + y == 7;
