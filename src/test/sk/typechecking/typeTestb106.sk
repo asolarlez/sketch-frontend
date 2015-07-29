@@ -1,13 +1,11 @@
 // Cannot return type fun
 
 fun error() {
-	fun f = (,x) -> x + 2;
+	fun f = () -> 5;
 	
 	return f;
 }
 
 harness void main() {
- 	fun f = error();
- 	
- 	assert f(3) == 5;
+	fun g = error();
 }
