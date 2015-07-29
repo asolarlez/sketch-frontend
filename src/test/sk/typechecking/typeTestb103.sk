@@ -1,12 +1,12 @@
 // Testing shadowing of function
 
 harness void main(){	
-    fun f = (,t) -> t + 1;
+    fun f = (t) -> t + 1;
 
     int x = f(3);
     int y = f(2);
     
-  	f = (,t) -> t + 5; // Error since f was already defined.
+  	f = (t) -> t + 5; // Error since f was already defined.
     
     
     assert x + y == 7;

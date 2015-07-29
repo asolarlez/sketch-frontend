@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (20060906): "src/main/other/sketch/compiler/parser/StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR 2.7.7 (20060906): "StreamItLex.g" -> "StreamItLex.java"$
 
 	package sketch.compiler.parser;
 	
@@ -208,7 +208,7 @@ tryAgain:
 				}
 				case '$':
 				{
-					mDOLLAR(true);
+					mLOCAL_VARIABLES(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -1420,12 +1420,12 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	public final void mDOLLAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+	public final void mLOCAL_VARIABLES(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = DOLLAR;
+		_ttype = LOCAL_VARIABLES;
 		int _saveIndex;
 		
-		match('$');
+		match("$");
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));

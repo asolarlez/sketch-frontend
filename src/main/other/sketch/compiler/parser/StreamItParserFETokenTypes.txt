@@ -121,3 +121,4 @@ ID("an identifier")=121
 TK_device=122
 TK_library=123
 TK_printfcn=124
+DOLLAR=125

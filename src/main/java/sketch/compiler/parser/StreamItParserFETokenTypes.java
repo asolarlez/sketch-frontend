@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (20060906): "src/main/other/sketch/compiler/parser/StreamItParserFE.g" -> "StreamItParserFE.java"$
+// $ANTLR 2.7.7 (20060906): "StreamItParserFE.g" -> "StreamItParserFE.java"$
 
 package sketch.compiler.parser;
 
@@ -157,7 +157,7 @@ public interface StreamItParserFETokenTypes {
 	int AT = 110;
 	int BACKSLASH = 111;
 	int LESS_COLON = 112;
-	int DOLLAR = 113;
+	int LOCAL_VARIABLES = 113;
 	int REGEN = 114;
 	int CHAR_LITERAL = 115;
 	int STRING_LITERAL = 116;
@@ -169,4 +169,5 @@ public interface StreamItParserFETokenTypes {
 	int TK_device = 122;
 	int TK_library = 123;
 	int TK_printfcn = 124;
+	int DOLLAR = 125;
 }
