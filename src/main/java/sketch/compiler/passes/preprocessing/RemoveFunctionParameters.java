@@ -1654,12 +1654,15 @@ public class RemoveFunctionParameters extends FEReplacer {
             for (int i = 0; i < svd.getNumVars(); ++i) {
                 // If the statement is a lambda expression
                 if (svd.getType(i) instanceof TypeFunction &&
-                        svd.getInit(0) instanceof ExprLambda)
-                {
-                    // Visit the lambda in case some of the values in the expression need
+                        svd.getInit(0) instanceof ExprLambda) {
+					// If this function name has been declared before
+                	if (symtab.hasVar(svd.getName(i))) {
+                        throw new ExceptionAtNode("Shadowing of variables is not allowed.", svd);
+                    }
+                	
+                	// Visit the lambda in case some of the values in the expression need
                     // to change
                     currentExprLambda = (ExprLambda) svd.getInit(0);
-
                     currentExprLambda = (ExprLambda) this.doExpression(currentExprLambda);
 
                     // Map the function call to the lambda expression
@@ -1669,6 +1672,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                     // Map the new name with the old
                     lambdaRenameMap.put(svd.getName(0), svd.getName(0) +
                             tempFunctionsCount);
+                    
+					// Register this function variable in the symbol table
+                    symtab.registerVar(svd.getName(0), svd.getType(0), svd, SymbolTable.KIND_LOCAL);
 
                     // Increment the number of temp functions
                     tempFunctionsCount++;
