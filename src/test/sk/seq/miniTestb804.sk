@@ -1,0 +1,12 @@
+
+harness void main(){	
+    bit b = 1;
+    char c = 3;
+    int i = 15;
+    
+    bit b1 = $(bit);
+    char c1 = $(char);
+    int i1 = $(int);
+    
+	assert i1 == 3; 
+}

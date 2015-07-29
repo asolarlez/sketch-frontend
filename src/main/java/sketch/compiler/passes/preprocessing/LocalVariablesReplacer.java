@@ -61,8 +61,8 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// Map this expression to the variables that it can take
 		this.localVariablesMap.put(exp, this.symtab.getLocalVariablesOfType(exp.getType()));
 				
-		// If the type is int
-		if(exp.getType() == TypePrimitive.inttype) {
+		// If the type is int or char
+		if(exp.getType() == TypePrimitive.inttype || exp.getType() == TypePrimitive.chartype) {
 			// Get the bit local variables since we can use those
 			List<Expression> bitLocalVariables = this.symtab.getLocalVariablesOfType(TypePrimitive.bittype);
 			
@@ -77,13 +77,37 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 					currentLocalVariables.add(variable);
 				}
 			}
+			
+		}
+		
+		// If the type is int
+		if (exp.getType() == TypePrimitive.inttype) {
+			// Get the bit local variables since we can use those
+			List<Expression> charLocalVariables = this.symtab
+					.getLocalVariablesOfType(TypePrimitive.chartype);
+
+			// Get the current local variables for this expression
+			List<Expression> currentLocalVariables = this.localVariablesMap
+					.get(exp);
+
+			// Loop through the char local variables
+			for (Expression variable : charLocalVariables) {
+				// If the variables is not already included
+				if (!currentLocalVariables.contains(variable)) {
+					// Add it
+					currentLocalVariables.add(variable);
+				}
+			}
 		}
 
 		// Get the default value of this type
 		Expression defaultValue = exp.getType().defaultValue();
 		
+		if(defaultValue.equals(TypePrimitive.chartype.defaultValue())) {
+			this.localVariablesMap.get(exp).add(TypePrimitive.bittype.defaultValue());	
+		}
 		// If it is not null
-		if (!(defaultValue instanceof ExprNullPtr)) {
+		else if (!(defaultValue instanceof ExprNullPtr)) {
 			// Add it
 			this.localVariablesMap.get(exp).add(defaultValue);			
 		}
