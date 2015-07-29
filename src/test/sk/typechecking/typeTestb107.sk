@@ -1,9 +1,7 @@
 // Cannot return lambda
 
-// TODO MIGUEL Check grammar
-
 fun error() {
-	return (,x) -> x + 2;
+	return (x) -> x + 2;
 }
 
 harness void main() {

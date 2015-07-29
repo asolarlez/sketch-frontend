@@ -1,7 +1,5 @@
 // Cannot have statements in lambda expression
 
-// TODO MIGUEL Check grammar
-
 harness void main() {
 	int t = 3;
 	
