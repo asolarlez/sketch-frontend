@@ -3560,9 +3560,9 @@ inputState.guessing--;
 				match(ID);
 				if ( inputState.guessing==0 ) {
 					
-						  		// Create a new ExprVar and add it to the list of variables
-						  		list.add(new ExprVar(getContext(temp1), temp1.getText())); 
-						  	
+							  		// Create a new ExprVar and add it to the list of variables
+							  		list.add(new ExprVar(getContext(temp1), temp1.getText())); 
+							  	
 				}
 				{
 				_loop191:
@@ -3573,9 +3573,9 @@ inputState.guessing--;
 						match(ID);
 						if ( inputState.guessing==0 ) {
 							
-								  		// Create a new ExprVar and add it to the list of variables
-								  		list.add(new ExprVar(getContext(temp2), temp2.getText())); 
-								  	
+									  		// Create a new ExprVar and add it to the list of variables
+									  		list.add(new ExprVar(getContext(temp2), temp2.getText())); 
+									  	
 						}
 					}
 					else {
