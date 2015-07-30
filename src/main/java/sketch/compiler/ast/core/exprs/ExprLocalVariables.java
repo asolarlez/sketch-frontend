@@ -87,20 +87,20 @@ public class ExprLocalVariables extends Expression {
 		return this.symbolTableInContext;
 	}
 
-	/**
-	 * Set the symbol table that the expression will use to derive possible
-	 * variables.
-	 * 
-	 * @param symbolTableInContext
-	 */
-	public void setSymbolTableInContext(SymbolTable symbolTableInContext) {
+//	/**
+//	 * Set the symbol table that the expression will use to derive possible
+//	 * variables.
+//	 * 
+//	 * @param symbolTableInContext
+//	 */
+//	public void setSymbolTableInContext(SymbolTable symbolTableInContext) {
 //		// Get a clone of the symbol table and create a new table
 //		SymbolTable temp = new SymbolTable((SymbolTable) symbolTableInContext.clone());
 //		
 //		// The constructor actually creates a new empty table with the passed parameter
 //		// as the parent. So get the parent to have the same state as before.
 //		this.symbolTableInContext = temp.getParent();
-	}
+//	}
 
 	@Override
 	public String toString() {

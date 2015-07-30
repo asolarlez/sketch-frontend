@@ -1078,8 +1078,8 @@ public class FEReplacer implements FEVisitor
 				// Create a new local variables expr
 				ExprLocalVariables exprLocalVariables = new ExprLocalVariables(expr, type);
 
-				// Set the symbol table
-				exprLocalVariables.setSymbolTableInContext(expr.getSymbolTableInContext());
+//				// Set the symbol table
+//				exprLocalVariables.setSymbolTableInContext(expr.getSymbolTableInContext());
 
 				// Return the new expr
 				return exprLocalVariables;
