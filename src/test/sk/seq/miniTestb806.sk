@@ -5,10 +5,8 @@ adt Tree {
 
 harness void main() {
 	Leaf l1 = new Leaf(v = 5);
-	Leaf l2 = new Leaf(v = 6);
 	Branch b1 = new Branch(l = l1, v = 4);
 	
-	Tree x = $(Leaf);
+	Tree x = $(Tree);
 	assert(l1 === x);
 }
-
