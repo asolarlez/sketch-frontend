@@ -16,6 +16,7 @@
 
 package sketch.compiler.passes.lowering;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -415,13 +416,31 @@ public class SymbolTableVisitor extends FEReplacer
         return result;
     }
 
-    public Object visitStmtVarDecl(StmtVarDecl stmt)
-    {
-        for (int i = 0; i < stmt.getNumVars(); i++)
-            symtab.registerVar(stmt.getName(i), (stmt.getType(i)),
- stmt,
-                    SymbolTable.KIND_LOCAL);
-        return super.visitStmtVarDecl(stmt);
+    public Object visitStmtVarDecl(StmtVarDecl stmt) {
+		List<Expression> newInits = new ArrayList<Expression>();
+		List<Type> newTypes = new ArrayList<Type>();
+		boolean changed = false;
+        for (int i = 0; i < stmt.getNumVars(); i++) {
+			Expression oinit = stmt.getInit(i);
+			Expression init = null;
+			if (oinit != null)
+				init = doExpression(oinit);
+
+			Type ot = stmt.getType(i);
+			Type t = (Type) ot.accept(this);
+
+			symtab.registerVar(stmt.getName(i), t, stmt, SymbolTable.KIND_LOCAL);
+
+			if (ot != t || oinit != init) {
+				changed = true;
+			}
+			newInits.add(init);
+			newTypes.add(t);
+		}
+		if (!changed) {
+			return stmt;
+		}
+		return new StmtVarDecl(stmt, newTypes, stmt.getNames(), newInits);
     }
 
     public Object visitStructDef(StructDef ts) {
