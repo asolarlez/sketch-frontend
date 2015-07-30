@@ -260,7 +260,7 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 				// Repeat the following process for the number of variables needed
 				for(int i = 0; i < numberParamerters; i++) {
 					// Create a new variable with a random name
-					variables.add(new ExprVar(exprFunctionCall,"dummyVariable" + random.nextInt()));
+					variables.add(new ExprVar(exprFunctionCall,"dummyVariable" + Math.abs(random.nextInt())));
 				}
 				
 				// Set the parameters of the lambda to these variables

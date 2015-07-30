@@ -428,14 +428,12 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
         // This is where the new program is created
         Program np = p.creator().streams(newPkges).create();
-		np.debugDump();
 
         Program aftertc = (Program) np.accept(new ThreadClosure());
-		aftertc.debugDump();
 
-        Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
+		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
 
-        return afterLambdaClosure.accept(new FixPolymorphism());
+		return afterLambdaClosure.accept(new FixPolymorphism());
 
     }
 
@@ -631,9 +629,8 @@ public class RemoveFunctionParameters extends FEReplacer {
         // formal parameters of the lambda expression
         if (exprLambda.getParameters().size() != functionCall.getParams().size()) {
             throw new ExceptionAtNode("The number of lambda parameters does not match " +
-                    "the number of parameters in the function call: " +
-                    exprLambda.getParameters() + " - " + functionCall.getParams(),
-                    functionCall);
+                    "the number of parameters in the function call: " + exprLambda.getParameters()
+                    + " - " + functionCall.getParams(), functionCall);
         }
 
         // Set the current lambda
@@ -648,8 +645,58 @@ public class RemoveFunctionParameters extends FEReplacer {
         // Loop through the formal parameters of the lambda and the actual parameters
         // of the call mapping them.
         for (int i = 0; i < exprLambda.getParameters().size(); i++) {
-            this.lambdaReplace.put(exprLambda.getParameters().get(i),
-                    functionCall.getParams().get(i));
+        	// Get the actual parameter
+			Expression actualParameter = functionCall.getParams().get(i);
+			
+//			// if the parameter is a function call
+//			if(actualParameter instanceof ExprFunCall) {
+//				// We need to do some processing since the function should be called
+//				// once, but the lambda will be inlined.
+//				// If the new Statements list is null
+//				if(this.newStatements == null) {
+//					// Initialize it
+//					newStatements = new ArrayList<Statement>();					
+//				}
+//
+//				// Get the function being called
+//				Function callee = this.nres.getFun(((ExprFunCall) actualParameter).getName());
+//
+//				// If the function was not found
+//				if (callee == null) {
+//					// Check the function rename map
+//					String newName = hoister.frmap.findRepl(((ExprFunCall) actualParameter).getName());
+//
+//					// Search a function with the new name
+//					callee = this.nres.getFun(newName);
+//
+//					// If the function was not found
+//					if (callee == null) {
+//						throw new ExceptionAtNode("Function " + functionCall.getName() +
+//			                    " either does not exist, or is ambiguous.", functionCall);
+//					}
+//				}
+//										
+//				// Create a new function call
+//				ExprFunCall newFunctionCall = new ExprFunCall(callee, callee.getName(),
+//						((ExprFunCall) functionCall.getParams().get(i)).getParams());
+//
+//				// Add a variable declaration to the statements
+//				Random random = new Random();
+//				String randomVariableName = "v" + random.nextInt();
+//				
+//				this.addStatement(new StmtVarDecl(functionCall, callee.getReturnType(),
+//						randomVariableName, newFunctionCall));
+//
+//				// The actual parameter now is just a variable
+//				actualParameter = new ExprVar(functionCall, randomVariableName);
+//				
+////				// Register the variable in the symbol table
+////				this.hoister.symtab.registerVar(randomVariableName, callee.getReturnType(), 
+////						actualParameter, SymbolTable.KIND_LOCAL);
+//			}
+
+			// Add the actual parameter that will be replaced when inlining the lambda
+            this.lambdaReplace.put(exprLambda.getParameters().get(i),actualParameter);
         }
 
         // Visit the expression in case there needs to be some replacement before getting
@@ -1719,7 +1766,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                 return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
             }
 
-            return super.visitExprVar(exprVar);
+            // Visit using the main class method since there might be so
+            // replacing needed
+			return RemoveFunctionParameters.this.visitExprVar(exprVar);
         }
 
         public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
@@ -1855,6 +1904,106 @@ public class RemoveFunctionParameters extends FEReplacer {
             extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
+
+		private Object inlineLocalLambda(ExprFunCall functionCall, ExprLambda exprLambda) {
+			// If the number of function call parameters does not match the
+			// length of formal parameters of the lambda expression
+			if (exprLambda.getParameters().size() != functionCall.getParams().size()) {
+				throw new ExceptionAtNode("The number of lambda parameters does not match "
+											+ "the number of parameters in the function call: "
+											+ exprLambda.getParameters() + " - "
+											+ functionCall.getParams(),
+						functionCall);
+			}
+
+			// Set the current lambda
+			currentExprLambda = exprLambda;
+
+			// Replacements should be local, so save the current map
+			Map<ExprVar, Expression> oldLambdaReplace = lambdaReplace;
+
+			// create a new map
+			lambdaReplace = new HashMap<ExprVar, Expression>();
+
+			// Loop through the formal parameters of the lambda and the actual
+			// parameters
+			// of the call mapping them.
+			for (int i = 0; i < exprLambda.getParameters().size(); i++) {
+				// Get the actual parameter
+				Expression actualParameter = functionCall.getParams().get(i);
+
+				// If the actual parameter is a function call
+				if (actualParameter instanceof ExprFunCall) {
+					// We need to do some processing since the function must be
+					// called once, but the lambda might inline it multiple times.
+					// So we need to make a function call and assign it to a variable,
+					// to only call it once.
+					// If the new statements list is null
+					if (newStatements == null) {
+						// Create a new list
+						newStatements = new ArrayList<Statement>();
+					}
+
+					// Get the function being called
+					Function callee = this.nres.getFun(((ExprFunCall) actualParameter).getName());
+
+					// If the function was not found
+					if (callee == null) {
+						// Check the function rename map
+						String newName = hoister.frmap.findRepl(((ExprFunCall) actualParameter).getName());
+
+						// Search a function with the new name
+						callee = this.nres.getFun(newName);
+
+						// If the function was not found
+						if (callee == null) {
+							throw new ExceptionAtNode("Function " + functionCall.getName() +
+				                    " either does not exist, or is ambiguous.", functionCall);
+						}
+					}
+											
+					// Create a new function call
+					ExprFunCall newFunctionCall = new ExprFunCall(callee, callee.getName(),
+							((ExprFunCall) functionCall.getParams().get(i)).getParams());
+
+					// Add a variable declaration to the statements
+					Random random = new Random();
+					String randomVariableName = "v" + Math.abs(random.nextInt());
+					
+					this.addStatement(new StmtVarDecl(functionCall, callee.getReturnType(),
+							randomVariableName, newFunctionCall));
+
+					// The actual parameter now is just a variable
+					actualParameter = new ExprVar(functionCall, randomVariableName);
+					
+					// Register the variable in the symbol table
+					symtab.registerVar(randomVariableName, callee.getReturnType(), 
+							actualParameter, SymbolTable.KIND_LOCAL);
+					
+				}
+
+				// Add the actual parameter that will be replace when inlining the lambda
+				lambdaReplace.put(exprLambda.getParameters().get(i), actualParameter);
+			}
+
+			// Visit the expression in case there needs to be some replacement
+			// before getting
+			// the previous replacement map
+			Expression newExpression = this.doExpression(exprLambda.getExpression());
+
+			// Restore the replacement map
+			lambdaReplace = oldLambdaReplace;
+
+			// // Check if there are any replacements left
+			// newExpression = this.doExpression(newExpression);
+
+			// Set the current lambda to null
+			currentExprLambda = null;
+
+			// Return a new expression where all the variables are replaced with
+			// actual parameters
+			return newExpression;
+		}
 
 
         NewFunInfo funInfo(Function f) {
