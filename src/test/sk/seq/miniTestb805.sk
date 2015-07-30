@@ -1,0 +1,11 @@
+struct A {
+	int x;
+}
+
+harness void main() {
+	A a = new A(x = 5);
+	
+	A b = $(A);
+	
+	assert b.x == 5;
+}

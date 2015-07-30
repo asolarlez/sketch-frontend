@@ -8,9 +8,9 @@ import java.util.Map;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprLocalVariables;
-import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -83,12 +83,10 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// If the type is int
 		if (exp.getType() == TypePrimitive.inttype) {
 			// Get the bit local variables since we can use those
-			List<Expression> charLocalVariables = this.symtab
-					.getLocalVariablesOfType(TypePrimitive.chartype);
+			List<Expression> charLocalVariables = this.symtab.getLocalVariablesOfType(TypePrimitive.chartype);
 
 			// Get the current local variables for this expression
-			List<Expression> currentLocalVariables = this.localVariablesMap
-					.get(exp);
+			List<Expression> currentLocalVariables = this.localVariablesMap.get(exp);
 
 			// Loop through the char local variables
 			for (Expression variable : charLocalVariables) {
@@ -98,19 +96,22 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 					currentLocalVariables.add(variable);
 				}
 			}
+			
+			// Add the default value of char
+			currentLocalVariables.add(TypePrimitive.chartype.defaultValue());
 		}
 
 		// Get the default value of this type
 		Expression defaultValue = exp.getType().defaultValue();
 		
-		if(defaultValue.equals(TypePrimitive.chartype.defaultValue())) {
-			this.localVariablesMap.get(exp).add(TypePrimitive.bittype.defaultValue());	
-		}
+		// if(defaultValue.equals(TypePrimitive.chartype.defaultValue())) {
+		// this.localVariablesMap.get(exp).add(TypePrimitive.bittype.defaultValue());
+		// }
 		// If it is not null
-		else if (!(defaultValue instanceof ExprNullPtr)) {
+		// /* else */ if (!(defaultValue instanceof ExprNullPtr)) {
 			// Add it
-			this.localVariablesMap.get(exp).add(defaultValue);			
-		}
+		this.localVariablesMap.get(exp).add(defaultValue);			
+		// }
 
 		// Check if we have possible variables to use
 		if (this.localVariablesMap.get(exp).size() < 1) {
@@ -120,22 +121,28 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// Set the current local variable expression
 		this.currentLocalVariable = exp;
 
-		// Start building a regex of variables with "{|"
-		StringBuilder variablesRegex = new StringBuilder("{|");
-
-		// Loop through the possible variables adding them to the regex
-		for (Expression variable : this.localVariablesMap.get(exp)) {
-			variablesRegex.append(variable + "|");
+		// If there is only one choice, just return it
+		if (this.localVariablesMap.get(exp).size() == 1) {
+			return this.localVariablesMap.get(exp).get(0);
+		}
+		
+		// If there are more than 1 choices, add the first two in an Alternative
+		// expression
+		ExprAlt choices = new ExprAlt(this.localVariablesMap.get(exp).get(0),
+				this.localVariablesMap.get(exp).get(1));
+		
+		// Loop through the remaining choices adding them to the AST
+		int i = 2;
+		
+		while(i < this.localVariablesMap.get(exp).size()) {
+			choices = new ExprAlt(this.localVariablesMap.get(exp).get(i),
+					choices);
+			
+			i++;
 		}
 
-		// Close the regex with "}"
-		variablesRegex.append("}");
-		
-		// Return the regex with the possible variables and let future passes do the rest
-		return new ExprRegen(exp, variablesRegex.toString());
-
-//		// Genereate a regex so that the synthesizer figures out which variable to use
-//		return this.getVariableConditional(exp, possibleVariables);
+		// Return the the possible variables and let future passes do the rest
+		return new ExprRegen(exp, choices);
     }
 	
 	public Object visitExprLambda(ExprLambda exprLambda) {

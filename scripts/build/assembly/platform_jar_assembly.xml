@@ -47,7 +47,7 @@
             <filtered>false</filtered>
         </file>
         <file>
-            <source>${sketch-backend-proj}/src/SketchSolver/.libs/libcegis.so.0</source>
+            <source>${sketch-backend-proj}/src/SketchSolver/.libs/libcegis.a</source>
             <outputDirectory>sketch/compiler/resources/.libs</outputDirectory>
             <filtered>false</filtered>
         </file>

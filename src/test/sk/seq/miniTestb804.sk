@@ -8,5 +8,5 @@ harness void main(){
     char c1 = $(char);
     int i1 = $(int);
     
-	assert i1 == 3; 
+	assert i1 == 15; 
 }
