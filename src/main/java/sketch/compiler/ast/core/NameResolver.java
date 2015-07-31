@@ -220,6 +220,9 @@ public class NameResolver {
     }
 
     // ADT
+	// TODO MIguel see how this works because, when the user
+	// wants to use local variables with a struct, it should get
+	// the struct and recursively all of its children
     public List<String> getStructChildren(String name) {
         name = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
         if (structChildren.containsKey(name)) {

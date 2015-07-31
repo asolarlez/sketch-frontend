@@ -1,0 +1,15 @@
+adt Tree {
+	Leaf {int v; int b; }
+	Branch {Tree l; Tree r; int v;}
+}
+
+harness void main() {	
+	fun f = () -> new Leaf(v = 5, b = 6);
+	
+	assert apply(f).v == 5;
+}
+
+Leaf apply(fun f) {
+	return f();
+}
+

@@ -1,0 +1,18 @@
+adt Tree {
+	adt Leaf {
+		int v; 
+		Leaf1 { int v1; }
+		Leaf2 { int v2; }
+	}
+	Branch {Tree l; Tree r; int v;}
+}
+
+harness void main() {
+	Leaf1 l1 = new Leaf1(v1 = 5);
+	Leaf2 l2 = new Leaf2(v2 = 6);
+	Branch b1 = new Branch(l = l1, v = 4);
+	
+	Tree x = $(Tree);
+	assert(b1 === x);
+}
+

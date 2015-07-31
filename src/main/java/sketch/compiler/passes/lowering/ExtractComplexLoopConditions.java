@@ -23,6 +23,7 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
+// TODO MIguel move it earlier to avoid issues with function being called in lambda expression
 // FIXME xzl: temporarily disabled to help stencil
 public class ExtractComplexLoopConditions extends FEReplacer {
 	TempVarGen vgen;

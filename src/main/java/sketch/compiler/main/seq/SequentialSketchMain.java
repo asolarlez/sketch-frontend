@@ -594,8 +594,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         // prog =
         // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
 
-		// prog.debugDump("After Preproc");
-
 		SynthesisResult synthResult = this.partialEvalAndSolve(prog);
 		prog = synthResult.lowered.result;
 
