@@ -1,4 +1,4 @@
-
+// Passing a function call to a lambda expression
 
 harness void main(){
     int x = 0;
@@ -9,9 +9,11 @@ harness void main(){
     
     fun f = (x)-> x + x + x;
     
+    assert f(foo()) == 3;
+ 	
+ 	// =>    
     //int f(int x){ return x + x + x; }
-    
     //assert foo() == 1;
 
-    assert f(foo()) == 3;
+ 
 }

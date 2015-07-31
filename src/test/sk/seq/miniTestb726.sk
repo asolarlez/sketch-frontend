@@ -1,6 +1,4 @@
-// Testing that an lambda expression is identified and created in line 5.
-// The good thing is that the  lambda is recognized
-// and created after the RemoveFunctionParameters pass
+// Lambda expression is identified and created
 
 int apply(fun function, int x){
 	int y = 9;

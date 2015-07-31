@@ -1,4 +1,5 @@
-// Using local variable inside an inner function with a formal parameter
+// Using local variable inside an local
+// function with a formal parameter
 
 harness void main(int x){
 	int a = 2;

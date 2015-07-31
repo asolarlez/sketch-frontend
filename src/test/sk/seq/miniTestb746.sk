@@ -1,4 +1,4 @@
-// Using a inner function in the expression of a lambda function
+// Using a local function in the expression of a lambda function
 
 harness void main(){
 

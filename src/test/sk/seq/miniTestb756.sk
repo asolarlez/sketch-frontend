@@ -1,4 +1,5 @@
-// Testing using lambdas inside of inner functions that are called by other functions
+// Using lambdas with local variables 
+//inside of local functions
 
 int apply(fun f) {
 	return f();

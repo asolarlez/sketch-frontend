@@ -1,4 +1,5 @@
-// Testing passing a local lambda with a local variable to a function that expects a function
+// Passing a local lambda, that has a local variables
+// in its body, to a function
 
 int apply(fun f, int x) {
 	return f(x);

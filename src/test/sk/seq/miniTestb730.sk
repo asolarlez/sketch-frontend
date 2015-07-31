@@ -1,4 +1,5 @@
-// Testing that the expression of a lambda function can have another function
+// Lambda expression can have call to lambda function
+// in its body
 
 harness void main(){	
 	fun f0 = () -> 2;

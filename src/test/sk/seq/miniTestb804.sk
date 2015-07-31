@@ -1,3 +1,6 @@
+// Since bits can be promoted to chars and ints, and
+// chars can be promoted to ints, we check that all
+// those variables are considered when we ask them
 
 harness void main(){	
     bit b = 1;

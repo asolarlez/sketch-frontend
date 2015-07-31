@@ -1,4 +1,5 @@
-// Testing that the local variable picks the local variable in scope
+// Local variable picks variables that can be promoted
+// to the requested type
 
 harness void main(){	
 	bit x = 1;

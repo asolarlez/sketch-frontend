@@ -1,4 +1,4 @@
-// Testing calling a local function from a lambda to mimic statement
+// Calling a local function from a lambda to mimic statement
 
 void apply(fun f) {
 	f();

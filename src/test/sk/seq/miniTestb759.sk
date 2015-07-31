@@ -1,4 +1,4 @@
-// Testing that lambdas work
+// General test of lambda
 
 int apply(fun f, int x) {
 	return f(x);

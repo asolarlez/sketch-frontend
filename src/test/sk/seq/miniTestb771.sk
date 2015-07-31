@@ -1,5 +1,4 @@
-// Casting an expression to a function that passes a local variable
-// and a formal parameter
+// Casting an expression to a function 
 
 int apply(fun f) {
 	int y = 8;

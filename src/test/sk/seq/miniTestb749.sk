@@ -1,4 +1,4 @@
-// Local variable inside an inner function
+// Local variable inside an local function
 
 harness void main(int x){
 	int a = 2;

@@ -1,4 +1,5 @@
-// Testing that an lambda expression creates a specialized function by passing a formal parameter
+// Lambda expression creates a specialized function using
+// the variable that is passed which is a formal parameter
 
 int apply(fun f, int x) {	
 	int five = 5;

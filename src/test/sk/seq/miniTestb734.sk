@@ -1,4 +1,4 @@
-// Testing passing a local variable inside multiple lambda expressions
+// Multiple lambda functions have local variables in their bodies
 
 int apply(int x, fun f1, fun f2) {
 	return f1(x) + f2(x);

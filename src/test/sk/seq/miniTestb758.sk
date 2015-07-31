@@ -1,4 +1,4 @@
-// Testing passing a local variable inside a lambda expression
+// Passing a lambda expression that uses a local variable 
 
 int apply(fun f, int x) {
 	return f(x);

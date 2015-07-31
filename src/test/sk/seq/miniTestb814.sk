@@ -1,3 +1,4 @@
+// Using local variables with adt multiple times
 
 adt Tree {
 	adt Leaf {

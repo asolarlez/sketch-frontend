@@ -1,4 +1,5 @@
-// Testing that an lambda expression creates a specialized function by passing a local variable
+// Lambda expression creates a specialized function using
+// the variable that is passed
 
 int apply(fun f, int x) {	
 	return f(x);

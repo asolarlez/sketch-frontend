@@ -1,6 +1,6 @@
-// Finding variables of type int
+// Local variableconstruct to finding variables of type int
 
-harness void localVariable(int x, int y) 
+harness void main(int x, int y) 
 {
   bit a = 0;
   int b = 1;
@@ -14,12 +14,4 @@ harness void localVariable(int x, int y)
   int w = $(int);
   
   assert (t == x + x + 1);
-}
-
-harness void main(){
-    int x = ??(6);
-    int y = ??(6);
-    int t = {| x + y | x * y |};
-    assert t == 60;
-    assert y == 2*x;
 }

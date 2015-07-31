@@ -1,4 +1,5 @@
-// Testing lambda expressions with local variable
+// Passing a local variable construct to a
+// lambda expressions 
 
 harness void main(){	
     fun f = (t) -> t + 1;

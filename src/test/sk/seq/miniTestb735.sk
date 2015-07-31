@@ -1,4 +1,4 @@
-// Testing passing a local lambda to a function that expects a function
+// Passing a local lambda to a function
 
 int apply(fun f, int x) {
 	return f(x);

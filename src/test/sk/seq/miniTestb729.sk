@@ -1,4 +1,5 @@
-// Testing inlining a lambda expression
+// Inlining a lambda expression and using it
+// multiple times
 
 harness void main(){	
     fun f = (x) -> x + 1;

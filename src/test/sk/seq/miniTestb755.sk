@@ -1,8 +1,4 @@
-// Testing using lambdas inside of inner functions
-
-int apply(fun f) {
-	return f();
-}
+// Using lambdas with local variables
 
 harness void localVariable(int x, bit y) 
 {

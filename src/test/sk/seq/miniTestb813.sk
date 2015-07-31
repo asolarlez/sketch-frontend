@@ -1,3 +1,5 @@
+// Using local variables with adt
+
 adt Tree {
 	adt Leaf {
 		int v; 
@@ -12,7 +14,7 @@ harness void main() {
 	Leaf2 l2 = new Leaf2(v2 = 6);
 	Branch b1 = new Branch(l = l1, v = 4);
 	
-	Tree x = $(Tree);
+	Tree x = $(Tree); // recursively gets all the children
 	assert(b1 === x);
 }
 

@@ -1,4 +1,4 @@
-// Using ternary expression in lambda
+// Using ternary expression in lambda inside local function
 
 harness void main(int x) {
 	bit t = 1;
