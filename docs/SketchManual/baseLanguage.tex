@@ -790,6 +790,87 @@ int mooTop(int i){
 \end{lstlisting}
 
 
+\subsection{Lambda Functions}
+
+Lambda functions are functions without a name. They are also known as \textit{anonymous functions}. They allow the creation of a function without specifying a name and return type. The syntax to define a lambda is TODO \C{(vars) -> expression}. Lambdas are used as actual parameters of high-order functions or initializers to variables of type \C{fun}.
+
+\begin{Example}
+Passing a lambda to a high order function.
+\begin{lstlisting}
+int apply(fun f, int x) {
+    return f(x, 5);
+}
+
+harness void main() {  
+    int result = apply((x, y) -> x + y, 7);
+         
+    assert result == 12; 
+}
+\end{lstlisting}
+
+\end{Example}
+
+\begin{Example}
+Defining a variable of type \C{fun}.
+\begin{lstlisting}
+harness void main() {     
+    int t = 3;
+    fun foo = (x) -> t * x;
+            
+    assert foo(2) == 6; 
+}
+\end{lstlisting}
+
+\end{Example}
+
+Lambda functions must be defined and used in the local scope or in local functions. The body of the lambda function can be any valid expression in the language. The formal parameters of the lambda function cannot be used as l-values.
+
+Lambda functions cannot be defined inside \C{struct} nor can they be returned from a function. These are the same restrictions on the usage of local function (see Section 2.12). Variables of type \C{fun} are final and cannot be modified once they are initialized.
+
+\begin{Example}
+Using two local variable constructs of different types inside a local function.
+\begin{lstlisting}
+harness void main() {  
+    bit t = 1;    
+    int a = 2;
+    int b = 3;
+    
+    int foo() {
+        fun g = () -> TODO dollarsign(bit) ? 5 : TODO dollarsign(int);
+        return g();
+    }
+
+    assert foo() == 3;
+}
+\end{lstlisting}
+
+\end{Example}
+
+
+\begin{Example}
+Using a local variable construct inside a local function that is passed to a high-order function.
+\begin{lstlisting}
+int apply(fun f) {
+    return f();
+}
+
+harness void main(int x) {
+  int a = 1;
+  int b = 2;
+  
+  int foo() {
+      fun f = () -> TODO dollarsign(int);
+      return f();
+  }
+  
+  int t = apply(foo)*??;
+  
+  assert t == x + x;
+}
+\end{lstlisting}
+
+\end{Example}
+
 
 \subsection{Uninterpreted Functions}
 \Sk{} also supports uninterpreted functions, which can be defined with the following syntax.

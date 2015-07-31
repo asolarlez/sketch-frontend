@@ -350,6 +350,23 @@ push(Stack s, int val){
 }
 \end{lstlisting}
 
+
+\subsection{Local Variables Construct}
+
+Sketch supports the use of the TODO dollarsign(type) construct to instruct the synthesizer to consider all variables of the specified \C{type} within scope when searching for a solution. 
+
+\begin{lstlisting}
+harness void main(int x) {
+    int a = 2;
+    double b = 2.3;
+        
+    assert x * TODO dollarsign(int) == x + x; // TODO  dollarsign(int) === {| 0 | a | x |}
+}
+\end{lstlisting}
+
+The value of \textit{type} can be any of the primitive types (see Section 2.1) or any user defined type. The default value of any primitive type will also be considered as one of the choices. Local variables inside a function and its formal parameters are considered within scope of the construct. If the construct is used inside a local function, the local variables and formal parameters of the functions where it is defined are also within scope of the construct.
+
+
 \subsection{High order generators}
 
 Generators can take other generators as parameters, and they can be passed as parameters to either generators or functions. This can be very useful in defining very flexible classes of generators. For example, the generator rec above assumes that you want expressions involving three integer variables, but in some cases you may only want two variables, or you may want five variables. The following code describes a more flexible generator: 
