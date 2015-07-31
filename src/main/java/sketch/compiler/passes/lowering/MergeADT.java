@@ -12,7 +12,6 @@ import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -20,7 +19,6 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtSwitch;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
@@ -103,37 +101,6 @@ public class MergeADT extends SymbolTableVisitor {
         return newType;
 
     }
-
-	@Override
-	public Object visitStmtVarDecl(StmtVarDecl stmt) {
-		List<Expression> newInits = new ArrayList<Expression>();
-		List<Type> newTypes = new ArrayList<Type>();
-		boolean changed = false;
-		for (int i = 0; i < stmt.getNumVars(); i++) {
-			Expression oinit = stmt.getInit(i);
-			Expression init = null;
-			if (oinit != null)
-				init = doExpression(oinit);
-
-			Type ot = stmt.getType(i);
-			Type t = (Type) ot.accept(this);
-
-			// Bug fix: For this class, we want to store the old type in the
-			// symtab rather than the new type.
-			symtab.registerVar(stmt.getName(i), ot, stmt,
-					SymbolTable.KIND_LOCAL);
-
-			if (ot != t || oinit != init) {
-				changed = true;
-			}
-			newInits.add(init);
-			newTypes.add(t);
-		}
-		if (!changed) {
-			return stmt;
-		}
-		return new StmtVarDecl(stmt, newTypes, stmt.getNames(), newInits);
-	}
 
     @Override
     public Object visitExprNew(ExprNew exprNew) {

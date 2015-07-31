@@ -429,7 +429,10 @@ public class SymbolTableVisitor extends FEReplacer
 			Type ot = stmt.getType(i);
 			Type t = (Type) ot.accept(this);
 
-			symtab.registerVar(stmt.getName(i), t, stmt, SymbolTable.KIND_LOCAL);
+			// Bug fix: We need to store the old type in the symbol table rather
+			// than new type.
+			symtab.registerVar(stmt.getName(i), ot, stmt,
+					SymbolTable.KIND_LOCAL);
 
 			if (ot != t || oinit != init) {
 				changed = true;
