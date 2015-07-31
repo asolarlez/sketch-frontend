@@ -503,6 +503,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         prog = (Program) prog.accept(new PidReplacer());
         
+		prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
+
 		prog.debugDump("************************************** Before Expression Casting");
         
 		prog = (Program) prog.accept(new ExpressionCastingReplacer());
