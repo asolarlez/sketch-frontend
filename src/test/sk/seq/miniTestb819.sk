@@ -1,0 +1,9 @@
+package YY{
+    adt A {
+    	B {}
+    }
+    harness void main(){
+        B@YY a = new B();
+        assert($(A) === a);
+    }
+}
