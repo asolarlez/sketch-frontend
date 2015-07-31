@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.main.seq;
-import static sketch.util.Misc.nonnull;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
@@ -35,8 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static sketch.util.DebugOut.printError;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
@@ -84,6 +80,10 @@ import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
+
+import static sketch.util.DebugOut.printError;
+
+import static sketch.util.Misc.nonnull;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -518,7 +518,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 		prog.debugDump("********************************************* After remove Function Parameters");
 
-        prog = (Program) prog.accept(new ExpandRepeatCases());
+		prog = (Program) prog.accept(new ExpandRepeatCases());
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
         prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 

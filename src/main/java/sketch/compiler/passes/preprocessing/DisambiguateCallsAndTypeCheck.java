@@ -1254,7 +1254,8 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     private void checkTripleEquals(FENode expr, Type lt, Type rt) {
-        if(!lt.isStruct() || !rt.isStruct())
+		if (!(lt.equals(TypePrimitive.nulltype) || lt.isStruct())
+				|| !(rt.equals(TypePrimitive.nulltype) || rt.isStruct()))
             report(expr, "Triple equals only operates on structs");
         if (! lt.promotesTo(rt, nres) && ! rt.promotesTo(lt, nres))
             report(expr, "Triple equals operates on same struct types");
