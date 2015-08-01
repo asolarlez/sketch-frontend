@@ -115,6 +115,11 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 				// Get a child which is its type
 				String child = children.remove(0);
 				String childTypeString = child.substring(0, child.indexOf('@'));
+				String childPkgString = child.substring(child.indexOf('@') + 1);
+
+				if (!this.nres.curPkg().getName().equals(childPkgString)) {
+					childTypeString = child;
+				}
 
 				// Get an actual type of a struct
 				TypeStructRef childType = new TypeStructRef(childTypeString, false);
@@ -125,6 +130,19 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 				// Add all variables of the child to the local variables
 				this.localVariablesMap.get(exp).addAll(childrenLocalVariables);
 				
+				if (this.nres.curPkg().getName().equals(childPkgString)) {
+					childTypeString = child;
+
+					// Get an actual type of a struct
+					childType = new TypeStructRef(childTypeString, false);
+
+					// Get the local variables for this child type
+					childrenLocalVariables = this.symtab.getLocalVariablesOfType(childType);
+
+					// Add all variables of the child to the local variables
+					this.localVariablesMap.get(exp).addAll(childrenLocalVariables);
+				}
+
 				// Get all the children of this type
 				children.addAll(this.nres.getStructChildren(childType.toString()));
 			}
