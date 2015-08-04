@@ -353,14 +353,14 @@ push(Stack s, int val){
 
 \subsection{Local Variables Construct}
 
-Sketch supports the use of the TODO dollarsign(type) construct to instruct the synthesizer to consider all variables of the specified \C{type} within scope when searching for a solution. 
+Sketch supports the use of the $\$$(type) construct to instruct the synthesizer to consider all variables of the specified \C{type} within scope when searching for a solution. 
 
 \begin{lstlisting}
 harness void main(int x) {
     int a = 2;
     double b = 2.3;
         
-    assert x * TODO dollarsign(int) == x + x; // TODO  dollarsign(int) === {| 0 | a | x |}
+    assert x * $\$$(int) == x + x; // $\$$(int) === {| 0 | a | x |}
 }
 \end{lstlisting}
 
