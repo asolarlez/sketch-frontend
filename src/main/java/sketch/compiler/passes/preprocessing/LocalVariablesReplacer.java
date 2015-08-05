@@ -13,6 +13,7 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -41,6 +42,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 	
 	private Map<ExprLocalVariables, List<Expression>> 	localVariablesMap;
 	private ExprLocalVariables							currentLocalVariable;
+	private boolean isStmtAssignment;
 
 	/**
 	 * Creates a local variables replacer
@@ -52,6 +54,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		this.globalDeclarations = new ArrayList<Statement>();
 		this.localVariablesMap = new HashMap<ExprLocalVariables, List<Expression>>();
 		this.currentLocalVariable = null;
+		this.isStmtAssignment = false;
     }
 
     /**
@@ -98,8 +101,11 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 				}
 			}
 			
-			// Add the default value of char
-			currentLocalVariables.add(TypePrimitive.chartype.defaultValue());
+			// If this is not a stmt assignment
+			if (!this.isStmtAssignment) {
+				// Add the default value of char
+				currentLocalVariables.add(TypePrimitive.chartype.defaultValue());
+			}
 		}
 
 		// If the type is a struct
@@ -151,7 +157,11 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// Get the default value of this type and add it
 		Expression defaultValue = exp.getType().defaultValue();
 		
-		this.localVariablesMap.get(exp).add(defaultValue);			
+		// If this is not a stmt assignment
+		if (!this.isStmtAssignment) {
+			// Add the default value
+			this.localVariablesMap.get(exp).add(defaultValue);
+		}
 
 		// Check if we have possible variables to use
 		if (this.localVariablesMap.get(exp).size() < 1) {
@@ -204,6 +214,19 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 			this.currentLocalVariable = null;
 		}
 		return exprLambda;
+	}
+
+	public Object visitStmtAssign(StmtAssign stmt) {
+		this.isStmtAssignment = true;
+
+		Expression newLHS = doExpression(stmt.getLHS());
+
+		this.isStmtAssignment = false;
+
+		Expression newRHS = doExpression(stmt.getRHS());
+		if (newLHS == stmt.getLHS() && newRHS == stmt.getRHS())
+			return stmt;
+		return new StmtAssign(stmt, newLHS, newRHS, stmt.getOp());
 	}
 
 //	/**
