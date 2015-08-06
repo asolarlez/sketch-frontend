@@ -353,18 +353,18 @@ push(Stack s, int val){
 
 \subsection{Local Variables Construct}
 
-Sketch supports the use of the $\$$(type) construct to instruct the synthesizer to consider all variables of the specified \C{type} within scope when searching for a solution. 
+Sketch supports the use of the \C{$\$$(type)} construct to instruct the synthesizer to consider all variables of the specified \C{type} within scope when searching for a solution. 
 
 \begin{lstlisting}
 harness void main(int x) {
     int a = 2;
     double b = 2.3;
         
-    assert x * $\$$(int) == x + x; // $\$$(int) === {| 0 | a | x |}
+    assert x * $\$$(int) == x + x; $//$ $\$$(int) === {| 0  |  a  |  x |}
 }
 \end{lstlisting}
 
-The value of \textit{type} can be any of the primitive types (see Section 2.1) or any user defined type. The default value of any primitive type will also be considered as one of the choices. Local variables inside a function and its formal parameters are considered within scope of the construct. If the construct is used inside a local function, the local variables and formal parameters of the functions where it is defined are also within scope of the construct.
+The value of \textit{type} can be any of the primitive types (see \secref{primitives}) or any user defined type. The default value of any primitive type will also be considered as one of the choices. Local variables inside a function and its formal parameters are considered within scope of the construct. If the construct is used inside a local function, the local variables and formal parameters of the functions where it is defined are also within scope of the construct.
 
 
 \subsection{High order generators}
@@ -413,4 +413,3 @@ generator void rep(int n, fun f){
     }    
 }
 \end{lstlisting}
-
