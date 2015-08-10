@@ -1048,3 +1048,24 @@ When analyzing code, the annotations are invisible to the synthesizer, and it wi
 The \C{@Native} annotation allows the programmer to use simple models in place of very complex or low-level functions. It is the responsibility of the programmer to ensure that the model matches the relevant behavior of the code that is being generated. 
 
 More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure. 
+
+\subsection{Casting of Expressions}
+Sketch provides casting of expressions in high-order function calls. These expressions are cast as lambda functions. The expressions that can be automatically cast are the ones that do not use formal parameters inside the function. This means that the actual parameters passed to the cast function are ignored when the body of the lambda gets executed.
+
+This feature is very useful in High-Order Generators (see \secref{high-ordergenerators}).
+\begin{lstlisting}
+generator int rec(fun choices){ 
+    if(??){ 
+        return choices();
+    }else{
+        return {| rec(choices) (+ | - | *) rec(choices)  |};
+    }
+}
+\end{lstlisting}
+
+If the users wants to pass some variables to the high-order generator, they can use the Local Variable construct (see \secref{localvariablesconstruct}). This expression will be cast as a lambda expression before being passed to the high-order generator.
+\begin{lstlisting}
+harness void sketch( int x, int y, int z ){
+   assert rec($\$(int)$) == (x + x) * (y - z);
+}
+\end{lstlisting}
