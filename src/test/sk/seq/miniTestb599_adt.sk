@@ -69,3 +69,4 @@ int sum(Expression e, Tree t){
     /* Outside the switch, t goes back to being of type Tree*/
     
 }
+

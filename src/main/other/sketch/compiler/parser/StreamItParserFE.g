@@ -471,7 +471,7 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 
 expr_or_lambda returns [Expression e] { e = null; }
 :
-   (LPAREN COMMA) => e = lambda_expr
+   (LPAREN (RPAREN | ID (RPAREN ARROW | COMMA)   )  ) => e = lambda_expr
    | e=right_expr
 ;
 
@@ -779,7 +779,7 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 			|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
 			|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
 			)
-			r=right_expr
+			r=expr_or_lambda
 			{ s = new StmtAssign(l, r, o); s.resetOrigin(); }
 		  )
 			| 
@@ -822,19 +822,24 @@ lambda_expr returns [Expression expression]  {
 }
 	: // Left parenthesis 
 	  prefix:LPAREN 
-	  // Group that occurs 1 or more times
-	  (
-	    // Comma
-	  	COMMA
-	  	// Group that occurs 0 or more times
-	  	(
-		  	// Match an ID and set temp to it
-		  	temp:ID { 
+  	  
+  	  // A group that occurs 0 or 1 times
+  	  (
+	  	  temp1:ID { 
 		  		// Create a new ExprVar and add it to the list of variables
-		  		list.add(new ExprVar(getContext(temp), temp.getText())); 
+		  		list.add(new ExprVar(getContext(temp1), temp1.getText())); 
 		  	}
-	  	)* 
-	  )+
+	  	  // Group that occurs 0 or more times
+	  	  (
+	  	    COMMA
+		  	// Match an ID and set temp to it
+		  	temp2:ID { 
+		  		// Create a new ExprVar and add it to the list of variables
+		  		list.add(new ExprVar(getContext(temp2), temp2.getText())); 
+		  	}
+	  	  )*
+  	  )?
+		 
 	  // Right parenthesis
 	  RPAREN
 	  // ->
@@ -1160,7 +1165,6 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             }
     |	t3:NDANGELIC
 			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
-	// MIGUEL this is where I need to modify the grammar so that my symbol is understood by the parser
     |  (local_variable) => x = local_variable
     ;
     
@@ -1168,7 +1172,7 @@ local_variable returns [Expression localVariable] {
 	localVariable = null;
 	Type type = null;
 }
-	: 	context:LOCAL_VARIABLES // $ 
+	: 	context:DOLLAR // $ 
 		LPAREN 
 		type = data_type 
 		RPAREN

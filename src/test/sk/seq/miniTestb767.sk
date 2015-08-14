@@ -7,7 +7,7 @@ int apply(fun f, int y) {
 harness void main() {
 	int bob = 3;
 
-	fun f = (,t) -> t + ++bob;
+	fun f = (t) -> t + ++bob;
 	
 	assert apply(f, 8) == 12;
 }

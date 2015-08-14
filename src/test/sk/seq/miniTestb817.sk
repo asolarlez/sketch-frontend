@@ -1,0 +1,19 @@
+package XX{
+    adt A { int x; int y;
+    	B {}
+    	C {}
+    }
+}
+
+
+package YY{
+    adt A {
+    	B {}
+    }
+    harness void main(){
+        A@XX a1 = new B@XX(x=5, y=7);
+        A a2 = new B();
+        assert($(A) === a2);
+        assert($(A@XX) === a1);
+    }
+}

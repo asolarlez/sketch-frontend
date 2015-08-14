@@ -1,11 +1,11 @@
-// Passing a local function that uses a lambda to a high order function
+// Passing a local function that uses a lambda
 
 int apply(fun f, int x) {
 	return f(x);
 }
 
 harness void main() {
-	fun f = (,x) -> x + 1;
+	fun f = (x) -> x + 1;
 	
 	int g(int i) {
 		int temp = f(1) + i;

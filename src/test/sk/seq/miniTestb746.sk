@@ -1,4 +1,4 @@
-// Using a inner function in the expression of a lambda function
+// Using a local function in the expression of a lambda function
 
 harness void main(){
 
@@ -6,7 +6,7 @@ harness void main(){
 		return x + 1;
 	}
 	
-	fun f = (,y) -> foo(y) + 1;
+	fun f = (y) -> foo(y) + 1;
 	
 	assert f(3) == 5;
 }

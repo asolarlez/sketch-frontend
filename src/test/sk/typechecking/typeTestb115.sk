@@ -8,5 +8,5 @@ int apply(fun f, int x) {
 harness void main() {
 	bit x = 7;
 
-	assert apply((,yup) -> 5 + x, 48) == 12;
+	assert apply((yup) -> 5 + x, 48) == 12;
 }

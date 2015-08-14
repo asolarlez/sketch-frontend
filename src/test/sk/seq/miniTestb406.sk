@@ -3,7 +3,6 @@ package MAIN;
 include "miniTestb406.skh";
 include "miniTestb406b.skh";
 
-
 struct A{
     int e;
     int f;

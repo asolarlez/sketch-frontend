@@ -1,4 +1,4 @@
-// Finding variables of type bit[4]
+// Local variable construct to find variables of type bit[4]
 
 bit firstElementSketch(bit[4] in, bit[4] a, bit[5] b) implements firstElement {	
 	bit[4] tmp = $(bit[4]);

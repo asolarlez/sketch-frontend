@@ -1,11 +1,11 @@
-// Testing that lambdas work
+// General test of lambda
 
 int apply(fun f, int x) {
 	return f(x);
 }
 
 harness void main(){		
-    fun f = (,y) -> y + 5;
+    fun f = (y) -> y + 5;
                   
     assert apply(f, 5) == 10;
 }

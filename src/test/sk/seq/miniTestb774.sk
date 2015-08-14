@@ -1,12 +1,11 @@
-adt NODE {
-    Op {NODE left; NODE right;}
-    Arr {int sz; int[sz][2] arr; int dflt;}
+// Casting an expression to a function
+
+int apply(fun f, fun g) {
+	return ?? ? f() : g();
 }
 
-
-
-harness void main(){
-    NODE e1 = new Arr(sz=2,arr= {{1,2}, {1,3}},dflt=0);
-    NODE e = ??({});
-    assert(e1 === e);
+harness void main() {
+	int a = 7;
+	
+	assert apply(5 + a, 5 * a) == 35;
 }

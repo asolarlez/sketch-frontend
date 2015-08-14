@@ -1,4 +1,4 @@
-// Using ternary expression in lambda
+// Using ternary expression in lambda inside local function
 
 harness void main(int x) {
 	bit t = 1;
@@ -6,7 +6,7 @@ harness void main(int x) {
 	int b = 3;
 	
 	int foo() {
-		fun g = (,) -> $(bit) ? 5 : $(int);
+		fun g = () -> $(bit) ? 5 : $(int);
 		
 		return g();
 	}

@@ -1,0 +1,25 @@
+// Using local variables with adt in a repeat_case
+
+adt Tree {
+	Leaf {int v; }
+	Branch {Tree l; Tree r; int v;}
+}
+
+Tree foo(Tree t) {
+	Leaf l = new Leaf(v = 4);
+	Branch b = new Branch(v = 6); 
+	switch(t) {
+		repeat_case: {
+			return $(Tree);
+		}
+	}
+}
+
+harness void main() {
+	Leaf l = new Leaf(v = 4);
+	Branch b = new Branch(v = 6); 
+	assert(l === foo(new Leaf()));
+	assert(b === foo(new Branch()));
+	
+}
+

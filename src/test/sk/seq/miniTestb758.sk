@@ -1,4 +1,4 @@
-// Testing passing a local variable inside a lambda expression
+// Passing a lambda expression that uses a local variable 
 
 int apply(fun f, int x) {
 	return f(x);
@@ -9,6 +9,6 @@ harness void main(){
     int u = 2;
     int v = 3;
 
-    assert apply((,x) -> x + $(int), 7) == 8;
+    assert apply((x) -> x + $(int), 7) == 8;
     
 }

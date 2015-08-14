@@ -13,7 +13,7 @@ int moo(fun f, fun g) {
 harness void main(){
 	int a = 4;
 	
-	fun f = (,x) -> a + x;
+	fun f = (x) -> a + x;
 	
 	assert moo(f, foo) == 8;
 }

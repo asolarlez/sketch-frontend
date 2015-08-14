@@ -1,11 +1,9 @@
 // Cannot return lambda
 
 fun error() {
-	return (,x) -> x + 2;
+	return () -> 5;
 }
 
-harness void main() {
- 	fun f = error();
- 	
- 	assert f(3) == 5;
+harness void main() { 	
+ 	assert error() == 5;
 }

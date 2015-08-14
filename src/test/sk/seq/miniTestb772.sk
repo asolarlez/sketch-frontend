@@ -5,7 +5,6 @@ int apply(fun f, int x, int y) {
 }
 
 harness void main() {
-
 	int t = 7;
 	
 	assert apply(t + t, 4, 3) == 14;

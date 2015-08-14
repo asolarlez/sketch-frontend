@@ -1,4 +1,4 @@
-// Local variable inside of inner function that is passed to high order
+// Local variable inside of local function that is passed to high order
 // function
 
 int apply(fun f) {

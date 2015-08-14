@@ -223,7 +223,8 @@ public class NameResolver {
     public List<String> getStructChildren(String name) {
         name = getFullName(name, pkgForStruct, structMap, this.pkg.getName());
         if (structChildren.containsKey(name)) {
-            return structChildren.get(name);
+
+			return structChildren.get(name);
         } else {
             return new ArrayList<String>();
         }

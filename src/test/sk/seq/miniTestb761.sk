@@ -15,5 +15,5 @@ harness void main(int x) {
 	bit c = 1;
 	char d = 'd';	
 		
-	assert exprGen((,) -> $(int)) == 2*x;
+	assert exprGen(() -> $(int)) == 2*x;
 }

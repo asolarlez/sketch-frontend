@@ -2,10 +2,26 @@ package sketch.compiler.passes.preprocessing;
 
 import java.util.*;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -381,7 +397,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             // Get the latest function
             String fname = funsToVisit.pop();
             String pkgName = getPkgName(fname);
-
+			nres.setPackage(pkges.get(pkgName));
             Function next = nres.getFun(fname);
 
             // If visited function does not contains the current function
@@ -415,9 +431,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         Program aftertc = (Program) np.accept(new ThreadClosure());
 
-        Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
+		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
 
-        return afterLambdaClosure.accept(new FixPolymorphism());
+		return afterLambdaClosure.accept(new FixPolymorphism());
 
     }
 
@@ -460,9 +476,8 @@ public class RemoveFunctionParameters extends FEReplacer {
     public Object visitStmtVarDecl(StmtVarDecl svd) {
         for (int i = 0; i < svd.getNumVars(); ++i) {
             if (svd.getType(i) instanceof TypeFunction &&
-                    svd.getInit(0) instanceof ExprLambda)
-            {
-                // Map the function call to the lambda expression
+                    svd.getInit(0) instanceof ExprLambda) {         	
+            	// Map the function call to the lambda expression
                 this.localLambda.put(svd.getName(0), (ExprLambda) svd.getInit(0));
 
                 // Map the new name with the old
@@ -472,7 +487,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                 tempFunctionsCount++;
 
                 return null;
-                // TODO MIGUEL be careful since now we are allowing fun as type
+				// TODO be careful since now we are allowing fun as type
+
                 // throw new ExceptionAtNode(
                 // "You can not declare a variable with fun type.", svd);
             }
@@ -613,9 +629,8 @@ public class RemoveFunctionParameters extends FEReplacer {
         // formal parameters of the lambda expression
         if (exprLambda.getParameters().size() != functionCall.getParams().size()) {
             throw new ExceptionAtNode("The number of lambda parameters does not match " +
-                    "the number of parameters in the function call: " +
-                    exprLambda.getParameters() + " - " + functionCall.getParams(),
-                    functionCall);
+                    "the number of parameters in the function call: " + exprLambda.getParameters()
+                    + " - " + functionCall.getParams(), functionCall);
         }
 
         // Set the current lambda
@@ -630,8 +645,58 @@ public class RemoveFunctionParameters extends FEReplacer {
         // Loop through the formal parameters of the lambda and the actual parameters
         // of the call mapping them.
         for (int i = 0; i < exprLambda.getParameters().size(); i++) {
-            this.lambdaReplace.put(exprLambda.getParameters().get(i),
-                    functionCall.getParams().get(i));
+        	// Get the actual parameter
+			Expression actualParameter = functionCall.getParams().get(i);
+			
+//			// if the parameter is a function call
+//			if(actualParameter instanceof ExprFunCall) {
+//				// We need to do some processing since the function should be called
+//				// once, but the lambda will be inlined.
+//				// If the new Statements list is null
+//				if(this.newStatements == null) {
+//					// Initialize it
+//					newStatements = new ArrayList<Statement>();					
+//				}
+//
+//				// Get the function being called
+//				Function callee = this.nres.getFun(((ExprFunCall) actualParameter).getName());
+//
+//				// If the function was not found
+//				if (callee == null) {
+//					// Check the function rename map
+//					String newName = hoister.frmap.findRepl(((ExprFunCall) actualParameter).getName());
+//
+//					// Search a function with the new name
+//					callee = this.nres.getFun(newName);
+//
+//					// If the function was not found
+//					if (callee == null) {
+//						throw new ExceptionAtNode("Function " + functionCall.getName() +
+//			                    " either does not exist, or is ambiguous.", functionCall);
+//					}
+//				}
+//										
+//				// Create a new function call
+//				ExprFunCall newFunctionCall = new ExprFunCall(callee, callee.getName(),
+//						((ExprFunCall) functionCall.getParams().get(i)).getParams());
+//
+//				// Add a variable declaration to the statements
+//				Random random = new Random();
+//				String randomVariableName = "v" + random.nextInt();
+//				
+//				this.addStatement(new StmtVarDecl(functionCall, callee.getReturnType(),
+//						randomVariableName, newFunctionCall));
+//
+//				// The actual parameter now is just a variable
+//				actualParameter = new ExprVar(functionCall, randomVariableName);
+//				
+////				// Register the variable in the symbol table
+////				this.hoister.symtab.registerVar(randomVariableName, callee.getReturnType(), 
+////						actualParameter, SymbolTable.KIND_LOCAL);
+//			}
+
+			// Add the actual parameter that will be replaced when inlining the lambda
+            this.lambdaReplace.put(exprLambda.getParameters().get(i),actualParameter);
         }
 
         // Visit the expression in case there needs to be some replacement before getting
@@ -1611,7 +1676,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         public Object visitStmtVarDecl(StmtVarDecl svd) {
             final InnerFunReplacer localIFR = this; 
-            final TempVarGen varGen = RemoveFunctionParameters.this.varGen;
+			final TempVarGen varGen = RemoveFunctionParameters.this.varGen;
             FEReplacer remREGinDecl = new FEReplacer() {
                 public Object visitTypeArray(TypeArray t){
                     Type nbase = (Type)t.getBase().accept(this);
@@ -1635,12 +1700,15 @@ public class RemoveFunctionParameters extends FEReplacer {
             for (int i = 0; i < svd.getNumVars(); ++i) {
                 // If the statement is a lambda expression
                 if (svd.getType(i) instanceof TypeFunction &&
-                        svd.getInit(0) instanceof ExprLambda)
-                {
-                    // Visit the lambda in case some of the values in the expression need
+                        svd.getInit(0) instanceof ExprLambda) {
+					// If this function name has been declared before
+                	if (symtab.hasVar(svd.getName(i))) {
+                        throw new ExceptionAtNode("Shadowing of variables is not allowed.", svd);
+                    }
+                	
+                	// Visit the lambda in case some of the values in the expression need
                     // to change
                     currentExprLambda = (ExprLambda) svd.getInit(0);
-
                     currentExprLambda = (ExprLambda) this.doExpression(currentExprLambda);
 
                     // Map the function call to the lambda expression
@@ -1650,6 +1718,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                     // Map the new name with the old
                     lambdaRenameMap.put(svd.getName(0), svd.getName(0) +
                             tempFunctionsCount);
+                    
+					// Register this function variable in the symbol table
+                    symtab.registerVar(svd.getName(0), svd.getType(0), svd, SymbolTable.KIND_LOCAL);
 
                     // Increment the number of temp functions
                     tempFunctionsCount++;
@@ -1695,7 +1766,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                 return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
             }
 
-            return super.visitExprVar(exprVar);
+            // Visit using the main class method since there might be so
+            // replacing needed
+			return RemoveFunctionParameters.this.visitExprVar(exprVar);
         }
 
         public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
@@ -1831,6 +1904,106 @@ public class RemoveFunctionParameters extends FEReplacer {
             extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
+
+		private Object inlineLocalLambda(ExprFunCall functionCall, ExprLambda exprLambda) {
+			// If the number of function call parameters does not match the
+			// length of formal parameters of the lambda expression
+			if (exprLambda.getParameters().size() != functionCall.getParams().size()) {
+				throw new ExceptionAtNode("The number of lambda parameters does not match "
+											+ "the number of parameters in the function call: "
+											+ exprLambda.getParameters() + " - "
+											+ functionCall.getParams(),
+						functionCall);
+			}
+
+			// Set the current lambda
+			currentExprLambda = exprLambda;
+
+			// Replacements should be local, so save the current map
+			Map<ExprVar, Expression> oldLambdaReplace = lambdaReplace;
+
+			// create a new map
+			lambdaReplace = new HashMap<ExprVar, Expression>();
+
+			// Loop through the formal parameters of the lambda and the actual
+			// parameters
+			// of the call mapping them.
+			for (int i = 0; i < exprLambda.getParameters().size(); i++) {
+				// Get the actual parameter
+				Expression actualParameter = functionCall.getParams().get(i);
+
+				// If the actual parameter is a function call
+				if (actualParameter instanceof ExprFunCall) {
+					// We need to do some processing since the function must be
+					// called once, but the lambda might inline it multiple times.
+					// So we need to make a function call and assign it to a variable,
+					// to only call it once.
+					// If the new statements list is null
+					if (newStatements == null) {
+						// Create a new list
+						newStatements = new ArrayList<Statement>();
+					}
+
+					// Get the function being called
+					Function callee = this.nres.getFun(((ExprFunCall) actualParameter).getName());
+
+					// If the function was not found
+					if (callee == null) {
+						// Check the function rename map
+						String newName = hoister.frmap.findRepl(((ExprFunCall) actualParameter).getName());
+
+						// Search a function with the new name
+						callee = this.nres.getFun(newName);
+
+						// If the function was not found
+						if (callee == null) {
+							throw new ExceptionAtNode("Function " + functionCall.getName() +
+				                    " either does not exist, or is ambiguous.", functionCall);
+						}
+					}
+											
+					// Create a new function call
+					ExprFunCall newFunctionCall = new ExprFunCall(callee, callee.getName(),
+							((ExprFunCall) functionCall.getParams().get(i)).getParams());
+
+					// Add a variable declaration to the statements
+					Random random = new Random();
+					String randomVariableName = "v" + Math.abs(random.nextInt());
+					
+					this.addStatement(new StmtVarDecl(functionCall, callee.getReturnType(),
+							randomVariableName, newFunctionCall));
+
+					// The actual parameter now is just a variable
+					actualParameter = new ExprVar(functionCall, randomVariableName);
+					
+					// Register the variable in the symbol table
+					symtab.registerVar(randomVariableName, callee.getReturnType(), 
+							actualParameter, SymbolTable.KIND_LOCAL);
+					
+				}
+
+				// Add the actual parameter that will be replace when inlining the lambda
+				lambdaReplace.put(exprLambda.getParameters().get(i), actualParameter);
+			}
+
+			// Visit the expression in case there needs to be some replacement
+			// before getting
+			// the previous replacement map
+			Expression newExpression = this.doExpression(exprLambda.getExpression());
+
+			// Restore the replacement map
+			lambdaReplace = oldLambdaReplace;
+
+			// // Check if there are any replacements left
+			// newExpression = this.doExpression(newExpression);
+
+			// Set the current lambda to null
+			currentExprLambda = null;
+
+			// Return a new expression where all the variables are replaced with
+			// actual parameters
+			return newExpression;
+		}
 
 
         NewFunInfo funInfo(Function f) {
