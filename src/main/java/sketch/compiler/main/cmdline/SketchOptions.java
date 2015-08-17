@@ -160,6 +160,21 @@ public class SketchOptions {
         FileUtils.deleteQuietly(sktmpdir());
     }
 
+    public void partialCleanTemp() {
+        FilenameFilter f = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                String goodTmpFile = getSolStringBase() + fileIdx;
+                String sketchTmpFile = getTmpSketchFilename();
+                return !(name.startsWith(goodTmpFile) || sketchTmpFile
+                        .endsWith(name));
+            }
+        };
+        File[] files = sktmpdir().listFiles(f);
+        for (File tmp : files) {
+            tmp.delete();
+        }
+    }
+
     public File sktmpdir() {
         String tmpfile = this.feOpts.output;
         if (tmpfile == null) {

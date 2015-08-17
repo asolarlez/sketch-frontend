@@ -212,9 +212,17 @@ public class SATBackend {
             }
             return worked;
         }
+
+        if (solutions.length > 1) {
+            assertFalse(
+                    "Multiple solution files (" + solutions.length + "). This should never happen!",
+                    options.sktmpdir());
+        }
         extractOracleFromOutput(solutions[0].getPath());
         if (!(options.feOpts.keepTmp || options.debugOpts.fakeSolver)) {
             options.cleanTemp();
+        } else if (options.feOpts.keepTmp) {
+            options.partialCleanTemp();
         }
         return worked;
     }
