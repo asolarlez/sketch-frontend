@@ -175,6 +175,7 @@ public class SATBackend {
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
+            options.setSolFileIdx("");
         } else {
             options.cleanTemp();
             writeProgramToBackendFormat(preprocess(prog));
