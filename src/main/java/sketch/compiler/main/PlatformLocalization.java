@@ -30,7 +30,7 @@ import static sketch.util.DebugOut.printWarning;
  */
 public class PlatformLocalization {
     protected static PlatformLocalization singleton;
-    public String version = "1.6.9";
+    public String version = "1.7.0";
     public String osname = System.getProperty("os.name");
     public String osarch = System.getProperty("os.arch");
     public Properties localization;

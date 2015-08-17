@@ -505,18 +505,15 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         
 		prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
-		prog.debugDump("************************************** Before Expression Casting");
-        
 		prog = (Program) prog.accept(new ExpressionCastingReplacer());
 
-		prog.debugDump("************************************** Before Local Variable replacer");
+
 		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
-		prog.debugDump("************************************** After Local Variable replacer");
+
         
 //		prog.debugDump("********************************************* Before remove lambda expression");
 		prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
-		prog.debugDump("********************************************* After remove Function Parameters");
 
 		prog = (Program) prog.accept(new ExpandRepeatCases());
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
@@ -617,13 +614,12 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             substituted = finalCleaned;
         }
         
-		substituted.debugDump("************************************** after substitution");
+
 
         Program substitutedCleaned =
  (new CleanupFinalCode(varGen, options,
 				visibleRControl(finalCleaned))).visitProgram(substituted);
 
-		substitutedCleaned.debugDump("************************************** after substitution cleaned");
 
 		generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");
