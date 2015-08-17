@@ -111,7 +111,7 @@ public class LocalVariablesReplacer extends SymbolTableVisitor {
 		// If the type is a struct
 		if (exp.getType() instanceof TypeStructRef) {
 			// Create a new list of the children
-			List<String> children = new ArrayList<>();
+            List<String> children = new ArrayList<String>();
 
 			// Add the current children
 			children.addAll(this.nres.getStructChildren(exp.getType().toString()));
