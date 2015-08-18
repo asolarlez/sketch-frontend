@@ -1034,7 +1034,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                                         funsToVisit.get(callerName);
                                 for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd.entrySet())
                                 {
-                                    String var = e.getKey();
+                                    String var = e.getValue().uniqueName();
                                     ParamInfo info = e.getValue();
                                     ParamInfo merger = c.get(var);
                                     if (merger == null) {
@@ -1662,6 +1662,11 @@ public class RemoveFunctionParameters extends FEReplacer {
                 }
                 public Object visitStmtAssert(StmtAssert sa){
                     return sa;
+                }
+
+                public Object visitParameter(Parameter p) {
+                    allVarNames.add(p.getName());
+                    return p;
                 }
             };
             

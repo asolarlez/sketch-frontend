@@ -20,11 +20,19 @@ void fin(int x, fun baz){
 }
 
 
+void bq(int t, fun f, fun g){
+    int y = t + zero();
+    foo(y, f);
+    fin(y, g);
+}
+
+int zero(){ return 0; }
+
 harness void main(int q){
     
     {
     int y = q;
-    int zero(){ return 0; }
+    
     
     void boo(int t){
         assert t == y;
@@ -46,6 +54,7 @@ harness void main(int q){
     }
     
     both(y+zero(), boo, baz);
+    bq(y+zero(), boo, baz);
     
     }
 }
