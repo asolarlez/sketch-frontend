@@ -1,29 +1,15 @@
 package sketch.compiler.passes.preprocessing;
 
 import java.util.*;
+import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprLambda;
-import sketch.compiler.ast.core.exprs.ExprLocalVariables;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
@@ -894,9 +880,12 @@ public class RemoveFunctionParameters extends FEReplacer {
      * @author asolar, tim
      */
     static final class ParamInfo {
-        final Type pt;
+        final String name;
+        final String uniqueName;
+        final Type paramType;
         // whether this variable has been changed
-        // should be ORed when merging
+        // should be ORed when merging.
+        // If it has been changed, then it will become a reference parameter.
         boolean changed;
 
         // the variables that this param depends on
@@ -905,21 +894,30 @@ public class RemoveFunctionParameters extends FEReplacer {
         // then dependence of y contains x
         final TreeSet<String> dependence;
 
-        public ParamInfo(Type pt, boolean changed, TreeSet<String> dependence) {
-            this.pt = pt;
+        public ParamInfo(Type pt, String name, String uniqueName,
+                boolean changed,
+                TreeSet<String> dependence) {
+            this.paramType = pt;
             this.changed = changed;
             this.dependence = dependence;
+            this.name = name;
+            this.uniqueName = uniqueName;
+        }
+
+        public String uniqueName() {
+            return uniqueName;
         }
 
         @Override
         public ParamInfo clone() {
-            return new ParamInfo(this.pt, this.changed,
+            return new ParamInfo(this.paramType, this.name, this.uniqueName,
+                    this.changed,
                     (TreeSet<String>) this.dependence.clone());
         }
 
         @Override
         public String toString() {
-            return (this.changed ? "@" : "") + this.pt.toString();
+            return (this.changed ? "@" : "") + this.paramType.toString();
         }
     }
 
@@ -967,6 +965,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                 new HashMap<String, Map<String, ParamInfo>>();
         Map<String, List<Parameter>> addedParams = new HashMap<String, List<Parameter>>();
 
+        Set<String> enclosingAdded;
+
         Map<String, ParamInfo> mergePI(Map<String, ParamInfo> lhs,
                 Map<String, ParamInfo> rhs)
         {
@@ -977,7 +977,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 if (merger == null) {
                     lhs.put(var, info.clone());
                 } else {
-                    assert info.pt.equals(merger.pt);
+                    assert info.paramType.equals(merger.paramType);
                     merger.changed |= info.changed;
                     merger.dependence.addAll(info.dependence);
                 }
@@ -1040,7 +1040,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                                     if (merger == null) {
                                         c.put(var, info.clone());
                                     } else {
-                                        assert info.pt.equals(merger.pt);
+                                        assert info.paramType.equals(merger.paramType);
                                         merger.changed |= info.changed;
                                         merger.dependence.addAll(info.dependence);
                                     }
@@ -1066,7 +1066,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                                             TreeSet<String> dependent =
                                                     new TreeSet<String>();
                                             nfi.paramsToAdd.put(variable.getName(),
-                                                    new ParamInfo(parameter.getType(),
+ new ParamInfo(
+                                                    parameter.getType(),
+                                                    variable.getName(),
+                                                    variable.getName(),
                                                             true, dependent));
                                         }
 
@@ -1074,7 +1077,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                                     }
                                 }
 
-                                funsToVisit.put(callerName, nfi.cloneParamsToAdd());
+                                funsToVisit.put(callerName,
+                                        renameParams(nfi.cloneParamsToAdd()));
                             }
                         }
                     }
@@ -1084,8 +1088,18 @@ public class RemoveFunctionParameters extends FEReplacer {
             return super.visitProgram(prog);
         }
 
-        private List<Parameter> getAddedParams(String funName, boolean isGenerator) {
-            List<Parameter> result = addedParams.get(funName);
+        HashMap<String, ParamInfo> renameParams(
+                HashMap<String, ParamInfo> torename) {
+            HashMap<String, ParamInfo> newmap = new HashMap<String, ParamInfo>();
+            for (Entry<String, ParamInfo> entry : torename.entrySet()) {
+                newmap.put(entry.getValue().uniqueName(), entry.getValue());
+            }
+            return newmap;
+        }
+
+        private List<Parameter> getAddedParams(String funName,
+                boolean isGenerator, boolean isCall) {
+            List<Parameter> result = null; // addedParams.get(funName);
             if (result == null) {
                 Map<String, ParamInfo> params = funsToVisit.get(funName);
                 HashMap<String, Integer> indeg = new HashMap<String, Integer>();
@@ -1127,9 +1141,19 @@ public class RemoveFunctionParameters extends FEReplacer {
                     ParamInfo info = params.get(name);
                     boolean makeRef = info.changed;
                     if (isGenerator) {
-                        makeRef = makeRef || info.pt instanceof TypeArray;
+                        makeRef = makeRef || info.paramType instanceof TypeArray;
                     }
-                    result.add(new Parameter(null, info.pt, name, makeRef ? Parameter.REF
+                    String tname = name;
+                    if (isCall) {
+                        if (enclosingAdded.contains(info.uniqueName())) {
+                            tname = info.uniqueName();
+                        } else {
+                            tname = info.name;
+                        }
+
+                    }
+                    result.add(new Parameter(null, info.paramType, tname,
+                            makeRef ? Parameter.REF
                             : Parameter.IN));
 
                 }
@@ -1143,7 +1167,8 @@ public class RemoveFunctionParameters extends FEReplacer {
             String name = nres.getFunName(efc.getName());
             Function f = nres.getFun(efc.getName());
             if (funsToVisit.containsKey(name)) {
-                List<Parameter> addedParams = getAddedParams(name, f.isGenerator());
+                List<Parameter> addedParams = getAddedParams(name,
+                        f.isGenerator(), true);
                 if (addedParams.size() != 0) {
                     List<Expression> pl = new ArrayList<Expression>(efc.getParams());
                     for (Parameter p : addedParams) {
@@ -1177,9 +1202,14 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         public Object visitFunction(Function fun) {
             String name = nres.getFunName(fun.getName());
+            enclosingAdded = new HashSet<String>();
             if (funsToVisit.containsKey(name)) {
                 List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
-                List<Parameter> newps = getAddedParams(name, fun.isGenerator());
+                List<Parameter> newps = getAddedParams(name, fun.isGenerator(),
+                        false);
+                for (Parameter p : newps) {
+                    enclosingAdded.add(p.getName());
+                }
                 pl.addAll(newps);
 
                 fun = fun.creator().params(pl).create();
@@ -1599,6 +1629,19 @@ public class RemoveFunctionParameters extends FEReplacer {
         int nfcnt = 0;
         FunReplMap frmap = new FunReplMap(null);
         Function curFun;
+        Set<String> allVarNames = new HashSet<String>();
+        int nparcnt = 0;
+
+        String makeUnique(String name) {
+            String out = name + nparcnt;
+            ++nparcnt;
+            while (allVarNames.contains(out)) {
+                out = name + nparcnt;
+                ++nparcnt;
+            }
+            allVarNames.add(out);
+            return out;
+        }
         
         InnerFunReplacer(boolean recursive) {
             super(null);
@@ -1607,17 +1650,301 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         public void registerGlobals(Program p) {
 
+            FEReplacer allnames = new FEReplacer(){
+                public Object visitStmtVarDecl(StmtVarDecl svd){
+                    for(int i=0; i<svd.getNumVars(); ++i){
+                        allVarNames.add(svd.getName(i));
+                    }
+                    return svd;
+                }
+                public Object visitStmtAssign(StmtAssign sa){
+                    return sa;
+                }
+                public Object visitStmtAssert(StmtAssert sa){
+                    return sa;
+                }
+            };
+            
             for (Package pkg : p.getPackages()) {
 
                 SymbolTable st = new SymbolTable(null);
                 symtab = st;
                 for (FieldDecl fd : pkg.getVars()) {
                     fd.accept(this);
+                    for(int i=0; i<fd.getNumFields(); ++i){
+                        allVarNames.add(fd.getName(i));
+                    }
                 }
                 tempSymtables.put("pkg:" + pkg.getName(), st);
+                p.accept(allnames);
             }
+                        
+            
+            
             symtab = null;
         }
+
+        /**
+         * This function computes the NewFunInfo for a given nested function.
+         * It's main job is to identify variables that will have to be threaded
+         * through the closure.
+         * 
+         * @author Armando
+         * 
+         */
+        private class LocalFunctionAnalyzer extends SymbolTableVisitor {
+            private final NewFunInfo nfi;
+            boolean isAssignee = false;
+            TreeSet<String> dependent = null;
+            boolean isInParam = false;
+
+            private LocalFunctionAnalyzer(SymbolTable symtab, NewFunInfo nfi) {
+                super(symtab);
+                this.nfi = nfi;
+            }
+
+            public Object visitStmtFunDecl(StmtFunDecl decl) {
+                // just ignore the inner function declaration
+                // because it will not affect the used/modified set
+                symtab.registerVar(decl.getDecl().getName(), TypeFunction.singleton,
+                        decl, SymbolTable.KIND_LOCAL);
+                SymbolTable oldSymTab = symtab;
+                symtab = new SymbolTable(symtab);
+                for (Parameter p : decl.getDecl().getParams()) {
+                    p.accept(this);
+                }
+
+                decl.getDecl().getBody().accept(this);
+                symtab = oldSymTab;
+                return decl;
+            }
+
+            public Object visitExprVar(ExprVar exp) {
+                final String name = exp.getName();
+
+                if (dependent != null) {
+                    dependent.add(name);
+                }
+                Type t = symtab.lookupVarNocheck(exp);
+                if (t == null) {
+                    // if t is not null,
+                    // it's local to stmtblock (thus should not be considered
+                    // closure-passed variable that's defined outside the inner
+                    // function)
+
+                    // TODO xzl: Is this really sound? need to check
+                    // If name is a hoisted function, consider it will be called, and
+                    // inline it to get an over-estimation of the used/modified sets
+                    // Note that this is still sound, even in the case "twice" is
+                    // opaque:
+                    // int x; void f() { void g(ref x) {...}; twice(g, x); }
+                    // Although the ideal reasoning is that g modifies x, and we
+                    // cannot know that, for twice(g, x) to modify x, twice's
+                    // signature must have a "ref" for x, so just by looking at the
+                    // call to "twice" we know that "x" is modified
+                    /*
+                     * Function hoistedFun = nres.getFun(name); if (hoistedFun !=
+                     * null) { String fullName = nres.getFunName(name); if
+                     * (fullName.equals(theNewFunName)) { // We are processing
+                     * theNewFunName to get its NewFunInfo, // so we don't need to
+                     * inline itself. It is not in the // symtab chain, so we must
+                     * return early otherwise the // lookup will throw exception.
+                     * return exp; } if (extractedInnerFuns.containsKey(fullName)) {
+                     * // hoistedFun.accept(this); return exp; } return exp; }
+                     */
+
+                    Type pt = InnerFunReplacer.this.symtab.lookupVarNocheck(exp);
+                    if (pt == null) {
+                        return exp;
+                    }
+
+                    if (isInParam) {
+                        throw new ExceptionAtNode(
+                                "You cannot use a captured variable in an array length expression: " +
+                                        exp, exp);
+                    }
+                    int kind =
+                            InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
+                                    exp);
+                    if (kind == SymbolTable.KIND_GLOBAL) {
+                        return exp;
+                    }
+
+                    TreeSet<String> oldDependent = dependent;
+                    ParamInfo info = this.nfi.paramsToAdd.get(name);
+                    if (info == null) {
+                        dependent = new TreeSet<String>();
+                        this.nfi.paramsToAdd.put(name, new ParamInfo(pt, name, makeUnique(name),
+                                isAssignee,
+                                dependent));
+                    } else {
+                        dependent = info.dependence;
+                        if (isAssignee) {
+                            info.changed = true;
+                        }
+                    }
+                    // we should also visit the type of the variable.
+                    boolean oldIsA = isAssignee;
+                    isAssignee = false;
+                    pt.accept(this);
+                    isAssignee = oldIsA;
+                    dependent = oldDependent;
+                }
+                return exp;
+            }
+
+            public Object visitStructDef(StructDef ts) {
+                return ts;
+            }
+
+            public Object visitExprField(ExprField ef) {
+                // TODO xzl: field should not be considered assignee?
+                boolean oldIsA = isAssignee;
+                isAssignee = false;
+                ef.getLeft().accept(this);
+                isAssignee = oldIsA;
+                return ef;
+            }
+
+            public Object visitExprArrayRange(ExprArrayRange ear) {
+                ear.getBase().accept(this);
+                boolean oldIsA = isAssignee;
+                RangeLen rl = ear.getSelection();
+                isAssignee = false;
+                rl.start().accept(this);
+                if (rl.hasLen()) {
+                    rl.getLenExpression().accept(this);
+                }
+                isAssignee = oldIsA;
+                return ear;
+            }
+
+            public Object visitExprUnary(ExprUnary exp) {
+                int op = exp.getOp();
+                if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_POSTINC ||
+                        op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_PREINC)
+                {
+                    boolean oldIsA = isAssignee;
+                    isAssignee = true;
+                    exp.getExpr().accept(this);
+                    isAssignee = oldIsA;
+                }
+                return exp;
+            }
+
+            public Object visitParameter(Parameter p) {
+                boolean op = isInParam;
+                isInParam = true;
+                Object o = super.visitParameter(p);
+                isInParam = op;
+                return o;
+            }
+
+            public Object visitExprArrayInit(ExprArrayInit init) {
+                boolean oldIsA = isAssignee;
+                isAssignee = false;
+                super.visitExprArrayInit(init);
+                isAssignee = oldIsA;
+                return init;
+            }
+
+            public Object visitStmtAssign(StmtAssign stmt) {
+                boolean oldIsA = isAssignee;
+                isAssignee = true;
+                stmt.getLHS().accept(this);
+                isAssignee = oldIsA;
+                stmt.getRHS().accept(this);
+                return stmt;
+            }
+
+            public Object visitExprFunCall(ExprFunCall efc) {
+                final String name = efc.getName();
+                Function fun = nres.getFun(name);
+                // NOTE the function passed to funInfo() is not in extractedInnerFuns
+                // yet, so it will not be inlined here, which is the correct behavior.
+                if (extractedInnerFuns.containsKey(nres.getFunName(name))) {
+                    // FIXME xzl:
+                    // this is raises a problem of lexical v.s. dynamic scope.
+                    // <code>
+                    // int x=0, y=0;
+                    // void f() { x++; }
+                    // void g() { int x=0; f(); y++; }
+                    // </code>
+                    // Then the current approach determines that g does not modify
+                    // outer x, which is wrong under lexical scope.
+                    //
+                    // Also note that this is not the only place of inlining
+                    // see below the "existingArgs" code.
+                    //
+                    // the old comment:
+                    // This is necessary, it's essentially inlining every inner
+                    // function
+                    // if you have f(...) { g(...) { } ; h(...) { ... g() ... } }
+                    // g will be inlined to h
+                    // why is this reasonable? because you cannot have cyclic relation
+                    // (there's strict order for inner function)
+                    // you might ask, later will will propagate information along call
+                    // edges
+                    // why do we need this?
+                    // because the propagate takes advantage of this to simplify
+                    // the initial condition
+                    // it always put extractedInner[fun].nfi as the start point
+                    // rather than the joined result
+                    // in the above example, when propagate h's information,
+                    // it always start from extractedInner[h].nfi
+                    // but not extractedInner[h].nfi JOIN extractedInner[g].nfi
+                    // and this requires g() already inlined inside h()
+                    // fun.accept(this);
+                }
+                // return super.visitExprFunCall(efc);
+                if (fun == null) {
+                    Type t = this.symtab.lookupVar(efc.getName(), efc);
+                    if (t == null || (!(t instanceof TypeFunction))) {
+                        throw new ExceptionAtNode("Function " + efc.getName() +
+                                " has not been defined when used", efc);
+                    }
+                    // at this moment, we don't know about fun's signature,
+                    // so we assume that all arguments might be changed for soundness
+                    List<Expression> existingArgs = efc.getParams();
+                    final boolean oldIsA = isAssignee;
+                    for (Expression e : existingArgs) {
+                        isAssignee = true;
+                        // if (!(e instanceof ExprVar)) {
+                            e.accept(this);
+                        // }
+                        isAssignee = oldIsA;
+                    }
+                    return efc;
+                }
+                List<Expression> existingArgs = efc.getParams();
+                List<Parameter> params = fun.getParams();
+                int starti = 0;
+                if (params.size() != existingArgs.size()) {
+                    while (starti < params.size()) {
+                        if (!params.get(starti).isImplicit()) {
+                            break;
+                        }
+                        ++starti;
+                    }
+                }
+
+                if ((params.size() - starti) != existingArgs.size()) {
+                    throw new ExceptionAtNode("Wrong number of parameters", efc);
+                }
+                final boolean oldIsA = isAssignee;
+                for (int i = starti; i < params.size(); i++) {
+                    Parameter p = params.get(i);
+                    isAssignee = p.isParameterOutput();
+                    // NOTE xzl: if this arg is a function, it will be inlined.
+                    if (!(p.getType() instanceof TypeFunction)) {
+                        existingArgs.get(i - starti).accept(this);
+                    }
+                    isAssignee = oldIsA;
+                }
+                return efc;
+            }
+        }
+
 
         /**
          * This is a leveled lookup table of the hoisted functions. If "f" is hoisted out
@@ -2014,252 +2341,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             final String theNewFunName = nres.getFunName(f.getName());
             final NewFunInfo nfi =
                     new NewFunInfo(theNewFunName, nres.getFunName(curFun.getName()));
-            SymbolTableVisitor stv = new SymbolTableVisitor(null) {
-                boolean isAssignee = false;
-                TreeSet<String> dependent = null;
-
-                public Object visitStmtFunDecl(StmtFunDecl decl) {
-                    // just ignore the inner function declaration
-                    // because it will not affect the used/modified set
-                    symtab.registerVar(decl.getDecl().getName(), TypeFunction.singleton,
-                            decl, SymbolTable.KIND_LOCAL);
-                    SymbolTable oldSymTab = symtab;
-                    symtab = new SymbolTable(symtab);
-                    for (Parameter p : decl.getDecl().getParams()) {
-                        p.accept(this);
-                    }
-
-                    decl.getDecl().getBody().accept(this);
-                    symtab = oldSymTab;
-                    return decl;
-                }
-
-                public Object visitExprVar(ExprVar exp) {
-                    final String name = exp.getName();
-
-                    if (dependent != null) {
-                        dependent.add(name);
-                    }
-                    Type t = symtab.lookupVarNocheck(exp);
-                    if (t == null) {
-                        // if t is not null,
-                        // it's local to stmtblock (thus should not be considered
-                        // closure-passed variable that's defined outside the inner
-                        // function)
-
-                        // TODO xzl: Is this really sound? need to check
-                        // If name is a hoisted function, consider it will be called, and
-                        // inline it to get an over-estimation of the used/modified sets
-                        // Note that this is still sound, even in the case "twice" is
-                        // opaque:
-                        // int x; void f() { void g(ref x) {...}; twice(g, x); }
-                        // Although the ideal reasoning is that g modifies x, and we
-                        // cannot know that, for twice(g, x) to modify x, twice's
-                        // signature must have a "ref" for x, so just by looking at the
-                        // call to "twice" we know that "x" is modified
-                        /*
-                         * Function hoistedFun = nres.getFun(name); if (hoistedFun !=
-                         * null) { String fullName = nres.getFunName(name); if
-                         * (fullName.equals(theNewFunName)) { // We are processing
-                         * theNewFunName to get its NewFunInfo, // so we don't need to
-                         * inline itself. It is not in the // symtab chain, so we must
-                         * return early otherwise the // lookup will throw exception.
-                         * return exp; } if (extractedInnerFuns.containsKey(fullName)) {
-                         * // hoistedFun.accept(this); return exp; } return exp; }
-                         */
-
-                        Type pt = InnerFunReplacer.this.symtab.lookupVarNocheck(exp);
-                        if (pt == null) {
-                            return exp;
-                        }
-
-                        if (isInParam) {
-                            throw new ExceptionAtNode(
-                                    "You cannot use a captured variable in an array length expression: " +
-                                            exp, exp);
-                        }
-                        int kind =
-                                InnerFunReplacer.this.symtab.lookupKind(exp.getName(),
-                                        exp);
-                        if (kind == SymbolTable.KIND_GLOBAL) {
-                            return exp;
-                        }
-
-                        TreeSet<String> oldDependent = dependent;
-                        ParamInfo info = nfi.paramsToAdd.get(name);
-                        if (info == null) {
-                            dependent = new TreeSet<String>();
-                            nfi.paramsToAdd.put(name, new ParamInfo(pt, isAssignee,
-                                    dependent));
-                        } else {
-                            dependent = info.dependence;
-                            if (isAssignee) {
-                                info.changed = true;
-                            }
-                        }
-                        // we should also visit the type of the variable.
-                        boolean oldIsA = isAssignee;
-                        isAssignee = false;
-                        pt.accept(this);
-                        isAssignee = oldIsA;
-                        dependent = oldDependent;
-                    }
-                    return exp;
-                }
-
-                public Object visitStructDef(StructDef ts) {
-                    return ts;
-                }
-
-                public Object visitExprField(ExprField ef) {
-                    // TODO xzl: field should not be considered assignee?
-                    boolean oldIsA = isAssignee;
-                    isAssignee = false;
-                    ef.getLeft().accept(this);
-                    isAssignee = oldIsA;
-                    return ef;
-                }
-
-                public Object visitExprArrayRange(ExprArrayRange ear) {
-                    ear.getBase().accept(this);
-                    boolean oldIsA = isAssignee;
-                    RangeLen rl = ear.getSelection();
-                    isAssignee = false;
-                    rl.start().accept(this);
-                    if (rl.hasLen()) {
-                        rl.getLenExpression().accept(this);
-                    }
-                    isAssignee = oldIsA;
-                    return ear;
-                }
-
-                public Object visitExprUnary(ExprUnary exp) {
-                    int op = exp.getOp();
-                    if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_POSTINC ||
-                            op == ExprUnary.UNOP_PREDEC || op == ExprUnary.UNOP_PREINC)
-                    {
-                        boolean oldIsA = isAssignee;
-                        isAssignee = true;
-                        exp.getExpr().accept(this);
-                        isAssignee = oldIsA;
-                    }
-                    return exp;
-                }
-
-                boolean isInParam = false;
-
-                public Object visitParameter(Parameter p) {
-                    boolean op = isInParam;
-                    isInParam = true;
-                    Object o = super.visitParameter(p);
-                    isInParam = op;
-                    return o;
-                }
-
-                public Object visitExprArrayInit(ExprArrayInit init) {
-                    boolean oldIsA = isAssignee;
-                    isAssignee = false;
-                    super.visitExprArrayInit(init);
-                    isAssignee = oldIsA;
-                    return init;
-                }
-
-                public Object visitStmtAssign(StmtAssign stmt) {
-                    boolean oldIsA = isAssignee;
-                    isAssignee = true;
-                    stmt.getLHS().accept(this);
-                    isAssignee = oldIsA;
-                    stmt.getRHS().accept(this);
-                    return stmt;
-                }
-
-                public Object visitExprFunCall(ExprFunCall efc) {
-                    final String name = efc.getName();
-                    Function fun = nres.getFun(name);
-                    // NOTE the function passed to funInfo() is not in extractedInnerFuns
-                    // yet, so it will not be inlined here, which is the correct behavior.
-                    if (extractedInnerFuns.containsKey(nres.getFunName(name))) {
-                        // FIXME xzl:
-                        // this is raises a problem of lexical v.s. dynamic scope.
-                        // <code>
-                        // int x=0, y=0;
-                        // void f() { x++; }
-                        // void g() { int x=0; f(); y++; }
-                        // </code>
-                        // Then the current approach determines that g does not modify
-                        // outer x, which is wrong under lexical scope.
-                        //
-                        // Also note that this is not the only place of inlining
-                        // see below the "existingArgs" code.
-                        //
-                        // the old comment:
-                        // This is necessary, it's essentially inlining every inner
-                        // function
-                        // if you have f(...) { g(...) { } ; h(...) { ... g() ... } }
-                        // g will be inlined to h
-                        // why is this reasonable? because you cannot have cyclic relation
-                        // (there's strict order for inner function)
-                        // you might ask, later will will propagate information along call
-                        // edges
-                        // why do we need this?
-                        // because the propagate takes advantage of this to simplify
-                        // the initial condition
-                        // it always put extractedInner[fun].nfi as the start point
-                        // rather than the joined result
-                        // in the above example, when propagate h's information,
-                        // it always start from extractedInner[h].nfi
-                        // but not extractedInner[h].nfi JOIN extractedInner[g].nfi
-                        // and this requires g() already inlined inside h()
-                        // fun.accept(this);
-                    }
-                    // return super.visitExprFunCall(efc);
-                    if (fun == null) {
-                        Type t = this.symtab.lookupVar(efc.getName(), efc);
-                        if (t == null || (!(t instanceof TypeFunction))) {
-                            throw new ExceptionAtNode("Function " + efc.getName() +
-                                    " has not been defined when used", efc);
-                        }
-                        // at this moment, we don't know about fun's signature,
-                        // so we assume that all arguments might be changed for soundness
-                        List<Expression> existingArgs = efc.getParams();
-                        final boolean oldIsA = isAssignee;
-                        for (Expression e : existingArgs) {
-                            isAssignee = true;
-                            // if (!(e instanceof ExprVar)) {
-                                e.accept(this);
-                            // }
-                            isAssignee = oldIsA;
-                        }
-                        return efc;
-                    }
-                    List<Expression> existingArgs = efc.getParams();
-                    List<Parameter> params = fun.getParams();
-                    int starti = 0;
-                    if (params.size() != existingArgs.size()) {
-                        while (starti < params.size()) {
-                            if (!params.get(starti).isImplicit()) {
-                                break;
-                            }
-                            ++starti;
-                        }
-                    }
-
-                    if ((params.size() - starti) != existingArgs.size()) {
-                        throw new ExceptionAtNode("Wrong number of parameters", efc);
-                    }
-                    final boolean oldIsA = isAssignee;
-                    for (int i = starti; i < params.size(); i++) {
-                        Parameter p = params.get(i);
-                        isAssignee = p.isParameterOutput();
-                        // NOTE xzl: if this arg is a function, it will be inlined.
-                        if (!(p.getType() instanceof TypeFunction)) {
-                            existingArgs.get(i - starti).accept(this);
-                        }
-                        isAssignee = oldIsA;
-                    }
-                    return efc;
-                }
-            };
+            SymbolTableVisitor stv = new LocalFunctionAnalyzer(null, nfi);
             stv.setNres(nres);
             f.accept(stv);
             return nfi;
