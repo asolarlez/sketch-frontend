@@ -138,6 +138,10 @@ public class ExprLambda extends Expression {
 			this.missingFormalParameters = new ArrayList<ExprVar>();
 		}
 
+		public Object visitExprLambda(ExprLambda exprLambda) {
+			return exprLambda;
+		}
+
 		public Object visitExprVar(ExprVar exprVar) {
 			// If the parameters does not contain the variable in the expression
 			// and the variable has not been already added to the list
