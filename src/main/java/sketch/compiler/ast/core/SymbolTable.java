@@ -73,7 +73,7 @@ public class SymbolTable implements Cloneable
 
     private boolean makeShared = false;
 
-    private static class VarInfo
+    public static class VarInfo
     {
         public VarInfo(Type type, Object origin, int kind)
         {
@@ -166,7 +166,7 @@ public class SymbolTable implements Cloneable
     /** Helper method to get the VarInfo for a name.  If the symbol is
      * not in the current symbol table, search in the parent.  If the
      * parent is null, return null. */
-    private VarInfo lookupVarInfo(String name)
+    public VarInfo lookupVarInfo(String name)
     {
         VarInfo info = (VarInfo)vars.get(name);
         if (info != null)

@@ -1,0 +1,38 @@
+
+
+void foo(int x, fun baz){
+    
+    {
+      int y = x + 5;   
+      int[y] q; 
+      void mama(){
+          baz(y);
+          assert q[0] == 0;
+      }
+      mama();
+    }
+}
+
+
+int zero(){ return 0; }
+
+
+harness void main(int y){
+    
+    {
+    assume y> 2;    
+    
+    int[y] p;
+    p[0] = y;
+    
+    void boo(int t){
+        assert t == p[0] + 5;
+        assert y == p[0];
+    }
+    
+   
+    foo(y-1+1, boo);
+   
+    
+    }
+}

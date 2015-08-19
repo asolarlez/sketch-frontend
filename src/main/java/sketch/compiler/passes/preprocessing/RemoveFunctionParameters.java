@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.SymbolTable.VarInfo;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -23,6 +24,7 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.Pair;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
@@ -888,6 +890,13 @@ public class RemoveFunctionParameters extends FEReplacer {
         // If it has been changed, then it will become a reference parameter.
         boolean changed;
 
+        /**
+         * Indicates that this is a parameter that is only being passed through
+         * this function. it neither originated here nor is this its final
+         * destination.
+         */
+        boolean passthrough;
+
         // the variables that this param depends on
         // currently capture the type relation
         // example: int [x] y;
@@ -904,6 +913,20 @@ public class RemoveFunctionParameters extends FEReplacer {
             this.uniqueName = uniqueName;
         }
 
+        boolean isPassthrough() {
+            return passthrough;
+        }
+
+        ParamInfo notPassthrough() {
+            passthrough = false;
+            return this;
+        }
+
+        ParamInfo makePassthrough() {
+            passthrough = true;
+            return this;
+        }
+
         public String uniqueName() {
             return uniqueName;
         }
@@ -915,9 +938,23 @@ public class RemoveFunctionParameters extends FEReplacer {
                     (TreeSet<String>) this.dependence.clone());
         }
 
+        public ParamInfo clone(VarReplacer rep) {
+            TreeSet<String> newdep = new TreeSet<String>();
+            for (String s : this.dependence) {
+                String t = rep.find(s).toString();
+                if (t != null) {
+                    newdep.add(t);
+                } else {
+                    newdep.add(s);
+                }
+            }
+
+            return new ParamInfo((Type) this.paramType.accept(rep), this.name, this.uniqueName, this.changed, newdep);
+        }
+
         @Override
         public String toString() {
-            return (this.changed ? "@" : "") + this.paramType.toString();
+            return (this.changed ? "@" : "") + this.paramType.toString() + "(" + uniqueName + ")[" + dependence + "]";
         }
     }
 
@@ -985,6 +1022,24 @@ public class RemoveFunctionParameters extends FEReplacer {
             return lhs;
         }
 
+        Map<String, Expression> renamesFromDeps(TreeSet<String> dependence,
+                Map<String, ParamInfo> pinfosOfCaller,
+                Map<String, ParamInfo> pinfosOfCallee) {
+            Map<String, Expression> repl = new HashMap<String, Expression>();
+
+            for (String dep : dependence) {
+                ParamInfo localDep = pinfosOfCaller.get(dep);
+                ParamInfo passthroughDep = pinfosOfCallee.get(dep);
+                if (localDep != null) {
+                    if (!passthroughDep.uniqueName.equals(localDep.uniqueName)) {
+                        repl.put(dep, new ExprVar((FEContext) null,
+                                passthroughDep.uniqueName));
+                    }
+                }
+            }
+            return repl;
+        }
+
         public Object visitProgram(Program prog){
             CallGraph cg = new CallGraph(prog);
             nres = new NameResolver(prog);
@@ -1030,19 +1085,47 @@ public class RemoveFunctionParameters extends FEReplacer {
                             if (funsToVisit.containsKey(callerName)) { 
                                 // funsToVisit.get(callerName).addAll(nfi.paramsToAdd);
                                 // should merge correctly
-                                Map<String, ParamInfo> c =
+                                Map<String, ParamInfo> pinfosOfCaller =
                                         funsToVisit.get(callerName);
                                 for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd.entrySet())
+ {// First we need to check
+                                                      // for name conflicts.
+
+                                }
+
+                                for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd
+                                        .entrySet())
                                 {
-                                    String var = e.getValue().uniqueName();
-                                    ParamInfo info = e.getValue();
-                                    ParamInfo merger = c.get(var);
-                                    if (merger == null) {
-                                        c.put(var, info.clone());
+                                    String var = e.getValue().name;
+                                    ParamInfo calleeInfo = e.getValue();
+                                    ParamInfo callerInfo = pinfosOfCaller.get(var);
+                                    if (callerInfo == null) {
+                                        boolean renameInType = false;
+
+                                        Map<String, Expression> repl = renamesFromDeps(calleeInfo.dependence, pinfosOfCaller, nfi.paramsToAdd);
+                                        if (repl.size() > 0) {
+                                            VarReplacer vr = new VarReplacer(repl);
+                                            pinfosOfCaller.put(var, calleeInfo.clone(vr).makePassthrough());
+                                        } else {
+                                            pinfosOfCaller.put(var, calleeInfo.clone().makePassthrough());
+                                        }
                                     } else {
-                                        assert info.paramType.equals(merger.paramType);
-                                        merger.changed |= info.changed;
-                                        merger.dependence.addAll(info.dependence);
+                                        if (callerInfo.uniqueName().equals(calleeInfo.uniqueName())) {
+                                            assert calleeInfo.paramType.equals(callerInfo.paramType);
+                                            callerInfo.changed |= calleeInfo.changed;
+                                            callerInfo.dependence
+                                                    .addAll(calleeInfo.dependence);
+                                        } else {
+                                            // Everyone who depents on me has
+                                            // already had their types fixed, so
+                                            // its ok.
+                                            Map<String, Expression> repl = renamesFromDeps(calleeInfo.dependence, pinfosOfCaller, nfi.paramsToAdd);
+                                            if (repl.size() > 0) {
+                                                pinfosOfCaller.put(e.getValue().uniqueName, calleeInfo.clone(new VarReplacer(repl)).makePassthrough());
+                                            } else {
+                                                pinfosOfCaller.put(e.getValue().uniqueName, calleeInfo.clone().makePassthrough());
+                                            }
+                                        }
                                     }
                                 }
                             } else {
@@ -1065,8 +1148,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                                             // Add a parameter to add to the caller
                                             TreeSet<String> dependent =
                                                     new TreeSet<String>();
-                                            nfi.paramsToAdd.put(variable.getName(),
- new ParamInfo(
+                                            nfi.paramsToAdd.put(variable.getName(), new ParamInfo(
                                                     parameter.getType(),
                                                     variable.getName(),
                                                     variable.getName(),
@@ -1092,7 +1174,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                 HashMap<String, ParamInfo> torename) {
             HashMap<String, ParamInfo> newmap = new HashMap<String, ParamInfo>();
             for (Entry<String, ParamInfo> entry : torename.entrySet()) {
-                newmap.put(entry.getValue().uniqueName(), entry.getValue());
+                newmap.put(entry.getValue().name, entry.getValue()
+                        .makePassthrough());
             }
             return newmap;
         }
@@ -1124,6 +1207,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                     }
                 }
 
+                Map<String, Expression> vmap = new HashMap<String, Expression>();
+                FEReplacer repl = new VarReplacer(vmap);
                 result = new ArrayList<Parameter>();
                 while (!readyToPut.isEmpty()) {
                     String name = readyToPut.remove();
@@ -1151,8 +1236,17 @@ public class RemoveFunctionParameters extends FEReplacer {
                             tname = info.name;
                         }
 
+                    } else {
+                        if (info.isPassthrough()) {
+                            tname = info.uniqueName();
+                            vmap.put(name, new ExprVar((FEContext) null,
+                                    info.uniqueName()));
+                        } else {
+                            tname = name;
+                        }
                     }
-                    result.add(new Parameter(null, info.paramType, tname,
+                    result.add(new Parameter(null, (Type) info.paramType
+                            .accept(repl), tname,
                             makeRef ? Parameter.REF
                             : Parameter.IN));
 
@@ -1615,6 +1709,16 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     }
 
+    private static class NOpair {
+        Object origin;
+        String name;
+
+        NOpair(String name, Object origin) {
+            this.name = name;
+            this.origin = origin;
+        }
+    }
+
     /**
      * Hoist out inner functions, and extract the information about which inner function
      * used what variables defined in its containing function (the "closure"). This
@@ -1632,7 +1736,21 @@ public class RemoveFunctionParameters extends FEReplacer {
         Set<String> allVarNames = new HashSet<String>();
         int nparcnt = 0;
 
-        String makeUnique(String name) {
+        Map<String, List<NOpair>> uniqueNames = new HashMap<String, List<NOpair>>();
+
+        String makeUnique(String name, Object origin) {
+            List<NOpair> lp = uniqueNames.get(name);
+            if (lp == null) {
+                lp = new ArrayList<NOpair>();
+                uniqueNames.put(name, lp);
+            } else {
+                for (NOpair np : lp) {
+                    if (np.origin == origin) {
+                        return np.name;
+                    }
+                }
+            }
+
             String out = name + nparcnt;
             ++nparcnt;
             while (allVarNames.contains(out)) {
@@ -1640,6 +1758,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 ++nparcnt;
             }
             allVarNames.add(out);
+            lp.add(new NOpair(out, origin));
             return out;
         }
         
@@ -1758,7 +1877,12 @@ public class RemoveFunctionParameters extends FEReplacer {
                      * // hoistedFun.accept(this); return exp; } return exp; }
                      */
 
-                    Type pt = InnerFunReplacer.this.symtab.lookupVarNocheck(exp);
+                    VarInfo vi = InnerFunReplacer.this.symtab.lookupVarInfo(exp
+                            .getName());
+                    Type pt = null;
+                    if (vi != null) {
+                        pt = vi.type;
+                    }
                     if (pt == null) {
                         return exp;
                     }
@@ -1779,7 +1903,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                     ParamInfo info = this.nfi.paramsToAdd.get(name);
                     if (info == null) {
                         dependent = new TreeSet<String>();
-                        this.nfi.paramsToAdd.put(name, new ParamInfo(pt, name, makeUnique(name),
+                        this.nfi.paramsToAdd.put(name, new ParamInfo(pt, name,
+                                makeUnique(name, vi.origin),
                                 isAssignee,
                                 dependent));
                     } else {
