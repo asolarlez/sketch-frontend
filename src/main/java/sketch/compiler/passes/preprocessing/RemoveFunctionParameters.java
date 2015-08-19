@@ -1007,16 +1007,38 @@ public class RemoveFunctionParameters extends FEReplacer {
         Map<String, ParamInfo> mergePI(Map<String, ParamInfo> lhs,
                 Map<String, ParamInfo> rhs)
         {
-            for (Map.Entry<String, ParamInfo> e : rhs.entrySet()) {
-                String var = e.getKey();
-                ParamInfo info = e.getValue();
-                ParamInfo merger = lhs.get(var);
-                if (merger == null) {
-                    lhs.put(var, info.clone());
+            for (Map.Entry<String, ParamInfo> e : rhs
+                    .entrySet())
+            {
+                String var = e.getValue().name;
+                ParamInfo calleeInfo = e.getValue();
+                ParamInfo callerInfo = lhs.get(var);
+                if (callerInfo == null) {
+                    boolean renameInType = false;
+                    Map<String, Expression> repl = renamesFromDeps(calleeInfo.dependence, lhs, rhs);
+                    if (repl.size() > 0) {
+                        VarReplacer vr = new VarReplacer(repl);
+                        lhs.put(var, calleeInfo.clone(vr).makePassthrough());
+                    } else {
+                        lhs.put(var, calleeInfo.clone().makePassthrough());
+                    }
                 } else {
-                    assert info.paramType.equals(merger.paramType);
-                    merger.changed |= info.changed;
-                    merger.dependence.addAll(info.dependence);
+                    if (callerInfo.uniqueName().equals(calleeInfo.uniqueName())) {
+                        assert calleeInfo.paramType.equals(callerInfo.paramType);
+                        callerInfo.changed |= calleeInfo.changed;
+                        callerInfo.dependence
+                                .addAll(calleeInfo.dependence);
+                    } else {
+                        // Everyone who depents on me has
+                        // already had their types fixed, so
+                        // its ok.
+                        Map<String, Expression> repl = renamesFromDeps(calleeInfo.dependence, lhs, rhs);
+                        if (repl.size() > 0) {
+                            lhs.put(e.getValue().uniqueName, calleeInfo.clone(new VarReplacer(repl)).makePassthrough());
+                        } else {
+                            lhs.put(e.getValue().uniqueName, calleeInfo.clone().makePassthrough());
+                        }
+                    }
                 }
             }
             return lhs;
@@ -1052,6 +1074,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     for(String fn : equivalences.get(key)){
                         toVisit.push(fn);
                         if (funsToVisit.containsKey(fn)) {
+                            System.out.println("CHECKHERE1");
                             funsToVisit.put(fn,
                                     mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(fn)));
                         } else {
@@ -1061,6 +1084,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 }else{
                     toVisit.push(key);
                     if (funsToVisit.containsKey(key)) {
+                        System.out.println("CHECKHERE2");
                         funsToVisit.put(key,
                                 mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(key)));
                     } else {
@@ -1087,47 +1111,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                                 // should merge correctly
                                 Map<String, ParamInfo> pinfosOfCaller =
                                         funsToVisit.get(callerName);
-                                for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd.entrySet())
- {// First we need to check
-                                                      // for name conflicts.
-
-                                }
-
-                                for (Map.Entry<String, ParamInfo> e : nfi.paramsToAdd
-                                        .entrySet())
-                                {
-                                    String var = e.getValue().name;
-                                    ParamInfo calleeInfo = e.getValue();
-                                    ParamInfo callerInfo = pinfosOfCaller.get(var);
-                                    if (callerInfo == null) {
-                                        boolean renameInType = false;
-
-                                        Map<String, Expression> repl = renamesFromDeps(calleeInfo.dependence, pinfosOfCaller, nfi.paramsToAdd);
-                                        if (repl.size() > 0) {
-                                            VarReplacer vr = new VarReplacer(repl);
-                                            pinfosOfCaller.put(var, calleeInfo.clone(vr).makePassthrough());
-                                        } else {
-                                            pinfosOfCaller.put(var, calleeInfo.clone().makePassthrough());
-                                        }
-                                    } else {
-                                        if (callerInfo.uniqueName().equals(calleeInfo.uniqueName())) {
-                                            assert calleeInfo.paramType.equals(callerInfo.paramType);
-                                            callerInfo.changed |= calleeInfo.changed;
-                                            callerInfo.dependence
-                                                    .addAll(calleeInfo.dependence);
-                                        } else {
-                                            // Everyone who depents on me has
-                                            // already had their types fixed, so
-                                            // its ok.
-                                            Map<String, Expression> repl = renamesFromDeps(calleeInfo.dependence, pinfosOfCaller, nfi.paramsToAdd);
-                                            if (repl.size() > 0) {
-                                                pinfosOfCaller.put(e.getValue().uniqueName, calleeInfo.clone(new VarReplacer(repl)).makePassthrough());
-                                            } else {
-                                                pinfosOfCaller.put(e.getValue().uniqueName, calleeInfo.clone().makePassthrough());
-                                            }
-                                        }
-                                    }
-                                }
+                                mergePI(pinfosOfCaller, nfi.paramsToAdd);
                             } else {
                                 // Get the current function
                                 Function currentFunction = cg.getByName(cur);
