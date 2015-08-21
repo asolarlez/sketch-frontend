@@ -143,7 +143,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             if (funSizes.containsKey(o2)) {
                 s2 = funSizes.get(o2);
             }
-            return Integer.compare(s1, s2);
+            return s1 - s2;
         }
     }
 

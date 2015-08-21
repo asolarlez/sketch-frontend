@@ -770,7 +770,7 @@ expr_statement returns [Statement s] { s = null; Expression x; }
 	//|	(ID (AT ID)? LPAREN) => x=func_call { s = new StmtExpr(x); }
 	;
 
-assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
+assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; String fname = null;}
 	:	l=prefix_expr
 		( (
 			(	ASSIGN { o = 0; }
@@ -778,9 +778,15 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 			|	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
 			|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
 			|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
+			|   DOTASSIGN { fname = "op="; }
 			)
 			r=expr_or_lambda
-			{ s = new StmtAssign(l, r, o); s.resetOrigin(); }
+			{ if(fname == null){ 
+				s = new StmtAssign(l, r, o); s.resetOrigin();
+			  }else{
+			  	s = new StmtExpr(new ExprFunCall(l.getCx(), fname, l, r));
+			  }	
+			}
 		  )
 			| 
 		{ s = new StmtExpr(l);  }	
@@ -976,15 +982,30 @@ equalExpr returns [Expression x] { x = null; Expression r; Expression last; int 
 		)*
 	;
 
-compareExpr returns [Expression x] { x = null; Expression r; int o = 0; }
+compareExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname=null;}
 	:	x=shiftExpr
 		(	( LESS_THAN  { o = ExprBinary.BINOP_LT; }
 			| LESS_EQUAL { o = ExprBinary.BINOP_LE; }
 			| MORE_THAN  { o = ExprBinary.BINOP_GT; }
 			| MORE_EQUAL { o = ExprBinary.BINOP_GE; }
+			| DOTLT { fname="op<";  o = ExprBinary.BINOP_LT; }
+			| DOTGT { fname="op<"; o = ExprBinary.BINOP_GT; }
+			| DOTLTE { fname="op<"; o = ExprBinary.BINOP_LE; }
+			| DOTGTE { fname="op<"; o = ExprBinary.BINOP_GE; }
 			)
 			r = shiftExpr
-			{ x = new ExprBinary(o, x, r); }
+			{
+			   if(fname == null){
+			   x = new ExprBinary(o, x, r);
+			   }else{
+			   	switch(op){
+			   		case ExprBinary.BINOP_LT: x = new ExprFunCall(x, fname, x, r); break;
+			   		case ExprBinary.BINOP_GT: x = new ExprFunCall(x, fname, r, x); break;
+			   		case ExprBinary.BINOP_LE: x = new ExprUnary(x, ExprUnary.UNOP_NOT, new ExprFunCall(x, fname, r, x)); break;
+			   		case ExprBinary.BINOP_GE: x = new ExprUnary(x, ExprUnary.UNOP_NOT, new ExprFunCall(x, fname, x, r)); break;
+			   	}
+			   } 			
+			}
 		)*
 	;
 
@@ -998,25 +1019,30 @@ shiftExpr returns [Expression x] { x=null; Expression r; int op=0; }
         )*
     ;
 
-addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
+addExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname=null; }
 	:	x=multExpr
 		(	( PLUS  { o = ExprBinary.BINOP_ADD; }
 			| MINUS { o = ExprBinary.BINOP_SUB; }
 			| SELECT { o = ExprBinary.BINOP_SELECT; }
+			| DOTPLUS { fname = "op+"; }
+			| DOTMINUS { fname = "op-"; }
 			)
 			r=multExpr
-			{ x = new ExprBinary(o, x, r); }
+			{ x = fname == null ? new ExprBinary(o, x, r) : new ExprFunCall(x, fname, x, r) ; }
 		)*
 	;
 
-multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
+multExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname = null;}
 	:	x=prefix_expr
 		(	( STAR { o = ExprBinary.BINOP_MUL; }
 			| DIV  { o = ExprBinary.BINOP_DIV; }
 			| MOD  { o = ExprBinary.BINOP_MOD; }
+			| DOTTIMES { fname = "op*"; }
+			| DOTDIV { fname = "op/"; }
+			| DOTMOD { fname = "op/"; }
 			)
 			r=prefix_expr
-			{ x = new ExprBinary(o, x, r); }
+			{ x = fname == null ? new ExprBinary(o, x, r) : new ExprFunCall(x, fname, x, r) ; }
 		)*
 	;
 	

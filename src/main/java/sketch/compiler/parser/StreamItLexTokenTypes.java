@@ -1,4 +1,4 @@
-// $ANTLR 2.7.7 (20060906): "src/main/other/sketch/compiler/parser/StreamItLex.g" -> "StreamItLex.java"$
+// $ANTLR 2.7.7 (20060906): "StreamItLex.g" -> "StreamItLex.java"$
 
 	package sketch.compiler.parser;
 	
@@ -117,12 +117,18 @@ public interface StreamItLexTokenTypes {
 	int BACKSLASH = 111;
 	int LESS_COLON = 112;
 	int DOLLAR = 113;
-	int REGEN = 114;
-	int CHAR_LITERAL = 115;
-	int STRING_LITERAL = 116;
-	int ESC = 117;
-	int DIGIT = 118;
-	int HQUAN = 119;
-	int NUMBER = 120;
-	int ID = 121;
+	int DOTASSIGN = 114;
+	int DOTPLUS = 115;
+	int DOTMINUS = 116;
+	int DOTTIMES = 117;
+	int DOTDIV = 118;
+	int DOTMOD = 119;
+	int REGEN = 120;
+	int CHAR_LITERAL = 121;
+	int STRING_LITERAL = 122;
+	int ESC = 123;
+	int DIGIT = 124;
+	int HQUAN = 125;
+	int NUMBER = 126;
+	int ID = 127;
 }

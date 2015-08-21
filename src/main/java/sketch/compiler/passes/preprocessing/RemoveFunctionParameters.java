@@ -21,6 +21,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
@@ -276,9 +277,9 @@ public class RemoveFunctionParameters extends FEReplacer {
                                 ((ExprLambda) this.currentExprLambda).getMissingFormalParameters());
                     }
                 } else if (fun == null) {
-                    throw new ExceptionAtNode("Function " + actual + " does not exist",
-                            efc);
+                    throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
                 }
+
 
                 Type t = fun.getReturnType();
                 List<String> tps = fun.getTypeParams();
@@ -966,7 +967,7 @@ public class RemoveFunctionParameters extends FEReplacer {
     class NewFunInfo {
         public final String funName;
         public final String containingFunction;
-
+        public final Set<String> typeParamsToAdd;
         public final HashMap<String, ParamInfo> paramsToAdd;
 
         public HashMap<String, ParamInfo> cloneParamsToAdd() {
@@ -981,6 +982,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             this.funName = funName;
             this.containingFunction = containingFunction;
             paramsToAdd = new HashMap<String, ParamInfo>();
+            typeParamsToAdd = new TreeSet<String>();
         }
 
         @Override
@@ -1882,7 +1884,11 @@ public class RemoveFunctionParameters extends FEReplacer {
                     if (kind == SymbolTable.KIND_GLOBAL) {
                         return exp;
                     }
-
+                    if (pt instanceof TypeStructRef) {
+                        if (typeParams.size() > 0 && typeParams.contains(((TypeStructRef) pt).getName())) {
+                            nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                        }
+                    }
                     TreeSet<String> oldDependent = dependent;
                     ParamInfo info = this.nfi.paramsToAdd.get(name);
                     if (info == null) {
@@ -1949,6 +1955,13 @@ public class RemoveFunctionParameters extends FEReplacer {
             public Object visitParameter(Parameter p) {
                 boolean op = isInParam;
                 isInParam = true;
+                Type pt = p.getType();
+                if (pt instanceof TypeStructRef) {
+                    if (typeParams.size() > 0 && typeParams.contains(((TypeStructRef) pt).getName())) {
+                        nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                    }
+                }
+
                 Object o = super.visitParameter(p);
                 isInParam = op;
                 return o;
@@ -2096,6 +2109,8 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
         }
 
+        List<String> typeParams = new ArrayList<String>();
+
         public Object visitFunction(Function fun) {
             boolean tmpIsGen = isGenerator;
             isGenerator = fun.isGenerator();
@@ -2103,12 +2118,16 @@ public class RemoveFunctionParameters extends FEReplacer {
             frmap = new FunReplMap(tmp);
             Function tmpf = curFun;
             curFun = fun;
+            int pos = typeParams.size();
+            typeParams.addAll(fun.getTypeParams());
             for (Parameter p : fun.getParams()) {
 
                 frmap.declRepl(p.getName(), null);
 
             }
             Object o = super.visitFunction(fun);
+            typeParams.subList(pos, typeParams.size()).clear();
+            assert typeParams.size() == pos;
             curFun = tmpf;
             frmap = tmp;
             isGenerator = tmpIsGen;
@@ -2313,6 +2332,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                         "You can not define a harness inside another function", sfd);
             }
 
+            List<String> newParamTypes = null;
+            if (typeParams.size() > 0) {
+
+            }
             Function newFun = f.creator().name(newName).pkg(pkg).create();
             nres.registerFun(newFun);
 
@@ -2326,7 +2349,10 @@ public class RemoveFunctionParameters extends FEReplacer {
                 // newFunctions.put(newName, newFun);
                 // funsToVisit.push(newName);
 
-
+            NewFunInfo nfi = funInfo(newFun);
+            if (nfi.typeParamsToAdd.size() > 0) {
+                newFun.getTypeParams().addAll(nfi.typeParamsToAdd);
+            }
 
             // NOTE xzl: overwrite the incorrect newFun with the correct newFun with
             // processed body. This is needed for later funInfo(fun) to work properly if
@@ -2341,7 +2367,6 @@ public class RemoveFunctionParameters extends FEReplacer {
 
             tempSymtables.put(nres.getFunName(newFun), this.symtab);
 
-            NewFunInfo nfi = funInfo(newFun);
             extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
