@@ -998,7 +998,7 @@ compareExpr returns [Expression x] { x = null; Expression r; int o = 0; String f
 			   if(fname == null){
 			   x = new ExprBinary(o, x, r);
 			   }else{
-			   	switch(op){
+			   	switch(o){
 			   		case ExprBinary.BINOP_LT: x = new ExprFunCall(x, fname, x, r); break;
 			   		case ExprBinary.BINOP_GT: x = new ExprFunCall(x, fname, r, x); break;
 			   		case ExprBinary.BINOP_LE: x = new ExprUnary(x, ExprUnary.UNOP_NOT, new ExprFunCall(x, fname, r, x)); break;

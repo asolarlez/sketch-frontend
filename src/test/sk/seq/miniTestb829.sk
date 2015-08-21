@@ -5,16 +5,16 @@ adt Exp{
 
 
 generator bit op<(Exp x, Exp y){
-    return ((Num)x).n < ((Num)y).n    
+    return ((Num)x).n < ((Num)y).n ;   
 }
 
 harness void main(int x){
-    Exp e1 = new Num(n=x+??);
+    Exp e1 = new Num(n=x+4);
     Exp e2 = new Num(n=x+??);
     Exp e3 = new Num(n=x+??);
     
-    assert e1 .< e2;
-    assert e2 .< e3; 
+    assert e1 .<= e2;
+    assert e2 .<= e3; 
     assert e1 .>= e3;        
     
 }
