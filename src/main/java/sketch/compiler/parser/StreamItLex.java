@@ -1917,26 +1917,26 @@ inputState.guessing--;
 		int _saveIndex;
 		
 		{
-		if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='+')) {
-			match("op+");
+		if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='+')) {
+			match("op.+");
 		}
-		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='-')) {
-			match("op-");
+		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='-')) {
+			match("op.-");
 		}
-		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='*')) {
-			match("op*");
+		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='*')) {
+			match("op.*");
 		}
-		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='/')) {
-			match("op/");
+		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='/')) {
+			match("op./");
 		}
-		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='%')) {
-			match("op%");
+		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='%')) {
+			match("op.%");
 		}
-		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='=')) {
-			match("op=");
+		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='=')) {
+			match("op.=");
 		}
-		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='<')) {
-			match("op<");
+		else if ((LA(1)=='o') && (LA(2)=='p') && (LA(3)=='.') && (LA(4)=='<')) {
+			match("op.<");
 		}
 		else if ((_tokenSet_6.member(LA(1))) && (true) && (true)) {
 			{

@@ -778,7 +778,7 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; String
 			|	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
 			|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
 			|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
-			|   DOTASSIGN { fname = "op="; }
+			|   DOTASSIGN { fname = "op.="; }
 			)
 			r=expr_or_lambda
 			{ if(fname == null){ 
@@ -988,10 +988,10 @@ compareExpr returns [Expression x] { x = null; Expression r; int o = 0; String f
 			| LESS_EQUAL { o = ExprBinary.BINOP_LE; }
 			| MORE_THAN  { o = ExprBinary.BINOP_GT; }
 			| MORE_EQUAL { o = ExprBinary.BINOP_GE; }
-			| DOTLT { fname="op<";  o = ExprBinary.BINOP_LT; }
-			| DOTGT { fname="op<"; o = ExprBinary.BINOP_GT; }
-			| DOTLTE { fname="op<"; o = ExprBinary.BINOP_LE; }
-			| DOTGTE { fname="op<"; o = ExprBinary.BINOP_GE; }
+			| DOTLT { fname="op.<";  o = ExprBinary.BINOP_LT; }
+			| DOTGT { fname="op.<"; o = ExprBinary.BINOP_GT; }
+			| DOTLTE { fname="op.<"; o = ExprBinary.BINOP_LE; }
+			| DOTGTE { fname="op.<"; o = ExprBinary.BINOP_GE; }
 			)
 			r = shiftExpr
 			{
@@ -1024,8 +1024,8 @@ addExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname
 		(	( PLUS  { o = ExprBinary.BINOP_ADD; }
 			| MINUS { o = ExprBinary.BINOP_SUB; }
 			| SELECT { o = ExprBinary.BINOP_SELECT; }
-			| DOTPLUS { fname = "op+"; }
-			| DOTMINUS { fname = "op-"; }
+			| DOTPLUS { fname = "op.+"; }
+			| DOTMINUS { fname = "op.-"; }
 			)
 			r=multExpr
 			{ x = fname == null ? new ExprBinary(o, x, r) : new ExprFunCall(x, fname, x, r) ; }
@@ -1037,9 +1037,9 @@ multExpr returns [Expression x] { x = null; Expression r; int o = 0; String fnam
 		(	( STAR { o = ExprBinary.BINOP_MUL; }
 			| DIV  { o = ExprBinary.BINOP_DIV; }
 			| MOD  { o = ExprBinary.BINOP_MOD; }
-			| DOTTIMES { fname = "op*"; }
-			| DOTDIV { fname = "op/"; }
-			| DOTMOD { fname = "op/"; }
+			| DOTTIMES { fname = "op.*"; }
+			| DOTDIV { fname = "op./"; }
+			| DOTMOD { fname = "op./"; }
 			)
 			r=prefix_expr
 			{ x = fname == null ? new ExprBinary(o, x, r) : new ExprFunCall(x, fname, x, r) ; }

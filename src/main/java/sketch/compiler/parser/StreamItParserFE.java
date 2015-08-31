@@ -4055,7 +4055,7 @@ inputState.guessing--;
 				{
 					match(DOTASSIGN);
 					if ( inputState.guessing==0 ) {
-						fname = "op=";
+						fname = "op.=";
 					}
 					break;
 				}
@@ -4955,7 +4955,7 @@ inputState.guessing--;
 					{
 						match(DOTLT);
 						if ( inputState.guessing==0 ) {
-							fname="op<";  o = ExprBinary.BINOP_LT;
+							fname="op.<";  o = ExprBinary.BINOP_LT;
 						}
 						break;
 					}
@@ -4963,7 +4963,7 @@ inputState.guessing--;
 					{
 						match(DOTGT);
 						if ( inputState.guessing==0 ) {
-							fname="op<"; o = ExprBinary.BINOP_GT;
+							fname="op.<"; o = ExprBinary.BINOP_GT;
 						}
 						break;
 					}
@@ -4971,7 +4971,7 @@ inputState.guessing--;
 					{
 						match(DOTLTE);
 						if ( inputState.guessing==0 ) {
-							fname="op<"; o = ExprBinary.BINOP_LE;
+							fname="op.<"; o = ExprBinary.BINOP_LE;
 						}
 						break;
 					}
@@ -4979,7 +4979,7 @@ inputState.guessing--;
 					{
 						match(DOTGTE);
 						if ( inputState.guessing==0 ) {
-							fname="op<"; o = ExprBinary.BINOP_GE;
+							fname="op.<"; o = ExprBinary.BINOP_GE;
 						}
 						break;
 					}
@@ -5122,7 +5122,7 @@ inputState.guessing--;
 					{
 						match(DOTPLUS);
 						if ( inputState.guessing==0 ) {
-							fname = "op+";
+							fname = "op.+";
 						}
 						break;
 					}
@@ -5130,7 +5130,7 @@ inputState.guessing--;
 					{
 						match(DOTMINUS);
 						if ( inputState.guessing==0 ) {
-							fname = "op-";
+							fname = "op.-";
 						}
 						break;
 					}
@@ -5204,7 +5204,7 @@ inputState.guessing--;
 					{
 						match(DOTTIMES);
 						if ( inputState.guessing==0 ) {
-							fname = "op*";
+							fname = "op.*";
 						}
 						break;
 					}
@@ -5212,7 +5212,7 @@ inputState.guessing--;
 					{
 						match(DOTDIV);
 						if ( inputState.guessing==0 ) {
-							fname = "op/";
+							fname = "op./";
 						}
 						break;
 					}
@@ -5220,7 +5220,7 @@ inputState.guessing--;
 					{
 						match(DOTMOD);
 						if ( inputState.guessing==0 ) {
-							fname = "op/";
+							fname = "op./";
 						}
 						break;
 					}

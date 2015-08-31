@@ -4,7 +4,7 @@ adt Exp{
 }
 
 
-generator bit op<(Exp x, Exp y){
+generator bit op.<(Exp x, Exp y){
     return ((Num)x).n < ((Num)y).n ;   
 }
 

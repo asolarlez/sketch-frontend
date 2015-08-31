@@ -18,7 +18,7 @@ short:
 short-abc:
 	bash ./regtest.sh ABC
 
-long: ${ALLSK:.sk=.eout}
+long: ${ALLSK:.sk=.eout} ${ALLSK:.sk=.cpp}
 	ls mini*.sk | sed 's/\.sk/\.eout/g' | sort > ref
 	grep 'passed' *.eout | tr ':' ' ' | awk '{ print $$1; }' | sort > cur
 	echo "LISTED BELOW ARE THE FAILED TESTS (IF ANY)"

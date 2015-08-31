@@ -294,7 +294,7 @@ options {
 	paraphrase = "an identifier";
 }
 	:	((('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*)
-		| "op+" | "op-" | "op*" |  "op/" |  "op%"  | "op=" | "op<"
+		| "op.+" | "op.-" | "op.*" |  "op./" |  "op.%"  | "op.=" | "op.<"
 	)
 	;
 

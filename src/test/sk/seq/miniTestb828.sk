@@ -6,11 +6,11 @@ adt AST{
     Num{int x;}
 }
 
-generator AST op+(AST x, AST y){
+generator AST op.+(AST x, AST y){
     return new Plus(x=x, y=y);
 }
 
-generator AST op-(AST x, AST y){
+generator AST op.-(AST x, AST y){
     return new Minus(x=x, y=y);
 }
 
@@ -27,7 +27,7 @@ generator int eval(AST x){
     return 0;
 }
 
-generator void op=(ref int x, AST y){
+generator void op.=(ref int x, AST y){
     x = eval(y);
 }
 

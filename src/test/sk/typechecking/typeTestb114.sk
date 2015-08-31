@@ -3,7 +3,7 @@
 harness void main() {
 	int t = 3;
 	
-	fun f = () -> t = t + 5;
+	fun f = () -> t = t + 5; //TypeError
 		 	 	
  	assert f() == 8;
 }
