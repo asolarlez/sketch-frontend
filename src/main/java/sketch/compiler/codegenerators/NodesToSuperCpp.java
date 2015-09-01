@@ -391,6 +391,34 @@ public class NodesToSuperCpp extends NodesToJava {
         return result;
     }
 
+    public String upcast(Expression exp, Type t) {
+        Type origT = getType(exp);
+        if (origT.equals(t)) {
+            return (String) exp.accept(this);
+        } else {
+            return "((" + convertType(t) + ") (" + exp.accept(this) + "))";
+        }
+    }
+
+    public Object visitExprTernary(ExprTernary exp) {
+        Type t = getType(exp);
+        String a = (String) exp.getA().accept(this);
+
+        Type tb = getType(exp.getB());
+        Type tc = getType(exp.getC());
+
+        String b = upcast(exp.getB(), t);
+        String c = upcast(exp.getC(), t);
+
+        switch (exp.getOp()) {
+        case ExprTernary.TEROP_COND:
+            return "(" + a + " ? " + b + " : " + c + ")";
+        default:
+            assert false : exp;
+            return null;
+        }
+    }
+
     public Object visitExprBinary(ExprBinary exp) {
         if (exp.getOp() == ExprBinary.BINOP_LSHIFT ||
                 exp.getOp() == ExprBinary.BINOP_RSHIFT)
@@ -687,19 +715,15 @@ public class NodesToSuperCpp extends NodesToJava {
                     if (ftype instanceof TypeArray) {
                         if (pe.containsKey(field)) {
                             Type tp = getType(pe.get(field));
+                            TypeArray tarr = (TypeArray) ftype;
                             if (tp instanceof TypeArray) {
                                 TypeArray t = (TypeArray) tp;
-                                res +=
-                                        pe.get(field).accept(this) + ", " +
+                                res += upcast(pe.get(field), ftype) + ", " +
                                                 t.getLength().accept(this);
                             } else {
-                                TypeArray tarr = (TypeArray) ftype;
                                 String nvar = newTmp();
                                 String typename = typeForDecl(tarr.getBase());
-                                String result =
-                                        indent + typename + " " + nvar + "= " +
-                                                pe.get(field).accept(this) + ";\n";
-
+                                String result = indent + typename + " " + nvar + "= " + upcast(pe.get(field), ftype) + ";\n";
                                 addPreStmt(result);
                                 res += "&" + nvar + ", 1";
                             }
@@ -708,7 +732,7 @@ public class NodesToSuperCpp extends NodesToJava {
                         }
                     } else {
                         if (pe.containsKey(field)) {
-                            res += pe.get(field).accept(this);
+                            res += upcast(pe.get(field), ftype);
                         } else {
                             res += ftype.defaultValue().accept(this);
                         }
