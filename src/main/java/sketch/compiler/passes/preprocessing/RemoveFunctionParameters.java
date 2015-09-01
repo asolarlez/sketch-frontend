@@ -4,10 +4,18 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
-import sketch.compiler.ast.core.SymbolTable.VarInfo;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.SymbolTable.VarInfo;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -35,8 +43,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 
     private Map<String, ExprLambda> localLambda = new HashMap<String, ExprLambda>();
     private Map<ExprVar, Expression> lambdaReplace = new HashMap<ExprVar, Expression>();
-    private Map<String, List<ExprVar>> lambdaFunctionsNeededVariables =
-            new HashMap<String, List<ExprVar>>();
+	private Map<String, Map<ExprVar, ExprVar>> lambdaFunctionsNeededVariables = 
+			new HashMap<String, Map<ExprVar, ExprVar>>();
     private Map<String, String> lambdaRenameMap = new HashMap<String, String>();
     private ExprLambda currentExprLambda = null;
 
@@ -224,19 +232,19 @@ public class RemoveFunctionParameters extends FEReplacer {
                     // If this function already has some variables that it needs
                     if (this.lambdaFunctionsNeededVariables.containsKey(fun.getName())) {
                         // Get the current formal parameters
-                        List<ExprVar> formalParameters =
+                        Map<ExprVar, ExprVar> formalParameters =
                                 this.lambdaFunctionsNeededVariables.get(fun.getName());
 
                         // Gret the list of missing parameters
-                        List<ExprVar> needed =
+                        Map<ExprVar, ExprVar> needed =
                                 ((ExprLambda) actual).getMissingFormalParameters();
 
                         // Loop through each variable needed
-                        for (ExprVar variable : needed) {
-                            // If the variable is not included yet
-                            if (!formalParameters.contains(variable)) {
+                        for (Entry<ExprVar, ExprVar> entry : needed.entrySet()) {
+							// If the variable is not included yet
+							if (!formalParameters.containsKey(entry.getKey())) {
                                 // Add it
-                                formalParameters.add(variable);
+								formalParameters.put(entry.getKey(), entry.getValue());
                             }
                         }
 
@@ -293,7 +301,8 @@ public class RemoveFunctionParameters extends FEReplacer {
 
         }
 
-        FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg);
+		FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg,
+ this.lambdaFunctionsNeededVariables.get(nfn));
 
         // Set the current lambda expression to null
         this.currentExprLambda = null;
@@ -416,10 +425,13 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
         // This is where the new program is created
         Program np = p.creator().streams(newPkges).create();
+		np.debugDump("After new program");
 
         Program aftertc = (Program) np.accept(new ThreadClosure());
+		aftertc.debugDump("After thread closure");
 
 		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
+		afterLambdaClosure.debugDump("After lambda thread");
 
 		return afterLambdaClosure.accept(new FixPolymorphism());
 
@@ -714,12 +726,16 @@ public class RemoveFunctionParameters extends FEReplacer {
                 new HashMap<String, ExprLambda>();
         private final Map<ExprVar, Expression> lambdaReplace =
                 new HashMap<ExprVar, Expression>();
+		private final Map<ExprVar, ExprVar> variablesNeeded;
+		private boolean lambda;
 
-        private FunctionParamRenamer(String nfn, ExprFunCall efc, String cpkg)
+		private FunctionParamRenamer(String nfn, ExprFunCall efc, String cpkg, Map<ExprVar, ExprVar> variablesNeeded)
         {
             this.nfn = nfn;
             this.efc = efc;
             this.cpkg = cpkg;
+			this.variablesNeeded = variablesNeeded;
+			this.lambda = false;
         }
 
         public Object visitStmtFunDecl(StmtFunDecl sfd) {
@@ -823,7 +839,12 @@ public class RemoveFunctionParameters extends FEReplacer {
 
                     // Return a new expression where all the variables are replaced with
                     // actual parameters
-                    return this.doExpression(lambda.getExpression());
+					this.lambda = true;
+
+					Expression newLambda = this.doExpression(lambda.getExpression());
+
+					this.lambda = false;
+					return newLambda;
 
                 } else if (hasChanged) {
                     return new ExprFunCall(efc, efc.getName(), newParams);
@@ -841,7 +862,9 @@ public class RemoveFunctionParameters extends FEReplacer {
             else if(this.lambdaReplace.containsKey(ev)) {
                 // Return the actual parameter
                 return this.lambdaReplace.get(ev);
-            }            
+			} else if (this.lambda && this.variablesNeeded.containsKey(ev)) {
+				return this.variablesNeeded.get(ev);
+			}
             else {
                 return ev;
             }
@@ -1127,15 +1150,17 @@ public class RemoveFunctionParameters extends FEReplacer {
                                     {
 
                                         // Loop through each variable that is needed
-                                        for (ExprVar variable : lambdaFunctionsNeededVariables.get(caller.getName()))
+										for (Entry<ExprVar, ExprVar> entry : lambdaFunctionsNeededVariables
+												.get(caller.getName()).entrySet())
                                         {
                                             // Add a parameter to add to the caller
                                             TreeSet<String> dependent =
                                                     new TreeSet<String>();
-                                            nfi.paramsToAdd.put(variable.getName(), new ParamInfo(
+											nfi.paramsToAdd.put(entry.getKey().getName(),
+													new ParamInfo(
                                                     parameter.getType(),
-                                                    variable.getName(),
-                                                    variable.getName(),
+ entry.getKey().getName(),
+															entry.getKey().getName(),
                                                             true, dependent));
                                         }
 
@@ -1255,14 +1280,15 @@ public class RemoveFunctionParameters extends FEReplacer {
                         // If the function that we are calling needs a variable
                         if(lambdaFunctionsNeededVariables.containsKey(efc.getName())) {
                             // Loop through the variables needed
-                            for (ExprVar variable : lambdaFunctionsNeededVariables.get(efc.getName()))
+							for (Entry<ExprVar, ExprVar> entry : lambdaFunctionsNeededVariables.get(efc.getName())
+									.entrySet())
                             {
                                 // If a needed variable is the same as the current
                                 // parameter that we just added
-                                if (variable.getName() == p.getName()) {
+								if (entry.getKey().getName() == p.getName()) {
                                     // Delete it from the needed variables
                                     lambdaFunctionsNeededVariables.get(efc.getName()).remove(
-                                            variable);
+entry);
 
                                     // No need to look further since we added 1 variable
                                     break;
@@ -1334,7 +1360,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             } else {
                 nset.add(nfn);
                 FunctionParamRenamer renamer =
-                        new FunctionParamRenamer(nfn, efc, nres.curPkg().getName());
+ new FunctionParamRenamer(nfn, efc, nres.curPkg().getName(), null);
                 Function newf = (Function) pf.getFirst().accept(renamer);
                 List<Statement> ls = pf.getSecond().getFirst();
                 ls.add(new StmtFunDecl(efc, newf));
@@ -1593,7 +1619,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             // If this is a lambda call and it needs variables
             if (lambdaFunctionsNeededVariables.containsKey(exprFunctionCall.getName())) {
                 // Get the variables that are needed in this call
-                List<ExprVar> variablesNeeded =
+				Map<ExprVar, ExprVar> variablesNeeded =
                         lambdaFunctionsNeededVariables.get(exprFunctionCall.getName());
 
                 // Lists for holding the parameters
@@ -1607,7 +1633,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         this.nres.getFun(exprFunctionCall.getName()).getParams();
 
                 // Loop through the variables needed
-                for (ExprVar variable : variablesNeeded) {
+				for (Entry<ExprVar, ExprVar> entry : variablesNeeded.entrySet()) {
 
                     // TODO This check is to make sure that we are not double
                     // adding
@@ -1622,7 +1648,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     for (Parameter formalParameter : calleeFormalParameters) {
                         // If this variables that we are trying to thread is
                         // already defined in this function
-                        if (formalParameter.getName().equals(variable.getName())) {
+						if (formalParameter.getName().equals(entry.getKey().getName())) {
                             // Get the function that we are calling
                             Function function =
                                     this.nres.getFun(exprFunctionCall.getName());
@@ -1658,14 +1684,14 @@ public class RemoveFunctionParameters extends FEReplacer {
                     }
 
                     // Add the variable to the actual parameters
-                    actualParameters.add(variable);
+					actualParameters.add(entry.getKey());
 
                     // Get the type of variable
-                    Type type = this.symtab.lookupVar(variable);
+					Type type = this.symtab.lookupVar(entry.getKey());
 
                     // Add the parameter to the list of formal parameters of the function
                     // declaration
-                    formalParameters.add(new Parameter(variable, type, variable.getName()));
+					formalParameters.add(new Parameter(entry.getValue(), type, entry.getValue().getName()));
 
                     // Reset variable to default
                     this.callingLocalFunction = false;
@@ -1888,7 +1914,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     if (info == null) {
                         dependent = new TreeSet<String>();
                         this.nfi.paramsToAdd.put(name, new ParamInfo(pt, name,
-                                makeUnique(name, vi.origin),
+                        		makeUnique(name, vi.origin), // MIGUEL MAKE UNIQUE
                                 isAssignee,
                                 dependent));
                     } else {

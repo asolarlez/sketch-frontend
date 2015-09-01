@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
@@ -362,18 +363,18 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 
 			// Get the variables used in the expression that are not in the
 			// formal parameters. In this case, it will be all of them
-			List<ExprVar> variablesUsedInExpression = castedLambda.getMissingFormalParameters();
+			Map<ExprVar, ExprVar> variablesUsedInExpression = castedLambda.getMissingFormalParameters();
 			
 			// Loop through each variable
-			for(ExprVar variable : variablesUsedInExpression) {
+			for(Entry<ExprVar, ExprVar> entry : variablesUsedInExpression.entrySet()) {
 				// If this variable is not in scope of this call
-				if(!this.symtab.hasVar(variable.getName())) {
+				if (!this.symtab.hasVar(entry.getKey().getName())) {
 					// Throw an exception since we can only cast expressions
 					// with variables that are in scope
 					throw new ExceptionAtNode("You are passing an expression to a"
 							+ " high-order function and you are using a variable "
 									+ "that is not defined within scope: "
-									+ variable
+									+ entry.getKey()
 							, actualParameter);
 				}
 			}

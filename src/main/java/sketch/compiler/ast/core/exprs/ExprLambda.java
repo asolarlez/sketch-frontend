@@ -1,7 +1,8 @@
 package sketch.compiler.ast.core.exprs;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
@@ -28,6 +29,7 @@ public class ExprLambda extends Expression {
 
 	private List<ExprVar> 	parameters;
 	private Expression		expression;
+	private static int missingVariableCount = 0;
 
 	public ExprLambda(FENode node) {
 		super(node);
@@ -67,8 +69,8 @@ public class ExprLambda extends Expression {
 	 * 
 	 * @return
 	 */
-	public List<ExprVar> getMissingFormalParameters() {
-		List<ExprVar> variablesInScopeInExpression = new ArrayList<ExprVar>();
+	public Map<ExprVar, ExprVar> getMissingFormalParameters() {
+		Map<ExprVar, ExprVar> variablesInScopeInExpression = new HashMap<ExprVar, ExprVar>();
 		
 		// Create an expression analyzer
 		ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer();
@@ -132,13 +134,13 @@ public class ExprLambda extends Expression {
 
 	private class ExpressionAnalyzer extends FEReplacer {
 
-		private final List<ExprVar> missingFormalParameters;
+		private final Map<ExprVar, ExprVar> missingFormalParameters;
 
 		public ExpressionAnalyzer() {
-			this.missingFormalParameters = new ArrayList<ExprVar>();
+			this.missingFormalParameters = new HashMap<ExprVar, ExprVar>();
 		}
 
-		public Object visitExprLambda(ExprLambda exprLambda) {
+		public Object visitExprLambda(ExprLambda exprLambda) { // TODO comment
 			return exprLambda;
 		}
 
@@ -146,9 +148,15 @@ public class ExprLambda extends Expression {
 			// If the parameters does not contain the variable in the expression
 			// and the variable has not been already added to the list
 			if (!parameters.contains(exprVar)
-					&& !this.missingFormalParameters.contains(exprVar)) {
-				// Added to the list of variables in expression
-				this.missingFormalParameters.add(exprVar);
+					&& !this.missingFormalParameters.containsKey(exprVar)) {
+				// Create new variable
+				ExprVar newVar = new ExprVar(exprVar.getCx(), exprVar.getName() + missingVariableCount);
+
+				// Add it to the list of variables in expression
+				this.missingFormalParameters.put(exprVar, newVar);
+				
+				// Increment the number of missing variables
+				missingVariableCount++;
 			}
 
 			return super.visitExprVar(exprVar);
@@ -157,7 +165,7 @@ public class ExprLambda extends Expression {
 		/**
 		 * Return a list of variables in scope that the expression uses
 		 */
-		public List<ExprVar> getVariablesInScopeInExpression() {
+		public Map<ExprVar, ExprVar> getVariablesInScopeInExpression() {
 			return this.missingFormalParameters;
 		}
 
