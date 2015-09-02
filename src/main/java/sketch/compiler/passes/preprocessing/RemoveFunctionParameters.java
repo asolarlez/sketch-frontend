@@ -1581,6 +1581,7 @@ entry);
      */
     private class LambdaThread extends SymbolTableVisitor {
 
+		private Function currentFunction = null;
         private boolean callingLocalFunction = false;
         private Map<String, List<Parameter>> tempFunctionsParametersNeeded =
                 new HashMap<String, List<Parameter>>();
@@ -1590,6 +1591,9 @@ entry);
         }
 
         public Object visitFunction(Function function) {
+			Function oldFunction = this.currentFunction;
+			this.currentFunction = function;
+
             // if there is a temp function that needs parameters
             if (this.tempFunctionsParametersNeeded.containsKey(function.getName())) {
                 // New formal parameters
@@ -1615,7 +1619,11 @@ entry);
             }
 
             // Visit and return the function
-            return (Function) super.visitFunction(function);
+			Function result = (Function) super.visitFunction(function);
+
+			this.currentFunction = oldFunction;
+
+			return result;
         }
 
         public Object visitExprFunCall(ExprFunCall exprFunctionCall) {
@@ -1635,6 +1643,25 @@ entry);
                 List<Parameter> calleeFormalParameters =
                         this.nres.getFun(exprFunctionCall.getName()).getParams();
 
+				if (lambdaFunctionsNeededVariables.containsKey(this.currentFunction.getName())) {
+					Map<ExprVar, ExprVar> newNeededVariables = new HashMap<ExprVar, ExprVar>();
+					
+					for (Entry<ExprVar, ExprVar> oldEntry : lambdaFunctionsNeededVariables
+							.get(this.currentFunction.getName()).entrySet()) {
+						if(variablesNeeded.containsKey(oldEntry.getKey())) {
+							newNeededVariables.put(oldEntry.getValue(), variablesNeeded.get(oldEntry.getKey()));
+						}
+						else {
+							newNeededVariables.put(oldEntry.getKey(), oldEntry.getValue());
+						}
+					}
+					
+					lambdaFunctionsNeededVariables.put(exprFunctionCall.getName(), newNeededVariables);
+					// Get the variables that are needed in this call
+					variablesNeeded = lambdaFunctionsNeededVariables.get(exprFunctionCall.getName());
+					
+				}
+                
                 // Loop through the variables needed
 				for (Entry<ExprVar, ExprVar> entry : variablesNeeded.entrySet()) {
 
@@ -1685,6 +1712,8 @@ entry);
                         // Don't go any further
                         break;
                     }
+
+					// if (tempFunctionsParametersNeeded.containsKey(key))
 
                     // Add the variable to the actual parameters
 					actualParameters.add(entry.getKey());
