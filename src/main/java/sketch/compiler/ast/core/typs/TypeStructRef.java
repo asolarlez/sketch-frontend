@@ -46,6 +46,9 @@ public class TypeStructRef extends Type
             return this;
         } else {
             String nname = nres.getStructName(name, pkg);
+            if (nname == null) {
+                nname = name;
+            }
             return new TypeStructRef(nname, isUnboxed);
         }
     }
