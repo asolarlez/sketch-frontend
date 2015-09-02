@@ -7,10 +7,15 @@ void forall(int a, int b, fun f){
 
 harness
 void main(int N, int M){
-    assume N < 5 && M < 5 && N>0 && M>0;
+    assume N < 5 && M < 5 && N>0 && M>0; 
     int cmax = 0;
     void body(int i, int j){ if(i>cmax){ cmax = i; } if(j>cmax){ cmax = j; } }
-    forall(0,N, (i)->forall(0,M, 
-                (j)->body(i,j) ) );
+    void foo(int i){
+       void moo(int j){
+	  body(i,j);
+       }
+       forall(0,M, moo);
+    }
+    forall(0,N, foo);
     assert N<M ? cmax == M-?? : cmax == N-??;
 }
