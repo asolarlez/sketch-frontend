@@ -740,7 +740,12 @@ public class NodesToSuperCpp extends NodesToJava {
                             TypeArray tarr = (TypeArray) ftype;
                             if (tp instanceof TypeArray) {
                                 TypeArray t = (TypeArray) tp;
-                                res += (String) pe.get(field).accept(this) + ", " +
+                                String fexpr = (String) pe.get(field).accept(this);
+                                if (fexpr.equals("NULL")) {
+                                    fexpr = "(" + typeForDecl(tarr) + ")" + fexpr;
+                                }
+
+                                res += fexpr + ", " +
                                                 t.getLength().accept(this);
                             } else {
                                 String nvar = newTmp();
