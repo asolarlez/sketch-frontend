@@ -29,7 +29,6 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
-import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
@@ -285,9 +284,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                                 ((ExprLambda) this.currentExprLambda).getMissingFormalParameters());
                     }
                 } else if (fun == null) {
-                    throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
+					throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
                 }
-
 
                 Type t = fun.getReturnType();
                 List<String> tps = fun.getTypeParams();
@@ -533,7 +531,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
             // Return the actual parameter
             return hold;
-        }            
+		} 
         else {
             return ev;
         }
@@ -845,6 +843,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 					Expression newLambda = this.doExpression(lambda.getExpression());
 
 					this.lambda = false;
+
 					return newLambda;
 
                 } else if (hasChanged) {
@@ -990,7 +989,7 @@ public class RemoveFunctionParameters extends FEReplacer {
     class NewFunInfo {
         public final String funName;
         public final String containingFunction;
-        public final Set<String> typeParamsToAdd;
+
         public final HashMap<String, ParamInfo> paramsToAdd;
 
         public HashMap<String, ParamInfo> cloneParamsToAdd() {
@@ -1005,7 +1004,6 @@ public class RemoveFunctionParameters extends FEReplacer {
             this.funName = funName;
             this.containingFunction = containingFunction;
             paramsToAdd = new HashMap<String, ParamInfo>();
-            typeParamsToAdd = new TreeSet<String>();
         }
 
         @Override
@@ -1605,7 +1603,10 @@ entry);
                 {
                     // add the parameter to the formal parameters
                     formalParamters.add(parameter);
-                }
+
+					// Add it to the symbol table
+					this.symtab.registerVar(parameter.getName(), parameter.getType());
+				}
 
                 // Create a new function with the new parameters
                 function =
@@ -1747,6 +1748,7 @@ entry);
         Function curFun;
         Set<String> allVarNames = new HashSet<String>();
         int nparcnt = 0;
+		boolean inLambda = false;
 
         Map<String, List<NOpair>> uniqueNames = new HashMap<String, List<NOpair>>();
 
@@ -1910,11 +1912,7 @@ entry);
                     if (kind == SymbolTable.KIND_GLOBAL) {
                         return exp;
                     }
-                    if (pt instanceof TypeStructRef) {
-                        if (typeParams.size() > 0 && typeParams.contains(((TypeStructRef) pt).getName())) {
-                            nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
-                        }
-                    }
+
                     TreeSet<String> oldDependent = dependent;
                     ParamInfo info = this.nfi.paramsToAdd.get(name);
                     if (info == null) {
@@ -1981,13 +1979,6 @@ entry);
             public Object visitParameter(Parameter p) {
                 boolean op = isInParam;
                 isInParam = true;
-                Type pt = p.getType();
-                if (pt instanceof TypeStructRef) {
-                    if (typeParams.size() > 0 && typeParams.contains(((TypeStructRef) pt).getName())) {
-                        nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
-                    }
-                }
-
                 Object o = super.visitParameter(p);
                 isInParam = op;
                 return o;
@@ -2135,8 +2126,6 @@ entry);
             }
         }
 
-        List<String> typeParams = new ArrayList<String>();
-
         public Object visitFunction(Function fun) {
             boolean tmpIsGen = isGenerator;
             isGenerator = fun.isGenerator();
@@ -2144,16 +2133,12 @@ entry);
             frmap = new FunReplMap(tmp);
             Function tmpf = curFun;
             curFun = fun;
-            int pos = typeParams.size();
-            typeParams.addAll(fun.getTypeParams());
             for (Parameter p : fun.getParams()) {
 
                 frmap.declRepl(p.getName(), null);
 
             }
             Object o = super.visitFunction(fun);
-            typeParams.subList(pos, typeParams.size()).clear();
-            assert typeParams.size() == pos;
             curFun = tmpf;
             frmap = tmp;
             isGenerator = tmpIsGen;
@@ -2251,6 +2236,11 @@ entry);
                 // Replace the variable
                 return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
             }
+ else if (this.inLambda && lambdaFunctionsNeededVariables.containsKey(curFun.getName())) {
+				if (lambdaFunctionsNeededVariables.get(curFun.getName()).containsKey(exprVar)) {
+					return lambdaFunctionsNeededVariables.get(curFun.getName()).get(exprVar);
+				}
+			}
 
             // Visit using the main class method since there might be so
             // replacing needed
@@ -2304,8 +2294,14 @@ entry);
 
             // If there is a local lambda expression
             if (localLambda.containsKey(newName)) {
+				inLambda = true;
+
+				Object inlineLambda = inlineLocalLambda(efc, localLambda.get(newName));
                 // Return that inlined version of the lambda expression
-                return inlineLocalLambda(efc, localLambda.get(newName));
+
+				inLambda = false;
+
+				return inlineLambda;
             }
 
             List<Expression> actuals = new ArrayList<Expression>();
@@ -2358,10 +2354,6 @@ entry);
                         "You can not define a harness inside another function", sfd);
             }
 
-            List<String> newParamTypes = null;
-            if (typeParams.size() > 0) {
-
-            }
             Function newFun = f.creator().name(newName).pkg(pkg).create();
             nres.registerFun(newFun);
 
@@ -2375,10 +2367,7 @@ entry);
                 // newFunctions.put(newName, newFun);
                 // funsToVisit.push(newName);
 
-            NewFunInfo nfi = funInfo(newFun);
-            if (nfi.typeParamsToAdd.size() > 0) {
-                newFun.getTypeParams().addAll(nfi.typeParamsToAdd);
-            }
+
 
             // NOTE xzl: overwrite the incorrect newFun with the correct newFun with
             // processed body. This is needed for later funInfo(fun) to work properly if
@@ -2393,6 +2382,7 @@ entry);
 
             tempSymtables.put(nres.getFunName(newFun), this.symtab);
 
+			NewFunInfo nfi = funInfo(newFun);
             extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
@@ -2515,4 +2505,3 @@ entry);
     } // end of InnerFunReplacer
 
 }
-
