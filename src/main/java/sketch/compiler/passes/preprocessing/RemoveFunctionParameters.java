@@ -4,18 +4,10 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable.VarInfo;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprLambda;
-import sketch.compiler.ast.core.exprs.ExprLocalVariables;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -29,6 +21,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
@@ -989,7 +982,7 @@ public class RemoveFunctionParameters extends FEReplacer {
     class NewFunInfo {
         public final String funName;
         public final String containingFunction;
-
+        public final Set<String> typeParamsToAdd;
         public final HashMap<String, ParamInfo> paramsToAdd;
 
         public HashMap<String, ParamInfo> cloneParamsToAdd() {
@@ -1004,6 +997,7 @@ public class RemoveFunctionParameters extends FEReplacer {
             this.funName = funName;
             this.containingFunction = containingFunction;
             paramsToAdd = new HashMap<String, ParamInfo>();
+            typeParamsToAdd = new TreeSet<String>();
         }
 
         @Override
@@ -1942,6 +1936,12 @@ entry);
                         return exp;
                     }
 
+                    if (pt instanceof TypeStructRef) {
+                        if (typeParams.size() > 0 && typeParams.contains(((TypeStructRef) pt).getName())) {
+                            nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                        }
+                    }
+
                     TreeSet<String> oldDependent = dependent;
                     ParamInfo info = this.nfi.paramsToAdd.get(name);
                     if (info == null) {
@@ -2008,6 +2008,12 @@ entry);
             public Object visitParameter(Parameter p) {
                 boolean op = isInParam;
                 isInParam = true;
+                Type pt = p.getType();
+                if (pt instanceof TypeStructRef) {
+                    if (typeParams.size() > 0 && typeParams.contains(((TypeStructRef) pt).getName())) {
+                        nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                    }
+                }
                 Object o = super.visitParameter(p);
                 isInParam = op;
                 return o;
@@ -2155,6 +2161,8 @@ entry);
             }
         }
 
+        List<String> typeParams = new ArrayList<String>();
+
         public Object visitFunction(Function fun) {
             boolean tmpIsGen = isGenerator;
             isGenerator = fun.isGenerator();
@@ -2162,12 +2170,16 @@ entry);
             frmap = new FunReplMap(tmp);
             Function tmpf = curFun;
             curFun = fun;
+            int pos = typeParams.size();
+            typeParams.addAll(fun.getTypeParams());
             for (Parameter p : fun.getParams()) {
 
                 frmap.declRepl(p.getName(), null);
 
             }
             Object o = super.visitFunction(fun);
+            typeParams.subList(pos, typeParams.size()).clear();
+            assert typeParams.size() == pos;
             curFun = tmpf;
             frmap = tmp;
             isGenerator = tmpIsGen;
@@ -2412,6 +2424,11 @@ entry);
             tempSymtables.put(nres.getFunName(newFun), this.symtab);
 
 			NewFunInfo nfi = funInfo(newFun);
+
+            if (nfi.typeParamsToAdd.size() > 0) {
+                newFun.getTypeParams().addAll(nfi.typeParamsToAdd);
+            }
+
             extractedInnerFuns.put(nfi.funName, nfi);
             return null;
         }
