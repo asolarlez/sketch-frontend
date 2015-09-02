@@ -302,7 +302,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
 		FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg,
- this.lambdaFunctionsNeededVariables.get(nfn));
+					this.lambdaFunctionsNeededVariables.get(nfn));
 
         // Set the current lambda expression to null
         this.currentExprLambda = null;
@@ -532,7 +532,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 
             // Return the actual parameter
             return hold;
-        }            
+		} 
         else {
             return ev;
         }
@@ -844,6 +844,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 					Expression newLambda = this.doExpression(lambda.getExpression());
 
 					this.lambda = false;
+
 					return newLambda;
 
                 } else if (hasChanged) {
@@ -1603,6 +1604,9 @@ entry);
                 {
                     // add the parameter to the formal parameters
                     formalParamters.add(parameter);
+
+					// Add it to the symbol table
+					this.symtab.registerVar(parameter.getName(), parameter.getType());
                 }
 
                 // Create a new function with the new parameters
@@ -1745,6 +1749,7 @@ entry);
         Function curFun;
         Set<String> allVarNames = new HashSet<String>();
         int nparcnt = 0;
+        boolean inLambda = false;
 
         Map<String, List<NOpair>> uniqueNames = new HashMap<String, List<NOpair>>();
 
@@ -2232,6 +2237,11 @@ entry);
                 // Replace the variable
                 return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
             }
+            else if (this.inLambda && lambdaFunctionsNeededVariables.containsKey(curFun.getName())) {
+            	if(lambdaFunctionsNeededVariables.get(curFun.getName()).containsKey(exprVar)) {
+            		return lambdaFunctionsNeededVariables.get(curFun.getName()).get(exprVar);            	
+            	}
+    		}
 
             // Visit using the main class method since there might be so
             // replacing needed
@@ -2285,8 +2295,14 @@ entry);
 
             // If there is a local lambda expression
             if (localLambda.containsKey(newName)) {
+				inLambda = true;
+
+				Object inlineLambda = inlineLocalLambda(efc, localLambda.get(newName));
                 // Return that inlined version of the lambda expression
-                return inlineLocalLambda(efc, localLambda.get(newName));
+
+				inLambda = false;
+
+				return inlineLambda;
             }
 
             List<Expression> actuals = new ArrayList<Expression>();
