@@ -301,7 +301,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
 		FEReplacer renamer = new FunctionParamRenamer(nfn, efc, cpkg,
- this.lambdaFunctionsNeededVariables.get(nfn));
+					this.lambdaFunctionsNeededVariables.get(nfn));
 
         // Set the current lambda expression to null
         this.currentExprLambda = null;
@@ -1777,7 +1777,7 @@ entry);
         Function curFun;
         Set<String> allVarNames = new HashSet<String>();
         int nparcnt = 0;
-		boolean inLambda = false;
+        boolean inLambda = false;
 
         Map<String, List<NOpair>> uniqueNames = new HashMap<String, List<NOpair>>();
 
@@ -2265,11 +2265,11 @@ entry);
                 // Replace the variable
                 return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
             }
- else if (this.inLambda && lambdaFunctionsNeededVariables.containsKey(curFun.getName())) {
-				if (lambdaFunctionsNeededVariables.get(curFun.getName()).containsKey(exprVar)) {
-					return lambdaFunctionsNeededVariables.get(curFun.getName()).get(exprVar);
-				}
-			}
+            else if (this.inLambda && lambdaFunctionsNeededVariables.containsKey(curFun.getName())) {
+            	if(lambdaFunctionsNeededVariables.get(curFun.getName()).containsKey(exprVar)) {
+            		return lambdaFunctionsNeededVariables.get(curFun.getName()).get(exprVar);            	
+            	}
+    		}
 
             // Visit using the main class method since there might be so
             // replacing needed
