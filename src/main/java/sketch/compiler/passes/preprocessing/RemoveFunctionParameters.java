@@ -4,10 +4,18 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
-import sketch.compiler.ast.core.SymbolTable.VarInfo;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.SymbolTable.VarInfo;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -855,7 +863,9 @@ public class RemoveFunctionParameters extends FEReplacer {
             else if(this.lambdaReplace.containsKey(ev)) {
                 // Return the actual parameter
                 return this.lambdaReplace.get(ev);
+				// If we are in a lambda and this variable is needed
 			} else if (this.lambda && this.variablesNeeded.containsKey(ev)) {
+				// Return the fresh variable that maps to this needed variable
 				return this.variablesNeeded.get(ev);
 			}
             else {
@@ -1585,7 +1595,10 @@ entry);
         }
 
         public Object visitFunction(Function function) {
+			// Get the previous function
 			Function oldFunction = this.currentFunction;
+
+			// The current function is this one
 			this.currentFunction = function;
 
             // if there is a temp function that needs parameters
@@ -1612,11 +1625,13 @@ entry);
                                 function.getPkg(), formalParamters);
             }
 
-            // Visit and return the function
+			// Visit the function
 			Function result = (Function) super.visitFunction(function);
 
+			// Restore the previous current function
 			this.currentFunction = oldFunction;
 
+			// Return this function
 			return result;
         }
 
@@ -1634,26 +1649,37 @@ entry);
                 // Add the current actual parameters
                 actualParameters.addAll(exprFunctionCall.getParams());
 
+                // Get the callee formal parameters
                 List<Parameter> calleeFormalParameters =
                         this.nres.getFun(exprFunctionCall.getName()).getParams();
 
+                // If the current function needs some variables
 				if (lambdaFunctionsNeededVariables.containsKey(this.currentFunction.getName())) {
+					// We might need to rename some of the variables that are being threaded.
+					// This happens when a function deep in the call graph needs a variable from
+					// a function high in the call graph
 					Map<ExprVar, ExprVar> newNeededVariables = new HashMap<ExprVar, ExprVar>();
 					
+					// Loop through the need variables of the current function
 					for (Entry<ExprVar, ExprVar> oldEntry : lambdaFunctionsNeededVariables
 							.get(this.currentFunction.getName()).entrySet()) {
+						// If there is a variable that is needed both in the current
+						// function and the function call
 						if(variablesNeeded.containsKey(oldEntry.getKey())) {
+							// Rename the needed variable
 							newNeededVariables.put(oldEntry.getValue(), variablesNeeded.get(oldEntry.getKey()));
 						}
 						else {
+							// Put the variables without any change
 							newNeededVariables.put(oldEntry.getKey(), oldEntry.getValue());
 						}
 					}
 					
+					// Put the new needed variables for this function call
 					lambdaFunctionsNeededVariables.put(exprFunctionCall.getName(), newNeededVariables);
+					
 					// Get the variables that are needed in this call
 					variablesNeeded = lambdaFunctionsNeededVariables.get(exprFunctionCall.getName());
-					
 				}
                 
                 // Loop through the variables needed
@@ -1947,7 +1973,7 @@ entry);
                     if (info == null) {
                         dependent = new TreeSet<String>();
                         this.nfi.paramsToAdd.put(name, new ParamInfo(pt, name,
-                        		makeUnique(name, vi.origin), // MIGUEL MAKE UNIQUE
+                        		makeUnique(name, vi.origin), 
                                 isAssignee,
                                 dependent));
                     } else {
@@ -2277,8 +2303,11 @@ entry);
                 // Replace the variable
                 return new ExprVar(exprVar, lambdaRenameMap.get(exprVar.getName()));
             }
+			// If we are in a lambda and the current function needs a variable
             else if (this.inLambda && lambdaFunctionsNeededVariables.containsKey(curFun.getName())) {
+				// If the variable is needed
             	if(lambdaFunctionsNeededVariables.get(curFun.getName()).containsKey(exprVar)) {
+					// Return the fresh variable that maps to this variable
             		return lambdaFunctionsNeededVariables.get(curFun.getName()).get(exprVar);            	
             	}
     		}

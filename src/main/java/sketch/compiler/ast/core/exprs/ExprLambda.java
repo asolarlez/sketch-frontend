@@ -140,7 +140,8 @@ public class ExprLambda extends Expression {
 			this.missingFormalParameters = new HashMap<ExprVar, ExprVar>();
 		}
 
-		public Object visitExprLambda(ExprLambda exprLambda) { // TODO comment
+		public Object visitExprLambda(ExprLambda exprLambda) {
+			// If there is a lambda in a function call, we just return it
 			return exprLambda;
 		}
 
@@ -149,7 +150,7 @@ public class ExprLambda extends Expression {
 			// and the variable has not been already added to the list
 			if (!parameters.contains(exprVar)
 					&& !this.missingFormalParameters.containsKey(exprVar)) {
-				// Create new variable
+				// Create a fresh variable
 				ExprVar newVar = new ExprVar(exprVar.getCx(), exprVar.getName() + missingVariableCount);
 
 				// Add it to the list of variables in expression
