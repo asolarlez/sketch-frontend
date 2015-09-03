@@ -425,13 +425,13 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
         // This is where the new program is created
         Program np = p.creator().streams(newPkges).create();
-		np.debugDump("After new program");
+        np.debugDump("*******************************AFTER NEW PROGRAM");
 
         Program aftertc = (Program) np.accept(new ThreadClosure());
-		aftertc.debugDump("After thread closure");
+        aftertc.debugDump("*******************************AFTER THREAD CLOSURE");
 
 		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
-		afterLambdaClosure.debugDump("After lambda thread");
+        afterLambdaClosure.debugDump("*******************************AFTER LAMBDA THREAD");
 
 		return afterLambdaClosure.accept(new FixPolymorphism());
 
@@ -1270,6 +1270,33 @@ public class RemoveFunctionParameters extends FEReplacer {
             return result;
         }
 
+        /**
+         * Visit the parameter to check if it needs to be renamed to another
+         * name. This happens when a lambda that needs a value threaded calls an
+         * inner function
+         */
+        public Object visitParameter(Parameter parameter, Function function) {
+            // If the function call needs variables
+            if (lambdaFunctionsNeededVariables.containsKey(function.getName())) {
+                // Get the needed variables
+                Map<ExprVar, ExprVar> neededVariables = lambdaFunctionsNeededVariables
+                        .get(function.getName());
+                
+                ExprVar tempVariable = new ExprVar(parameter.getContext(), parameter.getName());
+
+                // If this parameter is a needed variable
+                if (neededVariables.containsKey(tempVariable)) {
+                    // Create a new parameter
+                    parameter = new Parameter(parameter, parameter.getSrcTupleDepth(),
+                            parameter.getType(), neededVariables.get(tempVariable).getName(),
+                            parameter.getPtype());
+                }
+            }
+
+            // Check the super visitor
+            return super.visitParameter(parameter);
+        }
+
         public Object visitExprFunCall(ExprFunCall efc) {
             String name = nres.getFunName(efc.getName());
             Function f = nres.getFun(efc.getName());
@@ -1285,14 +1312,12 @@ public class RemoveFunctionParameters extends FEReplacer {
                         if(lambdaFunctionsNeededVariables.containsKey(efc.getName())) {
                             // Loop through the variables needed
 							for (Entry<ExprVar, ExprVar> entry : lambdaFunctionsNeededVariables.get(efc.getName())
-									.entrySet())
-                            {
+									.entrySet()) {
                                 // If a needed variable is the same as the current
                                 // parameter that we just added
 								if (entry.getKey().getName() == p.getName()) {
                                     // Delete it from the needed variables
-                                    lambdaFunctionsNeededVariables.get(efc.getName()).remove(
-entry);
+                                    lambdaFunctionsNeededVariables.get(efc.getName()).remove(entry);
 
                                     // No need to look further since we added 1 variable
                                     break;
@@ -1316,9 +1341,11 @@ entry);
                 List<Parameter> newps = getAddedParams(name, fun.isGenerator(),
                         false);
                 for (Parameter p : newps) {
+                    p = (Parameter) this.visitParameter(p, fun);
                     enclosingAdded.add(p.getName());
+                    pl.add(p);
                 }
-                pl.addAll(newps);
+                // pl.addAll(newps);
 
                 fun = fun.creator().params(pl).create();
             }
