@@ -100,3 +100,26 @@ harness void main5() {
 	assert(exp === out);
 }
 	
+/*
+ *               3
+ *  3 + 2  =    /
+ *             2             
+ */
+harness void main6() {
+	BinaryTree in =  new Leaf(value = 3);
+	BinaryTree out = insertNode(in, 2);
+	BinaryTree exp = new Branch(value = 3,l = new Leaf(value = 2), r = new Empty());
+	assert(exp === out);
+}
+
+/*
+ *               3
+ *  3 + 4  =      \   
+ *                 4        
+ */
+harness void main7() {
+	BinaryTree in =  new Leaf(value = 3);
+	BinaryTree out = insertNode(in, 4);
+	BinaryTree exp = new Branch(value = 3,l = new Empty(), r = new Leaf(value = 4));
+	assert(exp === out);
+}

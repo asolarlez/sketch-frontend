@@ -80,7 +80,14 @@ public class EliminateStarStatic extends SymbolTableVisitor {
             str = nres.getStruct(newName);
             Map<String, Integer> map = new HashMap<String, Integer>();
             for (ExprNamedParam p : exp.getParams()) {
-                if (!map.containsKey(p.getName()) &&
+				String variantName = p.getVariantName();
+				if (variantName != null) {
+					variantName = variantName.split("@")[0];
+				}
+				if ((variantName == null || (variantName != null && variantName
+						.equals(str.getName())))
+						&& !map.containsKey(p.getName())
+						&&
                         str.hasField(p.getName()) &&
                         getType(p.getExpr()).promotesTo(
                                 str.getFieldTypMap().get(p.getName()), nres))
