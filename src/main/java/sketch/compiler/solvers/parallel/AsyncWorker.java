@@ -24,6 +24,8 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
     int fileIdx;
     int degree;
 
+    String prefix;
+
     public AsyncWorker(IAsyncManager<SATSolutionStatistics> manager, ValueOracle oracle,
             boolean hasMinimize, float timeoutMins, int fileIdx, int degree)
     {
@@ -35,11 +37,21 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
         this.timeoutMins = timeoutMins;
         this.fileIdx = fileIdx;
         this.degree = degree;
+
+        this.prefix = "=== parallel trial w/ degree " + degree + " (" + fileIdx + ")";
+    }
+
+    protected void cleanUpTmpSol() {
+        String tmp_solution = options.getSolutionsString(fileIdx);
+        try {
+            Files.delete(Paths.get(tmp_solution));
+        } catch (IOException e) {
+            System.err.println(prefix + " can't delete " + tmp_solution);
+        }
     }
 
     // main task per worker
     public SATSolutionStatistics call() {
-        String prefix = "=== parallel trial w/ degree " + degree + " (" + fileIdx + ")";
         if (manager.aborted()) {
             manager.plog(prefix + " aborted ===");
             return null;
@@ -61,8 +73,18 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
         } catch (SketchSolverException e) {
             e.setBackendTempPath(options.getTmpSketchFilename());
         }
+        // double-check the result is not null
+        if (worker_stat == null)
+            return worker_stat;
+        // double-check whether a solution/UNSAT is already determined
+        if (manager.aborted()) {
+            manager.plog(prefix + " done, but aborted ===");
+            cleanUpTmpSol();
+            return null;
+        }
+
         PrintStream out = new PrintStream(System.out, false);
-        if (worker_stat != null && worker_stat.successful()) {
+        if (worker_stat.successful()) {
             synchronized (lock) {
                 options.setSolFileIdx(Integer.toString(fileIdx));
                 manager.found(degree);
@@ -71,16 +93,10 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
                 manager.plog(out, prefix + " solved ===");
             }
         } else {
-            if (worker_stat != null && worker_stat.unsat()) {
+            if (worker_stat.unsat()) {
                 manager.end(degree);
-
             }
-            String failed_solution = options.getSolutionsString(fileIdx);
-            try {
-                Files.delete(Paths.get(failed_solution));
-            } catch (IOException e) {
-                System.err.println(prefix + " can't delete " + failed_solution);
-            }
+            cleanUpTmpSol();
             synchronized (lock) {
                 manager.plog(out, prefix + " start ===");
                 out.println(worker_stat.out);

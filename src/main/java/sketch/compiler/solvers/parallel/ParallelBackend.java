@@ -55,11 +55,21 @@ public class ParallelBackend extends SATBackend {
             boolean hasMinimize, final float timeoutMins, final int fileIdx)
     {
         return new Callable<SATSolutionStatistics>() {
+            String prefix =
+                    "=== parallel trial w/ degree " + options.solverOpts.randdegree + " ("
+                            + fileIdx + ")";
+
+            private void cleanUpTmpSol() {
+                String tmp_solution = options.getSolutionsString(fileIdx);
+                try {
+                    Files.delete(Paths.get(tmp_solution));
+                } catch (IOException e) {
+                    System.err.println(prefix + " can't delete " + tmp_solution);
+                }
+            }
+
             // main task per worker
             public SATSolutionStatistics call() {
-                String prefix =
-                        "=== parallel trial w/ degree " + options.solverOpts.randdegree +
-                                " (" + fileIdx + ")";
                 synchronized (lock) {
                     if (parallel_solved || parallel_failed) {
                         plog(prefix + " aborted ===");
@@ -73,8 +83,20 @@ public class ParallelBackend extends SATBackend {
                 } catch (SketchSolverException e) {
                     e.setBackendTempPath(options.getTmpSketchFilename());
                 }
+                // double-check the result is not null
+                if (worker_stat == null)
+                    return worker_stat;
+                // double-check whether a solution/UNSAT is already determined
+                synchronized (lock) {
+                    if (parallel_solved || parallel_failed) {
+                        plog(prefix + " done, but aborted ===");
+                        cleanUpTmpSol();
+                        return null;
+                    }
+                }
+
                 PrintStream out = new PrintStream(System.out, false);
-                if (worker_stat != null && worker_stat.successful()) {
+                if (worker_stat.successful()) {
                     synchronized (lock) {
                         parallel_solved = true;
                     }
@@ -86,17 +108,12 @@ public class ParallelBackend extends SATBackend {
                         plog(out, prefix + " solved ===");
                     }
                 } else {
-                    if (worker_stat != null && worker_stat.unsat()) {
+                    if (worker_stat.unsat()) {
                         synchronized (lock) {
                             parallel_failed = true;
                         }
                     }
-                    String failed_solution = options.getSolutionsString(fileIdx);
-                    try {
-                        Files.delete(Paths.get(failed_solution));
-                    } catch (IOException e) {
-                        System.err.println(prefix + " can't delete " + failed_solution);
-                    }
+                    cleanUpTmpSol();
                     synchronized (lock) {
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
@@ -165,16 +182,16 @@ public class ParallelBackend extends SATBackend {
                         adaptiveTimeoutMins = options.solverOpts.extendPTimeout();
                         plog("=== timeout extended to " + adaptiveTimeoutMins);
                     }
-                    // found a worker that finishes the job
-                    if (r != null && r.successful()) {
+                    // found a worker that found a solution
+                    if (r.successful()) {
                         plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
                         es.shutdownNow(); // attempts to stop active tasks
                         // break the iteration and go to finally block
                         break;
                     }
-                    if (r != null && r.unsat()) {
-                        plog("=== resolved within " + (i + 1) +
-                                " complete parallel trial(s)");
+                    // found a worker that found the problem UNSAT
+                    else if (r.unsat()) {
+                        plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
                         es.shutdownNow(); // attempts to stop active tasks
                         // break the iteration and go to finally block
                         break;
