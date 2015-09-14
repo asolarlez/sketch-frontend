@@ -71,7 +71,7 @@ public class AsyncWorker implements Callable<SATSolutionStatistics> {
                 manager.plog(out, prefix + " solved ===");
             }
         } else {
-            if (worker_stat != null && worker_stat.decided()) {
+            if (worker_stat != null && worker_stat.unsat()) {
                 manager.end(degree);
 
             }

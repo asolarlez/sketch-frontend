@@ -86,7 +86,7 @@ public class ParallelBackend extends SATBackend {
                         plog(out, prefix + " solved ===");
                     }
                 } else {
-                    if (worker_stat != null && worker_stat.decided()) {
+                    if (worker_stat != null && worker_stat.unsat()) {
                         synchronized (lock) {
                             parallel_failed = true;
                         }
@@ -172,7 +172,7 @@ public class ParallelBackend extends SATBackend {
                         // break the iteration and go to finally block
                         break;
                     }
-                    if (r != null && r.decided()) {
+                    if (r != null && r.unsat()) {
                         plog("=== resolved within " + (i + 1) +
                                 " complete parallel trial(s)");
                         es.shutdownNow(); // attempts to stop active tasks
