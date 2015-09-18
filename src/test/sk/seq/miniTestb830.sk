@@ -1,0 +1,17 @@
+pragma options "--debug-show-dag";
+
+struct scalar { bit supp; }
+
+
+|scalar| some(bit x) { return |scalar|(supp=x); }
+
+|scalar| min2(|scalar| a) {
+  if(a.supp) return a;
+}
+
+
+harness void test1(bit x, bit y) {
+  bit t = !x || min2(some(x)).supp;
+  assert t;
+}
+
