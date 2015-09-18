@@ -1,4 +1,4 @@
-include "src/release_benchmarks/gallery/sparse.skh";
+include "sparse.skh";
 
 
 
