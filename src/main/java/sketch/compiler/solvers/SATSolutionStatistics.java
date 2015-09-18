@@ -10,7 +10,7 @@ package sketch.compiler.solvers;
  */
 public class SATSolutionStatistics extends SolutionStatistics {
 	protected boolean success;
-    protected boolean decided = true;
+    protected boolean unsat;
 	protected long elapsedTimeMs;
 	protected long modelBuildingTimeMs;
 	protected long maxMemUsageBytes;
@@ -28,10 +28,13 @@ public class SATSolutionStatistics extends SolutionStatistics {
 	public long maxMemoryUsageBytes () {  return maxMemUsageBytes;  }
 	public long modelBuildingTimeMs () {  return modelBuildingTimeMs;  }
 	public long solutionTimeMs ()      {  return solutionTimeMs;  }
-	public boolean successful () 	   {  return success;  }
 
-    public boolean decided() {
-        return decided;
+    public boolean successful() {
+        return success;
+    }
+
+    public boolean unsat() {
+        return unsat;
     }
 
 	public String toString () {

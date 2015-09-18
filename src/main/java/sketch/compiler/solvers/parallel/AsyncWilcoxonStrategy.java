@@ -42,14 +42,14 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
         return options;
     }
 
-    // exception/message about solution finding
+    // exception/message about solution/UNSAT finding
     Lucky lucky;
 
     public void end(int degree) {
         synchronized (lock) {
             parallel_solved = false;
             parallel_failed = true;
-            lucky = new Lucky(name + " lucky (degree: " + degree + ")");
+            lucky = new Lucky(name + " UNSAT (degree: " + degree + ")");
         }
         // wake up the manager thread if waiting
         synchronized (managerLock) {
@@ -75,7 +75,7 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
 
     public boolean aborted() {
         synchronized (lock) {
-            return parallel_solved;
+            return (parallel_solved || parallel_failed);
         }
     }
 
