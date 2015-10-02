@@ -1,0 +1,25 @@
+struct scalar { bit supp; int val; }
+
+|scalar| foo(bit b, int v) {
+    |scalar| x = |scalar|(supp=b, val=v);
+    |scalar| y = |scalar|(supp=!b, val=v);
+    return b?x:y;
+    //if(b) return x; else return y;
+}
+
+|scalar| moo(|scalar| a, scalar b){
+    
+    |scalar| x = b;
+    x.val += a.val;
+    return x;
+}
+
+harness void main(bit b, int v){
+    |scalar| t = foo(b,v);
+    |scalar| q = foo(b,v+7);
+    assert t.supp;    
+    assert (v>3 ? t : q ).val > 2;
+    
+    assert moo(t, q).val == 2*v + ??; // TypeError Can't pass a temp struct to a function expecting a real one.
+}
+

@@ -38,6 +38,9 @@ public class DebugOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Print IR for the synthesis problem to the console.")
     public boolean showDag;
 
+    @CliParameter(help = "Dump LISP-Like representation of the AST.")
+    public boolean dumpAST;
+
     @CliParameter(help = "Write the IR to the given file in an easy to parse format.")
     public String outputDag = null;
 

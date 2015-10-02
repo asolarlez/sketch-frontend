@@ -72,6 +72,7 @@ import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.*;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
+import sketch.compiler.passes.printers.DumpAST;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
@@ -585,6 +586,11 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             throw new ProgramParseException("Sketch failed to parse: " + re.getMessage());
         }
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
+
+        if (options.debugOpts.dumpAST) {
+            prog.accept(new DumpAST());
+            return;
+        }
 
 		prog = this.preprocAndSemanticCheck(prog);
         // System.out.println(prog);

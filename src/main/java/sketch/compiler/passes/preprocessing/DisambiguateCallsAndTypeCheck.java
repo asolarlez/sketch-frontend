@@ -869,6 +869,19 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                 }
 
+                if (formal.getType().isStruct()) {
+                    TypeStructRef tsr = (TypeStructRef) formal.getType();
+                    if (actType.isStruct()) {
+                        TypeStructRef tsrActual = (TypeStructRef) actType;
+
+                        if (tsrActual.isUnboxed() && !tsr.isUnboxed()) {
+                            report(exp,
+                                    "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                        }
+
+                    }
+                }
+
 
                 boolean typeCheck = true;
                 if (newParam instanceof ExprNew) {
@@ -1238,6 +1251,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     public Object visitExprChoiceBinary(ExprChoiceBinary exp) {
+        exp = (ExprChoiceBinary) super.visitExprChoiceBinary(exp);
         Expression left = exp.getLeft(), right = exp.getRight();
         boolean isLeftArr = false;
         boolean isRightArr = false;
@@ -1522,6 +1536,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
 
     public Object visitExprChoiceSelect(ExprChoiceSelect exp) {
+        exp = (ExprChoiceSelect) super.visitExprChoiceSelect(exp);
         final ExprChoiceSelect e = exp;
         class SelectorTypeChecker extends SelectorVisitor {
             StructDef base;
@@ -1632,7 +1647,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             }
         }
 
-        Type lt = getType((Expression) exp.getObj().accept(this));
+        Type lt = getType(exp.getObj());
 
         if (!lt.isStruct()) {
             report(exp, "field reference of a non-structure type");
@@ -1727,7 +1742,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     public Object visitExprField(ExprField expr) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprField");
 
-        Type lt = getType((Expression) expr.getLeft().accept(this));
+        Expression newLeft = (Expression) expr.getLeft().accept(this);
+
+        Type lt = getType(newLeft);
 
 
         // Either lt is a structure type, or it's null, or it's an error.
@@ -1769,7 +1786,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             report(expr, "field reference of a non-structure type");
         }
 
-        return (expr);
+        if (newLeft == expr.getLeft())
+            return expr;
+        else
+            return new ExprField(expr, newLeft, expr.getName(), expr.isHole());
     }
 
     public Object visitExprArrayRange(ExprArrayRange expr) {
@@ -1935,7 +1955,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     public Object visitExprChoiceUnary(ExprChoiceUnary exp) {
-        Type ot = getType((Expression) exp.getExpr().accept(this));
+
+        exp = (ExprChoiceUnary) super.visitExprChoiceUnary(exp);
+        Type ot = getType(exp.getExpr());
         boolean isArr = false;
         if (ot instanceof TypeArray) {
             ot = ((TypeArray) ot).getBase();

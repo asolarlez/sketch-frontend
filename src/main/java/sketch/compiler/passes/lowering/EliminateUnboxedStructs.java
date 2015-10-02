@@ -21,7 +21,9 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
@@ -247,6 +249,8 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
                 e = ef.getLeft();
             } else if (e instanceof ExprVar) {
                 break;
+            } else if (e instanceof ExprTernary) {
+                e = doExpression(e);
             } else {
                 assert false : "EliminateFinalStructs.locate encounter error core expr " +
                         e;
@@ -304,6 +308,7 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
                     ts = null;
                 }
             } else {
+                System.out.println("I am here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 assert !lens.isEmpty() : "you don't have sufficient indices when coming to an ear!";
                 RangeLen index = step.index;
                 Expression start = (Expression) index.start().accept(this);
@@ -393,6 +398,8 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
         if (rhsType instanceof TypeStructRef && ((TypeStructRef) rhsType).isUnboxed() ||
                 lhsType instanceof TypeStructRef && ((TypeStructRef) lhsType).isUnboxed())
         {
+            lhs = doExpression(stmt.getLHS());
+            rhs = doExpression(stmt.getRHS());
             List<Statement> addStmts = new ArrayList<Statement>();
             if (rhs instanceof ExprNew) {
                 boolean result = locate(lhs, lhsLoc, addStmts);
@@ -500,7 +507,6 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
         
         StructDef sdef = nres.getStruct(typ.getName());        
 
-
         Map<String, ExprVar> info = new HashMap<String, ExprVar>();
         for (StructFieldEnt en : sdef.getFieldEntriesInOrder()) {
             String field = en.getName();
@@ -517,11 +523,27 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
                         (TypeStructRef) ft, lens);
             } else {
                 symtab.registerVar(varName, fieldType);
-                Type _t = (Type) constructType(memtyp, ft, lens).accept(this);
+                Type _t = (Type) constructType(memtyp, fieldType, lens).accept(this);
                 result.add(new DeclPair(_t, varName, decl));
             }
         }
         structs.put(name, info);
+    }
+
+    @Override
+    public Object visitExprTernary(ExprTernary exp) {
+        Type t = getType(exp);
+        if (t.isStruct() && ((TypeStructRef) t).isUnboxed()) {
+            String name = varGen.nextVar();
+            Expression var = new ExprVar(exp, name);
+            doStatement(new StmtVarDecl(exp, t, name, null));
+            Statement tcase = new StmtBlock(new StmtAssign(var, exp.getB()));
+            Statement fcase = new StmtBlock(new StmtAssign(var, exp.getC()));
+            doStatement(new StmtIfThen(exp, exp.getA(), tcase, fcase));
+            return var;
+        } else {
+            return super.visitExprTernary(exp);
+        }
     }
 
     @Override

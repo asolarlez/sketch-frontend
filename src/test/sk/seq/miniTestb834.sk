@@ -1,0 +1,21 @@
+struct foo{
+    int x;
+    foo y;
+}
+
+foo getFoo([int n], int[n] x){
+    if(n==0){
+        return null;
+    }else{
+        
+        return new foo(x=n, y=getFoo(x[0::n-1]));
+    }
+}
+
+
+harness void main(){
+    assert getFoo({1,2,3}).y.x == 2;
+    int [2] tt = {1,2};    
+    assert {| ((-)?(getFoo(tt).x)) (+ | - | *) (5 | 7) |} < 0;
+    
+}
