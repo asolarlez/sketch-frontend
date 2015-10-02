@@ -408,9 +408,14 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
 
                 StructDef ts = nres.getStruct(((TypeStructRef) lhsLoc.typ).getName());
 
+				Map<String, Expression> paramsMap = new HashMap<String, Expression>();
                 for (ExprNamedParam en : ((ExprNew) rhs).getParams()) {
-                    String field = en.getName();
-                    Expression value = en.getExpr();
+					paramsMap.put(en.getName(), en.getExpr());
+				}
+				for (StructFieldEnt fieldEnt : ts.getFieldEntries()) {
+					String field = fieldEnt.getName();
+					Expression value = paramsMap.containsKey(field) ? paramsMap
+							.get(field) : fieldEnt.getType().defaultValue();
                     List<Expression> lens = new ArrayList<Expression>();
                     Type vtype = getType(value);
                     Type coretyp = extractCoreType(vtype, lens);
