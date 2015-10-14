@@ -1,0 +1,12 @@
+struct scalar { bit supp; int val; }
+
+bit func(|scalar| a) { return (a.vak + 0);}
+
+// bit func(|scalar| a) { return (a.vak > 0);}  // this one works fine
+
+
+harness void test1(int n, int i, int j) {
+  assert func(|scalar|(supp=0,val=0));
+}
+
+

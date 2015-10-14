@@ -516,6 +516,9 @@ public class GetExprType extends FENullVisitor
 	private Type binopType (int op, Expression left, Expression right) {
 		Type tl = (Type) left.accept(this);
     	Type tr = (Type) right.accept(this);
+        if (tl == null || tr == null) {
+            return null;
+        }
         switch(op){
         case ExprBinary.BINOP_RSHIFT:
         case ExprBinary.BINOP_LSHIFT:
