@@ -126,7 +126,7 @@ public class WilcoxonStrategy extends ParallelBackend {
     }
 
     int sampleBound = test_trial_max * 3;
-    double pValue = 0.17;
+    double pValue = 0.05;
 
     protected int compareDegree(int degree_a, int degree_b) throws Lucky {
         int len_a = 0;
