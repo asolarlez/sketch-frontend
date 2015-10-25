@@ -1,0 +1,17 @@
+adt BinaryTree {
+	Branch { int value; BinaryTree l; BinaryTree r; }
+	Leaf {int value;}
+	Empty {}
+}
+
+struct Node {
+	int val;
+	Node next;	
+}
+
+
+harness void main() {
+	Leaf t = new Leaf(value = 3);
+	Node n = new Node(val = t.value);
+	assert(n.val == 3);
+}
