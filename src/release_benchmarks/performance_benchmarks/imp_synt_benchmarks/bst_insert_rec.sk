@@ -1,0 +1,113 @@
+pragma options "--slv-simiters 300 --bnd-inbits 3 --bnd-bound-mode CALLSITE --bnd-inline-amnt 2 --bnd-unroll-amnt 4";
+
+int HEAPSIZE = 5;
+int LOCVARSIZE = 4;
+int INTVARSIZE = 2;
+int MBUDGET = 2;
+int TIMESIZE = 4;
+
+include "bst_header.sk";
+
+int old_k, old_height, old_min, old_max;
+int newer_k, newer_height, newer_min, newer_max;
+
+int rec = {| 0 | 2 | 3 |}; // 0
+int rank_var = {| 1 | 2 |}; // 1
+
+/*
+if (v2 == null) {
+	v1 = malloc();
+	v1.key = k;
+	v1.next = v2;
+	return v1;
+}
+else {
+	if (v2 != null && v2.key < k) v1 = v2.right;
+	else v1 = v2.left;
+	
+	v1 = rec_ins(v1, k);
+	
+	if (v2 != null && v2.key < k) v2.right = v1;
+	else v2.left = v1;
+	
+	return v2;
+}
+*/
+
+void snapshot(int input, int k, ref int ok, ref int oh, ref int omin, ref int omax) {
+	oh = height_comp(locvars[input]);
+	omin = min_comp(locvars[input]);
+	omax = max_comp(locvars[input]);
+	ok = intvars[k];
+}
+
+bit trivial() {
+	return basic_cond(2, 1);
+	//return locvar_eq(2, 0);
+}
+
+bit pre_cond(int input) {
+	return bst_inv(input);
+}
+
+bit post_cond(int r, ref int ok, ref int omin, ref int omax) {
+	return bst_inv(r)
+	&& min_equal_inv(r, ok < omin ? ok : omin)
+	&& max_equal_inv(r, ok > omax ? ok : omax);
+}
+
+void rec_ins(int v, int kv, int recret, ref bit[HEAPSIZE-1] new_symbolic, ref int[HEAPSIZE-1] new_left, ref int[HEAPSIZE-1] new_right, ref int[HEAPSIZE-1] new_key) {
+
+	locVarAssign(3, v);
+	intVarAssign(1, kv, 1);
+	
+	// precondition
+	assertPost(pre_cond(v));
+	
+	snapshot(3, 1, newer_k, newer_height, newer_min, newer_max);
+	
+	locvars[recret] = havoc(locvars[v], new_symbolic, new_left, new_right, new_key);
+		
+	// postcondition
+	assumePre(post_cond(recret, newer_k, newer_min, newer_max));
+}
+
+harness void ins(int[LOCVARSIZE-1] llocvars, int[INTVARSIZE] lintvars, int[HEAPSIZE-1] lleft, int[HEAPSIZE-1] lright, int[HEAPSIZE-1] lkey, bit[HEAPSIZE-1] lsymbolic, bit[HEAPSIZE-1] lactive, bit[HEAPSIZE-1] new_symbolic, int[HEAPSIZE-1] new_left, int[HEAPSIZE-1] new_right, int[HEAPSIZE-1] new_key) {
+	
+	init(llocvars, lintvars, lleft, lright, lkey, lsymbolic, lactive);
+
+	assume(basic_assumptions() && basic_axioms());
+	
+	// precondition
+	assume pre_cond(2);
+	
+	snapshot(2, 0, old_k, old_height, old_min, old_max);
+	
+	ranking_snapshot(rec, 2);
+	
+	if (trivial()) {
+		create_node(1, 2, 1);
+		//malloc(1);
+		//intMutate(1, 0);
+		//locMutate(1, 2, LEFT);
+		//locMutate(1, 2, RIGHT);
+		ret_loc(gen_non_zero(2));
+	}
+	else {
+		update_locvar(1, 2, 1);
+    	//if (intderef_lt_var(2, 0)) locderef2var(2, 1, false);
+    	//else locderef2var(2, 1, true);
+    	
+    	assertPost(ranking_decreases(rec, rank_var));
+    	rec_ins(rank_var, 0, 1, new_symbolic, new_left, new_right, new_key);
+		
+		mutate_locvar(gen_non_zero(2), 2, 1);
+		//if (intderef_lt_var(2, 0)) locMutate(2, 1, RIGHT);
+		//else locMutate(2, 1, LEFT);
+		
+		ret_loc(gen_non_zero(2));
+	}
+
+	// postcondition
+	assertPost(post_cond(ret, old_k, old_min, old_max));
+}
