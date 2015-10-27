@@ -1,0 +1,282 @@
+int NEXT = 0;
+int LEFT = 1;
+int RIGHT = 2;
+
+int KEY = 0;
+
+int HEIGHT = 0;
+int LEN = 1;
+int MAX = 2;
+int MIN = 3;
+int SIZE = 4;
+
+int MALLOC = 0;
+int LOCDEREF = 1;
+int INTDEREF = 2;
+int LOCMUTATE = 3;
+int INTMUTATE = 4;
+int LOCASSGN = 5;
+int INTASSGN = 6;
+int FREE = 7;
+
+int INTDEREFLT = 0;
+int LOCEQ = 1;
+int INTEQ = 2;
+
+int ret = 0;
+int ranking = 0;
+
+bit error_flag = 0;
+int ts = 0;
+int malloc_budget = MBUDGET;
+int fake_unfold = 0;
+int fake_unfold_to = 0;
+int fake_unfold_left = 0;
+int fake_unfold_right = 0;
+
+int[LOCVARSIZE] locvars;
+int[INTVARSIZE] intvars;
+int[HEAPSIZE] left;
+int[HEAPSIZE] right;
+int[HEAPSIZE] next;
+int[HEAPSIZE] supernext;
+int[HEAPSIZE] key;
+bit[HEAPSIZE] symbolic;
+bit[HEAPSIZE] active;
+
+int cache(int l);
+
+bit[HEAPSIZE,TIMESIZE] history;
+bit[HEAPSIZE,TIMESIZE] p_history;
+
+generator int gen_non_zero(int r) {
+	int n = ??(2);
+	assert n >= 0 && n < r;
+	return n + 1;
+}
+
+generator int gen_all(int r) {
+	int n = ??(3);
+	assert n >= 0 && n < r;
+	return n;
+}
+
+void assumePre(bit b) {
+    if (!b) error_flag = true;
+}
+
+void assertPost(bit b) {
+    if  (error_flag) return;
+    else assert b;
+}
+
+void connect_defs() {
+	for (int i = 0; i < HEAPSIZE; i++) {
+		if (active[i]) {
+			if (symbolic[i]) {
+				history[i,ts] = true;
+				p_history[i,ts] = true;
+			}
+			else if (next[i] < 0 || next[i] >= HEAPSIZE) {
+				p_history[i,ts] = true;
+			}
+		}
+	}
+}
+
+void ret_loc(int v) {
+	assert v >= 0;
+	assert v < LOCVARSIZE;
+	ret = v;
+}
+
+void ret_int(int v) {
+	assert v >= 0;
+	assert v < INTVARSIZE;
+	ret = v;
+}
+
+void locVarAssign(int c1, int c2) {
+	/* pick two vars, then choice = choice2 */
+	int choice = c1;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < LOCVARSIZE;
+	
+	locvars[choice] = locvars[choice2];
+}
+
+void intVarAssign(int c1, int c2, int c3) {
+	/* pick two vars, then choice = choice2 (or +1/-1) */
+	int choice = c1;
+	assert choice >= 0;
+	assert choice < INTVARSIZE;
+	
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < INTVARSIZE;
+	
+	int val_choice = c3;
+	if (val_choice == 0) intvars[choice] = 0;
+	else if (val_choice == 7) intvars[choice] = 7;
+	else if (val_choice == 1) intvars[choice] = intvars[choice2];
+	else if (val_choice == 2) intvars[choice] = intvars[choice2] + 1;
+	else if (val_choice == 3) intvars[choice] = intvars[choice2] - 1;
+
+}
+
+
+void locMutate(int c1, int c2, int dir) {
+	/* pick two loc vars, then choice.dir = choice2 */
+	int choice = c1;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < LOCVARSIZE;
+
+	/* sanity check */
+	int df = locvars[choice];
+	assumePre(df >= 0);
+	assumePre(df < HEAPSIZE);
+	if (df < 0 || df >= HEAPSIZE) {
+    	return;
+    }
+	if (df == 0) return;
+	if (!active[df]) return;
+	if (symbolic[df] && fake_unfold != df) return;
+	
+	int to = locvars[choice2];
+	assumePre(to >= 0);
+	assumePre(to < HEAPSIZE);
+	if (to >= HEAPSIZE || !active[to]) return;
+	
+	ts++;
+	if (dir == NEXT) next[df] = to;
+	else if (dir == LEFT) left[df] = to;
+	else if (dir == RIGHT) right[df] = to;
+	
+	connect_defs();
+}
+
+void intMutate(int c1, int c2) {
+	/* pick two vars, then choice.key = choice2 */
+	int choice = c1;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < INTVARSIZE;
+
+	/* sanity check */
+	int df = locvars[choice];
+	assumePre(df >= 0);
+	assumePre(df < HEAPSIZE);
+	if (df < 0 || df >= HEAPSIZE) {
+    	return;
+    }
+	if (df == 0) return;
+	if (!active[df]) return;
+	if (symbolic[df] && fake_unfold != df) return;
+	
+	int k = intvars[choice2];
+	
+	ts++;
+	key[df] = k;
+	
+	connect_defs();
+}
+
+
+bit locvar_eq(int c1, int c2) {
+	int choice = c1;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < LOCVARSIZE;
+	
+	return locvars[choice] == locvars[choice2];
+}
+
+bit intvar_eq(int c1, int c2) {
+	int choice = c1;
+	assert choice > 0;
+	assert choice < INTVARSIZE;
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < INTVARSIZE;
+	
+	return intvars[choice] == intvars[choice2];
+}
+
+bit nextTo(int v1, int v2) {
+	if (!(locvars[v1] > 0 && locvars[v1] < HEAPSIZE && locvars[v2] >= 0 && locvars[v2] < HEAPSIZE)) return false;
+	else return active[locvars[v1]] && active[locvars[v2]]
+	&& (!symbolic[locvars[v1]]) && next[locvars[v1]] == locvars[v2];
+}
+
+bit leftTo(int v1, int v2) {
+	if (!(locvars[v1] > 0 && locvars[v1] < HEAPSIZE && locvars[v2] >= 0 && locvars[v2] < HEAPSIZE)) return false;
+	else return active[locvars[v1]] && active[locvars[v2]]
+	&& (!symbolic[locvars[v1]]) && left[locvars[v1]] == locvars[v2];
+}
+
+bit rightTo(int v1, int v2) {
+	if (!(locvars[v1] > 0 && locvars[v1] < HEAPSIZE && locvars[v2] >= 0 && locvars[v2] < HEAPSIZE)) return false;
+	else return active[locvars[v1]] && active[locvars[v2]]
+	&& (!symbolic[locvars[v1]]) && right[locvars[v1]] == locvars[v2];
+}
+
+bit keyEqTo(int v1, int v2) {
+	if (!(locvars[v1] > 0 && locvars[v1] < HEAPSIZE)) return false;
+	else return active[locvars[v1]]
+	&& (!symbolic[locvars[v1]]) && key[locvars[v1]] == intvars[v2];
+}
+
+bit keyLeqTo(int v1, int v2) {
+	if (!(locvars[v1] > 0 && locvars[v1] < HEAPSIZE)) return false;
+	else return active[locvars[v1]]
+	&& (!symbolic[locvars[v1]]) && key[locvars[v1]] <= intvars[v2];
+}
+
+
+generator void loc_mutate_statement(int locrange) {
+	assert locrange > 0;
+	locMutate(gen_non_zero(locrange), gen_non_zero(locrange), {| NEXT | LEFT | RIGHT |});
+}
+
+
+void init(ref int[LOCVARSIZE-1] llocvars, ref int[INTVARSIZE] lintvars, ref int[HEAPSIZE-1] lleft, ref int[HEAPSIZE-1] lright, ref int[HEAPSIZE-1] lkey, ref bit[HEAPSIZE-1] lsymbolic, ref bit[HEAPSIZE-1] lactive) {
+	locvars[1:LOCVARSIZE] = llocvars;
+	intvars = lintvars;
+	left[1:HEAPSIZE] = lleft;
+	right[1:HEAPSIZE] = lright;
+	key[1:HEAPSIZE] = lkey;
+	symbolic[1:HEAPSIZE] = lsymbolic;
+	active[1:HEAPSIZE] = lactive;
+	active[0] = true;
+}
+
+bit basic_assumptions() {
+	// assumption about nil
+	bit temp = locvars[0] == 0
+	&& left[0] == 0
+	&& right[0] == 0
+	&& key[0] == 0
+	&& !symbolic[0]	
+	&& active[0];
+	
+	// at least MBUDGET locations unallocated
+	int idx = 2;
+	while (idx <= MBUDGET+1 && temp) {
+		temp = !active[idx];
+		idx++;
+	}
+	
+	return temp;
+}
+

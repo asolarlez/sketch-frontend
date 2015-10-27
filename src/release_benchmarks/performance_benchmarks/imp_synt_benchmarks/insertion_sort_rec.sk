@@ -1,0 +1,131 @@
+pragma options "--slv-simiters 300 --bnd-inbits 3 --bnd-inline-amnt 3 --bnd-unroll-amnt 3";
+
+int HEAPSIZE = 4;
+int LOCVARSIZE = 4;
+int INTVARSIZE = 2;
+int MBUDGET = 1;
+
+include "lseg_header.sk";
+
+int old_k, old_len, old_min, old_max;
+int newer_k, newer_len, newer_min, newer_max;
+
+int rec = {| 1 | 2 | 3 |}; // 1
+int rank_var = {| 1 | 2 |}; // 1
+
+/*
+if (v2 == null) return v2;
+else {
+	k0 = v2.key;
+	v1 = v2.next;
+	v1 = sort(v1);
+	v1 = ins(v1, k);
+	free(v2);
+	return v1;
+}
+*/
+
+void snapshot(int input, int k, ref int ok, ref int ol, ref int omin, ref int omax) {
+	ol = len_comp(locvars[input]);
+	omin = min_comp(locvars[input]);
+	omax = max_comp(locvars[input]);
+	ok = intvars[k];
+}
+
+bit trivial() {
+	//return basic_cond(2, 1);
+	return locvar_eq(2, 0);
+}
+
+bit ins_pre_cond(int input) {
+	return sll_inv(input);
+}
+
+bit ins_post_cond(int r, ref int ok, ref int ol, ref int omin, ref int omax) {
+	return sll_inv(r)
+	&& len_equal_inv(r, ol + 1)
+	&& min_equal_inv(r, ok < omin ? ok : omin)
+	&& max_equal_inv(r, ok > omax ? ok : omax);
+}
+
+bit sort_pre_cond(int input) {
+	return tree_inv(input);
+}
+
+bit sort_post_cond(int r, ref int ol, ref int omin, ref int omax) {
+	return sll_inv(r)
+	&& len_equal_inv(r, ol)
+	&& min_equal_inv(r, omin)
+	&& max_equal_inv(r, omax);
+}
+
+void rec_ins(int v, int kv, int recret, ref bit[HEAPSIZE-1] new_symbolic, ref int[HEAPSIZE-1] new_next, ref int[HEAPSIZE-1] new_supernext, ref int[HEAPSIZE-1] new_key) {
+	
+	locVarAssign(3, v);
+	intVarAssign(1, kv, 1);
+	
+	// precondition
+	assertPost(ins_pre_cond(v));
+	
+	snapshot(3, 1, newer_k, newer_len, newer_min, newer_max);
+	
+	locvars[recret] = havoc(locvars[v], new_symbolic, new_next, new_supernext, new_key);
+	
+	// postcondition
+	assumePre(ins_post_cond(recret, newer_k, newer_len, newer_min, newer_max));
+}
+
+void rec_sort(int v, int recret, ref bit[HEAPSIZE-1] new_symbolic, ref int[HEAPSIZE-1] new_next, ref int[HEAPSIZE-1] new_supernext, ref int[HEAPSIZE-1] new_key) {
+
+	locVarAssign(3, v);
+	
+	// precondition
+	assertPost(sort_pre_cond(v));
+	
+	snapshot(3, 1, newer_k, newer_len, newer_min, newer_max);
+	
+	locvars[recret] = havoc(locvars[v], new_symbolic, new_next, new_supernext, new_key);
+		
+	// postcondition
+	assumePre(sort_post_cond(recret, newer_len, newer_min, newer_max));
+}
+
+harness void sort(int[LOCVARSIZE-1] llocvars, int[INTVARSIZE] lintvars, int[HEAPSIZE-1] lnext, int[HEAPSIZE-1] lsupernext, int[HEAPSIZE-1] lkey, bit[HEAPSIZE-1] lsymbolic, bit[HEAPSIZE-1] lactive, bit[HEAPSIZE-1] new_symbolic, int[HEAPSIZE-1] new_next, int[HEAPSIZE-1] new_supernext, int[HEAPSIZE-1] new_key, bit[HEAPSIZE-1] new_new_symbolic, int[HEAPSIZE-1] new_new_next, int[HEAPSIZE-1] new_new_supernext, int[HEAPSIZE-1] new_new_key) {
+	
+	init(llocvars, lintvars, lnext, lsupernext, lkey, lsymbolic, lactive);
+
+	assume(basic_assumptions() && basic_axioms());
+	
+	// precondition
+	assume sort_pre_cond(2);
+	
+	snapshot(2, 0, old_k, old_len, old_min, old_max);
+	
+	ranking_snapshot(rec, 2);
+	
+	if (trivial()) {
+		ret_loc(gen_non_zero(2));
+		//ret = 2;
+	}
+	else {
+		update_locvar(1, 2, 1);
+    	//locderef2var(2, 1);
+    	
+    	update_intvar(0, 2, 1);
+    	//intderef2var(2, 0);
+    	
+    	assertPost(ranking_decreases(rec, rank_var));
+    	rec_sort(rank_var, 1, new_symbolic, new_next, new_supernext, new_key);
+    	
+    	rec_ins(gen_all(LOCVARSIZE-1), 0, 1, new_new_symbolic, new_new_next, new_new_supernext, new_new_key);
+		
+		//statement(1, 1, 1, 0);
+		//free(2);
+		
+		ret_loc(gen_non_zero(2));
+		//ret = 1;
+	}
+
+	// postcondition
+	assertPost(sort_post_cond(ret, old_len, old_min, old_max));
+}

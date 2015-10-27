@@ -1,0 +1,157 @@
+pragma options "--slv-simiters 300 --bnd-inbits 3 --bnd-inline-amnt 3 --bnd-unroll-amnt 3";
+
+int HEAPSIZE = 4;
+int LOCVARSIZE = 3;
+int INTVARSIZE = 1;
+int MBUDGET = 1;
+
+include "lseg_header.sk";
+
+int old_max;
+
+int rec = {| 1 | 2 | 3 |}; //1
+int rank_var = 1;
+
+bit preserve_max = ??; //true
+
+/*
+v1 = v2; //line0
+k0 = 0; //line1
+while (v1 != null) {
+	//inv: maxseg(2, 1) == k0 && old_max == max_comp(2)
+	if (v1 != null && v1.key >= k0) k0 = v1.key; //line2
+	v1 = v1.next; //line3
+}
+return k0; //line4
+
+*/
+
+/*
+void line0() {
+	locVarAssign(1, 2);
+}
+
+void line1() {
+	intVarAssign(0, 0, 0);
+}
+
+void line2() {
+	intderef2var(1, 0);
+	//update_intvar_statement(0, 1, 1);
+}
+
+void line3() {
+	locderef2var(1, 1);
+	//update_locvar_statement(1, 1);
+}
+
+void line4() {
+	ret_int(0);
+}
+
+bit cond1() {
+	//return basic_cond(1, 1);
+	return !intderef_lt_var(1, 0);
+}
+*/
+
+void snapshot() {
+	old_max = max_comp(locvars[2]);
+}
+
+void guess_ranking() {
+	assume rank_var>0 && rank_var<LOCVARSIZE;
+	ranking_snapshot(rec, rank_var);
+}
+
+bit loop_preserves() {
+	return (preserve_max ? max_preserve_inv(2, old_max) : true) ;
+}
+
+bit loop_inv() {
+	return loop_preserves()
+	&& any_pred(1, 1, 1, 0);
+	//&& maxseg_equal_inv(2, 1, intvars[0]);
+}
+
+bit loop_inv_pre() {
+	return loop_inv();
+}
+
+bit loop_inv_post() {
+	return loop_inv()
+	&& ranking_decreases(rec, rank_var);
+}
+
+bit loop_cond() {
+	return basic_cond(1, 1);
+    //return !locvar_eq(1, 0);
+}
+
+bit pre_cond() {
+	return tree_inv(2);
+}
+
+bit post_cond() {
+	return intvars[ret] == old_max;
+}
+
+
+harness void before_loop(int[LOCVARSIZE-1] llocvars, int[INTVARSIZE] lintvars, int[HEAPSIZE-1] lnext, int[HEAPSIZE-1] lsupernext, int[HEAPSIZE-1] lkey, bit[HEAPSIZE-1] lsymbolic, bit[HEAPSIZE-1] lactive) {
+	init(llocvars, lintvars, lnext, lsupernext, lkey, lsymbolic, lactive);
+
+	assume(basic_assumptions() && basic_axioms());
+	
+	// precondition
+	assume pre_cond();
+	
+	snapshot();
+	
+	update_intvar(0, 2, 1);
+	update_locvar(1, 2, 1);
+	//line0();
+	//line1();
+	
+	assertPost(loop_inv());
+}
+
+
+harness void iterate(int lold_max, int[LOCVARSIZE-1] llocvars, int[INTVARSIZE] lintvars, int[HEAPSIZE-1] lnext, int[HEAPSIZE-1] lsupernext, int[HEAPSIZE-1] lkey, bit[HEAPSIZE-1] lsymbolic, bit[HEAPSIZE-1] lactive) {
+	init(llocvars, lintvars, lnext, lsupernext, lkey, lsymbolic, lactive);
+
+	old_max = lold_max;
+
+	assume(basic_assumptions() && basic_axioms());
+	
+	
+	assume(loop_inv_pre());
+
+	assume (loop_cond());
+		
+	guess_ranking();
+	
+	update_intvar(0, 1, 1);
+	update_locvar(1, 1, 1);
+	//if (cond1()) line2();
+	//line3();
+	
+	assertPost(loop_inv_post());
+}
+
+
+harness void after_loop(int lold_max, int[LOCVARSIZE-1] llocvars, int[INTVARSIZE] lintvars, int[HEAPSIZE-1] lnext, int[HEAPSIZE-1] lsupernext, int[HEAPSIZE-1] lkey, bit[HEAPSIZE-1] lsymbolic, bit[HEAPSIZE-1] lactive) {
+	init(llocvars, lintvars, lnext, lsupernext, lkey, lsymbolic, lactive);
+
+	old_max = lold_max;
+
+	assume(basic_assumptions() && basic_axioms());
+	
+	assume(loop_inv_pre());
+	
+	assume (!loop_cond());
+	
+	ret_int(gen_all(INTVARSIZE));
+	
+	assertPost(post_cond());
+}
+
