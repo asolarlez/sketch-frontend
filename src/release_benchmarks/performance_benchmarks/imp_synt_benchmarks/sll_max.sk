@@ -5,7 +5,7 @@ int LOCVARSIZE = 3;
 int INTVARSIZE = 1;
 int MBUDGET = 1;
 
-include "lseg_header.sk";
+include "lseg_header.skh";
 
 int old_max;
 
