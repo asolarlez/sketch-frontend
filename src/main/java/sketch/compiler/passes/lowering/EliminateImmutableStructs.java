@@ -179,7 +179,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
         String name = ((TypeStructRef) expNew.getTypeToConstruct()).getName();
         StructTracker struct = structs.get(nres.getStructName(name));
         if (!struct.struct.immutable())
-            return expNew;
+			return super.visitExprNew(expNew);
         Map<String, Expression> fieldExprs = new HashMap<String, Expression>();
         List<Expression> exprs = new ArrayList<Expression>();
 
