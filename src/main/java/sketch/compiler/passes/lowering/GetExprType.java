@@ -317,15 +317,23 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
-        // Make it more robust
+		final ExprTupleAccess fexp = exp;
+
         Type base = (Type) exp.getBase().accept(this);
 
         if (!(base instanceof TypeStructRef))
             return null;
-        StructDef ts = nres.getStruct(((TypeStructRef) base).getName());
+		final StructDef ts = nres.getStruct(((TypeStructRef) base).getName());
         assert ts != null : "Missing struct information" + base;
         int index = exp.getIndex();
-        return ts.getType(ts.getOrderedFields().get(index));
+		FEReplacer repVars = new FEReplacer() {
+			public Object visitExprVar(ExprVar ev) {
+				int idx = ts.getOrderedFields().indexOf(ev.getName());
+				return new ExprTupleAccess(fexp, fexp.getBase(), idx);
+			}
+		};
+		Type tt = ts.getType(ts.getOrderedFields().get(index));
+		return (Type) tt.accept(repVars);
     }
 
     public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
