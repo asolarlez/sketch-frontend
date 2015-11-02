@@ -397,10 +397,20 @@ public class CreateHarnesses extends SymbolTableVisitor {
                     }
                 }
             }
-
-            if (separateHarness && !inputTypes.isEmpty() && inputTypes.get(0).isStruct())
+            
+            int splitIdx = inputTypes.size();
+            if (separateHarness && !inputTypes.isEmpty()) {
+            	// split harnesses on the first ADT input
+            	for (int i = 0; i < inputTypes.size(); i++) {
+            		if (inputTypes.get(i).isStruct()) {
+						splitIdx = i;
+            			break;
+            		}
+            	}
+            }
+			if (splitIdx < inputTypes.size())
             {
-                TypeStructRef ts = (TypeStructRef) (inputTypes.get(0));
+				TypeStructRef ts = (TypeStructRef) (inputTypes.get(splitIdx));
                 List<String> cases = getCasesInOrder(ts.getName());
                 for (int k = 0; k < cases.size(); k++) {
                     String c = cases.get(k).split("@")[0];
@@ -415,6 +425,11 @@ public class CreateHarnesses extends SymbolTableVisitor {
                     Map<String, String> varMap = new HashMap<String, String>();
 
                     List<Statement> new_body = new ArrayList<Statement>();
+
+					for (int i = 0; i < splitIdx; i++) {
+						params.add(new Parameter(sa, inputTypes.get(i),
+								inputParams.get(i)));
+					}
 
                     for (StructFieldEnt e : str.getFieldEntriesInOrder()) {
                         Type t = e.getType();
@@ -459,11 +474,12 @@ public class CreateHarnesses extends SymbolTableVisitor {
                     }
                     ExprNew constr =
                             new ExprNew(sa, new TypeStructRef(c, false), adtParams, false);
-                    StmtVarDecl vd = new StmtVarDecl(sa, ts, inputParams.get(0), constr);
+					StmtVarDecl vd = new StmtVarDecl(sa, ts,
+							inputParams.get(splitIdx), constr);
                     new_body.add(vd);
                     new_body.addAll(body);
 
-                    for (int i = 1; i < inputTypes.size(); i++) {
+					for (int i = splitIdx + 1; i < inputTypes.size(); i++) {
                         params.add(new Parameter(sa, inputTypes.get(i),
                                 inputParams.get(i)));
                     }
