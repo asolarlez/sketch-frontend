@@ -15,7 +15,9 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
+import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -280,15 +282,13 @@ public class RemoveFunctionParameters extends FEReplacer {
 					throw new ExceptionAtNode("Function " + actual + " does not exist", efc);
                 }
 
-                Type t = fun.getReturnType();
-                List<String> tps = fun.getTypeParams();
-                for (String ct : tps) {
-                    if (ct.equals(t.toString())) {
-                        throw new ExceptionAtNode(
-                                "Functions with generic return types cannot be passed as function parameters: " +
-                                        fun, efc);
-                    }
-                }
+				/*
+				 * Type t = fun.getReturnType(); List<String> tps =
+				 * fun.getTypeParams(); for (String ct : tps) { if
+				 * (ct.equals(t.toString())) { throw new ExceptionAtNode(
+				 * "Functions with generic return types cannot be passed as function parameters: "
+				 * + fun, efc); } }
+				 */
             }
 
         }
@@ -313,10 +313,16 @@ public class RemoveFunctionParameters extends FEReplacer {
      * @return
      */
     private Function createTempFunction(Function origin, String name,
-            String currentPackage, List<Parameter> parameters)
+			String currentPackage, List<Parameter> parameters) {
+		return origin.creator().returnType(origin.getReturnType())
+				.params(parameters).name(name).pkg(currentPackage).create();
+	}
+
+	private Function createTempFunction(Function origin, String name,
+            String currentPackage, List<Parameter> parameters, List<String> tp)
     {
         return origin.creator().returnType(origin.getReturnType()).params(parameters).name(
-                name).pkg(currentPackage).create();
+                name).pkg(currentPackage).typeParams(tp).create();
     }
 
 
@@ -337,6 +343,25 @@ public class RemoveFunctionParameters extends FEReplacer {
             nres.setPackage(pkg);
             Set<String> nameChk = new HashSet<String>();
 
+			for (StmtSpAssert sa : pkg.getSpAsserts()) {
+				ExprFunCall f1 = sa.getFirstFun();
+				funsToVisit.add(nres.getFunName(f1.getName()));
+				for (Expression param : f1.getParams()) {
+					if (param instanceof ExprFunCall) {
+						ExprFunCall pa = (ExprFunCall) param;
+						funsToVisit.add(nres.getFunName(pa.getName()));
+					}
+				}
+
+				ExprFunCall f2 = sa.getSecondFun();
+				funsToVisit.add(nres.getFunName(f2.getName()));
+				for (Expression param : f2.getParams()) {
+					if (param instanceof ExprFunCall) {
+						ExprFunCall pa = (ExprFunCall) param;
+						funsToVisit.add(nres.getFunName(pa.getName()));
+					}
+				}
+			}
             // Loop through each function
             for (Function fun : pkg.getFuncs()) {
                 // Check the function parameters
@@ -422,7 +447,8 @@ public class RemoveFunctionParameters extends FEReplacer {
         Program aftertc = (Program) np.accept(new ThreadClosure());
 
 
-		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread());
+		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread(
+				varGen));
 
 
 		return afterLambdaClosure.accept(new FixPolymorphism());
@@ -1307,9 +1333,12 @@ public class RemoveFunctionParameters extends FEReplacer {
 									.entrySet()) {
                                 // If a needed variable is the same as the current
                                 // parameter that we just added
-								if (entry.getKey().getName() == p.getName()) {
+								if (entry.getKey().getName()
+										.equals(p.getName())) {
                                     // Delete it from the needed variables
-                                    lambdaFunctionsNeededVariables.get(efc.getName()).remove(entry);
+									lambdaFunctionsNeededVariables.get(
+											efc.getName()).remove(
+											entry.getKey());
 
                                     // No need to look further since we added 1 variable
                                     break;
@@ -1421,7 +1450,7 @@ public class RemoveFunctionParameters extends FEReplacer {
      * constraints on the outputs. This class will specialize the types for these
      * functions by making them less generic.
      */
-    class FixPolymorphism extends SymbolTableVisitor {
+	class FixPolymorphism extends ExpandRepeatCases {
         /**
          * The tren type renamer keeps track of what generic types should be specialized
          * and to what.
@@ -1442,7 +1471,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         Map<String, Function> doneFunctions = new HashMap<String, Function>();
 
         public FixPolymorphism() {
-            super(null);
+			super();
         }
 
 
@@ -1608,9 +1637,14 @@ public class RemoveFunctionParameters extends FEReplacer {
         private boolean callingLocalFunction = false;
         private Map<String, List<Parameter>> tempFunctionsParametersNeeded =
                 new HashMap<String, List<Parameter>>();
+        private Map<String, List<String>> tempFunctionsTypeParams = 
+        		new HashMap<String, List<String>>();
 
-        public LambdaThread() {
+		final TempVarGen varGen;
+
+		public LambdaThread(TempVarGen vargen) {
             super(null);
+			this.varGen = vargen;
         }
 
         public Object visitFunction(Function function) {
@@ -1624,9 +1658,10 @@ public class RemoveFunctionParameters extends FEReplacer {
             if (this.tempFunctionsParametersNeeded.containsKey(function.getName())) {
                 // New formal parameters
                 List<Parameter> formalParamters = new ArrayList<Parameter>();
-
+                List<String> typeParams = new ArrayList<String>();
                 // Get the current formal parameters
                 formalParamters.addAll(function.getParams());
+                typeParams.addAll(function.getTypeParams());
 
                 // Loop through all the parameters that the function needs
                 for (Parameter parameter : this.tempFunctionsParametersNeeded.get(function.getName()))
@@ -1637,11 +1672,15 @@ public class RemoveFunctionParameters extends FEReplacer {
 					// Add it to the symbol table
 					this.symtab.registerVar(parameter.getName(), parameter.getType());
 				}
+                
+                for (String t: this.tempFunctionsTypeParams.get(function.getName())) {
+                	typeParams.add(t);
+                }
 
                 // Create a new function with the new parameters
                 function =
                         createTempFunction(function, function.getName(),
-                                function.getPkg(), formalParamters);
+						function.getPkg(), formalParamters, typeParams);
             }
 
 			// Visit the function
@@ -1664,6 +1703,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 // Lists for holding the parameters
                 List<Expression> actualParameters = new ArrayList<Expression>();
                 List<Parameter> formalParameters = new ArrayList<Parameter>();
+				List<String> typeParams = new ArrayList<String>();
 
                 // Add the current actual parameters
                 actualParameters.addAll(exprFunctionCall.getParams());
@@ -1693,9 +1733,9 @@ public class RemoveFunctionParameters extends FEReplacer {
 							newNeededVariables.put(oldEntry.getKey(), oldEntry.getValue());
 						}
 					}
-					
+					// TODO: this could be wrong
 					// Put the new needed variables for this function call
-					lambdaFunctionsNeededVariables.put(exprFunctionCall.getName(), newNeededVariables);
+					lambdaFunctionsNeededVariables.put(this.currentFunction.getName(), newNeededVariables);
 					
 					// Get the variables that are needed in this call
 					variablesNeeded = lambdaFunctionsNeededVariables.get(exprFunctionCall.getName());
@@ -1749,7 +1789,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                     // If we are calling a local function
                     if (this.callingLocalFunction) {
                         // Don't go any further
-                        break;
+						// break; //TODO: Do we need to break here?
                     }
 
 					// if (tempFunctionsParametersNeeded.containsKey(key))
@@ -1762,7 +1802,18 @@ public class RemoveFunctionParameters extends FEReplacer {
 
                     // Add the parameter to the list of formal parameters of the function
                     // declaration
-					formalParameters.add(new Parameter(entry.getValue(), type, entry.getValue().getName()));
+					if (type instanceof NotYetComputedType) {
+						// Make it a generic type
+						String tname = varGen.nextVar("T_");
+						formalParameters.add(new Parameter(entry.getValue(),
+								new TypeStructRef(tname, false), entry
+										.getValue().getName()));
+						typeParams.add(tname);
+
+
+					} else {
+						formalParameters.add(new Parameter(entry.getValue(), type, entry.getValue().getName()));
+					}
 
                     // Reset variable to default
                     this.callingLocalFunction = false;
@@ -1776,6 +1827,8 @@ public class RemoveFunctionParameters extends FEReplacer {
                 // Add the formal parameter to be replaced in the function call
                 this.tempFunctionsParametersNeeded.put(exprFunctionCall.getName(),
                         formalParameters);
+				this.tempFunctionsTypeParams.put(exprFunctionCall.getName(),
+						typeParams);
             }
 
             if (extractedInnerFuns.containsKey(exprFunctionCall.getName() + "@" +

@@ -344,6 +344,9 @@ public class GetExprType extends FENullVisitor
     {
         final ExprField fexp = exp;
         Type base = (Type)exp.getLeft().accept(this);
+		if (base instanceof NotYetComputedType) {
+			return new NotYetComputedType();
+		}
         StructDef ts = null;
         if (base instanceof TypeStructRef)
         {

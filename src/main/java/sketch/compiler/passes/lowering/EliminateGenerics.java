@@ -14,13 +14,21 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
 
-public class EliminateGenerics extends SymbolTableVisitor {
+public class EliminateGenerics extends ExpandRepeatCases {
     Map<String, Function> signatures = new HashMap<String, Function>();
     Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
     final List<String> empty = new ArrayList<String>();
+	final boolean onlyGenerators;
     public EliminateGenerics() {
-        super(null);
+		super();
+		onlyGenerators = false;
+	}
+
+	public EliminateGenerics(boolean onlyGenerators) {
+		super();
+		this.onlyGenerators = onlyGenerators;
     }
 
     String signature(Function f, TypeRenamer tr) {
@@ -36,6 +44,9 @@ public class EliminateGenerics extends SymbolTableVisitor {
 
     public Object visitExprFunCall(ExprFunCall efc){
         Function f = nres.getFun(efc.getName());
+        if (onlyGenerators && !f.isGenerator()) {
+			return super.visitExprFunCall(efc);
+        }
         List<String> tps = f.getTypeParams();
         if (tps.isEmpty()) {
             return super.visitExprFunCall(efc);
@@ -54,6 +65,7 @@ public class EliminateGenerics extends SymbolTableVisitor {
             Function newSig =
                     ((Function) ((Function) f.accept(tr)).creator().name(newName).typeParams(
                             empty).create().accept(this));
+			nres.registerFun(newSig);
             signatures.put(sig, newSig);
             String pkgname = nres.curPkg().getName();
             if (newfuns.containsKey(pkgname)) {

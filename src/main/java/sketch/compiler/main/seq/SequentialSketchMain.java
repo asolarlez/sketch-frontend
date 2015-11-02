@@ -63,6 +63,7 @@ import sketch.compiler.passes.cuda.SetDefaultCudaMemoryTypes;
 import sketch.compiler.passes.cuda.SplitAssignFromVarDef;
 import sketch.compiler.passes.lowering.ConstantReplacer;
 import sketch.compiler.passes.lowering.EliminateComplexForLoops;
+import sketch.compiler.passes.lowering.EliminateGenerics;
 import sketch.compiler.passes.lowering.EliminateMultiDimArrays;
 import sketch.compiler.passes.lowering.EliminateStructs;
 import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
@@ -515,8 +516,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 //		prog.debugDump("********************************************* Before remove lambda expression");
 		prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
-
-		prog = (Program) prog.accept(new ExpandRepeatCases());
+		// Eliminate generic for generator functions
+		prog = (Program) prog.accept(new EliminateGenerics(true));
+		// prog = (Program) prog.accept(new ExpandRepeatCases());
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
         prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 

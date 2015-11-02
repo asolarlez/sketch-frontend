@@ -374,24 +374,32 @@ public class SymbolTableVisitor extends FEReplacer
         else
             pkg = ts.getPkg();
         for (String caseExpr : stmt.getCaseConditions()) {
-            if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
-                SymbolTable oldSymTab1 = symtab;
+			if ("default".equals(caseExpr)) {
+				SymbolTable oldSymTab1 = symtab;
+				symtab = new SymbolTable(symtab);
+
+				Statement body = (Statement) stmt.getBody(caseExpr)
+						.accept(this);
+				newStmt.addCaseBlock(caseExpr, body);
+				symtab = oldSymTab1;
+			} else if ("repeat".equals(caseExpr)) {
+				SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
-                symtab.registerVar(var.getName(),
-                        (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+				symtab.registerVar(var.getName(), new NotYetComputedType());
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);
                 symtab = oldSymTab1;
-            } else {
+			} else {
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
+				symtab.registerVar(var.getName(), (new TypeStructRef(caseExpr,
+						false)).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);
                 symtab = oldSymTab1;
-
-            }
+			}
         }
         symtab = oldSymTab;
 
