@@ -1,0 +1,15 @@
+adt A {
+  int x;
+  A a;
+}
+
+generator T foo<T>(T t, fun igen) {
+	return new A( x = {| t.?? | igen() |} );
+}
+
+harness void main() {
+	A a = new A(x = 1);
+	A b = new A(x =2, a = a);
+	A c = foo(b, 5);
+	assert(c.x == 5);
+}

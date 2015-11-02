@@ -1,0 +1,16 @@
+int foo() {
+	int min = 10;
+	generator void extra() { min = 5; }
+	return bar(extra, min, min);
+	
+}
+
+int bar(fun extra, fun igen, fun igen2) {
+	extra();
+	return igen();
+}
+
+
+harness void main() {
+	assert(foo() == 5);
+}
