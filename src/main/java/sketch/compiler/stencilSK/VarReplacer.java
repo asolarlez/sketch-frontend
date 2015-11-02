@@ -23,6 +23,9 @@ public class VarReplacer extends FEReplacer{
     Map<String, Expression> repl;
     Set<String> rhsVars;
 	
+    public Expression find(String var) {
+        return repl.get(var);
+    }
 
     void popRhsVars() {
         rhsVars = new HashSet<String>();

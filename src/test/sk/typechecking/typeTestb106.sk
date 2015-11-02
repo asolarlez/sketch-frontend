@@ -1,0 +1,11 @@
+// Cannot return type fun
+
+fun error() {
+	fun f = () -> 5;
+	
+	return f;
+}
+
+harness void main() {
+	fun g = error();
+}

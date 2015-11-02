@@ -1,0 +1,10 @@
+// Local variables do not pick formal parameters because they 
+// do not have a type.
+
+harness void main(){	
+	bit x = 1;
+		
+    fun f = (x) -> $(int) + 2;
+                  
+    assert f(10) == 12;
+}

@@ -1,0 +1,14 @@
+// Using local variables with adt
+
+adt Tree {
+	Leaf {int v; }
+	Branch {Tree l; Tree r; int v;}
+}
+
+harness void main() {
+	Leaf l1 = new Leaf(v = 5);
+	Branch b1 = new Branch(l = l1, v = 4);
+	
+	Tree x = $(Tree); // gets l1 and b1
+	assert(b1 === x);
+}

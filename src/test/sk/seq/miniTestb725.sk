@@ -1,27 +1,13 @@
-adt Statement {
-	StmtVarDecl{}
-	StmtAssert{}
-	StmtExpr{}
+// Testing how specialized functions are created
+
+int apply(fun f, int x){
+    return f(x);
 }
 
-struct outStmt {
-	@Immutable("")
-	Statement[1] stmts;	
+int timesTwo(int x){
+    return x+x;
 }
 
-outStmt foo (Statement s) {
-	if (s == null) return null;
-	switch(s) {
-		case StmtVarDecl: { Statement ss = new StmtVarDecl(); return new outStmt(stmts = {ss}); }
-		case StmtAssert: { Statement ss = new StmtAssert(); return new outStmt(stmts = {ss}); }
-		case StmtExpr: {Statement ss = new StmtExpr(); return new outStmt(stmts = {ss}); }
-	}	
-}
-
-harness void main(bit x) {
-	Statement s = x ? new StmtExpr() : new StmtAssert();
-	outStmt out = foo(s);
-	out = foo(s);
-	if (x) { (StmtExpr)(out.stmts[0]); }
-	else { (StmtAssert) (out.stmts[0]); }
+harness void main(int x){
+    assert apply(timesTwo, x) == 2*x;
 }

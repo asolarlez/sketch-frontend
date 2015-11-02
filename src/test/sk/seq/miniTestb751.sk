@@ -1,27 +1,17 @@
-pragma options "--bnd-int-range 32 --bnd-unroll-amnt 2 --bnd-inbits 3 --bnd-arr-size 2 --bnd-guc-depth 4";
+// Local variable inside of local function that is passed to high order
+// function
 
-adt Opcode {
-	Oand {}
-	Oor {}
+int apply(fun f) {
+	return f();
 }
 
-adt dstAST {
-	VarD {int id; }
-	BoolD {bit val; }
-	BinaryD {Opcode op; dstAST a; dstAST b; }	
-	AssignD { int var; dstAST a;} 
-	BlockD {int n; dstAST[n] stmts; dstAST node; }
-}
+harness void main(int x){
+	int a = 2;
+	int b = 3;
+	
+	int foo() {
+		return $(int);
+	}
 
-harness void main (int id1, int id2, int i1, int i2) {
-	dstAST a = new VarD(id = i1);
-	dstAST b = new VarD(id = i2);
-	dstAST p1 = new AssignD(var = id1, a = a);
-	dstAST p2 = new AssignD(var = id2, a = b);
-	dstAST e =  new BinaryD(op = new Oand(), a = new VarD(id = id1) , b = new VarD(id = id2));			
-	dstAST t1 = new BlockD(n = 2, stmts = {p1, p2}, node = e);
-	
-	dstAST t2 =  ??({a, b, id1, id2});
-	assert(t1 === t2);
-	
+	assert apply(foo) == x; 
 }

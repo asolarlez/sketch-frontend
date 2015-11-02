@@ -10,4 +10,4 @@ generator int axpb(int x){ /* automatically rewritten */
 
 int sketch( int x, int y ) implements spec{
    return ( axpb(x) ) * ( axpb(y) );
-}
+}z

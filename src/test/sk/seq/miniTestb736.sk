@@ -1,18 +1,14 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 2";
+// Passing a local lambda, that has a local variables
+// in its body, to a function
 
-// test PartialEvaluator: correctly handle ChangeTrackers for StmtIfThen
-
-generator int eval(int op) {
-	if (op == 0) {
-		return 0;
-	} else if (op == 1) {
-		return eval(0) + 1;
-	} else if (op == 2) {
-		return eval(0) + 2;
-	}
+int apply(fun f, int x) {
+	return f(x);
 }
 
-harness void f() {
-	int x = eval(2);
-	assert x == 2;
+harness void main(){
+	int a = 4;
+			
+    fun f1 = (y) -> y + a + 1;
+                  
+    assert apply(f1, 5) == 10;
 }

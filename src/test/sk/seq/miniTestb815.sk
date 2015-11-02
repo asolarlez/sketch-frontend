@@ -1,0 +1,25 @@
+// Calling a function in a lambda that is used
+// as the conditional in a while loop
+
+int apply(fun f) {
+	return f();
+}
+
+harness void main() {
+	int x = 0;
+	
+	int foo() {
+		x++;
+		return x;
+	}
+	
+	fun f = (x) -> x;
+	
+	int t = 0;
+	while(f(foo()) < 5) {
+		t = t + 1;
+	}
+	
+	assert t == 4;
+}
+

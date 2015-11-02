@@ -809,83 +809,57 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
-        if (actSz != formSz) {
-            hasChanged = true;
-            if (actSz > formSz) {
-                throw new ExceptionAtNode("Incorrect number of parameters", exp);
-            }
-            int implSz = formSz - actSz;
-            Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
-            Iterator<Expression> actIt = exp.getParams().iterator();
-
-            for (Parameter formal : f.getParams()) {
-                if (formal.isImplicit()) {
-                    pm.put(formal.getName(), newParams.size());
-                    newParams.add(null);
-                    --implSz;
-                } else {
-                    if (implSz != 0) {
-                        throw new ExceptionAtNode("Incorrect number of parameters", exp);
-                    }
-                    Expression actual = actIt.next();
-                    if (actual instanceof ExprNamedParam) {
-                        throw new ExceptionAtNode(
-                                "Named function parameters not supported. ", actual);
-                    }
-                    Type formalType = tren.rename(formal.getType());
-                    Type ftt = formalType;
-                    Type att = getType(actual);
-                    while (ftt instanceof TypeArray) {
-                        TypeArray ta = (TypeArray) ftt;
-                        Expression actLen = null;
-                        if (att instanceof TypeArray) {
-                            TypeArray ata = (TypeArray) att;
-                            actLen = ata.getLength();
-                            att = ata.getBase();
-                        } else {
-                            actLen = ExprConstInt.one;
-                        }
-                        ftt = ta.getBase();
-                        String len = ta.getLength().toString();
-                        if (pm.containsKey(len)) {
-                            int idx = pm.get(len);
-                            if (newParams.get(idx) == null) {
-                                newParams.set(idx, actLen);
-                            } else {
-                                addStatement(new StmtAssert(
-                                        exp,
-                                        new ExprBinary(newParams.get(idx), "==", actLen),
-                                        exp.getCx() +
-                                        ": Inconsistent array lengths for implicit parameter " +
-                                        len + ".", false));
-                            }
-                        }
-                    }
-                    Expression newParam = doExpression(actual);
-                    boolean typeCheck = true;
-                    if (newParam instanceof ExprNew) {
-                        if (((ExprNew) newParam).isHole())
-                            typeCheck = false;
-                    }
-                    if (newParam instanceof ExprADTHole) {
-                        typeCheck = false;
-                    }
-                    Type lt = getType(newParam);
-
-                    if (typeCheck && (lt == null || !lt.promotesTo((formalType), nres))) {
-                        report(exp, "Bad parameter type: Formal type=" + formal +
-                                "\n Actual type=" + lt + "  " + f);
-                    }
-                    newParams.add(newParam);
+        if (actSz > formSz) {
+            throw new ExceptionAtNode("Incorrect number of parameters", exp);
+        }
+        int implSz = formSz - actSz;
+        boolean hadImp = (implSz > 0);
+        Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
+        Iterator<Expression> actIt = exp.getParams().iterator();
+        for (Parameter formal : f.getParams()) {
+            if (hadImp && formal.isImplicit()) {
+                hasChanged = true;
+                pm.put(formal.getName(), newParams.size());
+                newParams.add(null);
+                --implSz;
+            } else {
+                if (implSz != 0) {
+                    throw new ExceptionAtNode("Incorrect number of parameters", exp);
                 }
-            }
-        } else {
-            List<Parameter> formals = f.getParams();
+                Expression actual = actIt.next();
+                if (actual instanceof ExprNamedParam) {
+                    throw new ExceptionAtNode("Named function parameters not supported. ", actual);
+                }
 
-            Iterator<Parameter> form = formals.iterator();
-            for (Expression param : exp.getParams()) {
-                Parameter formal = (Parameter) form.next();
-                Expression newParam = doExpression(param);
+                Type formalType = tren.rename(formal.getType());
+                formalType = formalType.addDefaultPkg(f.getPkg(), nres);
+                Type ftt = formalType;
+                Expression newParam = doExpression(actual);
+                Type actType = getType(newParam).addDefaultPkg(nres.curPkg().getName(), nres);
+                Type att = actType;
+                while (ftt instanceof TypeArray) {
+                    TypeArray ta = (TypeArray) ftt;
+                    Expression actLen = null;
+                    if (att instanceof TypeArray) {
+                        TypeArray ata = (TypeArray) att;
+                        actLen = ata.getLength();
+                        att = ata.getBase();
+                    } else {
+                        actLen = ExprConstInt.one;
+                    }
+                    ftt = ta.getBase();
+                    String len = ta.getLength().toString();
+                    if (pm.containsKey(len)) {
+                        int idx = pm.get(len);
+                        if (newParams.get(idx) == null) {
+                            newParams.set(idx, actLen);
+                        } else {
+                            addStatement(new StmtAssert(exp, new ExprBinary(newParams.get(idx), "==", actLen),
+                                    exp.getCx() + ": Inconsistent array lengths for implicit parameter " + len + ".", false));
+                        }
+                    }
+                }
+
                 if (formal.isParameterReference() && newParam instanceof ExprField) {
                     TypeStructRef parent =
                             (TypeStructRef) getType(((ExprField) newParam).getLeft());
@@ -895,6 +869,20 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                     }
                 }
 
+                if (formal.getType().isStruct()) {
+                    TypeStructRef tsr = (TypeStructRef) formal.getType();
+                    if (actType.isStruct()) {
+                        TypeStructRef tsrActual = (TypeStructRef) actType;
+
+                        if (tsrActual.isUnboxed() && !tsr.isUnboxed()) {
+                            report(exp,
+                                    "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                        }
+
+                    }
+                }
+
+
                 boolean typeCheck = true;
                 if (newParam instanceof ExprNew) {
                     if (((ExprNew) newParam).isHole())
@@ -903,31 +891,33 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                 if (newParam instanceof ExprADTHole) {
                     typeCheck = false;
                 }
-
                 if (typeCheck) {
-                    Type lt = getType(newParam);
-                    Type formalType = tren.rename(formal.getType());
-                    formalType = formalType.addDefaultPkg(f.getPkg(), nres);
-                    if (formalType instanceof TypeStructRef &&
-                            ((TypeStructRef) formalType).getName() == null)
-                    {
-                        report(exp, "Bad parameter type: Formal type=" + formal +
-                                "\n Actual type=" + lt + "  " + f);
+
+                    if (actType == null || !actType.promotesTo(formalType, nres)) {
+                        report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
                     }
-                    if (lt == null || !lt.promotesTo(formalType, nres)) {
-                        report(exp, "Bad parameter type: Formal type=" + formal +
-                                "\n Actual type=" + lt + "  " + f);
+                    if (ftt instanceof TypeStructRef) {
+                        TypeStructRef tref = ((TypeStructRef) ftt);
+                        if (tref.getName() == null) {
+                            report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                        }
+                        if (formal.isParameterReference() && !tref.isUnboxed()) {
+                            if (!tref.equals(att)) {
+                                report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                            }
+                        }
                     }
+
                 }
                 if (newParam instanceof ExprNamedParam) {
-                    throw new ExceptionAtNode(
-                            "Named function parameters not supported. ", newParam);
+                    throw new ExceptionAtNode("Named function parameters not supported. ", newParam);
                 }
 
                 newParams.add(newParam);
-                if (param != newParam)
+                if (actual != newParam)
                     hasChanged = true;
             }
+
         }
         if (!hasChanged)
             return exp;
@@ -1253,13 +1243,15 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     private void checkTripleEquals(FENode expr, Type lt, Type rt) {
-        if(!lt.isStruct() || !rt.isStruct())
+		if (!(lt.equals(TypePrimitive.nulltype) || lt.isStruct())
+				|| !(rt.equals(TypePrimitive.nulltype) || rt.isStruct()))
             report(expr, "Triple equals only operates on structs");
         if (! lt.promotesTo(rt, nres) && ! rt.promotesTo(lt, nres))
             report(expr, "Triple equals operates on same struct types");
     }
 
     public Object visitExprChoiceBinary(ExprChoiceBinary exp) {
+        exp = (ExprChoiceBinary) super.visitExprChoiceBinary(exp);
         Expression left = exp.getLeft(), right = exp.getRight();
         boolean isLeftArr = false;
         boolean isRightArr = false;
@@ -1544,6 +1536,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
 
     public Object visitExprChoiceSelect(ExprChoiceSelect exp) {
+        exp = (ExprChoiceSelect) super.visitExprChoiceSelect(exp);
         final ExprChoiceSelect e = exp;
         class SelectorTypeChecker extends SelectorVisitor {
             StructDef base;
@@ -1654,7 +1647,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             }
         }
 
-        Type lt = getType((Expression) exp.getObj().accept(this));
+        Type lt = getType(exp.getObj());
 
         if (!lt.isStruct()) {
             report(exp, "field reference of a non-structure type");
@@ -1749,7 +1742,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     public Object visitExprField(ExprField expr) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprField");
 
-        Type lt = getType((Expression) expr.getLeft().accept(this));
+        Expression newLeft = (Expression) expr.getLeft().accept(this);
+
+        Type lt = getType(newLeft);
 
 
         // Either lt is a structure type, or it's null, or it's an error.
@@ -1791,7 +1786,10 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             report(expr, "field reference of a non-structure type");
         }
 
-        return (expr);
+        if (newLeft == expr.getLeft())
+            return expr;
+        else
+            return new ExprField(expr, newLeft, expr.getName(), expr.isHole());
     }
 
     public Object visitExprArrayRange(ExprArrayRange expr) {
@@ -1957,7 +1955,9 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
     }
 
     public Object visitExprChoiceUnary(ExprChoiceUnary exp) {
-        Type ot = getType((Expression) exp.getExpr().accept(this));
+
+        exp = (ExprChoiceUnary) super.visitExprChoiceUnary(exp);
+        Type ot = getType(exp.getExpr());
         boolean isArr = false;
         if (ot instanceof TypeArray) {
             ot = ((TypeArray) ot).getBase();

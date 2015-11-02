@@ -1,20 +1,12 @@
+// Calling a lambda function inside a local function
 
-adt Foo{
-    A{}
-    B{}
-}
-
-
-Q moo<T, Q>(fun ff, T t, Q q){
-    Q a = ff(t);
-    return a;
-}
-
-harness void main(){
-    A ff = new A();
-    B gg = new B();
-    B foo(A x){
-        return new B();
-    }
-    moo(foo, ff, gg);
+harness void main() {
+	fun f = (x) -> x + 1;
+	
+	int g(int x) {
+		int temp = f(1) + x;
+		return temp;
+	}
+		
+	assert g(1) == 3;
 }

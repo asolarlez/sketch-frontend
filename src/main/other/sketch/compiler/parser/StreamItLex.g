@@ -206,6 +206,19 @@ NDANGELIC: "**";
 AT: "@";
 BACKSLASH: "\\";
 LESS_COLON: "<:";
+DOLLAR: '$'; 
+
+DOTASSIGN : ".=";
+DOTPLUS: ".+";
+DOTMINUS: ".-";
+DOTTIMES: ".*";
+DOTDIV: "./";
+DOTMOD: ".%";
+DOTLT: ".<";
+DOTGT: ".>";
+DOTLTE: ".<=";
+DOTGTE: ".>=";
+
 
 REGEN   { int open = 0; }
     :   "{|"
@@ -280,7 +293,9 @@ options {
 	testLiterals = true;
 	paraphrase = "an identifier";
 }
-	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
+	:	((('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'_'|'0'..'9')*)
+		| "op.+" | "op.-" | "op.*" |  "op./" |  "op.%"  | "op.=" | "op.<"
+	)
 	;
 
 

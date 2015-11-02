@@ -1,0 +1,21 @@
+
+void forall(int a, int b, fun f){
+    for(int i=a; i<b; ++i){
+        f(i);
+    }
+}
+
+harness
+void main(int N, int M){
+    assume N < 5 && M < 5 && N>0 && M>0; 
+    int cmax = 0;
+    void body(int i, int j){ if(i>cmax){ cmax = i; } if(j>cmax){ cmax = j; } }
+    void foo(int i){
+       void moo(int j){
+	  body(i,j);
+       }
+       forall(0,M, moo);
+    }
+    forall(0,N, foo);
+    assert N<M ? cmax == M-?? : cmax == N-??;
+}

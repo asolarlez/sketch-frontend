@@ -1,0 +1,10 @@
+// Local variable picks variables that can be promoted
+// to the requested type
+
+harness void main(){	
+	bit x = 1;
+		
+    fun f = () -> $(int) + 2;
+                  
+    assert f() == 3;
+}

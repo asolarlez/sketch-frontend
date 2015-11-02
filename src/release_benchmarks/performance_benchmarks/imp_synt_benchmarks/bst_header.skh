@@ -1,0 +1,874 @@
+#define BOUND 2
+
+
+include "helper.sk";
+
+
+bit bst(int l, int t);
+int height(int l, int t);
+int size(int l, int t);
+int min(int l, int t);
+int max(int l, int t);
+
+
+bit bst_comp(int l) {
+	//assert treeness(l);
+	return bst_recursive(l, BOUND);
+}
+
+bit bst_recursive(int l, int bnd) {
+	if (!active[l]) return false;
+	if (l == 0) return true;
+    if (bnd < 0){ return 0; }
+	else {
+		if (symbolic[l]) return bst_history(l, ts);
+		int ll = left[l];
+		int rr = right[l];
+		int kk = key[l];
+		bit b1 = false;
+		int m1 = -1;
+		if (0 == ll) {
+			b1 = true;
+			m1 = 0;
+		}
+		else if (ll > 0 && ll < HEAPSIZE) {
+			b1 = bst_recursive(ll, bnd-1);
+			m1 = max_recursive(ll, bnd-1);
+		}
+		bit b2 = false;
+		int m2 = -1;
+		if (0 == rr) {
+			b2 = true;
+			m2 = 7;
+		}
+		else if (rr > 0 && rr < HEAPSIZE) {
+			b2 = bst_recursive(rr, bnd-1);
+			m2 = min_recursive(rr, bnd-1);
+		}
+		return b1 && b2 && kk >= m1 && kk <= m2;
+	}
+}
+
+bit bst_history(int l, int ts) {
+	while (ts > 0 && history[l,ts]) ts--;
+	return bst(l, ts);
+}
+
+
+int height_comp(int l) {
+	//assert treeness(l);
+	return height_recursive(l, BOUND);
+}
+
+int height_recursive(int l, int bnd) {
+	if (l < 0 || l >= HEAPSIZE) return -1;
+	else if (!active[l]) return -1;
+	if (l == 0) return 0;
+    if(bnd < 0){ return -1; }
+	else {
+		if (symbolic[l]) return height_history(l, ts);
+		int ll = left[l];
+		int rr = right[l];
+		int h1 = -1;
+		if (0 == ll) h1 = 0;
+		else if (ll > 0 && ll < HEAPSIZE) h1 = height_recursive(ll, bnd-1);
+		int h2 = -1;
+		if (0 == rr) h2 = 0;
+		else if (rr > 0 && rr < HEAPSIZE) h2 = height_recursive(rr, bnd-1);
+		return (h1 >= h2 ? h1 : h2) + 1;
+	}
+}
+
+int height_history(int l, int ts) {
+	while (ts > 0 && history[l,ts]) ts--;
+	return height(l, ts);
+}
+
+int size_comp(int l) {
+	//assert treeness(l);
+	return size_recursive(l, BOUND);
+}
+
+int size_recursive(int l, int bnd) {
+	if (l < 0 || l >= HEAPSIZE) return -1;
+	else if (!active[l]) return -1;
+	if (l == 0) return 0;
+    if(bnd < 0){ return -1; }
+	else {
+		if (symbolic[l]) return size_history(l, ts);
+		int ll = left[l];
+		int rr = right[l];
+		int s1 = -1;
+		if (0 == ll) s1 = 0;
+		else if (ll > 0 && ll < HEAPSIZE) s1 = size_recursive(ll, bnd-1);
+		int s2 = -1;
+		if (0 == rr) s2 = 0;
+		else if (rr > 0 && rr < HEAPSIZE) s2 = size_recursive(rr, bnd-1);
+		return s1 + s2 + 1;
+	}
+}
+
+int size_history(int l, int ts) {
+	while (ts > 0 && history[l,ts]) ts--;
+	return size(l, ts);
+}
+
+int max_comp(int l) {
+	//assert treeness(l);
+	return max_recursive(l, BOUND);
+}
+
+int max_recursive(int l, int bnd) {
+	if (l < 0 || l >= HEAPSIZE) return -1;
+	else if (!active[l]) return -1;
+	if (l == 0) return 0;
+    if(bnd < 0){ return -1; }
+	else {
+		if (symbolic[l]) return max_history(l, ts);
+		int ll = left[l];
+		int rr = right[l];
+		int kk = key[l];
+		int r1 = -1;
+		if (0 == ll) r1 = 0;
+		else if (ll > 0 && ll < HEAPSIZE) r1 = max_recursive(ll, bnd-1);
+		int r2 = -1;
+		if (0 == rr) r2 = 0;
+		else if (rr > 0 && rr < HEAPSIZE) r2 = max_recursive(rr, bnd-1);
+		return (r1 <= r2) ? (kk >= r2 ? kk : r2) : (kk >= r1 ? kk : r1);
+	}
+}
+
+int max_history(int l, int ts) {
+	while (ts > 0 && history[l,ts]) ts--;
+	return max(l, ts);
+}
+
+int min_comp(int l) {
+	//assert treeness(l);
+	return min_recursive(l, BOUND);
+}
+
+int min_recursive(int l, int bnd) {
+	if (l < 0 || l >= HEAPSIZE) return -1;
+	else if (!active[l]) return -1;
+	if (l == 0) return 7;
+    if(bnd < 0){ return -1; }
+	else {
+		if (symbolic[l]) return min_history(l, ts);
+		int ll = left[l];
+		int rr = right[l];
+		int kk = key[l];
+		int r1 = -1;
+		if (0 == ll) r1 = 7;
+		else if (ll > 0 && ll < HEAPSIZE) r1 = min_recursive(ll, bnd-1);
+		int r2 = -1;
+		if (0 == rr) r2 = 7;
+		else if (rr > 0 && rr < HEAPSIZE) r2 = min_recursive(rr, bnd-1);
+		return (r1 >= r2) ? (kk <= r2 ? kk : r2) : (kk <= r1 ? kk : r1);
+	}
+}
+
+int min_history(int l, int ts) {
+	while (ts > 0 && history[l,ts]) ts--;
+	return min(l, ts);
+}
+
+bit check_treeness(int t, ref bit[HEAPSIZE] m, int bnd) {
+	if(bnd < 0){ return 0; }
+	if (!active[t]) return false;
+	
+    if (t == 0) return true;
+    else if (symbolic[t]) {
+    	if (m[t]) return false;
+    	else {
+    		m[t] = true;
+    		return true;
+    	}
+    }
+    else {
+    	if (m[t]) return false;
+        else {
+        	m[t] = true;
+        	int lft = left[t];
+        	int rgt = right[t];
+        	bit b1 = false;
+        	if (lft == 0) b1 = true;
+        	else if (lft > 0 && lft < HEAPSIZE) b1 = check_treeness(lft, m, bnd-1);
+        	bit b2 = false;
+        	if (rgt == 0) b2 = true;
+        	else if (rgt > 0 && rgt < HEAPSIZE) b2 = check_treeness(rgt, m, bnd-1);
+        	return b1 && b2;
+        }
+    }
+}
+
+bit treeness(int t) {
+	bit[HEAPSIZE] visited = 0;
+	return check_treeness(t, visited, BOUND);
+}
+
+/*
+void assertSingleTree(int r) {
+	compute_reach(r);
+	for (int idx = 1; idx < HEAPSIZE; idx++) {
+		assert (reach[idx] == active[idx]);
+	}
+}
+
+void assertTwoDisjointTrees(int r1, int r2) {
+	compute_reach(r1);
+	bit[HEAPSIZE] temp = 0;
+	for (int idx = 1; idx < HEAPSIZE; idx++) {
+		if (!active[idx]) {
+			assert !reach[idx];
+		} else if (!reach[idx]) {
+			temp[idx] = 1;
+		}
+	}
+	reach = 0;
+	compute_reach(r2);
+	for (int idx = 1; idx < HEAPSIZE; idx++) {
+		assert (reach[idx] == temp[idx]);
+	}
+}
+
+bit disjoint(int r1, int r2) {
+	compute_reach(r1);
+	bit[HEAPSIZE] temp = reach;
+	reach = 0;
+	compute_reach(r2);
+	for (int idx = 1; idx < HEAPSIZE; idx++) {
+		if (reach[idx] && temp[idx]) return false;
+	}
+	return true;
+}
+*/
+
+void update_reach(ref bit updated, ref bit[HEAPSIZE] reach) {
+	for (int i = 1; i < HEAPSIZE; i++) {
+		if (reach[i] && active[i] && !symbolic[i]) {
+			if (left[i] >= 0 && left[i] < HEAPSIZE && active[left[i]] && !reach[left[i]]) {
+				reach[left[i]] = true;
+				updated = true;
+			}
+			if (right[i] >= 0 && right[i] < HEAPSIZE && active[right[i]] && !reach[right[i]]) {
+				reach[right[i]] = true;
+				updated = true;
+			}
+		}
+	}
+}
+
+void compute_reach(int init, ref bit[HEAPSIZE] reach) {
+	if (init < 0 || init >= HEAPSIZE) return;
+	else if (!active[init]) return;
+	reach[init] = 1;
+	bit updated = false;
+	do {
+		updated = false;
+		update_reach(updated, reach);
+	}
+	while (updated);
+}
+
+int havoc(int r, ref bit[HEAPSIZE-1] new_symbolic, ref int[HEAPSIZE-1] new_left, ref int[HEAPSIZE-1] new_right, ref int[HEAPSIZE-1] new_key) {
+	/* havoc all locations reachable from r */
+	bit[HEAPSIZE] reach = 0;
+	compute_reach(r, reach);
+	for (int idx = 1; idx < HEAPSIZE; idx++) {
+		if (reach[idx]) active[idx] = false;
+		if (!active[idx]) {
+			symbolic[idx] = new_symbolic[idx-1];
+			left[idx] = new_left[idx-1];
+			right[idx] = new_right[idx-1];
+			key[idx] = new_key[idx-1];
+		}
+	}
+	
+	int loc = 1;
+	while (loc < HEAPSIZE && (active[loc] || !symbolic[loc])) {
+    	loc++;
+    }
+    if (loc >= HEAPSIZE) return 0; //only nil can be returned
+    
+    ts++;
+	connect_defs();
+    
+    //nondeterministic choice
+    active[loc] = true;
+    
+    return loc;
+}
+
+
+void locderef2var(int choice, int choice2, bit dir) {
+	/* pick two loc vars, then choice2 = choice.next */
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	assert choice2 > 0;
+	assert choice2 < LOCVARSIZE;
+	
+	/* sanity check */
+	int l = locvars[choice];
+	assertPost(l > 0);
+	assertPost(l < HEAPSIZE);
+	if (l <= 0 || l >= HEAPSIZE) return;
+	if (!active[l]) return;
+    
+    int ltest = left[l];
+	int rtest = right[l];
+    
+    if (!symbolic[l]) {
+    	assumePre(ltest >= 0);
+    	assumePre(ltest < HEAPSIZE);
+    	assumePre(rtest >= 0);
+    	assumePre(rtest < HEAPSIZE);
+    	if (ltest >= 0 && ltest < HEAPSIZE && rtest >= 0 && rtest < HEAPSIZE) {
+    		locvars[choice2] = dir ? ltest : rtest;
+    	}
+    	return;
+    }
+    
+    int ll = ltest;
+    if (ltest > 0) {
+    	assumePre(malloc_budget >= 1);
+    	if (malloc_budget < 1) return;
+    	malloc_budget--;
+    
+    	ll = 1;
+    	while (ll < HEAPSIZE && active[ll]) {
+    		ll++;
+    	}
+    	assumePre(ll < HEAPSIZE);
+    	if (ll >= HEAPSIZE) return;
+    	
+    	active[ll] = true;
+    	symbolic[ll] = true;
+    	left[l] = ll;
+    }
+    
+    int lr = rtest;
+    if (rtest > 0) {
+    	assumePre(malloc_budget >= 1);
+    	if (malloc_budget < 1) return;
+    	malloc_budget--;
+    	
+    	lr = 1;
+    	while (lr < HEAPSIZE && active[lr]) {
+    		lr++;
+    	}
+    	assumePre(lr < HEAPSIZE);
+    	if (lr >= HEAPSIZE) return;
+
+    	active[lr] = true;
+    	symbolic[lr] = true;
+    	right[l] = lr;
+    }
+    
+    locvars[choice2] = dir ? ll : lr;
+    symbolic[l] = false;
+    
+    assumePre(bst(l, ts) == bst_comp(l));
+    assumePre(height(l, ts) == height_comp(l));
+    assumePre(size(l, ts) == size_comp(l));
+    assumePre(max(l, ts) == max_comp(l));
+    assumePre(min(l, ts) == min_comp(l));
+}
+
+void malloc(int c) {
+	/* pick a loc var, then choice = malloc() */
+    
+	int choice = c;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	
+	assumePre(malloc_budget >= 1);
+    if (malloc_budget < 1) return;
+    malloc_budget--;
+	
+	int l = 1;
+    while (l < HEAPSIZE && active[l]) {
+    	l++;
+    }
+    assumePre(l < HEAPSIZE);
+    if (l >= HEAPSIZE) return;
+    
+    left[l] = 0;
+    right[l] = 0;
+    key[l] = 0;
+    symbolic[l] = false;
+    active[l] = true;
+    locvars[choice] = l;
+}
+
+generator bit cond() {
+	/* check the (in)equality between two loc vars */
+	int choice = ??(2);
+	assert choice >= 0;
+	assert choice < LOCVARSIZE;
+	
+	int choice2 = ??(2);
+	assert choice2 >= 0;
+	assert choice2 < LOCVARSIZE;
+	
+	if (??) return locvars[choice] == locvars[choice2];
+	else return locvars[choice] != locvars[choice2];
+}
+
+
+generator void statement(int locrange, int intrange, int locrange2, int intrange2) {
+	int st_choice = {| LOCDEREF | LOCASSGN | MALLOC | LOCMUTATE | INTMUTATE |};
+	int v = gen_non_zero(locrange);
+	int anyv = gen_non_zero(locrange+locrange2);
+	int anyanyv = gen_all(locrange+locrange2+1);
+	if (st_choice == LOCDEREF) {
+		assert locrange > 0;
+		locderef2var(anyv, v, ??);
+	}
+	else if (st_choice == LOCASSGN) {
+		assert locrange > 0;
+		locVarAssign(v, anyanyv);
+	}
+	else if (st_choice == MALLOC) {
+		assert locrange > 0;
+		malloc(v);
+	}
+	else if (st_choice == LOCMUTATE) {
+		assert locrange+locrange2 > 0;
+		locMutate(anyv, anyanyv, {| LEFT | RIGHT |});
+	}
+	else if (st_choice == INTMUTATE) {
+		assert locrange+locrange2 > 0;
+		assert intrange+intrange2 > 0;
+		intMutate(anyv, gen_all(intrange+intrange2));
+	}
+}
+
+/*
+
+generator void block(int n, int bnd) {
+	if (n == 0) return;
+	else if (??) {
+		statement();
+		block(n-1, bnd);
+	}
+	else if (bnd < 0) return;
+	else {
+		int cblock = ??(2);
+		int pos = ??(2);
+		assert cblock >= 1;
+		assert pos >= 0 && pos <= cblock;
+		assert cblock < n;
+		
+		if (cond()) block(pos, bnd-1);
+		else block(cblock-pos, bnd-1);
+		block(n-cblock-1, bnd-1);
+	}
+}
+
+bit loop_cond() {
+	return cond();
+}
+*/
+
+generator bit literal(bit asst) {
+	bit lit_choice = ??;
+	int var1 = ??(2);
+	int var2 = ??(2);
+	assert var1>0 && var1<LOCVARSIZE;
+	assert var2>0 && var2<LOCVARSIZE;
+	assert var1 != var2;
+	int intvar1 = ??(1);
+	int intvar2 = ??(1);
+	assert intvar1>=0 && intvar1<INTVARSIZE;
+	assert intvar2>=0 && intvar2<INTVARSIZE;
+	assert intvar1 != intvar2;
+	
+	if (asst)
+		assertPost(treeness(locvars[var1]) && treeness(locvars[var2]));
+	bit atom = asst;
+	if (treeness(locvars[var1]) && treeness(locvars[var2])) {
+		if (lit_choice) 
+			atom = bst_comp(locvars[var1]);
+		else {
+			int v1 = {| (min_comp(locvars[var1]) | max_comp(locvars[var1])) |} ;
+			int v2 = {| (min_comp(locvars[var2]) | max_comp(locvars[var2])) |} ;
+			int left = {| (v1 | v2 | (v1+v2) | (v1-v2) | (v1<=v2 ? v1 : v2) | (v1>=v2 ? v1 : v2)) |};
+			atom = {| (left (== | >= | <=) 0) |};
+		}
+		/*else if (lit_choice == 2) 
+			atom = disjoint(locvars[var1], locvars[var2]);
+		else {
+			atom = true;
+		}*/
+		if (??) atom = ! atom;
+	}
+
+	return atom;
+}
+
+void ranking_snapshot(int rec, int v) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return;
+	else if (!treeness(locvars[v])) return;
+	if (rec == HEIGHT) ranking = height_comp(locvars[v]);
+	else if (rec == SIZE) ranking = size_comp(locvars[v]);
+	else if (rec == MAX) ranking = max_comp(locvars[v]);
+	else if (rec == MIN) ranking = min_comp(locvars[v]);
+}
+
+bit ranking_decreases(int rec, int v) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else if (!treeness(locvars[v])) return false;
+	int new_ranking = -1;
+	if (rec == HEIGHT) new_ranking = height_comp(locvars[v]);
+	else if (rec == SIZE) new_ranking = size_comp(locvars[v]);
+	else if (rec == MAX) new_ranking = max_comp(locvars[v]);
+	else if (rec == MIN) new_ranking = min_comp(locvars[v]);
+	return ranking > new_ranking && new_ranking >= 0;
+}
+
+bit height_equal_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && height_comp(locvars[v]) == val;
+}
+
+bit size_equal_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && size_comp(locvars[v]) == val;
+}
+
+bit min_equal_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && min_comp(locvars[v]) == val;
+}
+
+bit max_equal_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && max_comp(locvars[v]) == val;
+}
+
+bit min_leq_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && min_comp(locvars[v]) <= val;
+}
+
+bit max_leq_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && max_comp(locvars[v]) <= val;
+}
+
+bit bst_inv(int v) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else return treeness(locvars[v]) && bst_comp(locvars[v]);
+}
+
+bit disj_inv(int v1, int v2, bit asst) {
+	assert v1>0 && v1<LOCVARSIZE;
+	assert v2>0 && v2<LOCVARSIZE;
+	
+	if (asst)
+		assertPost(treeness(locvars[v1]) && treeness(locvars[v2]));
+	bit atom = asst;
+	if (treeness(locvars[v1]) && treeness(locvars[v2])) atom = disjoint(locvars[v1], locvars[v2]);
+	return atom;
+}
+
+bit min_preserve_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else if (??)
+		return treeness(locvars[v]) && min_comp(locvars[v]) == val;
+	else {
+		int v1 = gen_non_zero(v-1);
+		int v2 = gen_non_zero(v-1);
+		assert v1 != v2;
+		if (locvars[v1] >= 0 && locvars[v1] < HEAPSIZE
+		&& locvars[v2] >= 0 && locvars[v2] < HEAPSIZE
+		&& treeness(locvars[v1]) && treeness(locvars[v2])) {
+			int m1 = min_comp(locvars[v1]);
+			int m2 = min_comp(locvars[v2]);
+			return (m1 <= m2 ? m1 : m2) == val;
+		}
+		else return false;
+	}
+}
+
+bit max_preserve_inv(int v, int val) {
+	assert v>0 && v<LOCVARSIZE;
+	if (!(locvars[v] >= 0 && locvars[v] < HEAPSIZE)) return false;
+	else if (??)
+		return treeness(locvars[v]) && max_comp(locvars[v]) == val;
+	else {
+		int v1 = gen_non_zero(v-1);
+		int v2 = gen_non_zero(v-1);
+		assert v1 != v2;
+		if (locvars[v1] >= 0 && locvars[v1] < HEAPSIZE
+		&& locvars[v2] >= 0 && locvars[v2] < HEAPSIZE
+		&& treeness(locvars[v1]) && treeness(locvars[v2])) {
+			int m1 = max_comp(locvars[v1]);
+			int m2 = max_comp(locvars[v2]);
+			return (m1 <= m2 ? m2 : m1) == val;
+		}
+		else return false;
+	}
+}
+
+bit intderef_lt_var(int c1, int c2) {
+	/* pick two loc vars, then choice2 = choice.next */
+	int choice = c1;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < INTVARSIZE;
+	
+	/* sanity check */
+	int l = locvars[choice];
+	assertPost(l > 0);
+	assertPost(l < HEAPSIZE);
+	if (l <= 0 || l >= HEAPSIZE) return false;
+	if (!active[l]) return false;
+	
+	
+	int ltest = left[l];
+	int rtest = right[l];
+    
+    if (!symbolic[l]) {
+    	assumePre(ltest >= 0);
+    	assumePre(ltest < HEAPSIZE);
+    	assumePre(rtest >= 0);
+    	assumePre(rtest < HEAPSIZE);
+    	if (ltest < 0 || ltest >= HEAPSIZE || rtest < 0 || rtest >= HEAPSIZE) {
+    		return false;
+    	}
+    	return key[l] < intvars[choice2];
+    }
+    
+    
+    int ln = ltest;
+	if (ltest > 0) {
+    	ln = 1;
+    	while (ln < HEAPSIZE && active[ln]) {
+    		ln++;
+    	}
+    	assumePre(ln < HEAPSIZE);
+    	if (ln >= HEAPSIZE) return false;
+    	
+    	assertPost(fake_unfold == 0 || fake_unfold == l);
+    	assertPost(fake_unfold_left == 0 || fake_unfold_left == ln);
+    	fake_unfold = l;
+    	fake_unfold_left = ln;
+    	
+    	active[ln] = true;
+    	symbolic[ln] = true;
+    	left[l] = ln;
+    }
+    int ll = ln;
+    
+    ln = rtest;
+	if (rtest > 0) {
+    	ln = 1;
+    	while (ln < HEAPSIZE && active[ln]) {
+    		ln++;
+    	}
+    	assumePre(ln < HEAPSIZE);
+    	if (ln >= HEAPSIZE) return false;
+    	
+    	assertPost(fake_unfold == 0 || fake_unfold == l);
+    	assertPost(fake_unfold_right == 0 || fake_unfold_right == ln);
+    	fake_unfold = l;
+    	fake_unfold_right = ln;
+    	
+    	active[ln] = true;
+    	symbolic[ln] = true;
+    	right[l] = ln;
+    }
+    int lr = ln;
+    
+    symbolic[l] = false;
+    
+    assumePre(bst(l, ts) == bst_comp(l));
+    assumePre(min(l, ts) == min_comp(l));
+    assumePre(max(l, ts) == max_comp(l));
+    
+    if (ltest > 0) {
+    	active[ll] = false;
+    }
+    if (rtest > 0) {
+    	active[lr] = false;
+    }
+    
+    symbolic[l] = true;
+    
+    return key[l] < intvars[choice2];
+}
+
+bit intderef_eq_var(int c1, int c2) {
+	/* pick two loc vars, then choice2 = choice.next */
+	int choice = c1;
+	assert choice > 0;
+	assert choice < LOCVARSIZE;
+	int choice2 = c2;
+	assert choice2 >= 0;
+	assert choice2 < INTVARSIZE;
+	
+	/* sanity check */
+	int l = locvars[choice];
+	assertPost(l > 0);
+	assertPost(l < HEAPSIZE);
+	if (l <= 0 || l >= HEAPSIZE) return false;
+	if (!active[l]) return false;
+	
+	
+	int ltest = left[l];
+	int rtest = right[l];
+    
+    if (!symbolic[l]) {
+    	assumePre(ltest >= 0);
+    	assumePre(ltest < HEAPSIZE);
+    	assumePre(rtest >= 0);
+    	assumePre(rtest < HEAPSIZE);
+    	if (ltest < 0 || ltest >= HEAPSIZE || rtest < 0 || rtest >= HEAPSIZE) {
+    		return false;
+    	}
+    	return key[l] == intvars[choice2];
+    }
+    
+    
+    int ln = ltest;
+	if (ltest > 0) {
+    	ln = 1;
+    	while (ln < HEAPSIZE && active[ln]) {
+    		ln++;
+    	}
+    	assumePre(ln < HEAPSIZE);
+    	if (ln >= HEAPSIZE) return false;
+    	
+    	assertPost(fake_unfold == 0 || fake_unfold == l);
+    	assertPost(fake_unfold_left == 0 || fake_unfold_left == ln);
+    	fake_unfold = l;
+    	fake_unfold_left = ln;
+    	
+    	active[ln] = true;
+    	symbolic[ln] = true;
+    	left[l] = ln;
+    }
+    int ll = ln;
+    
+    ln = rtest;
+	if (rtest > 0) {
+    	ln = 1;
+    	while (ln < HEAPSIZE && active[ln]) {
+    		ln++;
+    	}
+    	assumePre(ln < HEAPSIZE);
+    	if (ln >= HEAPSIZE) return false;
+    	
+    	assertPost(fake_unfold == 0 || fake_unfold == l);
+    	assertPost(fake_unfold_right == 0 || fake_unfold_right == ln);
+    	fake_unfold = l;
+    	fake_unfold_right = ln;
+    	
+    	active[ln] = true;
+    	symbolic[ln] = true;
+    	right[l] = ln;
+    }
+    int lr = ln;
+    
+    symbolic[l] = false;
+    
+    assumePre(bst(l, ts) == bst_comp(l));
+    assumePre(min(l, ts) == min_comp(l));
+    assumePre(max(l, ts) == max_comp(l));
+    
+    if (ltest > 0) {
+    	active[ll] = false;
+    }
+    if (rtest > 0) {
+    	active[lr] = false;
+    }
+    
+    symbolic[l] = true;
+    
+    return key[l] == intvars[choice2];
+}
+
+generator bit positive_cond(int locrange, int intrange) {
+	int choice = {| INTDEREFLT | LOCEQ |};
+	if (choice == INTDEREFLT) {
+		assert intrange >= 0;
+		int v = gen_non_zero(locrange);
+		return (!locvar_eq(v, 0)) && intderef_lt_var(v, gen_all(intrange+1));
+	}
+	else if (choice == LOCEQ) {
+		return locvar_eq(gen_non_zero(locrange), gen_all(locrange+1));
+	}
+}
+
+generator bit basic_cond(int locrange, int intrange) {
+	bit res = positive_cond(locrange, intrange);
+	if (??) return res;
+	else return !res;
+}
+
+generator void update_locvar_statement(int v, int locrange) {
+	int st_choice = {| LOCDEREF | LOCASSGN |};
+	if (st_choice == LOCDEREF) {
+		assert locrange > 0;
+		//assert malloc_budget > 0;
+		//malloc_budget--;
+		locderef2var(gen_non_zero(locrange), v, ??);
+	}
+	else if (st_choice == LOCASSGN) {
+		assert locrange > 0;
+		locVarAssign(v, gen_all(locrange+1));
+	}
+}
+
+generator void update_locvar(int v, int locrange, int intrange) {
+	bit choice = ??;
+	if (positive_cond(locrange, intrange) || choice) update_locvar_statement(v, locrange);
+	else if (!choice) update_locvar_statement(v, locrange);
+}
+
+generator void mutate_locvar_statement(int v, int locrange) {
+	bit st_choice = ??;
+	if (st_choice) {
+		assert locrange > 0;
+		locMutate(v, gen_all(locrange+1), {| LEFT | RIGHT |});
+	}
+}
+
+generator void mutate_locvar(int v, int locrange, int intrange) {
+	bit choice = ??;
+	if (positive_cond(locrange, intrange) || choice) mutate_locvar_statement(v, locrange);
+	else if (!choice) mutate_locvar_statement(v, locrange);
+}
+
+generator void create_node(int v, int locrange, int intrange) {
+	malloc(v);
+	intMutate(v, gen_all(intrange));
+	locMutate(v, gen_all(locrange+1), LEFT);
+	locMutate(v, gen_all(locrange+1), RIGHT);
+}
+
+bit basic_axioms() {
+	bit r = true;
+	int idx = 1;
+	while (idx < HEAPSIZE && r) {
+		r = min(idx, ts) <= max(idx, ts)
+		&& height(idx, ts) > 0
+		&& size(idx, ts) > 0;
+		idx++;
+	}
+	return r;
+}

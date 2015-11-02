@@ -1,0 +1,26 @@
+
+int apply(fun f){
+    return f();
+}
+
+harness void main(int in){
+    
+    int omm(fun f){
+        int y = 7;
+        int[y+2] z;
+        z[0] = 3;
+        int boo(){
+            assert y == 7;
+            assert z[0] == 3;
+            return f();
+        }
+        return boo(); 
+    }
+    {
+      int y = 5;
+      int[y] z;
+      z[0] = 5;
+      generator int foo(){ return z[0]; }
+      assert omm(foo) == (in + 5)-in;
+    }
+}

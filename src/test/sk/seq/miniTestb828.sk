@@ -1,0 +1,38 @@
+
+
+adt AST{
+    Plus{AST x; AST y;}
+    Minus{AST x; AST y; }
+    Num{int x;}
+}
+
+generator AST op.+(AST x, AST y){
+    return new Plus(x=x, y=y);
+}
+
+generator AST op.-(AST x, AST y){
+    return new Minus(x=x, y=y);
+}
+
+generator AST N(int n){
+    return new Num(x=n);
+}
+
+generator int eval(AST x){
+    switch(x){
+    case Plus: return eval(x.x) + eval(x.y);
+    case Minus: return eval(x.x) - eval(x.y);
+    case Num : return x.x;
+    }
+    return 0;
+}
+
+generator void op.=(ref int x, AST y){
+    x = eval(y);
+}
+
+harness void main(int x){ 
+    int in = x;
+    x .= N(x) .+ (N(4) .- N(2));
+    assert x == in + ??;
+}

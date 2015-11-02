@@ -178,4 +178,19 @@ public class FENullVisitor implements FEVisitor
 
         return null;
     }
+
+	/**
+	 * A local variable expression visitor that always returns null.
+	 */
+    public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
+        return null;
+    }
+
+	/**
+	 * A lambda expression visitor that always returns null.
+	 */
+	public Object visitExprLambda(ExprLambda exprLambda) {
+		return null;
+	}
+
 }

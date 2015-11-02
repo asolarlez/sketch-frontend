@@ -1,22 +1,18 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 1";
+// Passing a local lambda to a function that has local
+// variables and function calls
 
-// test PartialEvaluator: correctly handle ChangeTrackers for StmtSwitch
 
-struct Opr {}
-struct A extends Opr {}
-struct B extends Opr {}
-struct C extends Opr {}
+int apply(fun f, int x) {
+	return f(x);
+}
 
-harness void f() {
-	Opr op = new C();
-	int x = 0;
-	switch(op) {
-	case A:
-		x = 1;
-	case B:
-		x = x + 1;
-	case C:
-		x = x + 2;
-	}
-	assert x == 2;
+harness void main(){
+	int four = 4;
+	int one = 1;
+			
+	fun f0 = (x) -> one + 1 + x; 
+    fun f1 = (x) -> x + f0(x) + four;
+    fun f2 = (t) -> f1(t) + 1;
+              
+    assert apply(f2, 5) == 17;
 }

@@ -1,0 +1,14 @@
+int foo<T>(fun f, T t){
+    return f(g(t));
+}
+
+T g<T>(T i){
+    return i;
+}
+
+harness void main(int q){
+    int gg(int x){
+        return x + 1;
+    }
+    assert foo(gg, q)==q+??;        
+}

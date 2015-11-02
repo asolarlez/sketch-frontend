@@ -121,11 +121,13 @@ public class NodesToSuperH extends NodesToSuperCpp {
         }
 
         if (struct.isInstantiable()) {
-
-            result += indent + "static " + escapeCName(struct.getName()) + "* create(";
+            String constructor = "";
+            constructor += indent + "static " + escapeCName(struct.getName()) + "* create(";
             boolean first = true;
             StructDef current = struct;
             List fieldNames = new ArrayList();
+            String template = null;
+            int templateid = 0;
             while (current != null) {
                 for (String field : current.getOrderedFields()) {
                     if (!fieldNames.contains(field)) {
@@ -134,13 +136,24 @@ public class NodesToSuperH extends NodesToSuperCpp {
                         if (first) {
                             first = false;
                         } else {
-                            result += ", ";
+                            constructor += ", ";
                         }
-                        result += indent + typeForDecl(ftype) + " " + field + "_";
+                        String tipeid = typeForDecl(ftype);
+                        if (ftype instanceof TypeArray) {
+                            if (template == null) {
+                                template = "template<";
+                            } else {
+                                template += ", ";
+                            }
+                            String tmplname = "T_" + (templateid++);
+                            template += "typename " + tmplname;
+                            tipeid = tmplname + "*";
+                        }
+                        constructor += indent + tipeid + " " + field + "_";
                         symtab.registerVar(field + "_", (ftype), current,
                                 SymbolTable.KIND_LOCAL);
                         if (ftype instanceof TypeArray) {
-                            result += ", int " + field + "_len";
+                            constructor += ", int " + field + "_len";
                         }
                     }
                 }
@@ -151,7 +164,11 @@ public class NodesToSuperH extends NodesToSuperCpp {
                     current = null;
                 }
             }
-            result += ");\n";
+            constructor += ");\n";
+            if (template != null) {
+                constructor = template + ">\n" + constructor;
+            }
+            result += constructor;
         }
 
         result += indent + "~" + escapeCName(struct.getName()) + "(){\n";
@@ -210,10 +227,11 @@ public class NodesToSuperH extends NodesToSuperCpp {
         return preIncludes + result;
     }
 
+
+
     public Object visitFunction(Function func) {
         setNres(nres);
-        String result = "";
-
+        String result = regTypeParams(func.getTypeParams());
         result += indent + "extern ";
         result += convertType(func.getReturnType()) + " ";
         result += escapeCName(func.getName());

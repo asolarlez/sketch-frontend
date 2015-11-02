@@ -1,45 +1,12 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 1";
+// Using a local variable construct in a lambda expression
 
-// test DisambiguateCallsAndTypeCheck: correctly add default package name to matched case types
-// test PartialEvaluator: correctly handle StmtSwitch with only one case, and the case class has inner part
-
-package XXX {
-	struct Opr {}
-	struct A extends Opr {
-		int c;
-	}
-	struct B extends Opr {
-		int d;
-	}
-}
-
-package YYY {
-	struct A {
-		int x;
-	}
-	struct B {
-		int y;
-	}
-	struct Opr {
-		int z;
-	}
-	harness void f() {
-		Opr@XXX op = new A@XXX(c=1);
-		
-		int x = 0;
-		switch(op) {
-		case A:
-			x = op.c;
-		case B:
-			x = op.d + 1;
-		}
-		
-		int y = 0;
-		switch(op) {
-		default:
-			y = 2;
-		}
-		
-		assert x == 1 && y == 2;
-	}
+harness void main(){
+	int a = 2;
+	int b = 3;
+	
+	fun f = (x) -> x + $(int);
+	
+	int c = 8; // This is not included in the local variable
+	
+	assert f(7) == 10;
 }

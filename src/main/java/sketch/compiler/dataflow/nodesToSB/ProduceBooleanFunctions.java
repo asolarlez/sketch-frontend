@@ -104,14 +104,17 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             options = SketchOptions.getSingleton();
         }
 
+        String eol = System.getProperty("line.separator");
+
         public void estimate(List<SpecSketch> ssks) {
+
             for (SpecSketch ssk : ssks) {
                 StringBuffer buf = new StringBuffer();
                 buf.append("estimated size of ");
-                buf.append(ssk.sketch + System.lineSeparator());
+                buf.append(ssk.sketch + eol);
 
                 int sz = ssk.getStmtCnt();
-                buf.append("stmt cnt: " + sz + System.lineSeparator());
+                buf.append("stmt cnt: " + sz + eol);
 
                 List<Function> callees = ssk.getCallees();
                 for (Function callee : callees) {
@@ -121,7 +124,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                     int callee_sz = body == null ? 0 : body.size();
                     sz += callee_sz;
                     buf.append("callee " + callee.getName() + " : " + callee_sz);
-                    buf.append(System.lineSeparator());
+                    buf.append(eol);
                 }
 
                 if (options.debugOpts.verbosity >= 10) {
@@ -140,7 +143,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             if (funSizes.containsKey(o2)) {
                 s2 = funSizes.get(o2);
             }
-            return Integer.compare(s1, s2);
+            return s1 - s2;
         }
     }
 

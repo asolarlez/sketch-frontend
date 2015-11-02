@@ -1,6 +1,0 @@
-#!/bin/sh
-if [[ $(grep '#ONCE#' $1 | head -2 | wc -l) -gt 1 ]]
-then
-  echo '#ONCE# occured more than once!'
-  exit 1
-fi

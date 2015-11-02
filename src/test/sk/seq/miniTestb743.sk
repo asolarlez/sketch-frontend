@@ -1,41 +1,26 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 2";
+// Testing that a lambda creates a function with a unique name for similar functions
 
-// test ADT, StmtSwitch, and recursive generator inlining
-
-struct Opr {}
-
-struct BroadCast extends Opr {
-	int c;
+int apply(fun f, int x) {
+	return f(x);
 }
 
-struct Plus extends Opr {
-	Opr left;
-	Opr right;
+int foo() {
+	fun f = (y) -> y - 5;
+	int a = apply(f, 6);
+	
+	return a;
 }
 
-struct Dot extends Opr {
-	Opr left;
-	Opr right;
+int moo() {
+	fun f = (x) -> x + 5;
+	int a = apply(f, 10);
+	
+	return a;
 }
 
-generator int eval(Opr op) {
-	switch(op) {
-	case BroadCast:
-		return op.c;
-	case Dot:
-		return eval(op.left) * eval(op.right);
-	case Plus:
-		return eval(op.left) + eval(op.right);
-	}
-}
-
-int f(int x, int y) {
-	return x + y ;
-}
-
-int g(int x, int y) implements f {
-	Opr X = new BroadCast(c = x);
-	Opr Y = new BroadCast(c = y);
-	Opr a = new Plus(left = X, right = Y);
-	return eval(a);
+harness void main(){		
+    int a = foo();
+    int b = moo();
+                  
+    assert a + b == 16;
 }

@@ -17,12 +17,16 @@
 package sketch.compiler.passes.lowering;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -41,6 +45,7 @@ import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
 import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.passes.lowering.SymbolTableVisitor.TypeRenamer;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
@@ -266,6 +271,20 @@ public class GetExprType extends FENullVisitor
     	}
     }
 
+    /**
+	 * Returns the type of the local variable expression based on the context.
+	 */
+	public Object visitExprLocalVariables(ExprLocalVariables exprLocalVariables) {
+		// If the expression already has a type
+		if (exprLocalVariables.getType() != null) {
+			// Return that type
+			return exprLocalVariables.getType();
+		} else {
+			// Else return a bottom type
+			return TypePrimitive.bottomtype;
+		}
+	}
+
     public Object visitExprNullPtr(ExprNullPtr exp){
     	return nullType;
     }
@@ -298,15 +317,23 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
-        // Make it more robust
+		final ExprTupleAccess fexp = exp;
+
         Type base = (Type) exp.getBase().accept(this);
 
         if (!(base instanceof TypeStructRef))
             return null;
-        StructDef ts = nres.getStruct(((TypeStructRef) base).getName());
+		final StructDef ts = nres.getStruct(((TypeStructRef) base).getName());
         assert ts != null : "Missing struct information" + base;
         int index = exp.getIndex();
-        return ts.getType(ts.getOrderedFields().get(index));
+		FEReplacer repVars = new FEReplacer() {
+			public Object visitExprVar(ExprVar ev) {
+				int idx = ts.getOrderedFields().indexOf(ev.getName());
+				return new ExprTupleAccess(fexp, fexp.getBase(), idx);
+			}
+		};
+		Type tt = ts.getType(ts.getOrderedFields().get(index));
+		return (Type) tt.accept(repVars);
     }
 
     public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
@@ -354,6 +381,7 @@ public class GetExprType extends FENullVisitor
         }
     }
 
+
     public Object visitExprFunCall(ExprFunCall exp)
     {
     	// Has SymbolTable given us a function declaration?
@@ -372,10 +400,22 @@ public class GetExprType extends FENullVisitor
                 retType = tr.rename(retType);
             }
 
-            if (fn.getReturnType() instanceof TypeStructRef) {
+            if (retType instanceof TypeStructRef) {
                 TypeStructRef tsr = (TypeStructRef) retType;
                 return tsr.addDefaultPkg(fn.getPkg(), nres);
             }
+
+            if (retType instanceof TypeArray) {
+                Map<String, Expression> mm = new HashMap<String, Expression>();
+                Iterator<Parameter> ip = fn.getParams().iterator();
+                for (Expression p : exp.getParams()) {
+                    Parameter formal = ip.next();
+                    mm.put(formal.getName(), p);
+                }
+                VarReplacer vr = new VarReplacer(mm);
+                return retType.accept(vr);
+            }
+
             return retType;
     	} catch (UnrecognizedVariableException e) {
     		// ignore
@@ -484,6 +524,9 @@ public class GetExprType extends FENullVisitor
 	private Type binopType (int op, Expression left, Expression right) {
 		Type tl = (Type) left.accept(this);
     	Type tr = (Type) right.accept(this);
+        if (tl == null || tr == null) {
+            return null;
+        }
         switch(op){
         case ExprBinary.BINOP_RSHIFT:
         case ExprBinary.BINOP_LSHIFT:

@@ -1,14 +1,17 @@
-adt NODE {
-    Op {NODE left; NODE right;}
-    Arr {int sz; int[sz] arr; int dflt;}
-    Arr1 {int sz; int[sz] arr; int dflt;}
+// Local variable construct use to find variables of type int
+// as index of arrays
+
+bit reverseSketch(bit[4] in) implements reverse {	
+	bit t=0;
+	int i=0;
+	int j = 0;
+	repeat(??){
+		t = in[$(int)];
+		i = $(int)+??;
+	}
+	return t;
 }
 
-
-
-harness void main(){
-    int[2] ax = {1,2};
-    NODE e1 = new Arr(sz=2,arr=ax,dflt=0);
-    NODE e = ??({});
-    assert(e1 === e);
+bit reverse (bit[4] in) {
+	return in[2];
 }

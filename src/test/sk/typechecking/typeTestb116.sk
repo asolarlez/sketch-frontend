@@ -1,0 +1,16 @@
+adt F{
+    A{ int x; }
+    B{ int y; }
+}
+
+
+
+void test([int n], ref F[n][3] x){
+    x[0] = new A(x=5);
+}
+
+harness void main(int x){
+    B[3] b;
+    test(b); // TypeError ref parameters must be univariant.    
+    
+}

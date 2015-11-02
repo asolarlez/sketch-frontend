@@ -1,0 +1,22 @@
+// Using lambdas with local variables 
+//inside of local functions
+
+int apply(fun f) {
+	return f();
+}
+
+harness void localVariable(int x, bit y) 
+{
+  int a = 2;
+  int b = 3;
+  int c = 4;
+  
+  int foo() {
+  	fun f = () -> $(int);
+  	return f();
+  }
+  
+  int t = apply(foo)*??;
+  
+  assert t == x + x;
+}

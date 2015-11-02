@@ -1,7 +1,7 @@
 \section{Core language}
 The core sketch language is a simple imperative language that borrows most of its syntax from Java and C. 
 
-\subsection{Primitive Types}
+\subsection{Primitive Types}\seclabel{primitives}
 The sketch language contains five primitive types, \C{bit}, \C{int}, \C{char}, \C{double} and \C{float}. There is a subtyping relation between three of them:
 \C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever a character or integer is required. 
 \C{float} and \C{double} are completely interchangeable, but there is no subtyping relationship between them and the other types, so for example, you cannot use $1$ in place of $1.0$, or $0$ in place of $0.0$. 
@@ -790,6 +790,87 @@ int mooTop(int i){
 \end{lstlisting}
 
 
+\subsection{Lambda Functions}
+
+Lambda functions are functions without a name. They are also known as \textit{anonymous functions}. They allow the creation of a function without specifying a name and return type. The syntax to define a lambda is \C{(vars) -> expression}. Lambdas are used as actual parameters of high-order functions or initializers to variables of type \C{fun}.
+
+\begin{Example}
+Passing a lambda to a high order function.
+\begin{lstlisting}
+int apply(fun f, int x) {
+    return f(x, 5);
+}
+
+harness void main() {  
+    int result = apply((x, y) -> x + y, 7);
+         
+    assert result == 12; 
+}
+\end{lstlisting}
+
+\end{Example}
+
+\begin{Example}
+Defining a variable of type \C{fun}.
+\begin{lstlisting}
+harness void main() {     
+    int t = 3;
+    fun foo = (x) -> t * x;
+            
+    assert foo(2) == 6; 
+}
+\end{lstlisting}
+
+\end{Example}
+
+Lambda functions must be defined and used in the local scope or in local functions. The body of the lambda function can be any valid expression in the language. The formal parameters of the lambda function cannot be used as l-values.
+
+Lambda functions cannot be defined inside \C{struct} nor can they be returned from a function. These are the same restrictions on the usage of local function (see \secref{closures}). Variables of type \C{fun} are final and cannot be modified once they are initialized.
+
+\begin{Example}
+Using two local variable constructs of different types inside a local function.
+\begin{lstlisting}
+harness void main() {  
+    bit t = 1;    
+    int a = 2;
+    int b = 3;
+    
+    int foo() {
+        fun g = () -> $\$$(bit) ? 5 : $\$$(int);
+        return g();
+    }
+
+    assert foo() == 3;
+}
+\end{lstlisting}
+
+\end{Example}
+
+
+\begin{Example}
+Using a local variable construct inside a local function that is passed to a high-order function.
+\begin{lstlisting}
+int apply(fun f) {
+    return f();
+}
+
+harness void main(int x) {
+  int a = 1;
+  int b = 2;
+  
+  int foo() {
+      fun f = () -> $\$$(int);
+      return f();
+  }
+  
+  int t = apply(foo) $\cdot$ ??;
+  
+  assert t == x + x;
+}
+\end{lstlisting}
+
+\end{Example}
+
 
 \subsection{Uninterpreted Functions}
 \Sk{} also supports uninterpreted functions, which can be defined with the following syntax.
@@ -968,3 +1049,23 @@ The \C{@Native} annotation allows the programmer to use simple models in place o
 
 More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure. 
 
+\subsection{Casting of Expressions}
+Sketch provides casting of expressions in high-order function calls. These expressions are cast as lambda functions. The expressions that can be automatically cast are the ones that do not use formal parameters inside the function. This means that the actual parameters passed to the cast function are ignored when the body of the lambda gets executed.
+
+This feature is very useful in High-Order Generators (see \secref{high-ordergenerators}).
+\begin{lstlisting}
+generator int rec(fun choices){ 
+    if(??){ 
+        return choices();
+    }else{
+        return {| rec(choices) (+ | - | *) rec(choices)  |};
+    }
+}
+\end{lstlisting}
+
+If the users wants to pass some variables to the high-order generator, they can use the Local Variable construct (see \secref{localvariablesconstruct}). This expression will be cast as a lambda expression before being passed to the high-order generator.
+\begin{lstlisting}
+harness void sketch( int x, int y, int z ){
+   assert rec($\$(int)$) == (x + x) * (y - z);
+}
+\end{lstlisting}

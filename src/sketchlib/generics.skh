@@ -1,0 +1,34 @@
+
+
+T[n] map<T>([int n], T[n] in, fun f){
+	T[n] out;
+	for(int i=0; i<n; ++i){
+		out[i] = f(in[i]);
+	}
+} 
+
+int len<T>([int n], T[n] ar){
+	return n;h
+} 
+
+void foreach<T>([int n], ref T[n] in, fun f){
+	for(int i=0; i<n; ++i){
+		f(in[i]);
+	}
+}
+
+void forall(int a, int b, fun f){
+	for(int i=a; i<b; ++i){
+		f(i);
+	}
+}
+
+harness
+void main(){
+	int N=10, M=10;
+	int[N,M] x;
+	int total = 0;
+	void inc(int v){ total += v; }
+	// foreach(x, (row)-> foreach(row, (v)->inc(v)  )  );
+	forall(0,N, (i)->forall(0,M, (j)->inc(x[i,j]) ) ); 
+}

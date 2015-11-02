@@ -44,26 +44,43 @@ public class PreprocessStage extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
+
+		// prog.debugDump("************************************** Inside visit program inner");
+
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
+
         prog = (Program) prog.accept(new SeparateInitializers());
+
+		// prog.debugDump("************************************** Before BlockifyRewriteableStmts");
         prog = (Program) prog.accept(new BlockifyRewriteableStmts());
+
+		// prog.debugDump("************************************** After BlockifyRewriteableStmts");
         prog = (Program) prog.accept(new ReplaceMinLoops(varGen));
 
-        // prog.debugDump("After Replace Min Loops");
+		// prog.debugDump("After Replace Min Loops");
 
         // FIXME xzl: temporarily disable ExtractComplexLoopCondition to help stencil
-        prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
+		// prog = (Program) prog.accept(new
+		// ExtractComplexLoopConditions(varGen));
         // prog.debugDump("before regens");
-        // prog = (Program) prog.accept(new EliminateRegens(varGen));
+
+
+		// prog.debugDump("************************************** After extract
+		// complex loop");
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
 
+		// prog.debugDump("************************************** 1");
 
         prog.accept(new CheckProperFinality());
 
+		// prog.debugDump("************************************** 2");
+
         prog = (Program) prog.accept(new MainMethodCreateNospec());
+
+		// prog.debugDump("************************************** 3");
 
         // prog = preproc1.run(prog);
 
@@ -73,28 +90,42 @@ public class PreprocessStage extends MetaStage {
         prog =
                 (Program) prog.accept(new EliminateReorderBlocks(varGen,
                         useInsertEncoding));
+
+		// prog.debugDump("************************************** 4");
+
         prog = (Program) prog.accept(new EliminateInsertBlocks(varGen));
+
+		// prog.debugDump("************************************** 5");
+
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
-
-
+        
         // prog.debugDump("After remove expr get");
 
         // Remove ExprGet will generate regens and adt holes
         prog = (Program) prog.accept(new EliminateRegens(varGen));
-        // prog.debugDump();
+		// prog.debugDump("************************************** 7");
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
         // prog.debugDump();
 
+		// prog.debugDump("************************************** 8");
 
-        prog = (Program) prog.accept(new GlobalsToParams(varGen));
+
+		prog = (Program) prog.accept(new GlobalsToParams(varGen));
+
+		// prog.debugDump("************************************** 9");
 
         prog = (Program) prog.accept(new TypeInferenceForADTHoles());
         // prog = ir1.run(prog);
-        // prog.debugDump("before type inference");
+//        prog.debugDump("************************************** Before type inference");
+		// prog.debugDump("before type inference");
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
-        // prog.debugDump("af");
+//		prog.debugDump("************************************** Before Local Variable replacer");
+//		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
+//		prog.debugDump("************************************** After Local Variable replacer");
+        
+        //prog.debugDump("af");
         
 
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {

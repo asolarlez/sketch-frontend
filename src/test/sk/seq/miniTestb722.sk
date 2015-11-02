@@ -1,10 +1,17 @@
-pragma options "--debug-show-dag";
+// Local variableconstruct to finding variables of type int
 
-
-harness void main(){
-    int x = ??(6);
-    int y = ??(6);
-    int t = {| x + y | x * y |};
-    assert t == 60;
-    assert y == 2*x;
+harness void main(int x, int y) 
+{
+  bit a = 0;
+  int b = 1;
+  int c = 2;
+  int d = 3;
+       
+  int t = $(int)*?? + $(int);
+  
+  int e = 4;
+  
+  int w = $(int);
+  
+  assert (t == x + x + 1);
 }

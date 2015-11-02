@@ -1,0 +1,12 @@
+pragma options "--debug-show-dag";
+
+harness void main(int n){
+        if(n==2){
+                int [n] v=0;
+                int i=0;
+                repeat(n){
+                        assert(v[i]==0);
+                        i=i+1;
+                }
+        }
+}

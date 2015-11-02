@@ -1,0 +1,11 @@
+// Casting an expression to a function that passes a local variable
+
+int apply(fun f) {
+	return f();
+}
+
+harness void main() {
+	int joe = 3;
+	
+	assert apply(joe) == 3;
+}

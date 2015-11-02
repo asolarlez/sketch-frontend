@@ -1,35 +1,19 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 1";
+// Testing a function (moo) that takes two functions. This function calls one by taking
+// the other as parameter.  Using a defined function and lambda as the functions
+// for the high order function (moo).
 
-// test PartialEvaluator: correctly handle StmtSwitch with only one case
-
-struct Opr {}
-struct A extends Opr {}
-
-generator void bad(Opr op) {
-	switch(op) {
-	case A:
-		assert 0 : "#BADBAD#";
-	}
+int foo(fun f) {
+	return f(4);
 }
 
-harness void f() {
-	Opr a = new A();
+int moo(fun f, fun g) {
+	return g(f);
+}
+
+harness void main(){
+	int a = 4;
 	
-	if (??) {
-		bad(a);
-	}
+	fun f = (x) -> a + x;
 	
-	int x = 0;
-	switch(a) {
-	case A:
-		x = 1;
-	}
-	
-	int y = 0;
-	switch(a) {
-	default:
-		y = 2;
-	}
-	
-	assert x == 1 && y == 2;
+	assert moo(f, foo) == 8;
 }

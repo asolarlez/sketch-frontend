@@ -1,0 +1,9 @@
+// Using only local variables in a lambda
+
+harness void main() {
+	int t = 3;
+	
+	fun f = () -> t + t;
+	
+	assert f() == 6;
+}

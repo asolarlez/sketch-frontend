@@ -1,24 +1,16 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 2";
+// Passing a local function that uses a lambda
 
-// simple test for ADT, StmtSwitch, and recursive generator inlining
-
-struct Opr {}
-struct A extends Opr {}
-struct B extends Opr {}
-struct C extends Opr {}
-
-generator int eval(Opr op) {
-	switch(op) {
-	case A:
-		return 0;
-	case B:
-		return eval(new A()) + 1;
-	case C:
-		return eval(new A()) + 2;
-	}
+int apply(fun f, int x) {
+	return f(x);
 }
 
-harness void f() {
-	int x = eval(new C());
-	assert x == 2;
+harness void main() {
+	fun f = (x) -> x + 1;
+	
+	int g(int i) {
+		int temp = f(1) + i;
+		return temp;
+	}
+		
+	assert apply(g, 1) == 3;
 }

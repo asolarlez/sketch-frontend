@@ -1,5 +1,15 @@
-int t = {| 5 | 4 | 3 |};
+// Lambda expression is identified and created
 
-harness void main(int[t] v, int x){
-    assert x+x == x*??;
+int apply(fun function, int x){
+	int y = 9;
+	fun a = (y) -> y + 1;
+    return function(x);
+}
+
+int timesTwo(int x){
+    return x+x;
+}
+
+harness void main(int x){
+    assert apply(timesTwo, x) == 2*x;
 }

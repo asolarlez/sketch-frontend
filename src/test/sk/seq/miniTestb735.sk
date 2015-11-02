@@ -1,45 +1,11 @@
-pragma options "--bnd-inbits 1 --bnd-arr-size 1 --bnd-unroll-amnt 1 --bnd-inline-amnt 2";
+// Passing a local lambda to a function
 
-package la;
-
-struct Opr {}
-
-struct BroadCast extends Opr {
-	int c;
-}
-generator BroadCast broadcast(int c) {
-	return new BroadCast(c = c);
+int apply(fun f, int x) {
+	return f(x);
 }
 
-struct Plus extends Opr {
-	Opr left;
-	Opr right;
-}
-generator Plus plus(Opr left, Opr right) {
-	return new Plus(left = left, right = right);
-}
-
-
-generator int eval(Opr op, int i) {
-	switch(op) {
-	case BroadCast:
-		return op.c;
-	case Plus:
-		return eval(op.left, i) + eval(op.right, i);
-	}
-}
-
-int[1] f(int alpha, int beta) {
-	int[1] r;
-	r[0] = alpha + beta;
-	return r;
-}
-
-int[1] g(int alpha, int beta) implements f {
-	int[1] r;
-	Opr o = plus(broadcast(alpha), broadcast(beta));
-	for (int i = 0; i < 1; ++i) {
-		r[i] = eval(o, i);
-	}
-	return r;
+harness void main(){		
+    fun f = (y) -> y + 5;
+                  
+    assert apply(f, 5) == 10;
 }

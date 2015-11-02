@@ -83,9 +83,9 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             Expression left = (Expression) expr.getLeft().doExpr(this);
             Expression right = (Expression) expr.getRight().doExpr(this);
 
-            TypeStructRef lt = (TypeStructRef) getType(left);
-            TypeStructRef rt = (TypeStructRef) getType(right);
-            TypeStructRef parent;
+			Type lt = getType(left);
+			Type rt = (TypeStructRef) getType(right);
+			Type parent;
             if (lt.promotesTo(rt, nres)) parent = rt;
             else if (rt.promotesTo(lt, nres))
                 parent = lt;

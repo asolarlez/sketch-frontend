@@ -1,45 +1,21 @@
-pragma options "--bnd-inbits 2 --bnd-arr-size 4 --bnd-unroll-amnt 8 --bnd-inline-amnt 3";
+// Calling a local function from a lambda to mimic statement
 
-// test for ADT, StmtSwitch, and generator inlining, without recursive generator
-
-#define DataType int
-#define len 1
-
-struct Opr {}
-
-struct BroadCast extends Opr {
-	DataType c;
-}
-generator BroadCast broadcast(DataType c) {
-	return new BroadCast(c = c);
+void apply(fun f) {
+	f();
 }
 
-generator DataType eval(Opr op, int i) {
-	switch(op) {
-	case BroadCast:
-		return op.c;
-	default:
-		return 0;
+harness void main(){
+	int t;
+	int one = 1;
+		
+	void increment(ref int x) {
+		x = x + one;
+		x--;
 	}
-	}
-
-generator void assign(ref DataType[len] lhs, Opr rhs) {
-	for (int i = 0; i < len; ++i) {
-		lhs[i] = eval(rhs, i);
-	}
-}
-
-DataType[len] f(DataType alpha) {
-	DataType[len] r;
-	for (int i = 0; i < len; ++i) {
-		r[i] = alpha;
-	}
-	return r;
-}
-
-DataType[len] g(DataType alpha) implements f {
-	DataType[len] r;
-	Opr op = broadcast(alpha);
-	assign(r, op);
-	return r;
+	
+	t = 7;
+	
+	apply(() -> increment(t));
+	
+	assert t == 7;	
 }

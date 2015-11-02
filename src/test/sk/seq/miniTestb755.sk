@@ -1,0 +1,14 @@
+// Using lambdas with local variables
+
+harness void localVariable(int x, bit y) 
+{
+  int a = 2;
+  int b = 3;
+  int c = 4;
+  
+  fun foo = () -> $(int);
+          
+  int t = foo()*??;
+  
+  assert t == x + x;
+}

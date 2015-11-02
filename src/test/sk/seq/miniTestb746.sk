@@ -1,26 +1,12 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 1";
+// Using a local function in the expression of a lambda function
 
-// test PartialEvaluator: correctly handle StmtSwitch with only one case, and the case class has inner part
+harness void main(){
 
-struct Opr {}
-struct A extends Opr {
-	int c;
-}
-
-harness void f() {
-	Opr op = new A(c=1);
-	
-	int x = 0;
-	switch(op) {
-	case A:
-		x = op.c;
+	int foo(int x) {
+		return x + 1;
 	}
 	
-	int y = 0;
-	switch(op) {
-	default:
-		y = 2;
-	}
+	fun f = (y) -> foo(y) + 1;
 	
-	assert x == 1 && y == 2;
+	assert f(3) == 5;
 }

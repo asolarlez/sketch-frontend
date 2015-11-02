@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.ast.core;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,6 +23,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
@@ -41,7 +44,7 @@ import sketch.util.exceptions.UnrecognizedVariableException;
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class SymbolTable
+public class SymbolTable implements Cloneable
 {
 
     public enum Finality {
@@ -70,7 +73,7 @@ public class SymbolTable
 
     private boolean makeShared = false;
 
-    private static class VarInfo
+    public static class VarInfo
     {
         public VarInfo(Type type, Object origin, int kind)
         {
@@ -163,7 +166,7 @@ public class SymbolTable
     /** Helper method to get the VarInfo for a name.  If the symbol is
      * not in the current symbol table, search in the parent.  If the
      * parent is null, return null. */
-    private VarInfo lookupVarInfo(String name)
+    public VarInfo lookupVarInfo(String name)
     {
         VarInfo info = (VarInfo)vars.get(name);
         if (info != null)
@@ -361,5 +364,128 @@ public class SymbolTable
     public SymbolTable getParent()
     {
         return parent;
+    }
+
+	/**
+	 * Perform a deep clone of the current symbol table.
+	 */
+	public Object clone() {
+		SymbolTable table = new SymbolTable(null);
+
+		table.fns = new HashMap<String, Function>();
+		for (Entry<String, Function> entry : this.fns.entrySet()) {
+			table.fns.put(entry.getKey(), entry.getValue());
+		}
+
+		table.vars = new HashMap<String, SymbolTable.VarInfo>();
+		for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
+			table.vars.put(entry.getKey(), entry.getValue());
+		}
+
+		table.includedFns = this.includedFns;
+		table.makeShared = this.makeShared;
+
+		if (this.parent != null) {
+			table.parent = (SymbolTable) this.parent.clone();
+		} else {
+			table.parent = null;
+		}
+
+		return table;
+	}
+
+    /**
+	 * Return the variables from the symbol table as Expression based on the 
+	 * type of the provided expression. Be careful with this since this will include the 
+	 * variable where the special symbol is found. Also be careful since 
+	 * it might return the variables from the parent.
+	 * 
+	 * @return
+	 */
+	public ArrayList<Expression> getLocalVariablesOfType(Type type) {
+		ArrayList<Expression> localVariables = new ArrayList<Expression>();
+
+//		Map<String, VarInfo> variables = new HashMap<String, SymbolTable.VarInfo>();
+		Map<String, VarInfo> variables = this.vars;
+
+		
+		// SymbolTable table = exp.getSymbolTableInContext();
+		
+		// Get the symbol table parent
+		SymbolTable parent = this.getParent();
+
+		// if(table == null) {
+		// variables = this.vars;
+		// }
+		// else {
+		// variables = table.vars;
+		// parent = table.parent;
+		// }
+	
+        // Loop through the variables
+		for (Entry<String, VarInfo> entry : variables.entrySet()) {
+            // Get the information of the variable
+            VarInfo varInformation = entry.getValue();
+
+			// If the current variable has the same type that we want
+			if (type.equals(varInformation.type)) {
+				// Get the statement from the information
+				StmtVarDecl statement = (StmtVarDecl) varInformation.origin;
+				
+				// Add the variable name to the list
+				localVariables.add(new ExprVar(statement.getCx(), statement.getName(0)));
+			}
+
+        }
+
+		// Loop through the parent symbol table while it is not null
+        while(parent != null) {
+        	// Loop through the formal parameters
+			for (Entry<String, VarInfo> parameter : parent.vars.entrySet()) {
+        		// Get the information of the variable
+        		VarInfo varInformation = parameter.getValue();
+        		
+        		// If the current variable has the same type that we want
+				if (type.equals(varInformation.type)) {
+        			
+        			// If the variable is of type Parameter
+        			if(varInformation.origin.getClass().equals(Parameter.class)) {
+        				// Get the parameter from the information
+						Parameter variable = (Parameter) varInformation.origin;
+						
+						// Add the variable name to the list
+	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName()));
+					}
+	        		else if(varInformation.origin.getClass().equals(StmtVarDecl.class)) {
+	        			// Get the statement from the information
+	        			StmtVarDecl variable = (StmtVarDecl) varInformation.origin;
+	        			
+	        			// Add the variable name to the list
+	        			localVariables.add(new ExprVar(variable.getCx(), variable.getName(0)));
+	        		}
+	        		else {
+	        			throw new ClassCastException("Could not cast a variable in a parent symbol table");
+	        		}
+        			
+        		}
+        		
+        	}
+        	
+        	// Get the new parent
+			parent = parent.getParent();
+        	
+        }
+
+		
+//		// If the type is an int, we want to also consider 0
+//		if (exp.getType().equals(TypePrimitive.int32type)) {
+//			// Create a new 0 constant expression
+//			ExprConstInt zero = (ExprConstInt) ExprConstant.createConstant(new DummyFENode(exp.getCx()), "0");
+//
+//			// Added to the possible variables
+//			localVariables.add(zero);
+//		}
+
+        return localVariables;
     }
 }

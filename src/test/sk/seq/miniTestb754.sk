@@ -1,14 +1,12 @@
-adt tt {
-	foo {tt a; tt b;}
-	bar {tt v; tt a; tt b;}
-	num {int x;}	
-}
+// Finding variables of type int
 
-harness void main() {
-	tt a = ??;
-	bar b = (bar) a;
-	num n1 = (num) b.v;
-	num n2 = (num) b.a;
-	assert(n1.x == 2);
-	assert(n2.x == 3);	
+harness void localVariable(int x, int y) 
+{
+  int a = 2;
+  int b = 3;
+  int c = 4;
+         
+  int t = $(int)*??;
+  
+  assert (t == x + x);
 }

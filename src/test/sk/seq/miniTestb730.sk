@@ -1,0 +1,13 @@
+// Lambda expression can have call to lambda function
+// in its body
+
+harness void main(){	
+	fun f0 = () -> 2;
+    fun f1 = (y) -> y + f0() + 1;
+    fun f2 = (z) -> 1 + f1(z);
+    fun f3 = (x, y) -> f2(x) + 1 + y;
+    
+    int temp = f3(2, 3);
+    
+    assert temp == 10;
+}

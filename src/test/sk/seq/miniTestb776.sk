@@ -1,0 +1,5 @@
+int t = {| 5 | 4 | 3 |};
+
+harness void main(int[t] v, int x){
+    assert x+x == x*??;
+}

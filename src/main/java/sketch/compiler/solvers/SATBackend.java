@@ -175,6 +175,7 @@ public class SATBackend {
         boolean worked = false;
         if (options.debugOpts.fakeSolver) {
             worked = true;
+            options.setSolFileIdx("");
         } else {
             options.cleanTemp();
             writeProgramToBackendFormat(preprocess(prog));
@@ -212,9 +213,17 @@ public class SATBackend {
             }
             return worked;
         }
+
+        if (solutions.length > 1) {
+            assertFalse(
+                    "Multiple solution files (" + solutions.length + "). This should never happen!",
+                    options.sktmpdir());
+        }
         extractOracleFromOutput(solutions[0].getPath());
         if (!(options.feOpts.keepTmp || options.debugOpts.fakeSolver)) {
             options.cleanTemp();
+        } else if (options.feOpts.keepTmp) {
+            options.partialCleanTemp();
         }
         return worked;
     }
@@ -448,8 +457,11 @@ public class SATBackend {
         SATSolutionStatistics be_stat = parseStats(status.out);
         be_stat.killedByTimeout = false;
         be_stat.elapsedTimeMs = status.execTimeMs;
-        be_stat.success = (0 == status.exitCode) && !status.killedByTimeout;
-        be_stat.decided = (2 != status.exitCode);
+
+        // exit codes 0, 1, and 2 stand for FOUND, UNSAT, and UNDETERMINED, respectively.
+        be_stat.success = !status.killedByTimeout && (0 == status.exitCode);
+        be_stat.unsat = !status.killedByTimeout && (1 == status.exitCode);
+
         lastSolveStats = be_stat;
         if (!options.solverOpts.parallel) {
             log(2, "Stats for last run:\n" + lastSolveStats);

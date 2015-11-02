@@ -1,0 +1,13 @@
+adt NODE {
+    Op {NODE left; NODE right;}
+    Arr {int sz; int[sz] arr; int dflt;}
+}
+
+
+
+harness void main(){
+    int[2] ax = {1,2};
+    NODE e1 = new Arr(sz=2,arr=ax,dflt=0);
+    NODE e = ??({});
+    assert(e1 === e);
+}

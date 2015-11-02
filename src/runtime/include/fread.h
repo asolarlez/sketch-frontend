@@ -7,7 +7,7 @@ namespace fileIO{
 
 inline str::Str* _fread(FILE* cfile){  //takes a file user declares, such as above
 	
-	str::Str *s = str::Str::create(10, NULL, 0);
+	str::Str *s = str::Str::create(10, (char*) NULL, 0);
 	fgets(s->buf,s->n,cfile);
 	
 	if (!(s->buf[0])){

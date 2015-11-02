@@ -1,0 +1,17 @@
+struct foo{
+ int x;
+}
+
+struct moo{
+  foo[5] t;
+  
+}
+
+T getFirst<T>([int n], T[n] x){ return x[0]; }
+
+harness void main(int x){
+  |moo| m;
+  m.t[0] = new foo();
+  m.t[0].x = 7;  
+  assert getFirst(m.t).x == 7;
+}

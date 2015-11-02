@@ -319,11 +319,11 @@ pragma_stmt { String args = ""; }
 field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 	List ts = new ArrayList(); List ns = new ArrayList();
 	List xs = new ArrayList(); FEContext ctx = null; }
-	:	t=data_type id:ID (ASSIGN x=var_initializer)?
+	:	t=data_type id:ID (ASSIGN x=expr_or_lambda)?
 		{ ctx = getContext(id); ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
 			{ x = null; }
-			COMMA id2:ID (ASSIGN x=var_initializer)?
+			COMMA id2:ID (ASSIGN x=expr_or_lambda)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
 		{ f = new FieldDecl(ctx, ts, ns, xs); }
@@ -458,20 +458,22 @@ variable_decl returns [Statement s] { s = null; Type t; Expression x = null;
 	List xs = new ArrayList(); }
 	:	t=data_type
 		id:ID
-		(ASSIGN x=var_initializer)?
+		(ASSIGN x=expr_or_lambda)?
 		{ ts.add(t); ns.add(id.getText()); xs.add(x); }
 		(
 			{ x = null; }
-			COMMA id2:ID (ASSIGN x=var_initializer)?
+			COMMA id2:ID (ASSIGN x=expr_or_lambda)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
 		{ s = new StmtVarDecl(getContext (id), ts, ns, xs); }
 	;
 
-// implicit_type_variable_decl returns [Statement s] { s = null; Expression init = null; }
-//     : id:ID DEF_ASSIGN init=type_or_var_initializer
-//     { s = new StmtImplicitVarDecl(getContext(id), id.getText(), init); }
-// ;
+
+expr_or_lambda returns [Expression e] { e = null; }
+:
+   (LPAREN (RPAREN | ID (RPAREN ARROW | COMMA)   )  ) => e = lambda_expr
+   | e=right_expr
+;
 
 annotation returns [Annotation an]{
 	an = null;
@@ -768,7 +770,7 @@ expr_statement returns [Statement s] { s = null; Expression x; }
 	//|	(ID (AT ID)? LPAREN) => x=func_call { s = new StmtExpr(x); }
 	;
 
-assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
+assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; String fname = null;}
 	:	l=prefix_expr
 		( (
 			(	ASSIGN { o = 0; }
@@ -776,9 +778,15 @@ assign_expr returns [Statement s] { s = null; Expression l, r; int o = 0; }
 			|	MINUS_EQUALS { o = ExprBinary.BINOP_SUB; }
 			|	STAR_EQUALS { o = ExprBinary.BINOP_MUL; }
 			|	DIV_EQUALS { o = ExprBinary.BINOP_DIV; }
+			|   DOTASSIGN { fname = "op.="; }
 			)
-			r=right_expr
-			{ s = new StmtAssign(l, r, o); s.resetOrigin(); }
+			r=expr_or_lambda
+			{ if(fname == null){ 
+				s = new StmtAssign(l, r, o); s.resetOrigin();
+			  }else{
+			  	s = new StmtExpr(new ExprFunCall(l.getCx(), fname, l, r));
+			  }	
+			}
 		  )
 			| 
 		{ s = new StmtExpr(l);  }	
@@ -811,6 +819,44 @@ func_call_params returns [List l] { l = new ArrayList(); Expression x; }
 		)?
 		RPAREN
 	;
+
+// (,x, y) -> x + y; 	
+lambda_expr returns [Expression expression]  {
+	expression = null;
+	List list = new ArrayList();
+	Expression operation = null;
+}
+	: // Left parenthesis 
+	  prefix:LPAREN 
+  	  
+  	  // A group that occurs 0 or 1 times
+  	  (
+	  	  temp1:ID { 
+		  		// Create a new ExprVar and add it to the list of variables
+		  		list.add(new ExprVar(getContext(temp1), temp1.getText())); 
+		  	}
+	  	  // Group that occurs 0 or more times
+	  	  (
+	  	    COMMA
+		  	// Match an ID and set temp to it
+		  	temp2:ID { 
+		  		// Create a new ExprVar and add it to the list of variables
+		  		list.add(new ExprVar(getContext(temp2), temp2.getText())); 
+		  	}
+	  	  )*
+  	  )?
+		 
+	  // Right parenthesis
+	  RPAREN
+	  // ->
+	  ARROW
+	  // Operation is any expression
+	  operation = right_expr
+	  {
+	  	// Create a new expression
+	  	expression = new ExprLambda(getContext(prefix), list, operation);
+	  }
+	;
 	
 constr_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	LPAREN
@@ -822,7 +868,7 @@ constr_params returns [List l] { l = new ArrayList(); Expression x; }
 
 expr_named_param returns [ Expression x ] { x = null; Token t = null; }
     :   (id:ID ASSIGN)? { t = id; }
-        x=right_expr
+        x= expr_or_lambda
         {
             if (t != null) {
                 x = new ExprNamedParam(getContext(t), t.getText(), x);
@@ -868,26 +914,15 @@ agmax_expr returns [Expression x] { x = null; Expression exprMax = null; }
 	;
 */
 
-var_initializer returns [Expression x] { x = null; }
-: (arr_initializer) => x=arr_initializer
-| 	x=right_expr
-	;
 
-type_or_var_initializer returns [Expression x] { x = null; }
-: (arr_initializer) => x=arr_initializer
-| 	x=right_expr
-	;
 
-// type_or_var_initializer returns [Expression x] { x = null; }
-// : (var_initializer) => x=var_initializer
-//  | x=TypeExpression;
 
 arr_initializer returns [Expression x] { ArrayList l = new ArrayList();
                                          x = null;
                                          Expression y; }
     : lc:LCURLY
-      ( y=var_initializer { l.add(y); }
-            (COMMA y=var_initializer { l.add(y); })*
+      ( y=right_expr { l.add(y); }
+            (COMMA y=right_expr { l.add(y); })*
       )?
       RCURLY
         { x = new ExprArrayInit(getContext(lc), l); }
@@ -947,15 +982,30 @@ equalExpr returns [Expression x] { x = null; Expression r; Expression last; int 
 		)*
 	;
 
-compareExpr returns [Expression x] { x = null; Expression r; int o = 0; }
+compareExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname=null;}
 	:	x=shiftExpr
 		(	( LESS_THAN  { o = ExprBinary.BINOP_LT; }
 			| LESS_EQUAL { o = ExprBinary.BINOP_LE; }
 			| MORE_THAN  { o = ExprBinary.BINOP_GT; }
 			| MORE_EQUAL { o = ExprBinary.BINOP_GE; }
+			| DOTLT { fname="op.<";  o = ExprBinary.BINOP_LT; }
+			| DOTGT { fname="op.<"; o = ExprBinary.BINOP_GT; }
+			| DOTLTE { fname="op.<"; o = ExprBinary.BINOP_LE; }
+			| DOTGTE { fname="op.<"; o = ExprBinary.BINOP_GE; }
 			)
 			r = shiftExpr
-			{ x = new ExprBinary(o, x, r); }
+			{
+			   if(fname == null){
+			   x = new ExprBinary(o, x, r);
+			   }else{
+			   	switch(o){
+			   		case ExprBinary.BINOP_LT: x = new ExprFunCall(x, fname, x, r); break;
+			   		case ExprBinary.BINOP_GT: x = new ExprFunCall(x, fname, r, x); break;
+			   		case ExprBinary.BINOP_LE: x = new ExprUnary(x, ExprUnary.UNOP_NOT, new ExprFunCall(x, fname, r, x)); break;
+			   		case ExprBinary.BINOP_GE: x = new ExprUnary(x, ExprUnary.UNOP_NOT, new ExprFunCall(x, fname, x, r)); break;
+			   	}
+			   } 			
+			}
 		)*
 	;
 
@@ -969,25 +1019,30 @@ shiftExpr returns [Expression x] { x=null; Expression r; int op=0; }
         )*
     ;
 
-addExpr returns [Expression x] { x = null; Expression r; int o = 0; }
+addExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname=null; }
 	:	x=multExpr
 		(	( PLUS  { o = ExprBinary.BINOP_ADD; }
 			| MINUS { o = ExprBinary.BINOP_SUB; }
 			| SELECT { o = ExprBinary.BINOP_SELECT; }
+			| DOTPLUS { fname = "op.+"; }
+			| DOTMINUS { fname = "op.-"; }
 			)
 			r=multExpr
-			{ x = new ExprBinary(o, x, r); }
+			{ x = fname == null ? new ExprBinary(o, x, r) : new ExprFunCall(x, fname, x, r) ; }
 		)*
 	;
 
-multExpr returns [Expression x] { x = null; Expression r; int o = 0; }
+multExpr returns [Expression x] { x = null; Expression r; int o = 0; String fname = null;}
 	:	x=prefix_expr
 		(	( STAR { o = ExprBinary.BINOP_MUL; }
 			| DIV  { o = ExprBinary.BINOP_DIV; }
 			| MOD  { o = ExprBinary.BINOP_MOD; }
+			| DOTTIMES { fname = "op.*"; }
+			| DOTDIV { fname = "op./"; }
+			| DOTMOD { fname = "op./"; }
 			)
 			r=prefix_expr
-			{ x = new ExprBinary(o, x, r); }
+			{ x = fname == null ? new ExprBinary(o, x, r) : new ExprFunCall(x, fname, x, r) ; }
 		)*
 	;
 	
@@ -1046,7 +1101,7 @@ tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|   (expr_get) => x = expr_get
 	|	(func_call) => x=func_call
-	| 	(constructor_expr) => x = constructor_expr
+	| 	(constructor_expr) => x = constructor_expr	
 	|	x=var_expr
 	|	x=constantExpr
 	|   x=arr_initializer
@@ -1136,7 +1191,21 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             }
     |	t3:NDANGELIC
 			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
+    |  (local_variable) => x = local_variable
     ;
+    
+local_variable returns [Expression localVariable] {
+	localVariable = null;
+	Type type = null;
+}
+	: 	context:DOLLAR // $ 
+		LPAREN 
+		type = data_type 
+		RPAREN
+            {
+              localVariable = new ExprLocalVariables(getContext(context), type); 
+            }
+     ;
 
 adt_decl returns [List<StructDef> adtList]
 { adtList = new ArrayList<StructDef>(); List<StructDef> innerList; 

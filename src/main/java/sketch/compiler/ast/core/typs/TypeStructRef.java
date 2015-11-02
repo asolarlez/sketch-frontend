@@ -15,8 +15,13 @@
  */
 
 package sketch.compiler.ast.core.typs;
+import java.util.ArrayList;
+
+import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.exprs.ExprNamedParam;
+import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
@@ -46,6 +51,9 @@ public class TypeStructRef extends Type
             return this;
         } else {
             String nname = nres.getStructName(name, pkg);
+            if (nname == null) {
+                nname = name;
+            }
             return new TypeStructRef(nname, isUnboxed);
         }
     }
@@ -71,7 +79,7 @@ public class TypeStructRef extends Type
 
     public Expression defaultValue () {
         if (isUnboxed)
-            return null;
+            return new ExprNew((FEContext) null, this, new ArrayList<ExprNamedParam>(), false);
     	return ExprNullPtr.nullPtr;
     }
 

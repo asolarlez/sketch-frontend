@@ -1,0 +1,15 @@
+// Since bits can be promoted to chars and ints, and
+// chars can be promoted to ints, we check that all
+// those variables are considered when we ask them
+
+harness void main(){	
+    bit b = 1;
+    char c = 3;
+    int i = 15;
+    
+    bit b1 = $(bit);
+    char c1 = $(char);
+    int i1 = $(int);
+    
+	assert i1 == 15; 
+}

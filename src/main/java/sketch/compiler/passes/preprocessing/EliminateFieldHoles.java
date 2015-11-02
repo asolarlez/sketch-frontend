@@ -34,15 +34,20 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
                 if (nres.isTemplate(((TypeStructRef) t).getName()))
                     return exp;
             if (getType(exp.getLeft()).isStruct()) {
-                StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
                 List<Expression> matchedFields = new ArrayList<Expression>();
 
-                for (StructFieldEnt e : ts.getFieldEntriesInOrder()) {
+				String cur = ((TypeStructRef) getType(exp.getLeft())).getName();
+				while (cur != null) {
+					StructDef ts = nres.getStruct(cur);
+					for (StructFieldEnt e : ts.getFieldEntriesInOrder()) {
 
-                    if (e.getType().promotesTo(t, nres)) {
-                        matchedFields.add(new ExprField(exp.getLeft(), exp.getLeft(),
+						if (e.getType().promotesTo(t, nres)) {
+							matchedFields.add(new ExprField(exp.getLeft(), exp
+									.getLeft(),
                                 e.getName(), false));
-                    }
+						}
+					}
+					cur = nres.getStructParentName(cur);
                 }
                 if (matchedFields.isEmpty()) {
                     return t.defaultValue();

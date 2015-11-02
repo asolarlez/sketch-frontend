@@ -1,0 +1,14 @@
+harness void main(int x, int y){
+    int q = ??(3);
+    int t = x;
+    if(q+??==1){
+        t = t + y;
+    }
+    if(q+??>2){
+        t = t * y;
+    }
+    if(q==4){
+        t = ?? - t;
+    }
+    assert t == 2-(x*y);
+}

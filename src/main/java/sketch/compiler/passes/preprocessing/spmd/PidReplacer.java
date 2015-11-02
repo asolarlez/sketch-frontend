@@ -16,6 +16,7 @@ import sketch.compiler.passes.annotations.CompilerPassDeps;
  */
 @CompilerPassDeps(runsAfter = {}, runsBefore = {})
 public class PidReplacer extends FEReplacer {
+
     @Override
     public Object visitExprVar(ExprVar exp) {
         if (exp.getName().equals("spmdpid")) {

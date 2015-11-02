@@ -1,0 +1,12 @@
+// Asking the local variables expression to use type bit
+
+harness void localVariable(int x, int y) 
+{
+  int a = 2;
+  int b = 3;
+  int c = 4;
+  
+  int t = $(bit)*??;
+  
+  assert (t == x + x);
+}

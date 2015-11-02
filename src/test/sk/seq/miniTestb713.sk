@@ -1,19 +1,60 @@
+
+
 void foo(int x, fun baz){
     
     {
       int y = x;
       assert y == x;
       baz(y);
-    }    
+    }
 }
 
-harness void main(int y){
+    
+void fin(int x, fun baz){
+    
+    {
+      int y1 = x;
+      assert y1 == x;
+      foo(y1, baz);
+    }        
+}
+
+
+void bq(int t, fun f, fun g){
+    int y = t + zero();
+    foo(y, f);
+    fin(y, g);
+}
+
+int zero(){ return 0; }
+
+harness void main(int q){
+    
+    {
+    int y = q;
+    
     
     void boo(int t){
         assert t == y;
     }
     
+    void baz(int q){
+        void moo(){
+            assert q == y;
+        }        
+        moo();
+        assert q+zero() == y;
+    }        
     foo(y-1+1, boo);
+    fin(y-1+1, baz);
     
+    void both(int t, fun f, fun g){
+        foo(t, f);
+        fin(y, g);
+    }
     
+    both(y+zero(), boo, baz);
+    bq(y+zero(), boo, baz);
+    
+    }
 }

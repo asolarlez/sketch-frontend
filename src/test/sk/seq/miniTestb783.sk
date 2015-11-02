@@ -1,0 +1,38 @@
+
+adt Foo{
+    A{}
+    B{}
+}
+
+
+T moo<T>(fun ff, fun gg){
+    T a;
+    if(??){
+        a = ff();
+    }else{
+        a = gg();    
+    }
+    return a;
+}
+
+T too<T>(fun ff, T x, T y){    
+    return ff(x, y);
+}
+
+harness void main(){    
+    B foo(){
+        return new B();
+    }
+    A boo(){
+        return new A();
+    }
+    moo(foo, boo);
+    Foo ttt(Foo x, Foo y){
+        if(??){
+            return x;
+        }else{            
+            return y;
+        }
+    }
+    Foo u = too(ttt, new A(), new B());
+}

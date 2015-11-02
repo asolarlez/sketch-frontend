@@ -1,0 +1,11 @@
+// Testing that local variables work with statement assignments
+
+harness void main() {
+	int x;
+	int y;
+	int z;
+	
+	$(int) = 5;
+	
+	assert y == 5;
+}

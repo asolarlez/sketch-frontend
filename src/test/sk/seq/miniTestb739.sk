@@ -1,24 +1,16 @@
-pragma options "--bnd-inbits 2 --bnd-inline-amnt 1";
+// Passing a lambda function that has a call to a 
+// local function to another function
 
-// test PartialEvaluator: correctly handle ChangeTrackers for StmtSwitch with a NOP branch
+int apply(fun f, int x) {
+	return f(x);
+}
 
-struct Opr {}
-struct A extends Opr {}
-struct B extends Opr {}
-
-harness void f() {
-	Opr b = new B();
-	int x = 0;
-	switch(b) {
-	case A:
-		x = 1;
-	case B: {}
+harness void main(){
+	int a = 4;
+	
+	int foo() {
+		return a;	
 	}
-	switch(b) {
-	case B:
-		x = x + 2;
-	case A: {}
-	}
-
-	assert x == 2;
+  
+    assert apply((y) -> foo() + y, 1) == 5;
 }

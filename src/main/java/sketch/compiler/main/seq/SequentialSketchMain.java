@@ -72,6 +72,7 @@ import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
 import sketch.compiler.passes.preprocessing.*;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
+import sketch.compiler.passes.printers.DumpAST;
 import sketch.compiler.solvers.SATBackend;
 import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
@@ -489,7 +490,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 
     public Program preprocAndSemanticCheck(Program prog) {
-
         prog =
                 (Program) prog.accept(new CreateHarnesses(varGen,
                         !options.solverOpts.unoptimized, options.bndOpts.arrSize,
@@ -497,22 +497,34 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         // prog.debugDump();
 
         prog = (Program) prog.accept(new ConstantReplacer(null));
-        
+
         prog = (Program) prog.accept(new MinimizeFcnCall());
-        
+
         prog = (Program) prog.accept(new SpmdbarrierCall());
-        
+
         prog = (Program) prog.accept(new PidReplacer());
+        
+		prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
-        prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+		prog = (Program) prog.accept(new ExpressionCastingReplacer());
 
-        prog = (Program) prog.accept(new ExpandRepeatCases());
+
+		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
+
+        
+//		prog.debugDump("********************************************* Before remove lambda expression");
+		prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+
+
+		prog = (Program) prog.accept(new ExpandRepeatCases());
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
         prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 
         DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
-        prog = (Program) prog.accept(dtc);
-        // prog.debugDump("After");
+
+		// prog.debugDump("After disambiguate calls and type check");
+		prog = (Program) prog.accept(dtc);
+		// prog.debugDump("After dtc accept");
         if (!dtc.good) {
             throw new ProgramParseException("Semantic check failed");
         }
@@ -564,7 +576,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         this.log(1, "Benchmark = " + this.benchmarkName());
         Program prog = null;
         try {
-            prog = parseProgram();
+			prog = parseProgram();
+            // System.out.println(prog);
         } catch (SketchException se) {
             throw se;
         } catch (IllegalArgumentException ia) {
@@ -573,38 +586,48 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             throw new ProgramParseException("Sketch failed to parse: " + re.getMessage());
         }
         // Program withoutConstsReplaced = this.preprocAndSemanticCheck(prog, false);
-        prog = this.preprocAndSemanticCheck(prog);
+
+        if (options.debugOpts.dumpAST) {
+            prog.accept(new DumpAST());
+            return;
+        }
+
+		prog = this.preprocAndSemanticCheck(prog);
+        // System.out.println(prog);
 
         // withoutConstsReplaced =
         // prog =
         // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
 
-        SynthesisResult synthResult = this.partialEvalAndSolve(prog);
-        prog = synthResult.lowered.result;
+		SynthesisResult synthResult = this.partialEvalAndSolve(prog);
+		prog = synthResult.lowered.result;
 
-        // prog.debugDump("");
-        Program finalCleaned = synthResult.lowered.highLevelC;
+		Program finalCleaned = synthResult.lowered.highLevelC;
+		
         // (Program) (new
         // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
 
+		// finalCleaned.debugDump("After final Cleaned");
 
         // beforeUnvectorizing =
         // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
         Program substituted;
         if (synthResult.solution != null) {
             substituted =
-                (new SubstituteSolution(varGen, options, synthResult.solution)).visitProgram(finalCleaned);
+ (new SubstituteSolution(varGen, options,
+					synthResult.solution)).visitProgram(finalCleaned);
         } else {
             substituted = finalCleaned;
         }
+        
 
-        // substituted.debugDump("after substitution");
 
         Program substitutedCleaned =
-                (new CleanupFinalCode(varGen, options, visibleRControl(finalCleaned))).visitProgram(substituted);
+ (new CleanupFinalCode(varGen, options,
+				visibleRControl(finalCleaned))).visitProgram(substituted);
 
 
-        generateCode(substitutedCleaned);
+		generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");
     }
 
@@ -641,7 +664,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                     executor.shutdown();
                 }
             } else { // normal run
+            // System.out.println("Running");
                 sketchmain.run();
+                // System.out.println("End run");
             }
         } catch (SketchException e) {
             e.print();

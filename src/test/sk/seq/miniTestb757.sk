@@ -1,0 +1,14 @@
+// Passing a local variable construct to a
+// lambda expressions 
+
+harness void main(){	
+    fun f = (t) -> t + 1;
+    
+    int x = f(3);
+    int y = f(1);
+    int z = f(2);
+    
+    int w = f($(int));
+        
+    assert x + y + z + w == 12;
+}

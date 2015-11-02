@@ -2,7 +2,7 @@
 
 SHELL = /bin/bash
 
-VERSION = 1.6.9
+VERSION = 1.7.0
 # If you change the version you also need to change pom.xml and sketch.compiler.main.PlatformLocalization.java and scripts/windows/final/sketch as well as README and the bitbucket site.
 
 MVN_PATH = $(shell which mvn)
@@ -34,8 +34,8 @@ maven-install: compile
 
 codegen: # codegen a few files (not very high probability of changing) #HIDDEN
 #	python scripts/run_jinja2.py
-	antlr -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItLex.g
-	antlr -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItParserFE.g
+	java antlr.Tool -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItLex.g
+	java antlr.Tool -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItParserFE.g
 
 renamer-script: #HIDDEN
 	[ -f sketch-noarch.jar ] || { make assemble-noarch; cp target/sketch-*-noarch.jar sketch-noarch.jar; }

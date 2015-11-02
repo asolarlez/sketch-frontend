@@ -15,11 +15,16 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -407,12 +412,28 @@ public class EliminateRegens extends SymbolTableVisitor {
             exps.add(exp);
             return exps;
         }
+        
+        /**
+         * Visit method for local variables expressions that does the same logic
+         * as the visit method for a star.
+         */
+		public Object visitExprLocalVariables(ExprLocalVariables expr) {
+			List<Expression> exprs = new ArrayList<Expression>();
+			exprs.add(expr);
+			return exprs;
+		}
 
         public Object visitExprVar (ExprVar exp) {
             List<Expression> exps = new ArrayList<Expression> ();
             exps.add (exp);
             return exps;
         }
+
+		public Object visitExprConstChar(ExprConstChar exprConstChar) {
+			List<Expression> exps = new ArrayList<Expression>();
+			exps.add(exprConstChar);
+			return exps;
+		}
     }
 
     /**
