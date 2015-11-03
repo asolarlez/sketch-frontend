@@ -4,6 +4,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
 import sketch.compiler.dataflow.eliminateTransAssign.EliminateTransAssns;
+import sketch.compiler.dataflow.preprocessor.EliminateUnambiguousPkgNames;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.preprocessor.SimplifyVarNames;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -97,6 +98,7 @@ public class CleanupFinalCode extends MetaStage {
         // prog.accept(new SimpleCodePrinter());
 
 
+		prog = (Program) prog.accept(new EliminateUnambiguousPkgNames());
 
         prog = (Program) prog.accept(new AssembleInitializers());
 
