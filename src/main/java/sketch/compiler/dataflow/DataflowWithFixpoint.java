@@ -144,6 +144,7 @@ public class DataflowWithFixpoint extends PartialEvaluator {
                 if (vcond.hasIntVal() && vcond.getIntVal() == 0) {
                     nbody = null;
                 } else {
+                    checkCondEquality(stmt.getCond());
                     nbody = (Statement) stmt.getBody().accept(this);
                     if (stmt.getIncr() != null) {
                         nincr = (Statement) stmt.getIncr().accept(this);

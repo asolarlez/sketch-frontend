@@ -30,6 +30,7 @@ import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.MethodState.ChangeTracker;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.deadCodeElimination.EliminateDeadCode;
+import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
@@ -1408,6 +1409,25 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     }
 
+    public void checkCondEquality(Expression cond) {
+        if ((this instanceof PreprocessSketch)) {
+            if (cond instanceof ExprBinary) {
+                ExprBinary eb = (ExprBinary) cond;
+                if (eb.getOp() == ExprBinary.BINOP_EQ) {
+                    if (eb.getLeft() instanceof ExprVar) {
+                        if (eb.getRight() instanceof ExprConstInt) {
+                            state.setVarValue(eb.getLeft().toString(), (abstractValue) eb.getRight().accept(this));
+                        }
+                    }
+                }
+                if (eb.getOp() == ExprBinary.BINOP_AND) {
+                    checkCondEquality(eb.getLeft());
+                    checkCondEquality(eb.getRight());
+                }
+            }
+        }
+    }
+
     public Object visitStmtIfThen(StmtIfThen stmt)
     {
         // must have an if part...
@@ -1476,6 +1496,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             try{
                 try {
                     pushTrue();
+                    checkCondEquality(cond);
                     nvtrue = (Statement) cons.accept(this);
                 } finally {
                     popTA();
