@@ -1,15 +1,7 @@
 package sketch.compiler.passes.preprocessing;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.Stack;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
@@ -291,6 +283,23 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 		
 		// Index of the formal parameters
 		int i = -1;
+
+        int formalsize = callee.getParams().size();
+        int actualsize = exprFunctionCall.getParams().size();
+
+        if (formalsize != actualsize) {
+            // This means there are implicit parameters.
+            if (actualsize > formalsize) {
+                throw new ExceptionAtNode("Wrong number of parameters", exprFunctionCall);
+            }
+            while (formalsize != actualsize) {
+                formalParameter = calleFormalParameters.next();
+                if (!formalParameter.isImplicit()) {
+                    throw new ExceptionAtNode("Wrong number of parameters", exprFunctionCall);
+                }
+                formalsize--;
+            }
+        }
 
 		// Loop through each actual parameter
 		for (Expression actualParameter : exprFunctionCall.getParams()) {

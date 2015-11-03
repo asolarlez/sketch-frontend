@@ -1,0 +1,115 @@
+
+package generators{
+
+generator void forZeroExprInc(int endExclusive, fun body) {
+    for (int i = 0; i < endExclusive; ++i)
+        body(i);
+}
+
+generator void forExprExprInc(int startInclusive, int endExclusive, fun body) {
+    for (int i = startInclusive; i < endExclusive; ++i)
+        body(i);
+}
+
+generator bit cmp(int a, int b) {
+    int op = ??(3);
+    assume 0 <= op && op <= 5;
+    if (op == 0) return a < b;
+    if (op == 1) return a <= b;
+    if (op == 2) return a > b;
+    if (op == 3) return a >= b;
+    if (op == 4) return a == b;
+    if (op == 5) return a != b;
+}
+}
+
+
+package csr{
+
+struct CSR {
+    int nnz; int rows; int cols;
+    int[nnz] data;
+    int[rows+1] rowStart;
+    int[nnz] colIdx;
+}
+
+CSR makeCSR(int n, int m, int[n,m] mat) {
+    int[n*m] data = 0;
+    int[n+1] rowStart = 0;
+    int[n*m] colIdx = 0;
+    int nnz = 0;
+    for (int i = 0; i < n; ++i) {
+        rowStart[i] = nnz;
+        for (int j = 0; j < m; ++j) {
+            if (mat[i,j] != 0) { //omit this for "dense CSR"
+                data[nnz] = mat[i,j];
+                colIdx[nnz] = j;
+                ++nnz;
+            }
+        }
+    }
+    rowStart[n] = nnz;
+    return new CSR(nnz=nnz, rows=n, cols=m, data=data[0::nnz], rowStart=rowStart, colIdx=colIdx[0::nnz]);
+}
+
+generator int any(CSR csr) {
+    return ?? ? csr.nnz :
+        ?? ? csr.rows :
+        ?? ? csr.cols :
+        ?? ? csr.data[??] :
+        ?? ? csr.rowStart[??] :
+        csr.colIdx[??];
+}
+
+generator int indexAny(CSR csr, int idx) {
+    return ?? ? csr.data[idx] :
+        ?? ? csr.rowStart[idx] : 
+        csr.colIdx[idx];
+}
+
+generator int anyAvail([int n], CSR csr, int[n] availableExpr) {
+    int choice = ??;
+    if (choice == 0) return ??;
+    if (choice == 1) return any(csr) + ??;
+    if (choice == 2) return availableExpr[??] + ??;
+    if (choice == 3) return indexAny(csr, anyAvail(csr, availableExpr)) + ??;
+}
+
+}
+
+
+
+
+
+void sparseMV([int rows, int cols], fun expr, int[cols] vec, ref int[rows] r) {
+    void outerLoopBody(int outerLoopIdx) {
+        void innerLoopBody(int innerLoopIdx) {
+            //TODO: this could be a function or folded into the generator
+            int[2] availableExpr = {outerLoopIdx, innerLoopIdx};
+            r[expr(availableExpr)] += expr(availableExpr) * vec[expr(availableExpr)];
+        }
+        forExprExprInc(expr({outerLoopIdx}),
+                expr({outerLoopIdx}),
+                innerLoopBody);
+    }
+    forZeroExprInc(expr({}), outerLoopBody);
+}
+
+
+harness void foo33(int[3, 3] mat, int[3] vec) {
+    foo(mat, vec);
+}
+
+void foo([int n, int m], int[n,m] mat, int[m] vec) {
+    CSR csr = makeCSR(n, m, mat);
+    int[n] rDense = 0;
+    int[n] rSparse = 0;
+    
+
+    generator int expr([int u], int[u] availableExpr) {
+        return anyAvail(mat, availableExpr); // TypeError bad parameters
+    }
+
+    sparseMV(expr, vec, rSparse);
+
+}

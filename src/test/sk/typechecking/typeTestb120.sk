@@ -1,0 +1,70 @@
+
+struct str{
+    @Immutable("")
+    int n; char[n] ch;    
+}
+
+str cstr([int n] , char[n] ch){
+    return new Const(n=n, ch=ch);
+}
+
+
+int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
+    for(int i=0; i<s.n; ++i){
+        if(i+ n1 + n2 < s.n){
+            if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
+                if(k==0){
+                    return i+ n1;
+                }else{
+                    return Pos(cstr(s.ch[i+1:s.n]), r1, r2, k-1);
+                }
+            }
+        }
+    }   
+}
+
+str SubStr(str s, int p1, int p2){    
+    return new str(n=p2-p1, ch=s.ch[p1:p2]);
+}
+
+str Concat(str s1, str s2){
+    char[s1.n + s2.n] ch;
+    ch[0::s1.n] = s1.ch;
+    ch[s1.n::s2.n] = s2.ch;
+    return cstr(ch);
+}
+
+generator str genExpr(Const s){
+    generator str term(){
+        if(??){
+            char[4] r1 = ??;
+            return cstr(r1[0::??]); }
+        else{ 
+            char[3] r1 = ??;
+            char[3] r2 = ??;
+            return SubStr(s, ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??), ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??) ); 
+        }
+    }
+    str out = term();
+    minrepeat{
+        out = Concat(out, term());
+    }
+    return out;
+}
+
+str flashToy(Const s){
+    return genExpr(s);
+}
+
+
+
+bit eq(str s1, str s2){
+    return s1.ch == s2.ch;    
+}
+
+
+harness void main(){    
+    assert eq(cstr("Singh"), flashToy(cstr("Rishabh Singh")) );    
+}
+
+
