@@ -5,10 +5,14 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 import sketch.compiler.ast.core.stmts.StmtMinLoop;
 import sketch.compiler.ast.core.stmts.StmtMinimize;
+import sketch.compiler.ast.core.stmts.StmtReturn;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
@@ -65,6 +69,10 @@ public class ReplaceMinLoops extends FEReplacer {
 
     @Override
     public Object visitStmtMinLoop(StmtMinLoop stmtMinLoop) {
+		Statement body = stmtMinLoop.getBody();
+		if (cannotBeRepeated(body)) {
+			return body.accept(this);
+		}
         String localName = vargen.nextVar("bndlocal");
 
         final StmtVarDecl vardecl =
@@ -75,8 +83,43 @@ public class ReplaceMinLoops extends FEReplacer {
         this.addStatement(vardecl);
         this.addStatement(smin);
         return new StmtLoop(stmtMinLoop, new ExprVar(stmtMinLoop, localName),
-                (Statement) stmtMinLoop.getBody().accept(this));
+				(Statement) body.accept(this));
     }
     
+	// A statement cannot be repeated if it has a return statement that is not
+	// inside a conditional
+	private boolean cannotBeRepeated(Statement stmt) {
+		if (stmt == null) return false;
+		if (stmt.isBlock()) {
+			StmtBlock bl = (StmtBlock) stmt;
+			for (int i = 0; i < bl.size(); i++) {
+				if (cannotBeRepeated(bl.getStmts().get(i))) return true;
+			}
+		} else {
+			if (stmt instanceof StmtReturn) {
+				return true;
+			}
+			if (stmt instanceof StmtIfThen) {
+				StmtIfThen sif = (StmtIfThen) stmt;
+				Expression cond = sif.getCond();
+				if (cond.isConstant()) {
+					if (cond.getIValue() == 1 && cannotBeRepeated(sif.getCons())) 
+						return true;
+					if (cond.getIValue() == 0 && cannotBeRepeated(sif.getAlt()))
+						return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Object visitStmtIfThen(StmtIfThen stmt) {
+		Expression cond = stmt.getCond();
+		if (cond.isConstant() && cond.getIValue() == 1) {
+			return stmt.getCons().accept(this);
+		}
+		return super.visitStmtIfThen(stmt);
+	}
 
 }
