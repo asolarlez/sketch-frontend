@@ -411,6 +411,12 @@ public class GetExprType extends FENullVisitor
             if (retType instanceof TypeArray) {
                 Map<String, Expression> mm = new HashMap<String, Expression>();
                 Iterator<Parameter> ip = fn.getParams().iterator();
+				if (fn.getParams().size() > exp.getParams().size()) {
+					int diff = fn.getParams().size() - exp.getParams().size();
+					for (int k = 0; k < diff; ++k) {
+						ip.next();
+					}
+				}
                 for (Expression p : exp.getParams()) {
                     Parameter formal = ip.next();
                     mm.put(formal.getName(), p);
