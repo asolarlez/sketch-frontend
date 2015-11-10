@@ -1,0 +1,11 @@
+
+int callit(fun fnz) { return hi(fnz(0)); }
+
+int hi(int x) { return x; }
+
+harness void test1(int n) {
+    assume n == 5;
+  int fn(int i) { return n; }
+
+  assert callit(fn) == 5;
+}
