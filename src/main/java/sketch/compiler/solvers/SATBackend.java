@@ -101,7 +101,7 @@ public class SATBackend {
             commandLineOptions.add("" + this.randdegrees.get(idx));
         }
         // or ...randdegree (chosen/given by a strategy/user)
-        else if (options.solverOpts.randdegree > 0) {
+        else if (options.solverOpts.randdegree >= 0) {
             commandLineOptions.add("-randdegree");
             commandLineOptions.add("" + options.solverOpts.randdegree);
         }

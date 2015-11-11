@@ -1,15 +1,17 @@
+pragma options "--bnd-unroll-amnt 33";
 
-harness void main(int x){
-    {
-        funf = (x)-> x + 1;
-        assert f(x) == x + ??;        
+void foo(ref int x){
+    x += 10;
+}
+
+
+harness void main(int n){
+    int[n] x;
+    for(int i=0; i<n; ++i){
+        x[i] = i;
     }
-    
-    {
-        fun f = (x)-> x *2;
-        assert f(x) == x *??;        
+    if(n > 4){
+        foo(x[3]);
+        assert x[3] == 10+??;        
     }
-    
-    
-    
 }

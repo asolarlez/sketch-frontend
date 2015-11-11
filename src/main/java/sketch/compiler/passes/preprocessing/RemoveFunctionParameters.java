@@ -1119,7 +1119,6 @@ public class RemoveFunctionParameters extends FEReplacer {
                     for(String fn : equivalences.get(key)){
                         toVisit.push(fn);
                         if (funsToVisit.containsKey(fn)) {
-                            System.out.println("CHECKHERE1");
                             funsToVisit.put(fn,
                                     mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(fn)));
                         } else {
@@ -1129,7 +1128,6 @@ public class RemoveFunctionParameters extends FEReplacer {
                 }else{
                     toVisit.push(key);
                     if (funsToVisit.containsKey(key)) {
-                        System.out.println("CHECKHERE2");
                         funsToVisit.put(key,
                                 mergePI(nfi.cloneParamsToAdd(), funsToVisit.get(key)));
                     } else {
@@ -2485,6 +2483,12 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
             frmap.declRepl(oldName, newName);
             Function f = sfd.getDecl();
+
+            for (Parameter pr : sfd.getDecl().getParams()) {
+                if (symtab.hasVar(pr.getName())) {
+                    throw new ExceptionAtNode("Shadowing of variables is not allowed:" + pr, sfd);
+                }
+            }
 
             if (isGenerator && !f.isGenerator()) {
                 throw new ExceptionAtNode(
