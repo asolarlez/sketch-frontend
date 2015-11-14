@@ -71,7 +71,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
     @Override
     public Object visitExprStar(ExprStar exp) {
         Type t = exp.getType();
-        if (t.isStruct()) {
+		if (t != null && t.isStruct()) {
             TypeStructRef ts = (TypeStructRef) t;
             oriType = ts;
             context = exp;
