@@ -616,12 +616,14 @@ public class CreateHarnesses extends SymbolTableVisitor {
                 Type ft = fe.getType();
                 if (ft.isStruct()) {
                     String name = createCheckInputFun(ctx, (TypeStructRef) ft, newFuns);
+                    Expression rec = new ExprField(ctx, inp, fe.getName());
                     List<Expression> pm = new ArrayList<Expression>();
-                    pm.add(new ExprField(ctx, inp, fe.getName()));
-
+                    pm.add(rec);
+                    ExprBinary recCheck = new ExprBinary(ctx, ExprBinary.BINOP_AND, 
+                    		new ExprBinary(ctx, ExprBinary.BINOP_NEQ, rec, new ExprNullPtr()),
+                    		new ExprFunCall(ctx, name, pm));
                     cur =
-                            new ExprBinary(ctx, ExprBinary.BINOP_AND, new ExprFunCall(
-                                    ctx, name, pm), cur);
+                            new ExprBinary(ctx, ExprBinary.BINOP_AND, recCheck, cur);
                 }
             }
             swt.addCaseBlock(c.split("@")[0], new StmtReturn(ctx, cur));
