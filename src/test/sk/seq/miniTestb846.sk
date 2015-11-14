@@ -1,0 +1,10 @@
+adt foo {
+	int x;
+	int y;
+}
+
+harness void main() {
+	fun ll = ()->{| 1| 2| 3|};
+	foo a = ??({ll()});
+	assert(new foo(x = 1, y = 2) === a);
+}

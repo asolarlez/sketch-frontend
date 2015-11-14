@@ -1,0 +1,20 @@
+adt srcAST {
+	NumS {int val;}
+	TrueS {}
+	FalseS {}
+}
+
+generator S[n] map<T, S>([int n], T[n] s, fun f) {
+	S[n] d; int i = 0;
+	repeat(n){
+		d[i] = f(s[i]); i++;
+	}
+	return d;
+}
+
+srcAST id(srcAST s) { return s; }
+
+harness void main() {
+	srcAST a = new TrueS();
+	srcAST[] arr = map(a.{srcAST}, id); 
+}
