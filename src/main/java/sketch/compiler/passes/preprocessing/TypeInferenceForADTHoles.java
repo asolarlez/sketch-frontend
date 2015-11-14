@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprADTHole;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
@@ -154,6 +155,7 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
         
         
     }
+
     Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
     private Map<String, Type> getFieldsMap(StructDef ts) {
         String strName = ts.getFullName();
@@ -184,4 +186,18 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
             return fieldsMap;
         }
     }
+
+	@Override
+	public Object visitExprBinary(ExprBinary exp) {
+		Expression left = doExpression(exp.getLeft());
+		Type t = getType(left);
+		if (t.isStruct()) {
+			ts = (TypeStructRef) t;
+		}
+		Expression right = doExpression(exp.getRight());
+		if (left == exp.getLeft() && right == exp.getRight())
+			return exp;
+		else
+			return new ExprBinary(exp, exp.getOp(), left, right, exp.getAlias());
+	}
 }

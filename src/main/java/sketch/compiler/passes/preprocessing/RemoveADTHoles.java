@@ -418,7 +418,9 @@ public class RemoveADTHoles extends SymbolTableVisitor {
             if (t.isArray() && !tt.isArray()) {
                 TypeArray ta = (TypeArray) t;
                 Type base = ta.getBase();
-                if (base.promotesTo(tt, nres)) {
+				if (base.promotesTo(tt, nres)
+						&& (!ta.getLength().isConstant() || ta.getLength()
+								.getIValue() > 0)) {
                     if (!(exp instanceof ExprVar)) {
                         exp = (Expression) (new CloneHoles()).process(exp).accept(this);
                     }
