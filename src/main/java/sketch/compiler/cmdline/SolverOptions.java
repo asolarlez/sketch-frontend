@@ -111,6 +111,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Maximum steps of random simulation to perform for every verification step.")
     public int simiters = 4;
 
+	@CliParameter(help = "Inlines randomly")
+	public boolean randomInlining = false;
+
     @CliParameter(help = "Only randomize depth holes of GUC")
     public boolean onlySpRand = false;
 

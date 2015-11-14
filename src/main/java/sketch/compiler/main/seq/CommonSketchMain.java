@@ -123,6 +123,9 @@ public class CommonSketchMain {
         if (options.solverOpts.onlySpRand) {
             backendOptions.add("-onlysprandassign");
         }
+		if (options.solverOpts.randomInlining) {
+			backendOptions.add("-randominlining");
+		}
         if (options.solverOpts.spRandBias > 0) {
             backendOptions.add("-sprandbias");
             backendOptions.add("" + options.solverOpts.spRandBias);
