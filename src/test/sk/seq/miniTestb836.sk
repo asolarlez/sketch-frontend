@@ -1,15 +1,10 @@
-adt A {
-  int x;
-  A a;
-}
+int callit(fun fnz) { return hi(fnz(0)); }
 
-generator T foo<T>(T t, fun igen) {
-	return new A( x = {| t.?? | igen() |} );
-}
+int hi(int x) { return x; }
 
-harness void main() {
-	A a = new A(x = 1);
-	A b = new A(x =2, a = a);
-	A c = foo(b, 5);
-	assert(c.x == 5);
+harness void test1(int n) {
+    assume n == 5;
+  int fn(int i) { return n; }
+
+  assert callit(fn) == 5;
 }

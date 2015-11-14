@@ -1,27 +1,17 @@
-/*
-% Joe=0, Mary = 1 Ted = 2
-% mage = Jage - 5
-% Tage + 8 = mage.
-% if (who=Joe){ tage > 20; }else{ if(who=Mary){ {| Jage | tage|} > 20; }else{  Jage > 20  }}
-% {Jage, Mage, Tage}[Who] < 12;
-*/
+pragma options "--bnd-unroll-amnt 33";
 
-void print(int mage, int jage, int tage, int who);
+void foo(ref int x){
+    x += 10;
+}
 
-harness void main(){
-    int Joe=0, Mary=1, Ted=2;
-    int mage = ??;
-    int jage = ??;
-    int tage = ??;
-    assert mage == jage - 5;
-    assert tage + 8 == mage;
-    int who = ??; assert who < 3;
-    if(who==Joe){ assert tage > 20; }else{
-    if(who==Mary){ assert {| jage | tage |} > 20;   }else{
-        assert jage > 20;        
-    }    
-    }    
-    assert who == 2;
-    assert {jage , mage, tage }[who] < 12;
-    print(mage, jage, tage, who);
+
+harness void main(int n){
+    int[n] x;
+    for(int i=0; i<n; ++i){
+        x[i] = i;
+    }
+    if(n > 4){
+        foo(x[3]);
+        assert x[3] == 10+??;        
+    }
 }

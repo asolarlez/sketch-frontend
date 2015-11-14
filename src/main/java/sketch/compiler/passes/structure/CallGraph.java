@@ -87,7 +87,7 @@ public class CallGraph extends FEReplacer {
             throw new ExceptionAtNode("Function call not allowed outside a function", exp);
         }
         fcnCallEnclosing.put(exp, enclosing);
-        return exp;
+        return super.visitExprFunCall(exp);
     }
 
     @Override

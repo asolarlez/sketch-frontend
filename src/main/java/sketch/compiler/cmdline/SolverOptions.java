@@ -78,7 +78,7 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     public boolean randassign = false;
 
     @CliParameter(help = "Degree of randomness for hole concretization.")
-    public int randdegree = 0;
+    public int randdegree = -1;
 
     @CliParameter(help = "Degrees of randomness for hole concretization.", hide_default = true, inlinesep = ",")
     public CmdLineHashSet randdegrees = new CmdLineHashSet();
