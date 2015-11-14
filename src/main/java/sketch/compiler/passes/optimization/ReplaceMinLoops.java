@@ -86,13 +86,12 @@ public class ReplaceMinLoops extends FEReplacer {
 				(Statement) body.accept(this));
     }
     
-	// A statement cannot be repeated if it has a return statement that is not
-	// inside a conditional
+	// A statement cannot be repeated if it definitely returns
 	private boolean cannotBeRepeated(Statement stmt) {
 		if (stmt == null) return false;
 		if (stmt.isBlock()) {
 			StmtBlock bl = (StmtBlock) stmt;
-			for (int i = 0; i < bl.size(); i++) {
+			for (int i = 0; i < bl.getStmts().size(); i++) {
 				if (cannotBeRepeated(bl.getStmts().get(i))) return true;
 			}
 		} else {
@@ -107,19 +106,13 @@ public class ReplaceMinLoops extends FEReplacer {
 						return true;
 					if (cond.getIValue() == 0 && cannotBeRepeated(sif.getAlt()))
 						return true;
+				} else {
+					if (cannotBeRepeated(sif.getCons())
+							&& cannotBeRepeated(sif.getAlt()))
+						return true;
 				}
 			}
 		}
 		return false;
 	}
-
-	@Override
-	public Object visitStmtIfThen(StmtIfThen stmt) {
-		Expression cond = stmt.getCond();
-		if (cond.isConstant() && cond.getIValue() == 1) {
-			return stmt.getCons().accept(this);
-		}
-		return super.visitStmtIfThen(stmt);
-	}
-
 }
