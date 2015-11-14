@@ -11,8 +11,6 @@ import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
 import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
-import sketch.compiler.passes.preprocessing.EliminateListOfFieldsMacro;
-import sketch.compiler.passes.preprocessing.ExpandRepeatCases;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
 import sketch.compiler.passes.preprocessing.RemoveADTHoles;
 import sketch.compiler.passes.preprocessing.TypeInferenceForADTHoles;
@@ -99,9 +97,13 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         
-        // prog.debugDump("After remove expr get");
 
-        // Remove ExprGet will generate regens and adt holes
+		prog = (Program) prog.accept(new TypeInferenceForADTHoles());
+		prog = (Program) prog.accept(new TypeInferenceForStars());
+		// Remove ADT holes will generate regens and adt holes
+		prog = (Program) prog.accept(new RemoveADTHoles(varGen,
+				options.bndOpts.arrSize, options.bndOpts.gucDepth));
+
         prog = (Program) prog.accept(new EliminateRegens(varGen));
 		// prog.debugDump("************************************** 7");
 
@@ -121,12 +123,8 @@ public class PreprocessStage extends MetaStage {
 		// prog.debugDump("before type inference");
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
-//		prog.debugDump("************************************** Before Local Variable replacer");
-//		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
-//		prog.debugDump("************************************** After Local Variable replacer");
-        
-        //prog.debugDump("af");
-        
+
+		prog = (Program) prog.accept(new EliminateFieldHoles());
 
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
             prog.accept(new PerformFlowChecks());
@@ -140,29 +138,14 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
+
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
             // prog.debugDump("after preprocess");
         }
-        prog = (Program) prog.accept(new ExpandRepeatCases());
-        // prog.debugDump();
-        prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
-        // prog.debugDump("af");
 
-        // TODO: TypeInferenceForADTHoles should deal with function parameters
-
-        prog = (Program) prog.accept(new TypeInferenceForADTHoles());
-
-        prog =
-                (Program) prog.accept(new RemoveADTHoles(varGen, options.bndOpts.arrSize,
-                        options.bndOpts.gucDepth));
-        // prog.debugDump();
-        prog = (Program) prog.accept(new EliminateRegens(varGen));
-        prog = (Program) prog.accept(new TypeInferenceForADTHoles());
-        prog = (Program) prog.accept(new TypeInferenceForStars());
-        prog = (Program) prog.accept(new EliminateFieldHoles());
         return prog;
     }
 }
