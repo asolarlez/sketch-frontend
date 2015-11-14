@@ -877,6 +877,9 @@ public class RemoveFunctionParameters extends FEReplacer {
             if (this.rmap.containsKey(ev.getName())) {
                 return new ExprVar(ev, this.rmap.get(ev.getName()));
             }
+			if (this.lambdaMap.containsKey(ev.getName())) {
+				return lambdaMap.get(ev.getName());
+			}
             // If three is an actual parameter that corresponds to a lambda variable
             else if(this.lambdaReplace.containsKey(ev)) {
                 // Return the actual parameter
@@ -1593,6 +1596,10 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         void checkAndUnify(Type left, Type right, FENode ctxt) {
+			if (right instanceof TypePrimitive
+					&& ((TypePrimitive) right).getType() == TypePrimitive.TYPE_BOTTOM) {
+				return;
+			}
             while (left instanceof TypeArray) {
                 left = ((TypeArray) left).getBase();
                 right = ((TypeArray) right).getBase();
@@ -1735,7 +1742,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 					}
 					// TODO: this could be wrong
 					// Put the new needed variables for this function call
-					lambdaFunctionsNeededVariables.put(this.currentFunction.getName(), newNeededVariables);
+					//lambdaFunctionsNeededVariables.put(exprFunctionCall.getName(), newNeededVariables);
 					
 					// Get the variables that are needed in this call
 					variablesNeeded = lambdaFunctionsNeededVariables.get(exprFunctionCall.getName());
