@@ -90,6 +90,10 @@ public class CommonSketchMain {
             backendOptions.add("-lightverif");
         }
 
+		if (options.solverOpts.lightVerifAdt) {
+			backendOptions.add("-lightverifadt");
+		}
+
         if (options.debugOpts.showDag) {
             backendOptions.add("-showDAG");
         }

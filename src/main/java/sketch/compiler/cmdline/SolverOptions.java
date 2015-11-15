@@ -108,6 +108,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Performs lightweight verification instead of full bounded verification.")
     public boolean lightverif = false;
 
+	@CliParameter(help = "Performs lightweight verification instead of full bounded verification.")
+	public boolean lightVerifAdt = false;
+
     @CliParameter(help = "Maximum steps of random simulation to perform for every verification step.")
     public int simiters = 4;
 
