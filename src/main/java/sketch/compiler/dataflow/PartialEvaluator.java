@@ -585,6 +585,14 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitExprStar(ExprStar star) {
         Type t = (Type) star.getType().accept(this);
         star.setType(t);
+		if (isReplacer && star.special()) {
+			List<ExprVar> newList = new ArrayList<ExprVar>();
+			for (ExprVar e : star.parentHoles()) {
+				e.accept(this);
+				newList.add((ExprVar) exprRV);
+			}
+			star.makeSpecial(newList);
+		}
         exprRV = star;
         return vtype.STAR(star);
     }

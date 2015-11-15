@@ -59,7 +59,7 @@ public class ExprStar extends Expression
 	
     private Kind kind = Kind.NORMAL;
     private boolean isSpecial = false;
-    private List<ExprStar> parentHoles; // required for special depth holes
+	private List<ExprVar> parentHoles; // required for special depth holes
 
     // private Expression exprMax = null;
 
@@ -369,12 +369,12 @@ public class ExprStar extends Expression
         return this.rangehigh;
     }
 
-    public void makeSpecial(List<ExprStar> parentDepths) {
+	public void makeSpecial(List<ExprVar> parentDepths) {
         isSpecial = true;
         this.parentHoles = parentDepths;
     }
 
-    public List<ExprStar> parentHoles() {
+	public List<ExprVar> parentHoles() {
         return this.parentHoles;
     }
 

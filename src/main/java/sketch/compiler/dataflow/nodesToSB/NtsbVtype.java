@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprSpecialStar;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
@@ -83,9 +84,13 @@ public class NtsbVtype extends IntVtype {
                 if (star.special()) {
                     head += "SPVAR " + star.upperBound() + " ";
                     head += " $ ";
-                    for (ExprStar es : star.parentHoles()) {
-                        head += es.getSname() + " ";
-                    }
+					for (ExprVar ev : star.parentHoles()) {
+						NtsbValue val = (NtsbValue) eval
+								.visitExprVar(ev);
+						String pName = ((String) val.obj).split("<")[1]
+								.split(" ")[0];
+						head += pName + " ";
+					}
                     head += " $ ";
                 }
 

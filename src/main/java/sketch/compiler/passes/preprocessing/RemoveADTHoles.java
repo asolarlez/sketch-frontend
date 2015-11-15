@@ -104,7 +104,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
         symtab.registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
         ExprVar ev = new ExprVar(context, tempVar);
 
-        List<ExprStar> depthVars = new ArrayList<ExprStar>();
+		List<ExprVar> depthVars = new ArrayList<ExprVar>();
         getExprTree(ev, type, params, newStmts, gucDepth, depthVars);
         return ev;
     }
@@ -121,7 +121,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
      * 
      */
     private void getExprTree(ExprVar ev, Type type, List<Expression> params,
-            List<Statement> newStmts, int depth, List<ExprStar> depthHoles)
+			List<Statement> newStmts, int depth, List<ExprVar> depthHoles)
     {
         if (type instanceof TypeStructRef) {
             TypeStructRef tt = (TypeStructRef) type;
@@ -153,7 +153,8 @@ public class RemoveADTHoles extends SymbolTableVisitor {
      * parameters of this unknown constructor are recursively generated expression trees.
      */
     private void createNewAdt(ExprVar ev, TypeStructRef tt, List<Expression> params,
-            List<Statement> newStmts, int depth, boolean recursive, List<ExprStar> depthHoles)
+ List<Statement> newStmts, int depth,
+			boolean recursive, List<ExprVar> depthHoles)
     {
         String name = tt.getName();
         StructDef sd = nres.getStruct(name);
@@ -206,7 +207,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
      */
     private List<ExprNamedParam> createADTParams(String name, List<Statement> stmts,
             Type type, int depth, boolean recursive, List<Expression> params,
-            List<ExprStar> depthHoles)
+ List<ExprVar> depthHoles)
     {
         List<ExprNamedParam> newADTparams = new ArrayList<ExprNamedParam>();
         Map<Type, List<ExprVar>> map = new HashMap<Type, List<ExprVar>>();
@@ -242,7 +243,8 @@ public class RemoveADTHoles extends SymbolTableVisitor {
 
     private ExprVar getExprVarForParam(Type t, Map<Type, Integer> count,
             Map<Type, List<ExprVar>> map, String fName, List<Statement> stmts,
-            List<ExprStar> depthHoles, int depth, Type adtType, List<Expression> params)
+			List<ExprVar> depthHoles, int depth, Type adtType,
+			List<Expression> params)
     {
         if (!count.containsKey(t)) {
             count.put(t, 0);
@@ -260,14 +262,17 @@ public class RemoveADTHoles extends SymbolTableVisitor {
             ExprVar ev = new ExprVar(context, tempVar);
             varsForType.add(ev);
 
-            List<ExprStar> newDepths = new ArrayList<ExprStar>();
+			List<ExprVar> newDepths = new ArrayList<ExprVar>();
             for (int i = 0; i < depthHoles.size(); i++) {
                 newDepths.add(depthHoles.get(i));
             }
             if (depth > 2 && t.promotesTo(adtType, nres)) {
+				String hvar = varGen.nextVar("_h");
                 ExprStar hole = new ExprStar(context, 0, depth - 2, 3);
                 hole.makeSpecial(depthHoles);
-                newDepths.add(0, hole);
+				stmts.add(new StmtVarDecl(context, TypePrimitive.inttype, hvar,
+						hole));
+				newDepths.add(0, new ExprVar(context, hvar));
 
             }
             boolean done = false;
