@@ -412,7 +412,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
             {
 				TypeStructRef ts = (TypeStructRef) (inputTypes.get(splitIdx));
                 List<String> cases = getCasesInOrder(ts.getName());
-                for (int k = 0; k < cases.size(); k++) {
+				for (int k = cases.size() - 1; k >= 0; k--) {
                     String c = cases.get(k).split("@")[0];
                     Function.FunctionCreator fc =
                             Function.creator(sa.getContext(),
