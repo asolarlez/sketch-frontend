@@ -452,10 +452,12 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
                             if (entry.getValue().isStruct()) {
                                 TypeStructRef tt = (TypeStructRef) entry.getValue();
                                 StructDef fieldStruct = nres.getStruct(tt.getName());
-                                if (!fieldStruct.immutable()) {
-                                    report(ts.getContext(),
-                                            "Mutable structs are not allowed in immutable structs");
-                                }
+								/*
+								 * if (!fieldStruct.immutable()) {
+								 * report(ts.getContext(),
+								 * "Mutable structs are not allowed in immutable structs"
+								 * ); }
+								 */
                             }
                         }
                         checkADupFieldName(fieldNames, entry.getKey(),
