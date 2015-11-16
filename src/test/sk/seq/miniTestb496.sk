@@ -17,8 +17,8 @@ harness void main(int t){
     gt = t;
     Bar b = new Bar(x=t);
 
-    void moo(ref int t){    
-        foo(b.x, t);
+    void moo(ref int tt){    
+        foo(b.x, tt);
         assert b.x == gt*2 - 3;
     }
 

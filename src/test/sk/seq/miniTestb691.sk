@@ -16,8 +16,8 @@ harness void main(){
     generator void tt(Foo f){
         
     }
-    generator void add(int x){
-        sum += x;
+    generator void add(int t){
+        sum += t;
     }
     forall(add, {1,2,3,4,5});
     forall(tt, {x,y});

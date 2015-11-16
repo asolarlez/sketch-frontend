@@ -45,9 +45,9 @@ struct CLet extends coreAST{int str; coreAST a; coreAST b;}
 
 
 
-coreAST desugar(sourceAST s, int bnd){
+coreAST desugar(sourceAST s, int bnd2){
 	if(s == null){ return null; }
-	if(bnd <= 0 ){ return null; }
+	if(bnd2 <= 0 ){ return null; }
 		
 	generator int getOp(int op){ return {| op |Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
 	generator int getStr(){ return ??(3); }
@@ -85,14 +85,14 @@ coreAST desugar(sourceAST s, int bnd){
 		/*for(int j = 0; j< size; j++){
 			smtStore[j] = null;
 		}*/
-			//sourceAST c1 = interpretSourceAST(fields[i],0,bnd-2);
+			//sourceAST c1 = interpretSourceAST(fields[i],0,bnd2-2);
 			
-			out[i] = desugar(fields[i],bnd-1); ++i;
+			out[i] = desugar(fields[i],bnd2-1); ++i;
 			/*if(c1!=null){
 				for(int j = 0; j < size; j++){
 					cmtStore[j] = null;
 				}
-				coreAST c3 = interpretCoreAST(out[i-1],0,bnd-1,bnd-1);
+				coreAST c3 = interpretCoreAST(out[i-1],0,bnd2-1,bnd2-1);
 				assert(c3!=null);
 				assert(equals(c1,c3));
 			}*/
@@ -104,13 +104,13 @@ coreAST desugar(sourceAST s, int bnd){
 		case STrue: return new CBool(val =1);
 		case SFalse: return new CBool(val =0);
 		case SVar: return new CVar(str =s.str);
-		case SAssign: return new CAssign(str = s.str, a = desugar(s.a,bnd-1));
-		case SLet: return new CLet(str = s.str, a = desugar(s.a,bnd-1), b= desugar(s.b,bnd-1));
-		case SPrim1: return new CPrim1(op = s.op, a = desugar(s.a,bnd-1));
-		case SPrim2 : return new CPrim2(op = s.op ,a = desugar(s.a,bnd-1), b=desugar(s.b,bnd-1));
-		case SBetween:{ coreAST c = desugar(s.b, bnd-1); return new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd-1), b = c), b = new CPrim2(op = Olt, a = c, b = desugar(s.c, bnd-1)));}
-		//case SBetween: return new CLet( str = 0, a = desugar(s.b, bnd-1), b=new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd-1), b = new CVar(str = 0)), b = new CPrim2(op = Olt, a = new CVar(str = 0), b = desugar(s.c,bnd-1))));
-		case SIf: return new CIf(a = desugar(s.a,bnd-1) , b= desugar(s.b,bnd-1) , c =desugar(s.c,bnd-1));
+		case SAssign: return new CAssign(str = s.str, a = desugar(s.a,bnd2-1));
+		case SLet: return new CLet(str = s.str, a = desugar(s.a,bnd2-1), b= desugar(s.b,bnd2-1));
+		case SPrim1: return new CPrim1(op = s.op, a = desugar(s.a,bnd2-1));
+		case SPrim2 : return new CPrim2(op = s.op ,a = desugar(s.a,bnd2-1), b=desugar(s.b,bnd2-1));
+		case SBetween:{ coreAST c = desugar(s.b, bnd2-1); return new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd2-1), b = c), b = new CPrim2(op = Olt, a = c, b = desugar(s.c, bnd2-1)));}
+		//case SBetween: return new CLet( str = 0, a = desugar(s.b, bnd2-1), b=new CPrim2(op = Oand, a = new CPrim2(op = Olt, a = desugar(s.a,bnd2-1), b = new CVar(str = 0)), b = new CPrim2(op = Olt, a = new CVar(str = 0), b = desugar(s.c,bnd2-1))));
+		case SIf: return new CIf(a = desugar(s.a,bnd2-1) , b= desugar(s.b,bnd2-1) , c =desugar(s.c,bnd2-1));
 	
 		/*repeat_case:
 		{

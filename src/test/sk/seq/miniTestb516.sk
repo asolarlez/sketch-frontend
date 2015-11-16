@@ -14,7 +14,7 @@ int length([int n], int[n] a){
     return n;
 }
 
-harness void main(int n, int m, int[n] x, int[m] y){
+harness void main(int nn, int mm, int[nn] x, int[mm] y){
     generator int[n+m] join([int n, int m], int[n] a, int[m] b){
         int[n+m] out=a;
         out[n::m] = b;
@@ -23,6 +23,6 @@ harness void main(int n, int m, int[n] x, int[m] y){
     int foo(fun f){
         return length(f(x,y));
     }    
-    assert foo(join) == n+m;    
+    assert foo(join) == nn+mm;    
 }
 

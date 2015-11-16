@@ -120,7 +120,7 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 			String functionName = this.functionsToVisit.pop();
 			String pkgName = this.getPkgName(functionName);
 			Function function = nres.getFun(functionName);
-
+            nres.setPackage(nameToPackage.get(pkgName));
 			// If the function has been visited
 			if (this.visitedFunctions.contains(functionName)) {
 				// Get the next iteration of the loop

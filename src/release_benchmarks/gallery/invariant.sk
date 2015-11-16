@@ -9,7 +9,7 @@ while(t>0){
 Assert y <= k_0;
 
 */
-include "src/sketchlib/generators.skh";
+include "generators.skh";
 pragma options "--bnd-inline-amnt 3";
 
 bit inv(int y, int y_0, int k, int k_0, int t){
