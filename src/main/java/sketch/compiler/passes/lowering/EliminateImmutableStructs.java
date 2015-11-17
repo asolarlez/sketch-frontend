@@ -165,7 +165,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
             }
         return new ExprTupleAccess(ef, basePtr, index);
         } else
-            return ef;
+			return super.visitExprField(ef);
 
     }
 
