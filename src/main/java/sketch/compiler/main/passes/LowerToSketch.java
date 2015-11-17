@@ -102,6 +102,8 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         // pass to eliminate immutable structs
         // prog.debugDump("Before EIS");
+		prog = (Program) prog.accept(new OptimizeStructArraySize(
+				options.bndOpts.arrSize));
         prog = (Program) prog.accept(new EliminateImmutableStructs());
 
         // prog.debugDump("After EIS");
