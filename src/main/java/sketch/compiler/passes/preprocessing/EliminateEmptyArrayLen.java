@@ -8,12 +8,15 @@ import java.util.Map;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -38,7 +41,8 @@ public class EliminateEmptyArrayLen extends SymbolTableVisitor {
                 if (!newType.isArray()) {
                     throw new ExceptionAtNode(stmt, "Types mismatch");
                 }
-                TypeArray ta = (TypeArray) newType;
+				TypeArray ta = (TypeArray) getNewType(t, newType);
+
                 if (exp instanceof ExprFunCall && !ta.getLength().isConstant()) {
                     ExprFunCall fc = (ExprFunCall) exp;
                     Map<String, Expression> varMap = new HashMap<String, Expression>();
@@ -68,10 +72,13 @@ public class EliminateEmptyArrayLen extends SymbolTableVisitor {
                         varMap.put(act.getName(), p);
                     }
                     VarReplacer vr = new VarReplacer(varMap);
-                    newType = (Type) newType.accept(vr);
+					ta = (TypeArray) ta.accept(vr);
                 }
 
-                newTypes.add(newType);
+				symtab.registerVar(stmt.getName(i), ta, stmt,
+						SymbolTable.KIND_LOCAL);
+
+				newTypes.add(ta);
                 newNames.add(stmt.getName(i));
                 newInits.add(stmt.getInit(i));
                 changed = true;
@@ -88,5 +95,25 @@ public class EliminateEmptyArrayLen extends SymbolTableVisitor {
             return stmt;
         }
     }
+
+	private Type getNewType(Type t, Type newType) {
+		if (t.isArray()) {
+        	TypeArray ta = (TypeArray) t;
+        	if (ta.getLength() == null) {
+        	if (newType.equals(TypePrimitive.bottomtype)) {
+        		return new TypeArray(getNewType(ta.getBase(), newType), ExprConstInt.zero);
+        	} else if (newType.isArray()){
+					return new TypeArray(getNewType(ta.getBase(),
+							((TypeArray) newType).getBase()),
+							((TypeArray) newType).getLength());
+        	} else {
+					throw new ExceptionAtNode(null, "Types mismatch");
+        	}
+        		
+        	
+        	}
+        }
+		return t;
+	}
 
 }
