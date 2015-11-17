@@ -1594,8 +1594,9 @@ public class RemoveFunctionParameters extends FEReplacer {
         }
 
         void checkAndUnify(Type left, Type right, FENode ctxt) {
-			if (right instanceof TypePrimitive
-					&& ((TypePrimitive) right).getType() == TypePrimitive.TYPE_BOTTOM) {
+			if (right instanceof NotYetComputedType
+					|| (right instanceof TypePrimitive && ((TypePrimitive) right)
+							.getType() == TypePrimitive.TYPE_BOTTOM)) {
 				return;
 			}
             while (left instanceof TypeArray) {
@@ -1619,7 +1620,8 @@ public class RemoveFunctionParameters extends FEReplacer {
             }
             if (tren.tmap.containsKey(genericName)) {
                 Type lcp = tren.tmap.get(genericName).leastCommonPromotion(newType, nres);
-                tren.tmap.put(genericName, lcp);
+				if (lcp != null)
+					tren.tmap.put(genericName, lcp);
             } else {
                 tren.tmap.put(genericName, newType);
             }
