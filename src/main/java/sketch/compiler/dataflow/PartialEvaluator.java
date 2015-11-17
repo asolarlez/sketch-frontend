@@ -585,14 +585,6 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitExprStar(ExprStar star) {
         Type t = (Type) star.getType().accept(this);
         star.setType(t);
-		if (isReplacer && star.special()) {
-			List<ExprVar> newList = new ArrayList<ExprVar>();
-			for (ExprVar e : star.parentHoles()) {
-				e.accept(this);
-				newList.add((ExprVar) exprRV);
-			}
-			star.makeSpecial(newList);
-		}
         exprRV = star;
         return vtype.STAR(star);
     }
@@ -1258,6 +1250,12 @@ public class PartialEvaluator extends SymbolTableVisitor {
                                         false);
 
                         for (int i = 0; i < remIters; ++i) {
+							/*
+							 * abstractValue av = (abstractValue) stmt.getCond()
+							 * .accept(this); if (!av.isBottom() &&
+							 * av.getIntVal() == 0) { break; }
+							 * stmt.getBody().accept(this);
+							 */
                             cur =
                                     new StmtIfThen(stmt, stmt.getCond(), new StmtBlock(
                                             body, cur), null);
