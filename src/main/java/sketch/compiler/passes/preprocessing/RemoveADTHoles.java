@@ -429,7 +429,9 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                     if (!(exp instanceof ExprVar)) {
                         exp = (Expression) (new CloneHoles()).process(exp).accept(this);
                     }
-                    filteredExprs.add(new ExprArrayRange(exp, new ExprStar(exp)));
+                    filteredExprs.add(new ExprTernary(exp, ExprTernary.TEROP_COND, 
+                    		new ExprBinary(exp, ExprBinary.BINOP_GT, ta.getLength(), ExprConstInt.zero),
+                    		new ExprArrayRange(exp, new ExprStar(exp)), tt.defaultValue()));
                 }
             }
             if (t.promotesTo(tt, nres)) {
@@ -438,8 +440,13 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                 }
                 if (t.isArray() && tt.isArray()) {
                     exp =
-                            new ExprArrayRange(context, exp, new ExprArrayRange.RangeLen(
-                                    ExprConstInt.zero, ((TypeArray) tt).getLength()));
+                    		new ExprTernary(exp, ExprTernary.TEROP_COND, 
+                            new ExprBinary(exp, ExprBinary.BINOP_GT, ((TypeArray) t).getLength(), ExprConstInt.zero),
+                             new ExprArrayRange(context, exp, 
+                            		 new ExprArrayRange.RangeLen(ExprConstInt.zero, ((TypeArray) tt).getLength())),
+                             tt.defaultValue());
+                    		
+                           ;
                 }
                 filteredExprs.add(exp);
             }
