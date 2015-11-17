@@ -40,7 +40,8 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
 				while (cur != null) {
 					StructDef ts = nres.getStruct(cur);
 					for (StructFieldEnt e : ts.getFieldEntriesInOrder()) {
-
+						if (t.isArray() && !e.getType().isArray())
+							continue;
 						if (e.getType().promotesTo(t, nres)) {
 							matchedFields.add(new ExprField(exp.getLeft(), exp
 									.getLeft(),
@@ -50,6 +51,9 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
 					cur = nres.getStructParentName(cur);
                 }
                 if (matchedFields.isEmpty()) {
+					if (t.isArray())
+						return new ExprArrayInit(exp,
+								new ArrayList<Expression>());
                     return t.defaultValue();
                 } else if (matchedFields.size() == 1) {
                     return matchedFields.get(0);

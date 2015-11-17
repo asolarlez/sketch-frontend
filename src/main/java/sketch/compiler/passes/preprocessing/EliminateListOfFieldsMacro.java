@@ -36,12 +36,17 @@ public class EliminateListOfFieldsMacro extends SymbolTableVisitor{
             List<Expression> matchedFields = new ArrayList<Expression>();
 
             for (StructFieldEnt e : ts.getFieldEntriesInOrder()) {
-
+				if (t.isArray() && !e.getType().isArray())
+					continue;
                 if (e.getType().promotesTo(t, nres)) {
                     matchedFields.add(new ExprField(exp.getLeft(), exp.getLeft(),
                             e.getName(), false));
                 }
             }
+			if (t.isArray() && matchedFields.isEmpty()) {
+				matchedFields.add(new ExprArrayInit(exp.getContext(),
+						new ArrayList<Expression>()));
+			}
             return new ExprArrayInit(exp.getContext(), matchedFields);
         }else{
             throw new ExceptionAtNode("ExprLeft must be of type struct", exp);
