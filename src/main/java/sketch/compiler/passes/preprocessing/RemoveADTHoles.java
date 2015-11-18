@@ -418,7 +418,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
 			if (type.isStruct()) {
 				TypeStructRef ts = (TypeStructRef) type;
 				StructDef sd = nres.getStruct(ts.getName());
-				if (sd.getNumFields() == 0) {
+				if (sd.isInstantiable() && sd.getNumFields() == 0) {
 					return true;
 				}
 			}
