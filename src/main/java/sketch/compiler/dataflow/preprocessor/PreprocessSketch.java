@@ -328,7 +328,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     }
     
     
-    public Object visitFunction(Function func){
+    public Object visitFunction(Function func) {
         hasAssumes = false;
         if (newFuns.containsKey(nres.getFunName(func.getName()))) {
             return newFuns.get(nres.getFunName(func.getName()));

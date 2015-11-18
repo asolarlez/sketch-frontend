@@ -71,6 +71,9 @@ public class EliminateStarStatic extends SymbolTableVisitor {
                 }
                 idsMap.put(parentName, ids);
             }
+            if (value < 0) {
+                value = 0;
+            }
             String newName = idsMap.get(parentName).get(value);
             TypeStructRef newType = new TypeStructRef(newName, false);
 

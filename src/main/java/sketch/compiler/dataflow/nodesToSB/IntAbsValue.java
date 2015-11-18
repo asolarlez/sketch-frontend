@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.dataflow.abstractValue;
 
@@ -129,7 +130,14 @@ public class IntAbsValue extends abstractValue {
     {
         IntAbsValue v = new IntAbsValue();
         v.type = ADTNODE;
-        v.knownCases = cases;
+        v.knownCases = new HashMap<String, Map<String, abstractValue>>();
+        for (Entry<String, Map<String, abstractValue>> e : cases.entrySet()) {
+            Map<String, abstractValue> tbl = new HashMap<String, abstractValue>();
+            for (Entry<String, abstractValue> ev : e.getValue().entrySet()) {
+                tbl.put(ev.getKey(), ev.getValue().clone());
+            }
+            v.knownCases.put(e.getKey(), tbl);
+        }
         return v;
     }
 

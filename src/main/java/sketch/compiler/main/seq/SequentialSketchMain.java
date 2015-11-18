@@ -542,7 +542,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                             : ParallelCheckOption.SERIAL;
             (new SemanticCheckPass(parallelCheck, true)).visitProgram(prog);
         }
-
         prog = preprocessProgram(prog, true); // perform prereq
 
         return nonnull(prog);

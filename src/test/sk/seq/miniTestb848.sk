@@ -1,5 +1,3 @@
-pragma options "--debug-show-dag";
-
 struct ID {int i;}
 
 adt dstAST{
@@ -13,8 +11,7 @@ ID foo(int n){
     if(n>0){
         ID t = foo(n-1);
         ID p = new ID(i= t.i + 1);
-        generator ID uuu(){ return new ID(); }
-        xx = ??({p, xx, uuu()});
+        xx = new AbsD(var=xx, a=p);
         return p;
     }else{
         ID q = new ID(i=0);
