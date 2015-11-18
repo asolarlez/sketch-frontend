@@ -3,13 +3,18 @@ package sketch.compiler.passes.preprocessing;
 import java.util.ArrayList;
 import java.util.List;
 
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFieldsListMacro;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -30,8 +35,8 @@ public class EliminateListOfFieldsMacro extends SymbolTableVisitor{
         if (t.isStruct())
             if (nres.isTemplate(((TypeStructRef) t).getName()))
                 return exp;
-
-        if (getType(exp.getLeft()).isStruct()) {
+		final Expression left = exp.getLeft();
+		if (getType(left).isStruct()) {
             StructDef ts = getStructDef((TypeStructRef) getType(exp.getLeft()));
             List<Expression> matchedFields = new ArrayList<Expression>();
 
@@ -39,8 +44,27 @@ public class EliminateListOfFieldsMacro extends SymbolTableVisitor{
 				if (t.isArray() && !e.getType().isArray())
 					continue;
                 if (e.getType().promotesTo(t, nres)) {
-                    matchedFields.add(new ExprField(exp.getLeft(), exp.getLeft(),
-                            e.getName(), false));
+					ExprField field = new ExprField(left,
+							exp.getLeft(), e.getName(), false);
+					if (t.isArray()) {
+						// TODO: Is this casting necessary? There are also other
+						// places where I do this casting.
+						Expression len = ((TypeArray) t).getLength();
+						if (len == null) {
+							len = ((TypeArray) e.getType()).getLength();
+							FEReplacer repVars = new FEReplacer() {
+								public Object visitExprVar(ExprVar ev) {
+									return new ExprField(left, ev.getName());
+								}
+							};
+							len = (Expression) len.accept(repVars);
+						}
+						matchedFields.add(new ExprArrayRange(exp, field,
+								new ExprArrayRange.RangeLen(ExprConstInt.zero,
+										len)));
+					} else {
+						matchedFields.add(field);
+					}
                 }
             }
 			if (t.isArray() && matchedFields.isEmpty()) {
