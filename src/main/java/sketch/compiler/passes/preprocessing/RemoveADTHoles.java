@@ -381,7 +381,10 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                 return new ExprVar(context, tmp);
 
             } else {
-                return new ExprStar(context);
+				if (type.promotesTo(TypePrimitive.inttype, nres))
+					return new ExprStar(context);
+				else
+					return new ExprNullPtr();
             }
         } else if (considerNonRec && type instanceof TypeStructRef) {
             boolean rec = true;
@@ -409,8 +412,18 @@ public class RemoveADTHoles extends SymbolTableVisitor {
             TypeArray t = (TypeArray) type;
             return checkType(t.getBase());
         } else {
-            return type.promotesTo(TypePrimitive.inttype, nres);
+			if (type.promotesTo(TypePrimitive.inttype, nres)) {
+				return true;
+			}
+			if (type.isStruct()) {
+				TypeStructRef ts = (TypeStructRef) type;
+				StructDef sd = nres.getStruct(ts.getName());
+				if (sd.getNumFields() == 0) {
+					return true;
+				}
+			}
         }
+		return false;
     }
 
     /*
