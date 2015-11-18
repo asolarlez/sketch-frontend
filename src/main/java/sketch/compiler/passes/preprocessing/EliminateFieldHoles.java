@@ -5,12 +5,14 @@ import java.util.List;
 
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -43,9 +45,15 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
 						if (t.isArray() && !e.getType().isArray())
 							continue;
 						if (e.getType().promotesTo(t, nres)) {
-							matchedFields.add(new ExprField(exp.getLeft(), exp
+							ExprField field = new ExprField(exp.getLeft(), exp
 									.getLeft(),
-                                e.getName(), false));
+	                                e.getName(), false);
+							if (t.isArray()) {
+								matchedFields.add(new ExprArrayRange(exp, field,
+				                        new ExprArrayRange.RangeLen(ExprConstInt.zero, ((TypeArray) t).getLength())));
+							} else {
+								matchedFields.add(field);
+							}
 						}
 					}
 					cur = nres.getStructParentName(cur);
