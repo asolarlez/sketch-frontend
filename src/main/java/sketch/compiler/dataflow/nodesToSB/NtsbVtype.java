@@ -288,6 +288,7 @@ public class NtsbVtype extends IntVtype {
         Iterator<abstractValue> actualParams = avlist.iterator();
         Iterator<Parameter> formalParams = fun.getParams().iterator();
         String name = fun.getName();
+		String specialArgs = "#";
         String plist = "";
         while( actualParams.hasNext() ){
             abstractValue param = actualParams.next();
@@ -328,7 +329,13 @@ public class NtsbVtype extends IntVtype {
                     plist += param;
                 }
             }
-            plist += " ";           
+            plist += " ";  
+            
+            if (param.toString().matches("#(.*)nextInstance(.*)")) {
+            	specialArgs += "t";
+            } else {
+            	specialArgs += "f";
+            }
         }
         String oplist = plist;
         formalParams = fun.getParams().iterator();
@@ -354,7 +361,7 @@ public class NtsbVtype extends IntVtype {
                             pkg.toUpperCase() + "]( " + plist + "  )(" +
                             pathCond + ")[ _p_out_" +
  fun.getName() + "_" + fun.getPkg() + "," +
-                            clusterId + "]");
+                            clusterId + "," + specialArgs + "]");
         state.varDeclare(outLhsName, new TypeStructRef("norec", false));
         state.setVarValue(outLhsName, outval);
         }
@@ -398,7 +405,7 @@ public class NtsbVtype extends IntVtype {
         if (!hasout) {
             String par =
                     "___GaRbAgE" + (gbgid++) + "=" + name + "[bit]( " + plist + "  )(" +
-                            pathCond + ")[ NONE," + clusterId + "];";
+                            pathCond + ")[ NONE," + clusterId + "," + specialArgs + "];";
             out.println(par);
         }        
     }
