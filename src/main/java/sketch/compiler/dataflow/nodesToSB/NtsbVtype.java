@@ -303,11 +303,13 @@ public class NtsbVtype extends IntVtype {
                 Integer lntt = eln == null ? null : eln.getIValue();
                 if (lntt == null) {
                     plist += "( {" + param + "} )";
+					specialArgs += "f";
                 } else {
                     List<abstractValue> lst = param.getVectValue();
                     assert lntt == lst.size();
                     for (int tt = 0; tt < lst.size(); ++tt) {
                         plist += lst.get(tt) + " ";
+						specialArgs += "f";
                     }
                 }
             }else{
@@ -318,24 +320,26 @@ public class NtsbVtype extends IntVtype {
                     Integer lntt = eln == null ? null : eln.getIValue();
                     if (lntt == null) {
                         plist += param;
+						specialArgs += "f";
                     } else {
                         int lsz = lntt;
                         plist += param + " ";
                         for (int tt = 1; tt < lsz; ++tt) {
                             plist += CONST(ta.getBase().defaultValue().getIValue()) + " ";
+							specialArgs += "f";
                         }
                     }
                 } else {
                     plist += param;
+					if (param.toString().matches("#(.*)nextInstance(.*)")) {
+						specialArgs += "t";
+					} else {
+						specialArgs += "f";
+					}
                 }
             }
             plist += " ";  
-            
-            if (param.toString().matches("#(.*)nextInstance(.*)")) {
-            	specialArgs += "t";
-            } else {
-            	specialArgs += "f";
-            }
+
         }
         String oplist = plist;
         formalParams = fun.getParams().iterator();
