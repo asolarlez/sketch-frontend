@@ -1,0 +1,14 @@
+harness void main(int i){
+    int[5] T;
+    int[7] Q;
+    int[8][2] P;
+    
+    T[4] = 8;
+    
+    assert (?? ? T : (?? ? Q : P[??]))[ ?? ? i : ?? ] == 8;
+    
+    
+    
+    
+    
+}

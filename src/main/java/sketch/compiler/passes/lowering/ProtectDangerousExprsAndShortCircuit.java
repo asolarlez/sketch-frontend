@@ -130,7 +130,7 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 		if(t == TypePrimitive.nulltype){
 			t = TypePrimitive.inttype;
 		}
-		addStatement (new StmtVarDecl (exp,t, resName, null));
+        addStatement((Statement) (new StmtVarDecl(exp, t, resName, null)).accept(this));
 		ExprVar res = new ExprVar (exp, resName);
 
 		
