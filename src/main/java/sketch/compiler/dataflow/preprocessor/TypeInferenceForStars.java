@@ -379,6 +379,12 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
         return a;
     }
 
+    @Override
+    public Object visitStmtAssume(StmtAssume a) {
+        a.getCond().accept(new UpgradeStarToInt(this, TypePrimitive.bittype, nres));
+        return a;
+    }
+
 
     public Object visitStmtFor(StmtFor stmt)
     {

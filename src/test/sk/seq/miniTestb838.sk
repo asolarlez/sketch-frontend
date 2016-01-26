@@ -1,0 +1,12 @@
+pragma options "--debug-show-dag";
+
+int foo(int x);
+
+harness void main(int x, int y, int z){
+ assume x == z;
+ assume foo(z+x) > ??;
+ assume foo(y) > ??;
+ if(foo(2*x) > 5){
+     assert foo(x+x) + foo(y) > 6;
+ }    
+}

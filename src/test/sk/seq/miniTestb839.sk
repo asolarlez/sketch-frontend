@@ -1,0 +1,18 @@
+pragma options "--debug-show-dag --bnd-cbits 2 --bnd-inbits 3";
+
+int foo(int x);
+
+bit goo(int z, int x){
+    return foo(z+x) > ??;
+}
+
+harness void main(int x, int y, int z){
+ assume x == z;
+ assume goo(z,x);
+ assume foo(y) > ??;
+ if(foo(2*x) > 5){
+     assert foo(x+x) + foo(y) > 6;
+ }     
+ assert foo(x)*?? + foo(y)*?? == foo(x)+foo(z);
+}
+
