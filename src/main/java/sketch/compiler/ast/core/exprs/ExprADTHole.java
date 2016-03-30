@@ -9,6 +9,7 @@ import sketch.compiler.ast.core.FEVisitor;
 public class ExprADTHole extends Expression {
     private String name = null;
     private final List<Expression> params;
+	boolean simple = false;
 
     /**
      * Represents an arbitrary ADT.
@@ -26,6 +27,19 @@ public class ExprADTHole extends Expression {
         super(context);
         this.params = params;
     }
+
+	public ExprADTHole(FENode context, List<Expression> params, boolean simple) {
+		super(context);
+		this.params = params;
+		this.simple = simple;
+	}
+
+	public ExprADTHole(FEContext context, List<Expression> params,
+			boolean simple) {
+		super(context);
+		this.params = params;
+		this.simple = simple;
+	}
 
     /** Returns the name of the type of returned ADT */
     public String getName() {
@@ -63,4 +77,8 @@ public class ExprADTHole extends Expression {
     public void setName(String name) {
         this.name = name;
     }
+
+	public boolean isSimple() {
+		return simple;
+	}
 }

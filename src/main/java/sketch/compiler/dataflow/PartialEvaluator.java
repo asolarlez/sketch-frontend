@@ -1856,6 +1856,7 @@ nvarContext,
         {
             String nm = stmt.getName(i);
             Type vt = (Type)stmt.getType(i).accept(this);
+			if (vt.isStruct()) {
             try {
                 StructDef sdef = null;
                 String pkg = null;
@@ -1865,6 +1866,7 @@ nvarContext,
             } catch (RuntimeException err) {
                 // ignore
             }
+			}
             symtab.registerVar(stmt.getName(i), vt, stmt, SymbolTable.KIND_LOCAL);
             state.varDeclare(nm, vt);
             Expression ninit = null;

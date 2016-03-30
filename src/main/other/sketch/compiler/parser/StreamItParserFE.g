@@ -803,7 +803,11 @@ expr_get returns [Expression x] { x = null; List l; }
 	: t:NDVAL2 LPAREN LCURLY l = expr_get_params RCURLY RPAREN
 		{ x = new ExprADTHole(getContext(t), l); }
 	;
-	
+
+expr_simple_adt returns [Expression x] { x = null; List l; }
+	: t: TK_new NDVAL2 LPAREN LCURLY l = expr_get_params RCURLY RPAREN
+		{ x = new ExprADTHole(getContext(t), l, true); }
+	;
 expr_get_params returns [List l] { l = new ArrayList(); Expression x; }
 	:	
 		(	x=expr_named_param { l.add(x); }
@@ -1100,6 +1104,7 @@ primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> 
 tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
 	|   (expr_get) => x = expr_get
+	|   (expr_simple_adt) => x = expr_simple_adt
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr	
 	|	x=var_expr

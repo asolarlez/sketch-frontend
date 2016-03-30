@@ -116,20 +116,21 @@ public class SymbolTableVisitor extends FEReplacer
         TypeRenamer rv = new TypeRenamer();
         Set<String> st = new HashSet<String>(tps);
         List<Parameter> formals = f.getParams();
-        Iterator<Parameter> paramIt = f.getParams().iterator();
-        int dif = f.getParams().size() - efcTypes.size();
+		Iterator<Parameter> paramIt = formals.iterator();
+		int dif = f.getParams().size() - efcTypes.size();
         if (dif != 0) {
             if (dif < 0) {
                 throw new ExceptionAtNode("Wrong number of parameters", null);
             }
             boolean alloutputs = true;
             for (int i = 0; i < dif; ++i) {
+				// XXX: Not sure what this is doing
                 Parameter p = formals.get(formals.size() - 1 - i);
                 if (!p.isParameterOutput()) {
                     alloutputs = false;
                 }
             }
-            if (!alloutputs) {
+			if (true || !alloutputs) {
                 for (int i = 0; i < dif; ++i) {
                     Parameter p = paramIt.next();
                     if (!p.isImplicit()) {
@@ -139,8 +140,9 @@ public class SymbolTableVisitor extends FEReplacer
             }
         }
         for (Type actual : efcTypes) {
-            Parameter p = paramIt.next();
-            Type ptype = p.getType();
+			Parameter p = paramIt.next();
+			Type ptype = p.getType();
+
             // The idea is that if I expect A[] and the user gives int[]
             // then A should be int, but if I expect A[][] and the user gives int[]
             // then A should also be int. On the other hand, if I expect A[]

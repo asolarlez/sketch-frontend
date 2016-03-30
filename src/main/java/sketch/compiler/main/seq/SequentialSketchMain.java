@@ -517,8 +517,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
 		// Eliminate generic for generator functions
-		prog = (Program) prog.accept(new EliminateGenerics(true));
-		// prog = (Program) prog.accept(new ExpandRepeatCases());
+		prog = (Program) prog.accept(new EliminateGenerics(true, varGen,
+				options.bndOpts.arrSize, options.bndOpts.gucDepth));
         prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
         prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 

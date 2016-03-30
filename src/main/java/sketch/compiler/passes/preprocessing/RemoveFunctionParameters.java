@@ -450,7 +450,6 @@ public class RemoveFunctionParameters extends FEReplacer {
 		Program afterLambdaClosure = (Program) aftertc.accept(new LambdaThread(
 				varGen));
 
-
 		return afterLambdaClosure.accept(new FixPolymorphism());
 
     }
@@ -1161,6 +1160,34 @@ public class RemoveFunctionParameters extends FEReplacer {
                             } else {
                                 // Get the current function
                                 Function currentFunction = cg.getByName(cur);
+								// TODO: Not sure if this is correct
+                                for (Entry<String, ParamInfo> ent : nfi.paramsToAdd.entrySet()) {
+                                	if (ent.getValue().changed && lambdaFunctionsNeededVariables.containsKey(caller.getName()))
+                                    {
+
+                                        // Loop through each variable that is needed
+										for (Entry<ExprVar, ExprVar> entry : lambdaFunctionsNeededVariables
+												.get(caller.getName()).entrySet())
+                                        {
+											if (ent.getKey().equals(
+													entry.getKey().getName())) {
+                                            // Add a parameter to add to the caller
+                                            TreeSet<String> dependent =
+                                                    new TreeSet<String>();
+											nfi.paramsToAdd.put(entry.getKey().getName(),
+													new ParamInfo(
+													ent.getValue().paramType,
+													entry.getValue().getName(),
+															entry.getValue().getName(),
+                                                            true, dependent));
+											}
+                                        }
+
+
+                                    }
+                                }
+
+                                	
 
                                 // Loop through the formal parameters of the current
                                 // function
@@ -1470,7 +1497,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         Set<String> elimset;
 
         Map<String, Function> doneFunctions = new HashMap<String, Function>();
-
+		Set<String> seenFunctions = new HashSet<String>();
         public FixPolymorphism() {
 			super();
         }
@@ -1483,6 +1510,10 @@ public class RemoveFunctionParameters extends FEReplacer {
             if (doneFunctions.containsKey(f.getFullName())) {
                 return doneFunctions.get(f.getFullName());
             }
+			if (seenFunctions.contains(f.getFullName())) {
+				return f;
+			}
+			seenFunctions.add(f.getFullName());
             TypeRenamer oldtren = tren;
             Set<String> oldnamesset = namesset;
             Set<String> oldelimset = elimset;

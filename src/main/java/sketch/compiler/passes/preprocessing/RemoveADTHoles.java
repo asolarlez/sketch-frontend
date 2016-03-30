@@ -54,7 +54,7 @@ class ArrayTypeReplacer extends SymbolTableVisitor {
 /**
  * This class expands GUCs into constructors of some maximum depth.
  */
-public class RemoveADTHoles extends SymbolTableVisitor {
+public class RemoveADTHoles extends TypeInferenceForADTHoles {
     TempVarGen varGen;
     FENode context;
     TypeStructRef oriType;
@@ -62,7 +62,6 @@ public class RemoveADTHoles extends SymbolTableVisitor {
     int gucDepth;
 
     public RemoveADTHoles(TempVarGen varGen, int arrSize, int gucDepth) {
-        super(null);
         this.varGen = varGen;
         this.maxArrSize = arrSize;
         this.gucDepth = gucDepth;
@@ -85,18 +84,41 @@ public class RemoveADTHoles extends SymbolTableVisitor {
 
     @Override
     public Object visitExprADTHole(ExprADTHole exp) {
-
+		Expression newexp = (Expression) super.visitExprADTHole(exp);
+		if (!(newexp instanceof ExprADTHole)) {
+			return newexp;
+		} else {
+			exp = (ExprADTHole) newexp;
+		}
         TypeStructRef ts = new TypeStructRef(exp.getName(), false);
         context = exp;
         oriType = ts;
         List<Statement> newStmts = new ArrayList<Statement>();
-        Expression e = processADTHole(ts, exp.getParams(), newStmts);
+		Expression e;
+		if (exp.isSimple()) {
+			e = processSimpleADTHole(ts, exp.getParams(), newStmts);
+		} else {
+			e = processADTHole(ts, exp.getParams(), newStmts);
+		}
         addStatements(newStmts);
         return e;
     }
 
+	private Expression processSimpleADTHole(TypeStructRef type,
+			List<Expression> params, List<Statement> newStmts) {
+		String tempVar = varGen.nextVar(type.getName().split("@")[0] + "_");
+		Statement decl = (new StmtVarDecl(context, type, tempVar, null));
+		newStmts.add(decl);
+		symtab.registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
+		ExprVar ev = new ExprVar(context, tempVar);
+
+		List<ExprVar> depthHoles = new ArrayList<ExprVar>();
+		createNewAdt(ev, type, params, newStmts, 1, true, depthHoles);
+		return ev;
+	}
+
     private Expression processADTHole(TypeStructRef type, List<Expression> params,
-            List<Statement> newStmts)
+ List<Statement> newStmts)
     {
         String tempVar = varGen.nextVar(type.getName().split("@")[0] + "_");
         Statement decl = (new StmtVarDecl(context, type, tempVar, null));
@@ -105,7 +127,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
         ExprVar ev = new ExprVar(context, tempVar);
 
 		List<ExprVar> depthVars = new ArrayList<ExprVar>();
-        getExprTree(ev, type, params, newStmts, gucDepth, depthVars);
+		getExprTree(ev, type, params, newStmts, gucDepth, depthVars);
         return ev;
     }
 
@@ -433,6 +455,15 @@ public class RemoveADTHoles extends SymbolTableVisitor {
         List<Expression> filteredExprs = new ArrayList<Expression>();
         for (Expression exp : params) {
             Type t = getType(exp);
+			if (t.isStruct()
+					&& (nres.isTemplate(((TypeStructRef) t).getName()) || nres
+							.getStruct(((TypeStructRef) t).getName()) == null)) {
+				expType = tt;
+				Expression newexp = doExpression(exp);
+				filteredExprs.add(newexp);
+				expType = null;
+				continue;
+			}
             if (t.isArray() && !tt.isArray()) {
                 TypeArray ta = (TypeArray) t;
                 Type base = ta.getBase();
@@ -448,6 +479,10 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                 }
             }
             if (t.promotesTo(tt, nres)) {
+				if (tt.isStruct() && t.equals(TypePrimitive.bottomtype)) {
+					// skip
+					continue;
+				}
                 if (!(exp instanceof ExprVar)) {
                     exp = (Expression) (new CloneHoles()).process(exp).accept(this);
                 }

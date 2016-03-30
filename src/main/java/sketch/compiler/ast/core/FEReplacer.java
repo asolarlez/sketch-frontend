@@ -16,18 +16,8 @@
 
 package sketch.compiler.ast.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
-
-import static sketch.util.DebugOut.assertFalse;
 
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
@@ -56,6 +46,8 @@ import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.util.datastructures.TypedHashMap;
+
+import static sketch.util.DebugOut.assertFalse;
 
 /**
  * Replaces nodes in a front-end tree.  This is a skeleton for writing
@@ -338,7 +330,7 @@ public class FEReplacer implements FEVisitor
         }
         if (!hasChanged)
             return exp;
-        return new ExprADTHole(exp, newParams);
+		return new ExprADTHole(exp, newParams, exp.isSimple());
     }
 
     public Object visitExprFunCall(ExprFunCall exp)
