@@ -152,3 +152,4 @@ light-distr:
 	cd ../sketch-backend; hg summary | (head -n 4 >> ../sketch-$(VERSION)/README) | cd ../sketch-frontend	
 	rm -rf ../sketch-$(VERSION)/sketch-backend/.hg
 	cd ../sketch-$(VERSION)/sketch-backend; bash ./autogen.sh; cd ../../sketch-frontend
+	cd ../ ; tar -cvf sketch-$(VERSION).tar sketch-$(VERSION)
