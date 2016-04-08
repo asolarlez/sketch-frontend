@@ -283,12 +283,19 @@ public class ParallelBackend extends SATBackend {
     }
 
     @Override
-    protected void beforeRunSolver(SynchronousTimedProcess proc) {
+    protected boolean checkBeforeRunning(SynchronousTimedProcess proc) {
         // maintain CEGIS process, to terminate it directly
-        // when another worker already found a solution
+        // when another worker already found a solution. If a solution has
+        // already been found, this method returns false.
+
+        if (es.isShutdown()) {
+            return false;
+        }
+
         synchronized (lock) {
             cegiss.add(proc.getProc());
         }
+        return true;
     }
 
     public void terminateSubprocesses() {

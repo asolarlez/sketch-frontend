@@ -406,9 +406,15 @@ public class SATBackend {
         log ("Launching: "+ cmdLine);
     }
 
+    /**
+     * 
+     * @param proc
+     * @return This method returns false if the process should not be run.
+     */
     // will be overridden by parallel version
-    protected void beforeRunSolver(SynchronousTimedProcess proc) {
+    protected boolean checkBeforeRunning(SynchronousTimedProcess proc) {
         // utilize CEGIS process information here
+        return true;
     }
 
     private SATSolutionStatistics runSolver(String[] commandLine, int bits,
@@ -424,7 +430,9 @@ public class SATBackend {
                     "Could not instantiate solver (CEGIS) process.", e);
         }
 
-        beforeRunSolver(proc);
+        if (!checkBeforeRunning(proc)) {
+            throw new SketchSolverException("CEGIS was killed (assuming user kill); exiting.");
+        }
         final ProcessStatus status = proc.run(false);
 
         // deal with killed states
