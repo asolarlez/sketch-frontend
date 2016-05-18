@@ -16,6 +16,8 @@
 
 package sketch.compiler.passes.lowering;
 
+import static sketch.util.Misc.nonnull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,17 +30,24 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.SymbolTable.VarInfo;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.regens.*;
+import sketch.compiler.ast.core.exprs.regens.ExprAlt;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
+import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.exprs.CudaThreadIdx;
@@ -49,7 +58,6 @@ import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
-import static sketch.util.Misc.nonnull;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -387,7 +395,13 @@ public class GetExprType extends FENullVisitor
     	// Has SymbolTable given us a function declaration?
     	try
     	{
-            Function fn = nres.getFun(exp.getName(), exp);
+            VarInfo vi = symTab.lookupVarInfo(exp.getName());
+            Function fn = null;
+            if (vi != null && vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+                fn = (Function) vi.origin;
+            } else {
+                fn = nres.getFun(exp.getName(), exp);
+            }
             Type retType = fn.getReturnType();
             if (!fn.getTypeParams().isEmpty() &&
                     !(fn.getReturnType() instanceof TypePrimitive))
@@ -516,6 +530,10 @@ public class GetExprType extends FENullVisitor
         return symTab.lookupVar(exp.getName(), exp);
     }
 
+    public Object visitExprLambda(ExprLambda elam) {
+        return TypeFunction.singleton;
+    }
+
     @Override
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
         return exprNamedParam.getExpr().accept(this);
@@ -537,6 +555,19 @@ public class GetExprType extends FENullVisitor
 				assert false: "You can only shift arrays of primitives.";
 			}
         	return tl;
+        case ExprBinary.BINOP_ADD:
+        case ExprBinary.BINOP_SUB:
+        case ExprBinary.BINOP_MUL:
+        case ExprBinary.BINOP_DIV:
+        case ExprBinary.BINOP_MOD:
+
+            Type rv = tl.leastCommonPromotion(tr, nres);
+            if (rv != null) {
+                if (rv.equals(TypePrimitive.bittype)) {
+                    return TypePrimitive.inttype;
+                }
+                return rv;
+            }
         }
 
         // The type of the expression is some type that both sides

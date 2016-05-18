@@ -313,7 +313,7 @@ public class SymbolTableVisitor extends FEReplacer
         symtab.registerVar(par.getName(), par.getType(), par,
                 SymbolTable.KIND_FUNC_PARAM);
 
-        Type t = (Type) par.getType().accept(this);
+        Type t = doType(par.getType());
         if (t == par.getType()) {
             return par;
         } else {
@@ -446,6 +446,10 @@ public class SymbolTableVisitor extends FEReplacer
 		return new StmtVarDecl(stmt, newTypes, stmt.getNames(), newInits);
     }
 
+    public Type doType(Type t) {
+        return (Type) t.accept(this);
+    }
+
     public Object visitStructDef(StructDef ts) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -482,7 +486,7 @@ public class SymbolTableVisitor extends FEReplacer
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
 
         for (Entry<String, Type> entry : ts) {
-            Type type = (Type) entry.getValue().accept(this);
+            Type type = doType(entry.getValue());
             changed |= (type != entry.getValue());
             map.put(entry.getKey(), type);
         }

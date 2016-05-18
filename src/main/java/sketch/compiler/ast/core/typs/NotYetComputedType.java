@@ -11,6 +11,11 @@ public class NotYetComputedType extends Type {
     public NotYetComputedType() {
         super(CudaMemoryType.UNDEFINED);
     }
+
+    public String toString() {
+        return "???";
+    }
+
     @Override
     public TypeComparisonResult compare(Type that) {
         if (that instanceof NotYetComputedType) {

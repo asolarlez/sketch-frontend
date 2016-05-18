@@ -15,6 +15,8 @@
  */
 
 package sketch.compiler.main.seq;
+import static sketch.util.Misc.nonnull;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
@@ -33,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import static sketch.util.DebugOut.printError;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
@@ -55,6 +59,11 @@ import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
+import sketch.compiler.passes.bidirectional.BidirectionalAnalysis;
+import sketch.compiler.passes.bidirectional.EliminateLambdas;
+import sketch.compiler.passes.bidirectional.InnerFunReplacer;
+import sketch.compiler.passes.bidirectional.ThreadClosure;
+import sketch.compiler.passes.bidirectional.TypeCheck;
 import sketch.compiler.passes.cleanup.EliminateAliasesInRefParams;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
@@ -81,10 +90,6 @@ import sketch.util.ControlFlowException;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
-
-import static sketch.util.DebugOut.printError;
-
-import static sketch.util.Misc.nonnull;
 
 /**
  * Convert StreamIt programs to legal Java code.  This is the main
@@ -498,6 +503,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         prog = (Program) prog.accept(new ConstantReplacer(null));
 
+
         prog = (Program) prog.accept(new MinimizeFcnCall());
 
         prog = (Program) prog.accept(new SpmdbarrierCall());
@@ -513,21 +519,38 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         
 //		prog.debugDump("********************************************* Before remove lambda expression");
-		prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+        if (false) {
 
+            prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
-		prog = (Program) prog.accept(new ExpandRepeatCases());
-        prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
-        prog = (Program) prog.accept(new EliminateEmptyArrayLen());
+            prog = (Program) prog.accept(new ExpandRepeatCases());
+            prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
+            prog = (Program) prog.accept(new EliminateEmptyArrayLen());
+            DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
+            // prog.debugDump("After disambiguate calls and type check");
+            prog = (Program) prog.accept(dtc);
+            // prog.debugDump("After dtc accept");
+            if (!dtc.good) {
+                throw new ProgramParseException("Semantic check failed");
+            }
+        } else {
 
-        DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
-
-		// prog.debugDump("After disambiguate calls and type check");
-		prog = (Program) prog.accept(dtc);
-		// prog.debugDump("After dtc accept");
-        if (!dtc.good) {
-            throw new ProgramParseException("Semantic check failed");
+            BidirectionalAnalysis bda = new BidirectionalAnalysis();
+            TypeCheck tchk = new TypeCheck();
+            bda.addPass(tchk);
+            bda.addPostPass(tchk.getPostPass());
+            EliminateLambdas lamelim = new EliminateLambdas();
+            bda.addPass(lamelim);
+            InnerFunReplacer ifrepl = new InnerFunReplacer();
+            bda.addPass(ifrepl);
+            sketch.compiler.passes.bidirectional.RemoveFunctionParameters rfp = new sketch.compiler.passes.bidirectional.RemoveFunctionParameters();
+            bda.addPass(rfp);
+            prog = bda.doProgram(prog);
+            prog = (Program) prog.accept(new ThreadClosure(rfp, ifrepl));
+            prog = (Program) prog.accept(lamelim.getCleanup());
         }
+
+        prog.debugDump("After experimental");
 
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());

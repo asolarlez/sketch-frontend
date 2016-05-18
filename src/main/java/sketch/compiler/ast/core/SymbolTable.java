@@ -66,6 +66,8 @@ public class SymbolTable implements Cloneable
     /** Kind of a function parameter. */
     public static final int KIND_FUNC_PARAM = 4;
 
+    public static final int KIND_LOCAL_FUNCTION = 5;
+
     private Map<String, VarInfo> vars;
     private Map<String, Function> fns;
     private SymbolTable parent;
@@ -252,6 +254,7 @@ public class SymbolTable implements Cloneable
             return info.type;
         return null;
     }
+
 
     /**
      * Finds the object that declared a particular symbol. If that symbol is not in the

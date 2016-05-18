@@ -4,10 +4,18 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
-import sketch.compiler.ast.core.SymbolTable.VarInfo;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.SymbolTable.VarInfo;
+import sketch.compiler.ast.core.exprs.ExprArrayInit;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
+import sketch.compiler.ast.core.exprs.ExprLocalVariables;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -41,6 +49,11 @@ public class RemoveFunctionParameters extends FEReplacer {
     private Map<String, String> lambdaRenameMap = new HashMap<String, String>();
     private ExprLambda currentExprLambda = null;
 
+    /***
+     * When we hoist a function, we need to remember the symboltable at the
+     * point of hoisting so that later we will remember it.
+     * 
+     */
     Map<String, SymbolTable> tempSymtables = new HashMap<String, SymbolTable>();
     Map<String, NewFunInfo> extractedInnerFuns = new HashMap<String, NewFunInfo>();
     Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
