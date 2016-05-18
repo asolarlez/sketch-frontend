@@ -1,7 +1,7 @@
 // a thorough test of angelic feature: the model based expr generator, which might be faster
 // this triggers a bug in the backend's miniSAT solver.cpp: see backend Issue #6
 
-pragma options "--be:nosim --bnd-inbits 3 --bnd-cbits 3 --bnd-angelicbits 4 --bnd-unroll-amnt 6 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
+pragma options "--be:nosim --bnd-inbits 4 --bnd-cbits 3 --bnd-angelicbits 4 --bnd-unroll-amnt 6 --bnd-inline-amnt 2 --beopt:simplifycex NOSIM";
 
 include "generators.skh";
 
@@ -124,6 +124,7 @@ harness void partition(int p, int P, int N){
 	assume P>0;
 	assume N>0;
 	assume p<P;
+	assume p<8 && P < 8 && N < 8;
 		
 	generator int num() {
 		int len = ??;
