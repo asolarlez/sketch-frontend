@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 4 --bnd-unroll-amnt 16 --be:showDAG";
+pragma options "--bnd-inbits 4 --bnd-unroll-amnt 16";
 
 int[N] select(fun pred, int N, int[N] A, ref int sz){
   sz = 0;

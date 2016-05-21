@@ -42,27 +42,27 @@ generator bit genListPredicate (int lenRet, int [lenRet] ret,
   //         ret == select(pred, L)
 
   int type = ??(2);
-  bit pred;
+  bit p;
   if (type == 0)
-    pred = equals(lenL, L, lenRet, ret);
+    p = equals(lenL, L, lenRet, ret);
   else if (type == 1)
-    pred = equals(lenL, L, i, top(i, lenRet, ret));
+    p = equals(lenL, L, i, top(i, lenRet, ret));
   else if (type == 2)
-    pred = equals(lenRet, ret, i, top(i, lenL, L));
+    p = equals(lenRet, ret, i, top(i, lenL, L));
   else
   {
     int sz;
     int [lenL] tmp = select(pred, lenL, L, sz);
     int [sz] sel = tmp[0::sz];
-    pred = equals(lenRet, ret, sz, sel);
-    return pred;
+    p = equals(lenRet, ret, sz, sel);
+    return p;
   }
 
   int operator = ??(1);
   if (operator == 0)
-    return pred;
+    return p;
   else
-    return !(pred);
+    return !(p);
 }
 
 generator int genScalarOperand (int lenRet, int [lenRet] ret, 

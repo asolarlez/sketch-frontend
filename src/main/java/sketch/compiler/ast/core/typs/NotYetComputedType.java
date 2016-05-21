@@ -4,6 +4,8 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 
 public class NotYetComputedType extends Type {
+
+    public static final NotYetComputedType singleton = new NotYetComputedType();
     public NotYetComputedType(CudaMemoryType memtyp) {
         super(memtyp);
     }

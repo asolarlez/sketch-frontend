@@ -519,7 +519,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         
 //		prog.debugDump("********************************************* Before remove lambda expression");
-        if (false) {
+        if (true) {
 
             prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
@@ -535,7 +535,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             }
         } else {
 
-            BidirectionalAnalysis bda = new BidirectionalAnalysis();
+            BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
             TypeCheck tchk = new TypeCheck();
             bda.addPass(tchk);
             bda.addPostPass(tchk.getPostPass());
@@ -543,11 +543,16 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             bda.addPass(lamelim);
             InnerFunReplacer ifrepl = new InnerFunReplacer();
             bda.addPass(ifrepl);
+            bda.addPostPass(ifrepl.getPostPass());
             sketch.compiler.passes.bidirectional.RemoveFunctionParameters rfp = new sketch.compiler.passes.bidirectional.RemoveFunctionParameters();
             bda.addPass(rfp);
+            bda.addPostPass(rfp.getPostPass());
             prog = bda.doProgram(prog);
             prog = (Program) prog.accept(new ThreadClosure(rfp, ifrepl));
             prog = (Program) prog.accept(lamelim.getCleanup());
+            if (!tchk.good) {
+                throw new ProgramParseException("Semantic check failed");
+            }
         }
 
         prog.debugDump("After experimental");

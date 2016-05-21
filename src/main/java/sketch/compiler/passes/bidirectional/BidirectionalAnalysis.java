@@ -1,6 +1,7 @@
 package sketch.compiler.passes.bidirectional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,7 @@ import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
 import sketch.compiler.ast.core.exprs.regens.ExprParen;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.*;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -145,15 +147,32 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     protected List<BidirectionalPass> previsitors = new ArrayList<BidirectionalPass>();
     protected List<BidirectionalPass> postvisitors = new ArrayList<BidirectionalPass>();
     Type returnType = null;
-    TempVarGen varGen = new TempVarGen();
+    protected final TempVarGen varGen;
     Stack<String> funsToVisit = new Stack<String>();
+    Stack<Function> queuedForAnalysis = new Stack<Function>();
+    Map<String, SymbolTable> closureStore = new HashMap<String, SymbolTable>();
 
     public TempVarGen getVarGen() {
         return varGen;
     }
 
-    public BidirectionalAnalysis() {
+    public void addClosure(String funName, SymbolTable st) {
+        closureStore.put(funName, st);
+    }
+
+    public SymbolTable swapSymTable(SymbolTable st) {
+        SymbolTable old = this.symtab;
+        this.symtab = st;
+        return old;
+    }
+
+    public SymbolTable getClosure(String funName) {
+        return closureStore.get(funName);
+    }
+
+    public BidirectionalAnalysis(TempVarGen varGen) {
         super(null);
+        this.varGen = varGen;
     }
 
     public void addPass(BidirectionalPass bdp) {
@@ -426,19 +445,45 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             return super.visitExprFunCall(exp);
         }
         Function f;
-        try {
-            VarInfo vi = symtab.lookupVarInfo(exp.getName());
-            if (vi != null && vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+
+        VarInfo vi = symtab.lookupVarInfo(exp.getName());
+        if (vi != null) {
+            if (vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
                 f = (Function) vi.origin;
             } else {
-                f = nres.getFun(exp.getName(), exp);
+                if (vi.kind == SymbolTable.KIND_FUNC_PARAM) {
+                    f = null;
+                } else {
+                    throw new ExceptionAtNode("Function is unknown or ambiguous " + exp.getName(), exp);
+                }
             }
-        } catch (UnrecognizedVariableException e) {
-            throw new ExceptionAtNode("Function is unknown or ambiguous " + exp.getName(), exp);
+        } else {
+            try {
+                f = nres.getFun(exp.getName(), exp);
+            } catch (UnrecognizedVariableException e) {
+                throw new ExceptionAtNode("Function is unknown or ambiguous " + exp.getName(), exp);
+            }
         }
 
         boolean hasChanged = false;
         List<Expression> newParams = new ArrayList<Expression>();
+        if (f == null) {
+            // Unknown function; we don't have a signature.
+            NotYetComputedType nyc = NotYetComputedType.singleton;
+            for (Expression actual : exp.getParams()) {
+                tdstate.beforeRecursion(nyc, exp);
+                Expression newParam = doExpression(actual);
+                newParams.add(newParam);
+                if (actual != newParam)
+                    hasChanged = true;
+            }
+            if (!hasChanged)
+                return exp;
+            return new ExprFunCall(exp, exp.getName(), newParams);
+        }
+
+
+
         List<Type> actualTypes = new ArrayList<Type>();
         for (Expression ap : exp.getParams()) {
             actualTypes.add(getType(ap));
@@ -456,8 +501,6 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         for (Parameter formal : f.getParams()) {
             if (hadImp && formal.isImplicit()) {
                 hasChanged = true;
-                pm.put(formal.getName(), newParams.size());
-                newParams.add(null);
                 --implSz;
             } else {
                 if (implSz != 0) {
@@ -529,8 +572,13 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitExprTypeCast(ExprTypeCast exp) {
-        // TODO Auto-generated method stub
-        return null;
+        tdstate.beforeRecursion(TypePrimitive.bottomtype, exp);
+        Expression expr = doExpression(exp.getExpr());
+        Type t = doType(exp.getType());
+        if (expr == exp.getExpr() && t == exp.getType())
+            return exp;
+        else
+            return new ExprTypeCast(exp, t, expr);
     }
 
     public Object visitExprUnary(ExprUnary exp) {
@@ -575,12 +623,14 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         if (hadTPs) {
             nres.pushTempTypes(func.getTypeParams());
         }
+
         Function oldCurFun = tdstate.enterFunction(func);
 
         Type oldRT = returnType;
         returnType = func.getReturnType();
-
         Object result = null;
+
+        try {
 
         List<Parameter> newParam = new ArrayList<Parameter>();
         Iterator<Parameter> it = func.getParams().iterator();
@@ -610,13 +660,15 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             result = func.creator().returnType(rtype).params(newParam).body(newBody).create();
         }
 
-        returnType = oldRT;
-        if (hadTPs) {
-            nres.popTempTypes();
-        }
+        } finally {
+            returnType = oldRT;
+            if (hadTPs) {
+                nres.popTempTypes();
+            }
 
-        tdstate.exitFunction(oldCurFun);
-        symtab = oldSymTab;
+            tdstate.exitFunction(oldCurFun);
+            symtab = oldSymTab;
+        }
         return result;
     }
 
@@ -752,8 +804,18 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitStmtInsertBlock(StmtInsertBlock stmt) {
-        // TODO Auto-generated method stub
-        return null;
+        Statement newIns = procStatement(stmt.getInsertStmt()); 
+        Statement newInto = procStatement(stmt.getIntoBlock());
+
+        if (newIns == stmt.getInsertStmt() && newInto == stmt.getIntoBlock())
+            return stmt;
+        else if (null == newIns || null == newInto)
+            return null;
+        else {
+            if (!(newInto.isBlock()))
+                newInto = new StmtBlock(newInto);
+            return new StmtInsertBlock(stmt, newIns, (StmtBlock) newInto);
+        }
     }
 
     public Object visitStmtJoin(StmtJoin stmt) {
@@ -823,8 +885,14 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         return new StmtVarDecl(stmt, newTypes, stmt.getNames(), newInits);
     }
 
+    public void queueForAnalysis(Function f) {
+        queuedForAnalysis.push(f);
+    }
+
     public void addFunction(Function f) {
-        newFuncs.add(f);
+        if (!isHighOrder(f)) {
+            newFuncs.add(f);
+        }
     }
 
     public Object visitStmtWhile(StmtWhile stmt) {
@@ -838,7 +906,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
     public Object visitStmtFunDecl(StmtFunDecl stmt) {
         Function f = doFunction(stmt.getDecl());
-        symtab.registerFn(f);
+        symtab.registerVar(f.getName(), TypeFunction.singleton, f, SymbolTable.KIND_LOCAL_FUNCTION);
         if (f != stmt.getDecl()) {
             return new StmtFunDecl(stmt, f);
         } else {
@@ -894,6 +962,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         nstructsInPkg = -1;
 
         int nonNull = 0;
+        queuedForAnalysis.clear();
         for (Function oldFunc : spec.getFuncs()) {
             // High Order Functions are only analyzed on demand.
             if (!isHighOrder(oldFunc)) {
@@ -906,6 +975,13 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             } else {
                 changed = true;
             }
+        }
+        while (!queuedForAnalysis.isEmpty()) {
+            changed = true;
+            Function f = queuedForAnalysis.pop();
+            Function newFunc = doFunction(f);
+            if (newFunc != null)
+                newFuncs.add(newFunc);
         }
 
         if (newFuncs.size() != nonNull) {
@@ -975,7 +1051,12 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             nt = doType(expNew.getTypeToConstruct());
         }
 
-        StructDef tsr = nres.getStruct(nt.toString());
+        StructDef tsr;
+        if (nt instanceof TypeStructRef) {
+            tsr = nres.getStruct(((TypeStructRef) nt).getName());
+        } else {
+            throw new ExceptionAtNode("You can only construct structs and adts", expNew);
+        }
 
         boolean changed = false;
         List<ExprNamedParam> enl = new ArrayList<ExprNamedParam>(expNew.getParams().size());
@@ -1007,9 +1088,16 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         return null;
     }
 
-    public Object visitStmtReorderBlock(StmtReorderBlock block) {
-        // TODO Auto-generated method stub
-        return null;
+    public Object visitStmtReorderBlock(StmtReorderBlock stmt) {
+        Object o = procStatement(stmt.getBlock());
+        if (o == stmt.getBlock())
+            return stmt;
+        else if (o == null)
+            return null;
+        else if (o instanceof StmtBlock)
+            return new StmtReorderBlock(stmt, (StmtBlock) o);
+        else
+            return new StmtReorderBlock(stmt, Collections.singletonList((Statement) o));
     }
 
     public Object visitStmtSwitch(StmtSwitch sw) {

@@ -17,7 +17,6 @@
 package sketch.compiler.ast.core;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -84,9 +83,11 @@ public class SymbolTable implements Cloneable
             this.kind = kind;
         }
 
+
         public Finality isFinal = Finality.UNKNOWN;
         public Type type;
         public Object origin;
+
         public int kind;
     }
 
@@ -154,7 +155,9 @@ public class SymbolTable implements Cloneable
      */
     public void registerVar(String name, Type type, Object origin, int kind)
     {
-        vars.put(name, new VarInfo(type, origin, kind));
+        {
+            vars.put(name, new VarInfo(type, origin, kind));
+        }
     }
 
     /** Registers a new function in the symbol table. */
@@ -324,44 +327,6 @@ public class SymbolTable implements Cloneable
         }
     }
 
-    /**
-     * Looks up the function corresponding to a particular name. If that name is not in
-     * the symbol table, searches the parent, and then each of the symbol tables in
-     * includedFns, depth-first, in order. Throws an UnrecognizedVariableException if the
-     * function doesn't exist.
-     * 
-     * @param errSource
-     */
-    public Function lookupFnDEPRACTED(String name, FENode errSource)
-    {
-        Function fn = doLookupFnDEPRACTED(name);
-        if (fn != null) return fn;
-        throw new UnrecognizedVariableException(name, errSource);
-    }
-
-    private Function doLookupFnDEPRACTED(String name)
-    {
-        Function fn = (Function)fns.get(name);
-        if (fn != null)
-            return fn;
-        if (parent != null)
-        {
-            fn = parent.doLookupFnDEPRACTED(name);
-            if (fn != null)
-                return fn;
-        }
-        if (includedFns != null)
-        {
-            for (Iterator iter = includedFns.iterator(); iter.hasNext(); )
-            {
-                SymbolTable other = (SymbolTable)iter.next();
-                fn = other.doLookupFnDEPRACTED(name);
-                if (fn != null)
-                    return fn;
-            }
-        }
-        return null;
-    }
 
     /** Returns the parent of this, or null if this has no parent. */
     public SymbolTable getParent()
@@ -373,21 +338,7 @@ public class SymbolTable implements Cloneable
 	 * Perform a deep clone of the current symbol table.
 	 */
 	public Object clone() {
-		SymbolTable table = new SymbolTable(null);
-
-		table.fns = new HashMap<String, Function>();
-		for (Entry<String, Function> entry : this.fns.entrySet()) {
-			table.fns.put(entry.getKey(), entry.getValue());
-		}
-
-		table.vars = new HashMap<String, SymbolTable.VarInfo>();
-		for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
-			table.vars.put(entry.getKey(), entry.getValue());
-		}
-
-		table.includedFns = this.includedFns;
-		table.makeShared = this.makeShared;
-
+        SymbolTable table = shallowClone();
 		if (this.parent != null) {
 			table.parent = (SymbolTable) this.parent.clone();
 		} else {
@@ -396,6 +347,25 @@ public class SymbolTable implements Cloneable
 
 		return table;
 	}
+
+    public SymbolTable shallowClone() {
+        SymbolTable table = new SymbolTable(null);
+
+        table.fns = new HashMap<String, Function>();
+        for (Entry<String, Function> entry : this.fns.entrySet()) {
+            table.fns.put(entry.getKey(), entry.getValue());
+        }
+
+        table.vars = new HashMap<String, SymbolTable.VarInfo>();
+        for (Entry<String, VarInfo> entry : this.vars.entrySet()) {
+            table.vars.put(entry.getKey(), entry.getValue());
+        }
+
+        table.includedFns = this.includedFns;
+        table.makeShared = this.makeShared;
+        table.parent = this.parent;
+        return table;
+    }
 
     /**
 	 * Return the variables from the symbol table as Expression based on the 

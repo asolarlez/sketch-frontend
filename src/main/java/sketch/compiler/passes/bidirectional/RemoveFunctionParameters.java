@@ -42,7 +42,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
     Map<String, List<String>> equivalences = new HashMap<String, List<String>>();
     Map<String, String> reverseEquiv = new HashMap<String, String>();
     Map<String, Function> funToReplace = new HashMap<String, Function>();
-    Map<String, Function> newFunctions = new HashMap<String, Function>();
+    Set<String> newFunctions = new HashSet<String>();
     Map<String, Package> pkges;
     Map<String, String> nfnMemoize = new HashMap<String, String>();
     Set<String> visited = new HashSet<String>();
@@ -232,6 +232,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
 
         // Loop each package
         for (Package pkg : p.getPackages()) {
+            nres().setPackage(pkg);
             for (Function fun : pkg.getFuncs()) {
                 // Check the function parameters
                 checkFunParameters(fun);
@@ -251,51 +252,58 @@ public class RemoveFunctionParameters extends BidirectionalPass {
 
 
 
+    class PostCheck extends BidirectionalPass {
+        public Object visitExprFunCall(ExprFunCall efc) {
+            if (efc.getName().equals("minimize")) {
+                return super.visitExprFunCall(efc);
+            }
 
-    public Object visitExprFunCall(ExprFunCall efc) {
-        if (efc.getName().equals("minimize")) {
-            return super.visitExprFunCall(efc);
-        }
+            String name = nres().getFunName(efc.getName());
+            if (name == null) {
+                return efc;
+            }
 
-        String name = nres().getFunName(efc.getName());
-        if (name == null) {
-            throw new ExceptionAtNode("Function " + efc.getName() + " either does not exist, or is ambiguous.", efc);
-        }
+            Function orig = nres().getFun(name);
 
-        // If this function call is one that we need to replace. Most likely a
-        // fun
-        if (funToReplace.containsKey(name)) {
-            // Get the function to replace
-            Function orig = funToReplace.get(name);
-            // Get the new function name
-            String nfn = newFunName(efc, orig);
+            // If this function call is one that we need to replace. Most likely
+            // a
+            // fun
+            if (driver.isHighOrder(orig)) {
+                // Get the function to replace
+                // Function orig = funToReplace.get(name);
+                // Get the new function name
+                String nfn = newFunName(efc, orig);
 
-            // If new function already has this new function
-            if (newFunctions.containsKey(nfn)) {
-                return replaceCall(efc, orig, nfn);
+                // If new function already has this new function
+                if (newFunctions.contains(nfn)) {
+                    return replaceCall(efc, orig, nfn);
+                } else {
+                    // Create a new call of this function
+                    Function newFun = createCall(efc, orig, getNameSufix(nfn));
+                    nres().registerFun(newFun);
+                    String newName = nres().getFunName(newFun.getName());
+                    addEquivalence(name, newName);
+                    newFunctions.add(nfn);
+                    SymbolTable tmp = driver.getClosure(newName);
+                    if (tmp != null) {
+                        Function post = driver.doFunction(newFun);
+                        SymbolTable reserve = driver.swapSymTable(tmp);
+                        driver.addFunction(post);
+                        driver.swapSymTable(reserve);
+                    } else {
+                        driver.queueForAnalysis(newFun);
+                    }
+
+                    return replaceCall(efc, orig, nfn);
+                }
             } else {
-                // Create a new call of this function
-                Function newFun = createCall(efc, orig, getNameSufix(nfn));
-                nres().registerFun(newFun);
-                String newName = nres().getFunName(newFun.getName());
-                addEquivalence(name, newName);
-                Function newf = driver.doFunction(newFun);
-                newFunctions.put(newName, newf);
-                driver.addFunction(newf);
-                return replaceCall(efc, orig, nfn);
+                return efc;
             }
-        } else {
-            if (!visited.contains(name)) {
-                String pkgName = getPkgName(name);
-                if (pkges != null && pkges.get(pkgName) == null) {
-                    throw new ExceptionAtNode("Package named " + pkgName + " does not exist.", efc);
-                }
-                if (nres().getFun(name) == null) {
-                    throw new ExceptionAtNode("Function " + efc.getName() + " either does not exist, or is ambiguous.", efc);
-                }
-            }
-            return super.visitExprFunCall(efc);
         }
+    }
+
+    public BidirectionalPass getPostPass() {
+        return new PostCheck();
     }
 
 

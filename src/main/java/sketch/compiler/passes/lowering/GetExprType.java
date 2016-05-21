@@ -105,6 +105,9 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprArrayRange(ExprArrayRange exp) {    	
     	Type base = (Type)exp.getBase().accept(this);
+        if (base == null) {
+            return null;
+        }
     	
         if (base.equals(new NotYetComputedType()))
             return base;
@@ -397,8 +400,16 @@ public class GetExprType extends FENullVisitor
     	{
             VarInfo vi = symTab.lookupVarInfo(exp.getName());
             Function fn = null;
-            if (vi != null && vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
-                fn = (Function) vi.origin;
+            if (vi != null) {
+                if (vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+                    fn = (Function) vi.origin;
+                } else {
+                    if (vi.kind == SymbolTable.KIND_FUNC_PARAM) {
+                        return NotYetComputedType.singleton;
+                    } else {
+                        throw new ExceptionAtNode("Function is unknown or ambiguous " + exp.getName(), exp);
+                    }
+                }
             } else {
                 fn = nres.getFun(exp.getName(), exp);
             }
@@ -526,8 +537,18 @@ public class GetExprType extends FENullVisitor
 
     public Object visitExprVar(ExprVar exp)
     {
-        // Look this up in the symbol table.
-        return symTab.lookupVar(exp.getName(), exp);
+
+        Type t = symTab.lookupVarNocheck(exp);
+        if (t == null) {
+            Function f = nres.getFun(exp.getName());
+            if (f == null) {
+                throw new UnrecognizedVariableException(exp.getName(), exp);
+            } else {
+                return TypeFunction.singleton;
+            }
+        } else {
+            return t;
+        }
     }
 
     public Object visitExprLambda(ExprLambda elam) {

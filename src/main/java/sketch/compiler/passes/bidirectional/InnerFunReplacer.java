@@ -167,7 +167,7 @@ class NewFunInfo {
 public class InnerFunReplacer extends BidirectionalPass {
     Map<String, SymbolTable> tempSymtables = new HashMap<String, SymbolTable>();
     Map<String, NewFunInfo> extractedInnerFuns = new HashMap<String, NewFunInfo>();
-    boolean topLevel = true;
+
     int nfcnt = 0;
     Set<String> allVarNames = new HashSet<String>();
     int nparcnt = 0;
@@ -321,8 +321,8 @@ public class InnerFunReplacer extends BidirectionalPass {
                 if (isInParam) {
                     throw new ExceptionAtNode("You cannot use a captured variable in an array length expression: " + exp, exp);
                 }
-                int kind = InnerFunReplacer.this.symtab().lookupKind(exp.getName(), exp);
-                if (kind == SymbolTable.KIND_GLOBAL) {
+                int kind = vi.kind;
+                if (kind == SymbolTable.KIND_GLOBAL || vi.type instanceof TypeFunction) {
                     return exp;
                 }
 
@@ -422,8 +422,17 @@ public class InnerFunReplacer extends BidirectionalPass {
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
+
             final String name = efc.getName();
-            Function fun = nres.getFun(name);
+
+            Function fun = null;
+            VarInfo vi = InnerFunReplacer.this.symtab().lookupVarInfo(name);
+            if (vi != null && vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+                fun = (Function) vi.origin;
+            } else {
+                fun = nres.getFun(name);
+            }
+
             // NOTE the function passed to funInfo() is not in
             // extractedInnerFuns
             // yet, so it will not be inlined here, which is the correct
@@ -467,8 +476,10 @@ public class InnerFunReplacer extends BidirectionalPass {
             // return super.visitExprFunCall(efc);
             if (fun == null) {
                 Type t = this.symtab.lookupVar(efc.getName(), efc);
-                if (t == null || (!(t instanceof TypeFunction))) {
-                    throw new ExceptionAtNode("Function " + efc.getName() + " has not been defined when used", efc);
+                if (vi == null || vi.kind != SymbolTable.KIND_FUNC_PARAM) {
+                    if (t == null || (!(t instanceof TypeFunction))) {
+                        throw new ExceptionAtNode("Function " + efc.getName() + " has not been defined when used", efc);
+                    }
                 }
                 // at this moment, we don't know about fun's signature,
                 // so we assume that all arguments might be changed for
@@ -561,52 +572,47 @@ public class InnerFunReplacer extends BidirectionalPass {
             newTypes.add(t);
         }
         if (!changed) {
-            return super.visitStmtVarDecl(svd);
+            return svd;
         }
-        return super.visitStmtVarDecl(new StmtVarDecl(svd, newTypes, svd.getNames(), svd.getInits()));
-
+        return new StmtVarDecl(svd, newTypes, svd.getNames(), svd.getInits());
     }
 
 
-    public Object visitExprFunCall(ExprFunCall efc) {
-        // In this case it is necessary to do the fully recursive call
-        // because we need actual to be
-        // fully transformed for the rest of the pass to work. There will be
-        // some redundant work, but that's ok.
-        efc = (ExprFunCall) efc.accept(driver);
+    class PostCheck extends BidirectionalPass {
+        public Object visitExprFunCall(ExprFunCall efc) {
+            String oldName = efc.getName();
+            String newName = oldName;
+            {
+                VarInfo vi = symtab().lookupVarInfo(oldName);
+                if (vi != null) {
+                    if (vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+                        newName = ((Function) vi.origin).getName();
+                    }
+                }
+            }
+            List<Expression> actuals = new ArrayList<Expression>();
+            for (Expression actual : efc.getParams()) {
+                Expression arg = (actual);
+                VarInfo vi = symtab().lookupVarInfo(actual.toString());
+                if (vi != null) {
+                    if (vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+                        String argfname = ((Function) vi.origin).getName();
+                        arg = new ExprVar(actual, argfname);
+                    }
+                }
+                actuals.add(arg);
+            }
+            return new ExprFunCall(efc, newName, actuals);
+        }
+    }
 
-        String oldName = efc.getName();
-        String newName = oldName;
-        {
-            VarInfo vi = symtab().lookupVarInfo(oldName);
-            if (vi != null) {
-                if (vi.kind != SymbolTable.KIND_LOCAL_FUNCTION) {
-                    throw new ExceptionAtNode("This is not a function " + oldName, efc);
-                }
-                newName = ((Function) vi.origin).getName();
-            }
-        }
-        List<Expression> actuals = new ArrayList<Expression>();
-        for (Expression actual : efc.getParams()) {
-            Expression arg = (actual);
-            VarInfo vi = symtab().lookupVarInfo(actual.toString());
-            if (vi != null) {
-                if (vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
-                    String argfname = ((Function) vi.origin).getName();
-                    arg = new ExprVar(actual, argfname);
-                }
-            }
-            actuals.add(arg);
-        }
-        return new ExprFunCall(efc, newName, actuals);
+    public BidirectionalPass getPostPass() {
+        return new PostCheck();
     }
 
 
     public Object visitStmtFunDecl(StmtFunDecl sfd) {
 
-        if (!topLevel) {
-            return super.visitStmtFunDecl(sfd);
-        }
 
         String pkg = nres().curPkg().getName();
         String oldName = sfd.getDecl().getName();
@@ -638,12 +644,14 @@ public class InnerFunReplacer extends BidirectionalPass {
         Function newFun = f.creator().name(newName).pkg(pkg).create();
         nres().registerFun(newFun);
 
-        boolean oldTL = topLevel;
-        topLevel = false;
-        newFun = driver.doFunction(newFun);
-        topLevel = oldTL;
-
         symtab().registerVar(oldName, TypeFunction.singleton, newFun, SymbolTable.KIND_LOCAL_FUNCTION);
+
+        driver.addClosure(f.getFullName(), symtab().shallowClone());
+        NewFunInfo nfi = funInfo(newFun);
+
+        newFun = driver.doFunction(newFun);
+
+
 
         addFunction(newFun);
 
@@ -664,7 +672,6 @@ public class InnerFunReplacer extends BidirectionalPass {
 
         tempSymtables.put(nres().getFunName(newFun), symtab());
 
-        NewFunInfo nfi = funInfo(newFun);
 
         if (nfi.typeParamsToAdd.size() > 0) {
             newFun.getTypeParams().addAll(nfi.typeParamsToAdd);

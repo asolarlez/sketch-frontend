@@ -1089,7 +1089,7 @@ MultiType createMTFromInt(int x){
 }
 
 MultiType createMTFromBit(int x){
-  return new MultiType(bval = x, flag=BOOL);
+  return new MultiType(bval = x!=0, flag=BOOL);
 }
 
 

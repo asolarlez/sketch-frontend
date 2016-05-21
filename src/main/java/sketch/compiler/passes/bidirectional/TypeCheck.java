@@ -761,139 +761,6 @@ public class TypeCheck extends BidirectionalPass {
         return pkg;
     }
 
-    public Object visitExprFunCall(ExprFunCall exp) {
-        Function f;
-        try {
-            VarInfo vi = symtab().lookupVarInfo(exp.getName());
-            if (vi != null && vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
-                f = (Function) vi.origin;
-            } else {
-                f = nres().getFun(exp.getName(), exp);
-            }
-        } catch (UnrecognizedVariableException e) {
-            report(exp, "unknown function " + exp.getName());
-            throw e;
-        }
-
-        if (driver.tdstate.isInTArr() && !f.isGenerator()) {
-            // report(exp, "Function call not allowed in array length
-            // expression.");
-        }
-
-        boolean hasChanged = false;
-        List<Expression> newParams = new ArrayList<Expression>();
-        List<Type> actualTypes = new ArrayList<Type>();
-        for (Expression ap : exp.getParams()) {
-            actualTypes.add(driver.getType(ap));
-        }
-        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
-        int actSz = exp.getParams().size();
-        int formSz = f.getParams().size();
-        if (actSz > formSz) {
-            throw new ExceptionAtNode("Incorrect number of parameters", exp);
-        }
-        int implSz = formSz - actSz;
-        boolean hadImp = (implSz > 0);
-        Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
-        Iterator<Expression> actIt = exp.getParams().iterator();
-        for (Parameter formal : f.getParams()) {
-            if (hadImp && formal.isImplicit()) {
-                hasChanged = true;
-                pm.put(formal.getName(), newParams.size());
-                newParams.add(null);
-                --implSz;
-            } else {
-                if (implSz != 0) {
-                    throw new ExceptionAtNode("Incorrect number of parameters", exp);
-                }
-                Expression actual = actIt.next();
-                if (actual instanceof ExprNamedParam) {
-                    throw new ExceptionAtNode("Named function parameters not supported. ", actual);
-                }
-
-                Type formalType = tren.rename(formal.getType());
-                formalType = formalType.addDefaultPkg(f.getPkg(), driver.getNres());
-                Type ftt = formalType;
-                Expression newParam = (actual);
-                Type actType = driver.getType(newParam).addDefaultPkg(driver.getNres().curPkg().getName(), driver.getNres());
-                Type att = actType;
-                while (ftt instanceof TypeArray) {
-                    TypeArray ta = (TypeArray) ftt;
-                    Expression actLen = null;
-                    if (att instanceof TypeArray) {
-                        TypeArray ata = (TypeArray) att;
-                        actLen = ata.getLength();
-                        att = ata.getBase();
-                    } else {
-                        actLen = ExprConstInt.one;
-                    }
-                    ftt = ta.getBase();
-                    String len = ta.getLength().toString();
-                    if (pm.containsKey(len)) {
-                        int idx = pm.get(len);
-                        if (newParams.get(idx) == null) {
-                            newParams.set(idx, actLen);
-                        } else {
-                            addStatement(new StmtAssert(exp, new ExprBinary(newParams.get(idx), "==", actLen),
-                                    exp.getCx() + ": Inconsistent array lengths for implicit parameter " + len + ".", false));
-                        }
-                    }
-                }
-
-                if (formal.isParameterReference() && newParam instanceof ExprField) {
-                    TypeStructRef parent = (TypeStructRef) driver.getType(((ExprField) newParam).getLeft());
-                    if (driver.getNres().getStruct(parent.getName()).immutable()) {
-                        report(exp, "Bad parameter: Field of an immutable struct cannot be a ref parameter");
-                    }
-                }
-
-                if (formal.getType().isStruct()) {
-                    TypeStructRef tsr = (TypeStructRef) formal.getType();
-                    if (actType.isStruct()) {
-                        TypeStructRef tsrActual = (TypeStructRef) actType;
-
-                        if (tsrActual.isUnboxed() && !tsr.isUnboxed()) {
-                            report(exp,
-                                    "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
-                        }
-
-                    }
-                }
-
-                boolean typeCheck = true;
-                if (newParam instanceof ExprNew) {
-                    if (((ExprNew) newParam).isHole())
-                        typeCheck = false;
-                }
-                if (newParam instanceof ExprADTHole) {
-                    typeCheck = false;
-                }
-                if (typeCheck) {
-
-                    if (actType == null || !actType.promotesTo(formalType, driver.getNres())) {
-                        report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
-                    }
-                    if (ftt instanceof TypeStructRef) {
-                        TypeStructRef tref = ((TypeStructRef) ftt);
-                        if (tref.getName() == null) {
-                            report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
-                        }
-                        if (formal.isParameterReference() && !tref.isUnboxed()) {
-                            if (!tref.equals(att)) {
-                                report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
-                            }
-                        }
-                    }
-
-                }
-                if (newParam instanceof ExprNamedParam) {
-                    throw new ExceptionAtNode("Named function parameters not supported. ", newParam);
-                }
-            }
-
-        }
-        return exp;
-    }
 
     public Object visitExprUnary(ExprUnary expr) {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprUnary");
@@ -910,7 +777,7 @@ public class TypeCheck extends BidirectionalPass {
         return expr;
     }
 
-    private Type currentFunctionReturn = null;
+
 
 
     public Object visitFunction(Function func) {
@@ -920,7 +787,7 @@ public class TypeCheck extends BidirectionalPass {
         NameResolver nres = driver.getNres();
 
             curcx = func.getCx();
-            currentFunctionReturn = func.getReturnType();
+
 
             if (func.isUninterp()) {
                 Type rt = func.getReturnType();
@@ -1031,6 +898,165 @@ public class TypeCheck extends BidirectionalPass {
 
             return func;
         }
+
+        public Object visitExprFunCall(ExprFunCall exp) {
+            Function f;
+
+            VarInfo vi = symtab().lookupVarInfo(exp.getName());
+            if (vi != null) {
+                if (vi.kind == SymbolTable.KIND_LOCAL_FUNCTION) {
+                    f = (Function) vi.origin;
+                } else {
+                    if (vi.kind == SymbolTable.KIND_FUNC_PARAM) {
+                        f = null;
+                    } else {
+                        throw new ExceptionAtNode("Function has not been declared", exp);
+                    }
+                }
+            } else {
+                try {
+                    f = nres().getFun(exp.getName(), exp);
+                } catch (UnrecognizedVariableException e) {
+                    report(exp, "unknown function " + exp.getName());
+                    throw e;
+                }
+            }
+            if (f == null) {
+                // Can't type check for now. Later we will.
+                return exp;
+            }
+
+            if (driver.tdstate.isInTArr() && !f.isGenerator()) {
+                // report(exp, "Function call not allowed in array length
+                // expression.");
+            }
+
+            boolean hasChanged = false;
+            List<Expression> newParams = new ArrayList<Expression>();
+            List<Type> actualTypes = new ArrayList<Type>();
+            for (Expression ap : exp.getParams()) {
+                actualTypes.add(driver.getType(ap));
+            }
+            TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
+            int actSz = exp.getParams().size();
+            int formSz = f.getParams().size();
+            if (actSz > formSz) {
+                throw new ExceptionAtNode("Incorrect number of parameters", exp);
+            }
+            int implSz = formSz - actSz;
+            boolean hadImp = (implSz > 0);
+            Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
+            Iterator<Expression> actIt = exp.getParams().iterator();
+            for (Parameter formal : f.getParams()) {
+                if (hadImp && formal.isImplicit()) {
+                    hasChanged = true;
+                    pm.put(formal.getName(), newParams.size());
+                    newParams.add(null);
+                    --implSz;
+                } else {
+                    if (implSz != 0) {
+                        throw new ExceptionAtNode("Incorrect number of parameters", exp);
+                    }
+                    Expression actual = actIt.next();
+                    if (actual instanceof ExprNamedParam) {
+                        throw new ExceptionAtNode("Named function parameters not supported. ", actual);
+                    }
+
+                    Type formalType = tren.rename(formal.getType());
+                    formalType = formalType.addDefaultPkg(f.getPkg(), driver.getNres());
+                    Type ftt = formalType;
+                    Expression newParam = (actual);
+                    Type paramOriType = driver.getType(newParam);
+                    if (paramOriType == null) {
+                        driver.doExpression(newParam);
+                        throw new ExceptionAtNode("Bad parameter " + formal + " to function.", actual);
+                    }
+                    Type actType = paramOriType.addDefaultPkg(driver.getNres().curPkg().getName(), driver.getNres());
+                    Type att = actType;
+                    while (ftt instanceof TypeArray) {
+                        TypeArray ta = (TypeArray) ftt;
+                        Expression actLen = null;
+                        if (att instanceof TypeArray) {
+                            TypeArray ata = (TypeArray) att;
+                            actLen = ata.getLength();
+                            att = ata.getBase();
+                        } else {
+                            actLen = ExprConstInt.one;
+                        }
+                        ftt = ta.getBase();
+                        String len = ta.getLength().toString();
+                        if (pm.containsKey(len)) {
+                            int idx = pm.get(len);
+                            if (newParams.get(idx) == null) {
+                                newParams.set(idx, actLen);
+                            } else {
+                                addStatement(new StmtAssert(exp, new ExprBinary(newParams.get(idx), "==", actLen),
+                                        exp.getCx() + ": Inconsistent array lengths for implicit parameter " + len + ".", false));
+                            }
+                        }
+                    }
+
+                    if (formal.isParameterReference() && newParam instanceof ExprField) {
+                        TypeStructRef parent = (TypeStructRef) driver.getType(((ExprField) newParam).getLeft());
+                        if (driver.getNres().getStruct(parent.getName()).immutable()) {
+                            report(exp, "Bad parameter: Field of an immutable struct cannot be a ref parameter");
+                        }
+                    }
+
+                    if (formal.getType().isStruct()) {
+                        TypeStructRef tsr = (TypeStructRef) formal.getType();
+                        if (actType.isStruct()) {
+                            TypeStructRef tsrActual = (TypeStructRef) actType;
+
+                            if (tsrActual.isUnboxed() && !tsr.isUnboxed()) {
+                                report(exp,
+                                        "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                            }
+
+                        }
+                    }
+
+                    boolean typeCheck = true;
+                    if (newParam instanceof ExprNew) {
+                        if (((ExprNew) newParam).isHole())
+                            typeCheck = false;
+                    }
+                    if (newParam instanceof ExprADTHole) {
+                        typeCheck = false;
+                    }
+                    if (typeCheck) {
+
+                        if (actType == null || !actType.promotesTo(formalType, driver.getNres())) {
+                            report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                        }
+                        if (ftt instanceof TypeStructRef) {
+                            TypeStructRef tref = ((TypeStructRef) ftt);
+                            if (tref.getName() == null) {
+                                report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                            }
+                            if (formal.isParameterReference() && !tref.isUnboxed()) {
+                                if (!tref.equals(att)) {
+                                    report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                }
+                            }
+                        }
+
+                    }
+                    if (newParam instanceof ExprNamedParam) {
+                        throw new ExceptionAtNode("Named function parameters not supported. ", newParam);
+                    }
+
+                    newParams.add(newParam);
+                    if (actual != newParam)
+                        hasChanged = true;
+                }
+
+            }
+            if (!hasChanged)
+                return exp;
+            return new ExprFunCall(exp, exp.getName(), newParams);
+        }
+
     }
 
     public BidirectionalPass getPostPass() {
@@ -1776,8 +1802,8 @@ public class TypeCheck extends BidirectionalPass {
         // " +
         // getType(stmt.getValue()));
         Type rt = driver.getType(stmt.getValue());
-        if (rt != null && !rt.promotesTo(currentFunctionReturn, driver.getNres()))
-            report(stmt, "Return value incompatible with declared function return value: " + currentFunctionReturn + " vs. " + driver.getType(stmt.getValue()));
+        if (rt != null && !rt.promotesTo(driver.returnType, driver.getNres()))
+            report(stmt, "Return value incompatible with declared function return value: " + driver.returnType + " vs. " + driver.getType(stmt.getValue()));
         hasReturn = true;
         return (stmt);
     }
