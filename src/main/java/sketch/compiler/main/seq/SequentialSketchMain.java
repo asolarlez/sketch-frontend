@@ -519,7 +519,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         
 //		prog.debugDump("********************************************* Before remove lambda expression");
-        if (true) {
+        if (false) {
 
             prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
@@ -534,6 +534,12 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                 throw new ProgramParseException("Semantic check failed");
             }
         } else {
+
+            // These three passes need to be integrated into the Bidirectional
+            // framework.
+            prog = (Program) prog.accept(new ExpandRepeatCases());
+            prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
+            prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 
             BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
             TypeCheck tchk = new TypeCheck();

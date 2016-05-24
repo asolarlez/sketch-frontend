@@ -48,6 +48,7 @@ import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.UnrecognizedVariableException;
 
@@ -488,6 +489,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         for (Expression ap : exp.getParams()) {
             actualTypes.add(getType(ap));
         }
+
         TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
@@ -498,9 +500,15 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         boolean hadImp = (implSz > 0);
         Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
         Iterator<Expression> actIt = exp.getParams().iterator();
+
+        Map<String, Expression> repl = new HashMap<String, Expression>();
+        VarReplacer vr = new VarReplacer(repl);
+
         for (Parameter formal : f.getParams()) {
             if (hadImp && formal.isImplicit()) {
                 hasChanged = true;
+                pm.put(formal.getName(), newParams.size());
+                newParams.add(null);
                 --implSz;
             } else {
                 if (implSz != 0) {
@@ -508,17 +516,49 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
                 }
                 Expression actual = actIt.next();
 
-                Type formalType = tren.rename(formal.getType());
+                Type formalType = vr.replace(tren.rename(formal.getType()));
                 formalType = formalType.addDefaultPkg(f.getPkg(), nres);
                 Type ftt = formalType;
+
                 tdstate.beforeRecursion(formalType, exp);
                 Expression newParam = doExpression(actual);
+                Type paramOriType = getType(newParam);
+                Type actType = paramOriType.addDefaultPkg(nres.curPkg().getName(), nres);
+                Type att = actType;
+                while (ftt instanceof TypeArray) {
+                    if (paramOriType instanceof NotYetComputedType) {
+                        return exp;
+                    }
+                    TypeArray ta = (TypeArray) ftt;
+                    Expression actLen = null;
+                    if (att instanceof TypeArray) {
+                        TypeArray ata = (TypeArray) att;
+                        actLen = ata.getLength();
+                        att = ata.getBase();
+                    } else {
+                        actLen = ExprConstInt.one;
+                    }
+                    ftt = ta.getBase();
+                    String len = ta.getLength().toString();
+                    if (pm.containsKey(len)) {
+                        repl.put(len, actLen);
+                        int idx = pm.get(len);
+                        if (newParams.get(idx) == null) {
+                            newParams.set(idx, actLen);
+                        } else {
+                            addStatement(new StmtAssert(exp, new ExprBinary(newParams.get(idx), "==", actLen),
+                                    exp.getCx() + ": Inconsistent array lengths for implicit parameter " + len + ".", false));
+                        }
+                    }
+                }
+                repl.put(formal.getName(), newParam);
                 newParams.add(newParam);
                 if (actual != newParam)
                     hasChanged = true;
             }
 
         }
+
         if (!hasChanged)
             return exp;
         return new ExprFunCall(exp, exp.getName(), newParams);
@@ -1058,11 +1098,19 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             throw new ExceptionAtNode("You can only construct structs and adts", expNew);
         }
 
+        Map<String, Expression> repl = new HashMap<String, Expression>();
+        VarReplacer vr = new VarReplacer(repl);
+        for (ExprNamedParam en : expNew.getParams()) {
+            repl.put(en.getName(), en.getExpr());
+        }
+
         boolean changed = false;
         List<ExprNamedParam> enl = new ArrayList<ExprNamedParam>(expNew.getParams().size());
         for (ExprNamedParam en : expNew.getParams()) {
             Expression old = en.getExpr();
-            tdstate.beforeRecursion(tsr.getType(en.getName()), expNew);
+            Type told = tsr.getTypeDeep(en.getName(), nres);
+            told = doType(vr.replace(told));
+            tdstate.beforeRecursion(told, expNew);
             Expression rhs = doExpression(old);
             if (rhs != old) {
                 enl.add(new ExprNamedParam(en, en.getName(), rhs, en.getVariantName()));
@@ -1100,9 +1148,49 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             return new StmtReorderBlock(stmt, Collections.singletonList((Statement) o));
     }
 
-    public Object visitStmtSwitch(StmtSwitch sw) {
-        // TODO Auto-generated method stub
-        return null;
+    public Object visitStmtSwitch(StmtSwitch stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+
+        Type t = getType(stmt.getExpr());
+        if (!(t instanceof TypeStructRef)) {
+            throw new ExceptionAtNode("Only ADTs are allowed as arguments to switch statements. The type of " + stmt.getExpr() + " is " + t, stmt);
+        }
+        tdstate.beforeRecursion(t, stmt.getExpr());
+        Expression sexp = doExpression(stmt.getExpr());
+        ExprVar var = (ExprVar) sexp;
+
+        // visit each case body
+        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+        String name = ((TypeStructRef) t).getName();
+        StructDef ts = nres.getStruct(name);
+        String pkg;
+        if (ts == null) {
+            pkg = nres.curPkg().getName();
+            throw new ExceptionAtNode("The type " + name + " is unknown in package " + pkg, stmt.getExpr());
+        } else {
+            pkg = ts.getPkg();
+        }
+        for (String caseExpr : stmt.getCaseConditions()) {
+            if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
+                SymbolTable oldSymTab1 = symtab;
+                symtab = new SymbolTable(symtab);
+                symtab.registerVar(var.getName(), (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+
+                Statement body = procStatement(stmt.getBody(caseExpr));
+                newStmt.addCaseBlock(caseExpr, body);
+                symtab = oldSymTab1;
+            } else {
+                SymbolTable oldSymTab1 = symtab;
+                symtab = new SymbolTable(symtab);
+                Statement body = procStatement(stmt.getBody(caseExpr));
+                newStmt.addCaseBlock(caseExpr, body);
+                symtab = oldSymTab1;
+            }
+        }
+        symtab = oldSymTab;
+
+        return newStmt;
     }
 
     public Object visitExprNullPtr(ExprNullPtr nptr) {
@@ -1130,8 +1218,14 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
-        // TODO Auto-generated method stub
-        return null;
+        tdstate.beforeRecursion(new TypeUnknownStructRef(), exp);
+        Expression left = doExpression(exp.getLeft());
+        Type t = doType(exp.getType());
+        if (left == exp.getLeft() && t == exp.getType()) {
+            return exp;
+        } else {
+            return new ExprFieldsListMacro(exp, left, t);
+        }
     }
 
     public Object visitExprSpecialStar(ExprSpecialStar exprSpecialStar) {

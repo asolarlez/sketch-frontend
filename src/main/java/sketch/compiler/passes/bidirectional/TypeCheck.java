@@ -945,13 +945,9 @@ public class TypeCheck extends BidirectionalPass {
             }
             int implSz = formSz - actSz;
             boolean hadImp = (implSz > 0);
-            Map<String, Integer> pm = new HashMap<String, Integer>(implSz);
             Iterator<Expression> actIt = exp.getParams().iterator();
             for (Parameter formal : f.getParams()) {
                 if (hadImp && formal.isImplicit()) {
-                    hasChanged = true;
-                    pm.put(formal.getName(), newParams.size());
-                    newParams.add(null);
                     --implSz;
                 } else {
                     if (implSz != 0) {
@@ -968,12 +964,15 @@ public class TypeCheck extends BidirectionalPass {
                     Expression newParam = (actual);
                     Type paramOriType = driver.getType(newParam);
                     if (paramOriType == null) {
-                        driver.doExpression(newParam);
                         throw new ExceptionAtNode("Bad parameter " + formal + " to function.", actual);
                     }
-                    Type actType = paramOriType.addDefaultPkg(driver.getNres().curPkg().getName(), driver.getNres());
+                    Type actType = paramOriType.addDefaultPkg(nres().curPkg().getName(), nres());
+
                     Type att = actType;
                     while (ftt instanceof TypeArray) {
+                        if (paramOriType instanceof NotYetComputedType) {
+                            return exp;
+                        }
                         TypeArray ta = (TypeArray) ftt;
                         Expression actLen = null;
                         if (att instanceof TypeArray) {
@@ -984,17 +983,8 @@ public class TypeCheck extends BidirectionalPass {
                             actLen = ExprConstInt.one;
                         }
                         ftt = ta.getBase();
-                        String len = ta.getLength().toString();
-                        if (pm.containsKey(len)) {
-                            int idx = pm.get(len);
-                            if (newParams.get(idx) == null) {
-                                newParams.set(idx, actLen);
-                            } else {
-                                addStatement(new StmtAssert(exp, new ExprBinary(newParams.get(idx), "==", actLen),
-                                        exp.getCx() + ": Inconsistent array lengths for implicit parameter " + len + ".", false));
-                            }
-                        }
                     }
+
 
                     if (formal.isParameterReference() && newParam instanceof ExprField) {
                         TypeStructRef parent = (TypeStructRef) driver.getType(((ExprField) newParam).getLeft());
@@ -1331,9 +1321,12 @@ public class TypeCheck extends BidirectionalPass {
     // ADT
     public Object visitStmtSwitch(StmtSwitch stmt) {
         NameResolver nres = driver.getNres();
-        ExprVar var = (ExprVar) stmt.getExpr().accept(this);
 
-        StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
+        if (!(stmt.getExpr() instanceof ExprVar)) {
+            throw new ExceptionAtNode("The argument to a switch must be a variable.", stmt.getExpr());
+        }
+
+        ExprVar var = (ExprVar) stmt.getExpr();
         // Exhaustive cases
 
         if (!driver.getSymbolTable().lookupVar(var).isStruct()) {
@@ -1373,8 +1366,7 @@ public class TypeCheck extends BidirectionalPass {
                 }
             }
         }
-        return newStmt;
-
+        return stmt;
     }
 
     public Object visitStmtFor(StmtFor stmt) {

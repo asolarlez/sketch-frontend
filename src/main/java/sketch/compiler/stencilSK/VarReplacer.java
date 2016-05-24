@@ -27,6 +27,10 @@ public class VarReplacer extends FEReplacer{
         return repl.get(var);
     }
 
+    public Type replace(Type e) {
+        return (Type) e.accept(this);
+    }
+
     void popRhsVars() {
         rhsVars = new HashSet<String>();
         FEReplacer fr = new FEReplacer() {

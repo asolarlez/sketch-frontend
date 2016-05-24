@@ -165,7 +165,7 @@ class NewFunInfo {
  * @author asolar, tim
  */
 public class InnerFunReplacer extends BidirectionalPass {
-    Map<String, SymbolTable> tempSymtables = new HashMap<String, SymbolTable>();
+
     Map<String, NewFunInfo> extractedInnerFuns = new HashMap<String, NewFunInfo>();
 
     int nfcnt = 0;
@@ -234,7 +234,6 @@ public class InnerFunReplacer extends BidirectionalPass {
                     allVarNames.add(fd.getName(i));
                 }
             }
-            tempSymtables.put("pkg:" + pkg.getName(), st);
             p.accept(allnames);
         }
     }
@@ -475,8 +474,8 @@ public class InnerFunReplacer extends BidirectionalPass {
             }
             // return super.visitExprFunCall(efc);
             if (fun == null) {
-                Type t = this.symtab.lookupVar(efc.getName(), efc);
                 if (vi == null || vi.kind != SymbolTable.KIND_FUNC_PARAM) {
+                    Type t = this.symtab.lookupVar(efc.getName(), efc);
                     if (t == null || (!(t instanceof TypeFunction))) {
                         throw new ExceptionAtNode("Function " + efc.getName() + " has not been defined when used", efc);
                     }
@@ -646,32 +645,15 @@ public class InnerFunReplacer extends BidirectionalPass {
 
         symtab().registerVar(oldName, TypeFunction.singleton, newFun, SymbolTable.KIND_LOCAL_FUNCTION);
 
-        driver.addClosure(f.getFullName(), symtab().shallowClone());
+        driver.addClosure(newFun.getFullName(), symtab().shallowClone());
         NewFunInfo nfi = funInfo(newFun);
 
-        newFun = driver.doFunction(newFun);
-
-
+        if (!driver.isHighOrder(newFun)) {
+            newFun = driver.doFunction(newFun);
+            nres().reRegisterFun(newFun);
+        }
 
         addFunction(newFun);
-
-        // newFunctions.put(newName, newFun);
-        // funsToVisit.push(newName);
-
-        // NOTE xzl: overwrite the incorrect newFun with the correct newFun with
-        // processed body. This is needed for later funInfo(fun) to work
-        // properly if
-        // "fun" calls "newFun", because it inlines "newFun" to "fun" when
-        // extracting the used set of "fun", and if "newFun" is in the old
-        // form, newFun.body will refer to old unhoisted function names which
-        // nres
-        // does not know about. Also notice that we cannot simply
-        // registerFun(newFun)
-        // again.
-        nres().reRegisterFun(newFun);
-
-        tempSymtables.put(nres().getFunName(newFun), symtab());
-
 
         if (nfi.typeParamsToAdd.size() > 0) {
             newFun.getTypeParams().addAll(nfi.typeParamsToAdd);

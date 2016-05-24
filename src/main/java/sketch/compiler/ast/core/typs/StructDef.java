@@ -344,6 +344,16 @@ annotations);
         return getFieldTypMap().get(f);
     }
 
+    public Type getTypeDeep(String f, NameResolver nres) {
+        Type t = getFieldTypMap().get(f);
+        StructDef cur = this;
+        while (t == null && cur.getParentName() != null) {
+            cur = nres.getStruct(cur.getParentName());
+            t = cur.getFieldTypMap().get(f);
+        }
+        return t;
+    }
+
     /** Return true iff F is a field of this struct. */
     public boolean hasField (String f) {
         return getFieldTypMap().containsKey(f);

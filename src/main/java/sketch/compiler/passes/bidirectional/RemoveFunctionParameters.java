@@ -284,7 +284,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                     String newName = nres().getFunName(newFun.getName());
                     addEquivalence(name, newName);
                     newFunctions.add(nfn);
-                    SymbolTable tmp = driver.getClosure(newName);
+                    SymbolTable tmp = driver.getClosure(name);
                     if (tmp != null) {
                         Function post = driver.doFunction(newFun);
                         SymbolTable reserve = driver.swapSymTable(tmp);

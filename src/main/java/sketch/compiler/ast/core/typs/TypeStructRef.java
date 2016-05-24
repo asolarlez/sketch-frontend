@@ -141,6 +141,9 @@ public class TypeStructRef extends Type
         if ((that instanceof TypeStructRef)) {
             TypeStructRef tsr = (TypeStructRef) that;
             String name1 = nres.getStructName(tsr.name);
+            if (name1 == null) {
+                return false;
+            }
             String name2 = name;
             while (nres.getStructParentName(name2) != null) {
                 String name3 = nres.getStructName(name2);
