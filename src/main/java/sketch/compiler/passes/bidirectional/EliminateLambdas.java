@@ -1,10 +1,9 @@
 package sketch.compiler.passes.bidirectional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -13,7 +12,6 @@ import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
@@ -26,6 +24,7 @@ import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeFunction;
 import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -34,23 +33,36 @@ public class EliminateLambdas extends BidirectionalPass {
     boolean needsCleanup = false;
 
     public class CleanupTypes extends SymbolTableVisitor {
-        Map<String, List<Type>> funToParamTypes = new HashMap<String, List<Type>>();
+        Set<String> funToParamTypes = new HashSet<String>();
         CleanupTypes() {
             super(null);
         }
 
-        public Object visitExprFunCall(ExprFunCall efc) {
-            if (funToParamTypes.containsKey(efc.getName())) {
-                List<Type> lt = funToParamTypes.get(efc.getName());
-                Iterator<Type> typeit = lt.iterator();
-                int idx = 0;
-                for (Expression actual : efc.getParams()) {
-                    Type current = typeit.next();
-                    lt.set(idx, current.leastCommonPromotion(getType(actual), nres));
-                    ++idx;
+        Type rettype;
+
+        public Object visitStmtReturn(StmtReturn sr) {
+            Type rt = getType(sr.getValue());
+            rettype = rt;
+            return sr;
+        }
+
+        public Object visitFunction(Function f) {
+
+            if (funToParamTypes.contains(f.getName())) {
+                SymbolTable oldSymTab = symtab;
+                symtab = new SymbolTable(symtab);
+                rettype = TypePrimitive.voidtype;
+                for (Parameter p : f.getParams()) {
+                    p.accept(this);
                 }
+                f.getBody().accept(this);
+                symtab = oldSymTab;
+                Function nn = f.creator().returnType(rettype).create();
+                nres.reRegisterFun(nn);
+                return nn;
+            } else {
+                return f;
             }
-            return super.visitExprFunCall(efc);
         }
 
         public Object visitProgram(Program p){
@@ -59,51 +71,14 @@ public class EliminateLambdas extends BidirectionalPass {
             }
             for (Package pkg : p.getPackages()) {
                 for (Function f : pkg.getFuncs()) {
-                    if (f.getParams().size() > 0 && f.getParams().get(0).getType().equals(nyd)) {
-                        List<Type> newList = new ArrayList<Type>(f.getParams().size());
-                        for (Parameter param : f.getParams()) {
-                            newList.add(TypePrimitive.bottomtype);
-                        }
-                        funToParamTypes.put(f.getName(), newList);
+                    if (f.getReturnType().equals(nyd)) {
+
+                        funToParamTypes.add(f.getName());
                     }
                 }
             }
 
-            Program rv = (Program) super.visitProgram(p);
-            
-            FEReplacer fer = new SymbolTableVisitor(null) {
-                Type rettype;
-
-                public Object visitStmtReturn(StmtReturn sr) {
-                    Type rt = getType(sr.getValue());
-                    rettype = rt;
-                    return sr;
-                }
-
-                public Object visitFunction(Function f){
-                    
-                    if(funToParamTypes.containsKey(f.getName())){
-                        List<Type> lt = funToParamTypes.get(f.getName());
-                        Iterator<Type> typeit = lt.iterator();
-                        List<Parameter> plist = new ArrayList<Parameter>(f.getParams().size());
-                        SymbolTable oldSymTab = symtab;
-                        symtab = new SymbolTable(symtab);
-                        for(Parameter par : f.getParams()){
-                            Type t = typeit.next();
-                            Parameter newpar = new Parameter(par, t, par.getName(), par.getPtype(), false);
-                            newpar.accept(this);
-                            plist.add(newpar);
-                        }
-                        f.getBody().accept(this);
-                        symtab = oldSymTab;
-                        return f.creator().params(plist).returnType(rettype).create();
-                    }else{
-                        return f;
-                    }
-                }                                
-            };
-            
-            return rv.accept(fer);
+            return super.visitProgram(p);
         }
 
     }
@@ -122,22 +97,21 @@ public class EliminateLambdas extends BidirectionalPass {
 
         SymbolTable st = new SymbolTable(symtab());
         SymbolTableVisitor stv = new SymbolTableVisitor(st);
+        stv.setNres(nres());
 
-
-
+        needsCleanup = true;
 
 
         for(ExprVar ev : elambda.getParameters()){
             String tname = driver.getVarGen().nextVar("T_");
-            Parameter p = new Parameter(ev, nyd, ev.getName(), Parameter.IN, false);
+            Parameter p = new Parameter(ev, new TypeStructRef(tname, false), ev.getName(), Parameter.IN, false);
             p.accept(stv);
             lparam.add(p);
             tparams.add(tname);
-            needsCleanup = true;
         }
 
-        Type rettype = stv.getType(elambda.getExpression());
-        Function nf = Function.creator(elambda, freshVarName, FcnType.Generator).returnType(rettype)// .typeParams(tparams)
+        // Type rettype = stv.getType(elambda.getExpression());
+        Function nf = Function.creator(elambda, freshVarName, FcnType.Generator).returnType(nyd).typeParams(tparams)
                 .params(lparam)
                 .body(new StmtBlock(new StmtReturn(elambda.getExpression(), elambda.getExpression()))).create();
 

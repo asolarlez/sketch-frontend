@@ -10,8 +10,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import sketch.compiler.ast.core.*;
+import static sketch.util.DebugOut.printError;
+
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
@@ -36,8 +46,6 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.ControlFlowException;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.UnrecognizedVariableException;
-
-import static sketch.util.DebugOut.printError;
 
 public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
 
@@ -806,7 +814,7 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
         for (Expression ap : exp.getParams()) {
             actualTypes.add(getType(ap));
         }
-        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
+        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, null);
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
         if (actSz > formSz) {

@@ -15,6 +15,12 @@
  */
 
 package sketch.compiler.ast.core.typs;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.ExprConstChar;
@@ -260,6 +266,18 @@ public class TypePrimitive extends Type
         return new Integer(type).hashCode();
     }
 
+
+    public Collection<Type> getBaseTypes() {
+        return Collections.singletonList((Type) this);
+    }
+
+    public Map<String, Type> unify(Type t, Set<String> names) {
+        return Collections.EMPTY_MAP;
+    }
+
+    public String cleanName() {
+        return this.toString();
+    }
 
     public Object accept(FEVisitor visitor){
     	return visitor.visitTypePrimitive(this);

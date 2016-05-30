@@ -1,19 +1,22 @@
 package sketch.compiler.ast.core.typs;
 
+import static sketch.util.Misc.nonnull;
+import static sketch.util.fcns.Zip.zip;
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
+
+import static sketch.util.DebugOut.not_implemented;
 
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprType;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.util.fcns.ZipEnt;
-
-import static sketch.util.DebugOut.not_implemented;
-
-import static sketch.util.Misc.nonnull;
-import static sketch.util.fcns.Zip.zip;
 
 /**
  * Do not use. named tuple, associating keys with values.
@@ -66,6 +69,18 @@ public class NamedTupleType extends Type {
             }
         }
         return true;
+    }
+
+    public Collection<Type> getBaseTypes() {
+        return Collections.singletonList((Type) this);
+    }
+
+    public Map<String, Type> unify(Type t, Set<String> names) {
+        return Collections.EMPTY_MAP;
+    }
+
+    public String cleanName() {
+        throw new RuntimeException("This type is not known");
     }
 
     /** an entry, e.g. "value=(int mod 40)" */

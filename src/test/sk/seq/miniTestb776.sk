@@ -1,5 +1,7 @@
+pragma options "--debug-show-dag";
+
 int t = {| 5 | 4 | 3 |};
 
-harness void main(int[t] v, int x){
+harness void main(int[t] v, int x){    
     assert x+x == x*??;
 }

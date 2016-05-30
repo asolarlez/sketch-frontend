@@ -640,7 +640,21 @@ public class InnerFunReplacer extends BidirectionalPass {
             throw new ExceptionAtNode("You can not define a harness inside another function", sfd);
         }
 
-        Function newFun = f.creator().name(newName).pkg(pkg).create();
+        List<String> parentTpList = tdstate().getCurrentFun().getTypeParams();
+        Set<String> parentTp = new HashSet<String>(parentTpList);
+
+        for (String tp : f.getTypeParams()) {
+            if (parentTp.contains(tp)) {
+                throw new ExceptionAtNode("Shadowing of type parameters is not allowed " + tp, sfd);
+            }
+        }
+
+        if (f.isGeneric()) {
+            parentTpList = new ArrayList<String>(parentTpList);
+            parentTpList.addAll(f.getTypeParams());
+        }
+
+        Function newFun = f.creator().name(newName).pkg(pkg).typeParams(parentTpList).create();
         nres().registerFun(newFun);
 
         symtab().registerVar(oldName, TypeFunction.singleton, newFun, SymbolTable.KIND_LOCAL_FUNCTION);
@@ -648,17 +662,16 @@ public class InnerFunReplacer extends BidirectionalPass {
         driver.addClosure(newFun.getFullName(), symtab().shallowClone());
         NewFunInfo nfi = funInfo(newFun);
 
-        if (!driver.isHighOrder(newFun)) {
+        if (!driver.needsSpecialization(newFun)) {
             newFun = driver.doFunction(newFun);
             nres().reRegisterFun(newFun);
         }
 
         addFunction(newFun);
-
-        if (nfi.typeParamsToAdd.size() > 0) {
-            newFun.getTypeParams().addAll(nfi.typeParamsToAdd);
-        }
-
+        /*
+         * if (nfi.typeParamsToAdd.size() > 0) {
+         * newFun.getTypeParams().addAll(nfi.typeParamsToAdd); }
+         */
         extractedInnerFuns.put(nfi.funName, nfi);
         return null;
     }

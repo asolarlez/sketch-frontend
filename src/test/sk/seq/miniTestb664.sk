@@ -54,30 +54,6 @@ coreAST desugar(sourceAST s, int bnd2){
 	generator int getConst(int c){return {| c|??|};}
 	
 	//generator for coreAST
-	generator coreAST getPart(coreAST c1, coreAST c2, coreAST c3, int bnd, int depth) {
-		//assert bnd > 0;
-		if(bnd<1) return null;
-		
-		coreAST var = new CVar(str=getStr());
-		//coreAST c4 = new CPrim2(op = Oand, a = new CPrim2(op = Olt, a  = c3, b = new CVar(str = 1)), b = new CPrim2(op = Olt,a = new CVar(str = 1), b =  c2));
-		//int t = ??;
-		if(  ??||depth < 8 || bnd <=1){
-			return {| c1|c2|c3|var |};
-		}
-		else{
-			if(bnd > 1){
-				//assert false;
-				coreAST a = getPart(c1,c2,c3, bnd-1,depth/2);
-				coreAST b = getPart(c1,c2,c3, bnd-1,depth/2);
-				coreAST c = getPart(c1,c2,c3, bnd-1,depth/2);
-				
-				//return new CPrim2(op = getOp(1), a = a, b = b);
-				return 	new ??(op=getOp(1), a = a, b =b, c= c,str = getStr(), val = getConst(1),val=??);
-				
-			}
-		}
-		return null;
-	}
 	generator coreAST[3] run([int n], sourceAST[n] fields){
 		coreAST[3] out;
 		int i=0;

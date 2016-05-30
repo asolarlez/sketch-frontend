@@ -16,6 +16,10 @@
 
 package sketch.compiler.ast.core.typs;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEVisitor;
@@ -122,9 +126,15 @@ public class TypeStructRef extends Type
         if ((that instanceof TypeStructRef)) {
             TypeStructRef tsr = (TypeStructRef) that;
             String name1 = nres.getStructName(tsr.name);
+            if (name1 == null) {
+                return null;
+            }
             String name1parent = nres.getStructParentName(name1);
 
             String name2 = nres.getStructName(name);
+            if (name2 == null) {
+                return null;
+            }
             String name2parent = nres.getStructParentName(name2);
 
             if (name1parent != null && name2parent != null) {
@@ -161,6 +171,22 @@ public class TypeStructRef extends Type
             }
         }
         return false;
+    }
+
+    public Collection<Type> getBaseTypes() {
+        return Collections.singletonList((Type) this);
+    }
+
+    public Map<String, Type> unify(Type t, Set<String> names) {
+        if (names.contains(this.toString())) {
+            return Collections.singletonMap(this.toString(), t);
+        } else {
+            return Collections.EMPTY_MAP;
+        }
+    }
+
+    public String cleanName() {
+        return this.toString();
     }
 
     public boolean isUnboxed() {

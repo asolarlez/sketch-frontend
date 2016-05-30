@@ -1,13 +1,7 @@
 package sketch.compiler.passes.bidirectional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -16,7 +10,6 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -24,7 +17,11 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
+import sketch.compiler.ast.core.typs.TypePrimitive;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.lowering.SymbolTableVisitor.TypeRenamer;
 import sketch.util.Pair;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
@@ -46,6 +43,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
     Map<String, Package> pkges;
     Map<String, String> nfnMemoize = new HashMap<String, String>();
     Set<String> visited = new HashSet<String>();
+    boolean hasArrayUnifs = false;
 
     int nfcnt = 0;
 
@@ -128,20 +126,29 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 }
             }
         }
-
+        
+        Set<String> tparams = new HashSet<String>(orig.getTypeParams());
+        Map<String, Type> tmap = new TreeMap<String, Type>();
         for (Expression actual : efc.getParams()) {
             Parameter p = fp.next();
-
-            // If the actual parameter is a lambda expression
-            if (actual.getClass() == ExprLambda.class) {
-                // Add a tempt string to the end of the function name
-                name += "_temp" + this.tempFunctionsCount;
-
-                // Increment the count of temp function
-                this.tempFunctionsCount++;
-            } else if (p.getType() instanceof TypeFunction) {
+            if (p.getType() instanceof TypeFunction) {
                 name += "_" + actual.toString();
             }
+            Type actType = driver.getType(actual);
+            Map<String, Type> lmap = p.getType().unify(actType, tparams);
+            for (Entry<String, Type> st : lmap.entrySet()) {
+                if (tmap.containsKey(st.getKey())) {
+                    tmap.put(st.getKey(), tmap.get(st.getKey()).leastCommonPromotion(st.getValue(), nres()));
+                } else {
+                    tmap.put(st.getKey(), st.getValue());
+                }
+            }
+        }
+        for (Entry<String, Type> st : tmap.entrySet()) {
+            if (st.getValue() instanceof TypeArray) {
+                hasArrayUnifs = true;
+            }
+            name += st.getKey() + "_" + st.getValue().cleanName();
         }
         return name;
     }
@@ -154,6 +161,18 @@ public class RemoveFunctionParameters extends BidirectionalPass {
         reverseEquiv.put(newName, old);
     }
 
+    class RefreshParams extends FEReplacer {
+        Map<String, Expression> rmap = new TreeMap<String, Expression>();
+
+        public Object visitTypeArray(TypeArray ta) {
+            Type base = (Type) ta.getBase().accept(this);
+            Expression len = ta.getLength();
+            ExprVar vg = new ExprVar(len, driver.varGen.nextVar());
+            rmap.put(vg.getName(), len);
+            return new TypeArray(base, vg);
+        }
+    }
+
     ExprFunCall replaceCall(ExprFunCall efc, Function orig, String nfn) {
         List<Expression> params = new ArrayList<Expression>();
         Iterator<Parameter> fp = orig.getParams().iterator();
@@ -161,6 +180,26 @@ public class RemoveFunctionParameters extends BidirectionalPass {
             int dif = orig.getParams().size() - efc.getParams().size();
             for (int i = 0; i < dif; ++i) {
                 fp.next();
+            }
+        }
+
+        TypeRenamer tren = null;
+        RefreshParams rparam = null;
+        if (!orig.getTypeParams().isEmpty()) {
+            List<Type> actualTypes = new ArrayList<Type>();
+            for (Expression ap : efc.getParams()) {
+                actualTypes.add(driver.getType(ap));
+            }
+            tren = SymbolTableVisitor.getRenaming(orig, actualTypes, nres(), tdstate().getExpected());
+
+            rparam = new RefreshParams();
+
+            for (Entry<String, Type> et : tren.tmap.entrySet()) {
+                et.getValue().accept(rparam);
+            }
+
+            for (Entry<String, Expression> ee : rparam.rmap.entrySet()) {
+                params.add(ee.getValue());
             }
         }
 
@@ -199,6 +238,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
         if ((params.size() - starti) != existingArgs.size()) {
             throw new ExceptionAtNode("Wrong number of parameters", efc);
         }
+
 
         final String cpkg = nres().curPkg().getName();
         for (Expression actual : efc.getParams()) {
@@ -265,14 +305,16 @@ public class RemoveFunctionParameters extends BidirectionalPass {
 
             Function orig = nres().getFun(name);
 
+            hasArrayUnifs = false;
+            String nfn = newFunName(efc, orig);
+
             // If this function call is one that we need to replace. Most likely
             // a
             // fun
-            if (driver.isHighOrder(orig)) {
+            if (driver.needsSpecialization(orig) || hasArrayUnifs) {
                 // Get the function to replace
                 // Function orig = funToReplace.get(name);
                 // Get the new function name
-                String nfn = newFunName(efc, orig);
 
                 // If new function already has this new function
                 if (newFunctions.contains(nfn)) {
@@ -286,8 +328,8 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                     newFunctions.add(nfn);
                     SymbolTable tmp = driver.getClosure(name);
                     if (tmp != null) {
-                        Function post = driver.doFunction(newFun);
                         SymbolTable reserve = driver.swapSymTable(tmp);
+                        Function post = driver.doFunction(newFun);
                         driver.addFunction(post);
                         driver.swapSymTable(reserve);
                     } else {
@@ -307,7 +349,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
     }
 
 
-    private static final class FunctionParamRenamer extends FEReplacer {
+    private final class FunctionParamRenamer extends FEReplacer {
         private final String nfn;
         private final ExprFunCall efc;
         private final String cpkg;
@@ -345,10 +387,35 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 }
             }
 
+            TypeRenamer tren = null;
+            RefreshParams rparam = null;
+            if (!func.getTypeParams().isEmpty()) {
+                List<Type> actualTypes = new ArrayList<Type>();
+                for (Expression ap : efc.getParams()) {
+                    actualTypes.add(driver.getType(ap));
+                }
+                tren = SymbolTableVisitor.getRenaming(func, actualTypes, nres(), tdstate().getExpected());
+
+                rparam = new RefreshParams();
+
+                for (Entry<String, Type> et : tren.tmap.entrySet()) {
+                    et.setValue((Type) et.getValue().accept(rparam));
+                }
+
+                for (Entry<String, Expression> ee : rparam.rmap.entrySet()) {
+                    newParam.add(new Parameter(ee.getValue(), TypePrimitive.inttype, ee.getKey(), Parameter.IN, false));
+                }
+            }
+
+
+
             for (Expression actual : this.efc.getParams()) {
                 Parameter par = fp.next();
                 Parameter newPar = (Parameter) par.accept(this);
                 if (!(par.getType() instanceof TypeFunction)) {
+                    if (tren != null) {
+                        newPar = new Parameter(newPar, tren.rename(newPar.getType()), newPar.getName(), newPar.getPtype(), newPar.isImplicit());
+                    }
                     if (par != newPar)
                         samePars = false;
                     newParam.add(newPar);
@@ -362,6 +429,9 @@ public class RemoveFunctionParameters extends BidirectionalPass {
             }
 
             Type rtype = (Type) func.getReturnType().accept(this);
+            if (tren != null) {
+                rtype = tren.rename(rtype);
+            }
 
             if (func.getBody() == null) {
                 assert func.isUninterp() : "Only uninterpreted functions are allowed to have null bodies.";
@@ -370,11 +440,17 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 return func.creator().returnType(rtype).pkg(this.cpkg).params(newParam).create();
             }
             Statement newBody = (Statement) func.getBody().accept(this);
+            List<String> newTP = Collections.EMPTY_LIST;
+            if (tren != null) {
+                newBody = (Statement) newBody.accept(tren);
+                Function enclosing = tdstate().getCurrentFun();
+                newTP = enclosing.getTypeParams();
+            }
             if (newBody == null)
                 newBody = new StmtEmpty(func);
             if (newBody == func.getBody() && samePars && rtype == func.getReturnType())
                 return func;
-            return func.creator().returnType(rtype).params(newParam).body(newBody).name(this.nfn).pkg(this.cpkg).create();
+            return func.creator().returnType(rtype).params(newParam).body(newBody).name(this.nfn).pkg(this.cpkg).typeParams(newTP).create();
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {
@@ -442,6 +518,8 @@ public class RemoveFunctionParameters extends BidirectionalPass {
      */
 
     class SpecializeInnerFunctions extends FEReplacer {
+
+
 
         Stack<Map<String, Pair<Function, Pair<List<Statement>, Set<String>>>>> postponed = new Stack<Map<String, Pair<Function, Pair<List<Statement>, Set<String>>>>>();
 

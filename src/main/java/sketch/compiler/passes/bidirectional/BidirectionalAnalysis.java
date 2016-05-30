@@ -187,6 +187,12 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Type merge(Type a, Type b) {
+        if (a instanceof NotYetComputedType) {
+            return b;
+        }
+        if (b instanceof NotYetComputedType) {
+            return a;
+        }
         return a.leastCommonPromotion(b, nres);
     }
 
@@ -208,9 +214,11 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
                 break;
             }
         }
+        Type tmpt = tdstate.getExpected();
         if (rv != null) {
             rv = (T) rv.accept(this);
         }
+        tdstate.beforeRecursion(tmpt, null);
         for (BidirectionalPass fv : postvisitors) {
             if (rv == null) {
                 break;
@@ -289,8 +297,19 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitExprADTHole(ExprADTHole exp) {
-        // TODO Auto-generated method stub
-        return null;
+        boolean hasChanged = false;
+
+        List<Expression> newParams = new ArrayList<Expression>();
+        for (Expression param : exp.getParams()) {
+            tdstate.beforeRecursion(NotYetComputedType.singleton, exp);
+            Expression newParam = doExpression(param);
+            newParams.add(newParam);
+            if (param != newParam)
+                hasChanged = true;
+        }
+        if (!hasChanged)
+            return exp;
+        return new ExprADTHole(exp, newParams);
     }
 
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
@@ -490,7 +509,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             actualTypes.add(getType(ap));
         }
 
-        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
+        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, tdstate.getExpected());
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
         if (actSz > formSz) {
@@ -930,7 +949,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public void addFunction(Function f) {
-        if (!isHighOrder(f)) {
+        if (!needsSpecialization(f)) {
             newFuncs.add(f);
         }
     }
@@ -954,7 +973,10 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         }
     }
 
-    boolean isHighOrder(Function fun) {
+    boolean needsSpecialization(Function fun) {
+        if (fun.isGenerator() && fun.isGeneric()) {
+            return true;
+        }
         for (Parameter p : fun.getParams()) {
             if (p.getType() instanceof TypeFunction) {
                 return true;
@@ -1005,7 +1027,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         queuedForAnalysis.clear();
         for (Function oldFunc : spec.getFuncs()) {
             // High Order Functions are only analyzed on demand.
-            if (!isHighOrder(oldFunc)) {
+            if (!needsSpecialization(oldFunc)) {
                 Function newFunc = doFunction(oldFunc);
                 if (oldFunc != newFunc)
                     changed = true;
@@ -1091,11 +1113,13 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             nt = doType(expNew.getTypeToConstruct());
         }
 
-        StructDef tsr;
+        StructDef tsr = null;
         if (nt instanceof TypeStructRef) {
             tsr = nres.getStruct(((TypeStructRef) nt).getName());
         } else {
-            throw new ExceptionAtNode("You can only construct structs and adts", expNew);
+            if (!expNew.isHole()) {
+                throw new ExceptionAtNode("You can only construct structs and adts", expNew);
+            }
         }
 
         Map<String, Expression> repl = new HashMap<String, Expression>();
@@ -1108,9 +1132,13 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         List<ExprNamedParam> enl = new ArrayList<ExprNamedParam>(expNew.getParams().size());
         for (ExprNamedParam en : expNew.getParams()) {
             Expression old = en.getExpr();
-            Type told = tsr.getTypeDeep(en.getName(), nres);
-            told = doType(vr.replace(told));
-            tdstate.beforeRecursion(told, expNew);
+            if (tsr != null) {
+                Type told = tsr.getTypeDeep(en.getName(), nres);
+                told = doType(vr.replace(told));
+                tdstate.beforeRecursion(told, expNew);
+            } else {
+                tdstate.beforeRecursion(NotYetComputedType.singleton, expNew);
+            }
             Expression rhs = doExpression(old);
             if (rhs != old) {
                 enl.add(new ExprNamedParam(en, en.getName(), rhs, en.getVariantName()));

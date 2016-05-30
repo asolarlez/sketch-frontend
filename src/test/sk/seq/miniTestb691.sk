@@ -20,7 +20,10 @@ harness void main(){
         sum += t;
     }
     forall(add, {1,2,3,4,5});
-    forall(tt, {x,y});
     assert sum == ??;    
+    forall(tt, {x,y});
+    sum = 0;
+    forall( (u) -> forall(add, u),  { {1,2,0} , {3,4,5} } );
+    assert sum == 15;    
 }
 

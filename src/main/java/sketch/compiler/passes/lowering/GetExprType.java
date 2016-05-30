@@ -421,7 +421,7 @@ public class GetExprType extends FENullVisitor
                 for (Expression ep : exp.getParams()) {
                     lt.add((Type) ep.accept(this));
                 }
-                TypeRenamer tr = SymbolTableVisitor.getRenaming(fn, lt);
+                TypeRenamer tr = SymbolTableVisitor.getRenaming(fn, lt, nres, null);
                 retType = tr.rename(retType);
             }
 

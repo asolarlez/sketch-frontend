@@ -15,9 +15,13 @@
  */
 
 package sketch.compiler.ast.core.typs;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.NameResolver;
@@ -26,7 +30,6 @@ import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
-import static java.util.Collections.unmodifiableList;
 
 /**
  * A homogenous array type with a length. This type has a base type and an expression for
@@ -122,6 +125,27 @@ public class TypeArray extends Type
         return base;
     }
     
+    public Collection<Type> getBaseTypes() {
+        return base.getBaseTypes();
+    }
+
+    public Map<String, Type> unify(Type t, Set<String> names) {
+        if (t instanceof TypeArray) {
+            return this.base.unify(((TypeArray) t).getBase(), names);
+        } else {
+            return base.unify(t, names);
+        }
+    }
+
+
+    public String cleanName() {
+        /*
+         * String st = length.toString(); if (!(length instanceof ExprVar)) { st
+         * = new Integer(Math.abs(st.hashCode())).toString(); }
+         */
+        return base.cleanName() + "Ar";
+    }
+
     /** Gets base type of multi-dim arrays */
     public Type getAbsoluteBase() {
         Type t=this;

@@ -4,8 +4,8 @@ T foo<T>( T x ){
     T apply(fun f){
         return f(x);
     }
-    int id(int x){
-        return x;
+    T id(T y){
+        return y;
     }
     
     return apply(id);

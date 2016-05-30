@@ -577,9 +577,9 @@ public class TypeCheck extends BidirectionalPass {
         if (castedType.isStruct()) {
             Type curType = driver.getType(newExpr);
             // Make sure that curType is a super type of castedType
-            if (!castedType.promotesTo(curType, driver.getNres())) {
+            if (!(castedType.promotesTo(curType, driver.getNres()) || curType.promotesTo(castedType, driver.getNres()))) {
+                report(exp, "Invalid explicit typecasting. Expression of type " + curType + " cannot be promoted to " + castedType);
                 return new ExprNullPtr();
-                // report(exp, "Invalid explicit typecasting");
             }
         }
         if (newExpr == exp.getExpr() && castedType == exp.getType())
@@ -937,7 +937,7 @@ public class TypeCheck extends BidirectionalPass {
             for (Expression ap : exp.getParams()) {
                 actualTypes.add(driver.getType(ap));
             }
-            TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes);
+            TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres(), tdstate().getExpected());
             int actSz = exp.getParams().size();
             int formSz = f.getParams().size();
             if (actSz > formSz) {

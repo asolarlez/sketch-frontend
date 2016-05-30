@@ -197,7 +197,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     for (Expression actual : exp.getParams()) {
                         lt.add(getType(actual));
                     }
-                    TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt);
+                    TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt, nres, null);
                     fun = (Function) fun.accept(tr);
                 }
 

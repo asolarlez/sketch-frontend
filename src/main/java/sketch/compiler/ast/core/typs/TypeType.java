@@ -1,8 +1,13 @@
 package sketch.compiler.ast.core.typs;
 
-import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 import static sketch.util.DebugOut.not_implemented;
+
+import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
 /**
  * Not used. type of a type. For example, if we have
@@ -34,6 +39,18 @@ public class TypeType extends Type {
 
     public Type maybeGetBase() {
         return base;
+    }
+
+    public Collection<Type> getBaseTypes() {
+        return Collections.singletonList((Type) this);
+    }
+
+    public Map<String, Type> unify(Type t, Set<String> names) {
+        return Collections.EMPTY_MAP;
+    }
+
+    public String cleanName() {
+        throw new RuntimeException("This type is not known");
     }
 
     @Override

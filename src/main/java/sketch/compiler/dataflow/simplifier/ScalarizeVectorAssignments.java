@@ -347,6 +347,10 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 					rType = ((TypeArray)rType).getBase();
 				}
 
+                if (lType.equals(TypePrimitive.inttype) || rType.equals(TypePrimitive.inttype)) {
+                    return exp;
+                }
+
 				String carry = addNewDeclaration(lType, new ExprConstInt(context, 0));
 				String ldecl = addNewDeclaration(lType, new ExprConstInt(context, 0));
 				String rdecl = addNewDeclaration(rType, new ExprConstInt(context, 0));

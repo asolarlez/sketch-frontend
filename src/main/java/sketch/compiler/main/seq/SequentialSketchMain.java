@@ -561,8 +561,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             }
         }
 
-        prog.debugDump("After experimental");
-
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());
 

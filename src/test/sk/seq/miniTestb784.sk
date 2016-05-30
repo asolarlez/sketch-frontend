@@ -1,4 +1,4 @@
-pragma options "--debug-check-back-input miniTestb734.inputCheck --bnd-inbits 3 --bnd-arr-size 8 --bnd-unroll-amnt 8 --bnd-inline-amnt 2";
+pragma options "--bnd-inbits 3 --bnd-arr-size 8 --bnd-unroll-amnt 8 --bnd-inline-amnt 2";
 
 harness void f(int n, int[n] a) {
 	if (n > 1) {

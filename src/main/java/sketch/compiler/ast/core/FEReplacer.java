@@ -423,10 +423,9 @@ public class FEReplacer implements FEVisitor
 
 
         List<Parameter> newParam = new ArrayList<Parameter>();
-        Iterator<Parameter> it = func.getParams().iterator();
+
         boolean samePars = true;
-        while (it.hasNext()) {
-            Parameter par = it.next();
+        for (Parameter par : func.getParams()) {
             Parameter newPar = (Parameter) par.accept(this);
             if (par != newPar)
                 samePars = false;
