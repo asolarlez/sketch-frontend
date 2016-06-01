@@ -238,8 +238,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     public void inliner2(ExprFunCall exp, Function fun) {
         /* Increment inline counter. */
         rcontrol.pushFunCall(exp, fun);
-        Package oldpkg = nres.curPkg();
-        nres.setPackage(pkgs.get(fun.getPkg()));
+
         try {
             List<Statement> oldNewStatements = newStatements;
             newStatements = new ArrayList<Statement>();
@@ -274,6 +273,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                             inParameterSetter(exp, nparams.iterator(),
                                     nactuals.iterator(), false);
                 }
+                Package oldpkg = nres.curPkg();
+                nres.setPackage(pkgs.get(fun.getPkg()));
                 try {
                     Statement body = (Statement) nbody.accept(this);
                     addStatement(body);
@@ -281,6 +282,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     Iterator<Expression> actualParams = nactuals.iterator();
                     Iterator<Parameter> formalParams = nparams.iterator();
                     outParameterSetter(formalParams, actualParams, false, lvl2);
+                    nres.setPackage(oldpkg);
                 }
                 result = new StmtBlock(exp, newStatements);
             } finally {
@@ -292,7 +294,6 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             addStatement(result);
         } finally {
             rcontrol.popFunCall(exp);
-            nres.setPackage(oldpkg);
         }
     }
 
