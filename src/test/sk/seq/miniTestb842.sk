@@ -1,0 +1,10 @@
+
+
+harness void main(int t, int[t + 2] x){
+    assume t < 5;
+    int[2+{| 1 | t | 3 |}] y = x;
+    y[0] = 0;
+    x[??] = ??;
+    assert y == x;
+    
+}

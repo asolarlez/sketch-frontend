@@ -186,7 +186,7 @@ public class TypeStructRef extends Type
     }
 
     public String cleanName() {
-        return this.toString();
+        return this.toString().replace('@', '_');
     }
 
     public boolean isUnboxed() {

@@ -329,8 +329,11 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                     SymbolTable tmp = driver.getClosure(name);
                     if (tmp != null) {
                         SymbolTable reserve = driver.swapSymTable(tmp);
+                        Package oldpkg = nres().curPkg();
+                        nres().setPackage(driver.pkgIndex(newFun.getPkg()));
                         Function post = driver.doFunction(newFun);
                         driver.addFunction(post);
+                        nres().setPackage(oldpkg);
                         driver.swapSymTable(reserve);
                     } else {
                         driver.queueForAnalysis(newFun);
@@ -450,7 +453,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 newBody = new StmtEmpty(func);
             if (newBody == func.getBody() && samePars && rtype == func.getReturnType())
                 return func;
-            return func.creator().returnType(rtype).params(newParam).body(newBody).name(this.nfn).pkg(this.cpkg).typeParams(newTP).create();
+            return func.creator().returnType(rtype).params(newParam).body(newBody).name(this.nfn).typeParams(newTP).create();
         }
 
         public Object visitExprFunCall(ExprFunCall efc) {

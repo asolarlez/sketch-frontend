@@ -8,6 +8,7 @@ import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
@@ -20,7 +21,9 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
@@ -75,6 +78,14 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             } else {
                 exprRV = nexp;
             }
+        } else {
+            TypeStructRef sr = (TypeStructRef) exp.getTypeToConstruct();
+            StructDef sd = nres.getStruct(sr.getName());
+            if (!sd.getPkg().equals(currentTopPkg)) {
+                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed()), nexp.getParams(), nexp.isHole());
+                exprRV = nexp;
+            }
+
         }
         return obj;
     }
@@ -156,11 +167,12 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     public Object visitExprFunCall(ExprFunCall exp)
     {
         String name = exp.getName();
-
-
-        // Local function?
         Function fun = nres.getFun(name);
         String funPkg = fun.getPkg();
+        if (!funPkg.equals(currentTopPkg) && !name.contains("@")) {
+            exp = new ExprFunCall(exp, fun.getFullName(), exp.getParams());
+        }
+
         if(fun.getSpecification()!= null){
             String specName = fun.getSpecification();
             if (newFuns.containsKey(nres.getFunName(specName))) {
@@ -226,7 +238,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     public void inliner2(ExprFunCall exp, Function fun) {
         /* Increment inline counter. */
         rcontrol.pushFunCall(exp, fun);
-
+        Package oldpkg = nres.curPkg();
+        nres.setPackage(pkgs.get(fun.getPkg()));
         try {
             List<Statement> oldNewStatements = newStatements;
             newStatements = new ArrayList<Statement>();
@@ -279,6 +292,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             addStatement(result);
         } finally {
             rcontrol.popFunCall(exp);
+            nres.setPackage(oldpkg);
         }
     }
 
@@ -322,8 +336,11 @@ public class PreprocessSketch extends DataflowWithFixpoint {
     }
     
     
+    String currentTopPkg = null;
+
     public Object visitFunction(Function func){
         hasAssumes = false;
+        currentTopPkg = func.getPkg();
         if (newFuns.containsKey(nres.getFunName(func.getName()))) {
             return newFuns.get(nres.getFunName(func.getName()));
         }

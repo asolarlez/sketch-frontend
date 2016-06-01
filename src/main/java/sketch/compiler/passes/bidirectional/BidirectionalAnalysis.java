@@ -61,6 +61,7 @@ class TopDownState {
     boolean inGenerator = false;
     Function currentFun = null;
 
+
     public Function getCurrentFun() {
         return currentFun;
     }
@@ -152,6 +153,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     Stack<String> funsToVisit = new Stack<String>();
     Stack<Function> queuedForAnalysis = new Stack<Function>();
     Map<String, SymbolTable> closureStore = new HashMap<String, SymbolTable>();
+    Map<String, Package> pkgs = new HashMap<String, Package>();
 
     public TempVarGen getVarGen() {
         return varGen;
@@ -735,11 +737,44 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         return super.getStructDef(t);
     }
 
+    public Package pkgIndex(String name) {
+        return pkgs.get(name);
+    }
+
     public Object visitProgram(Program prog) {
 
+        queuedForAnalysis.clear();
+
         List<Package> newStreams = new ArrayList<Package>();
+        Map<String, List<Function>> plist = new HashMap<String, List<Function>>();
+
         for (Package pkg : prog.getPackages()) {
-            newStreams.add(doT(pkg));
+            pkgs.put(pkg.getName(), pkg);
+        }
+
+        for (Package pkg : prog.getPackages()) {
+            Package newp = doT(pkg);
+            plist.put(pkg.getName(), newp.getFuncs());
+            newStreams.add(newp);
+            pkgs.put(pkg.getName(), newp); // update with latest version of
+                                           // package.
+        }
+
+        newFuncs = new ArrayList<Function>();
+        while (!queuedForAnalysis.isEmpty()) {
+            Function f = queuedForAnalysis.pop();
+            nres.setPackage(pkgs.get(f.getPkg()));
+            symtab = closureStore.get("pkg:" + f.getPkg());
+            Function newFunc = doFunction(f);
+            if (newFunc != null)
+                plist.get(f.getPkg()).add(newFunc);
+            if (newFuncs.size() > 0) {
+                for (Function nf : newFuncs) {
+                    plist.get(nf.getPkg()).add(nf);
+                }
+                newFuncs.clear();
+            }
+
         }
 
         return prog.creator().streams(newStreams).create();
@@ -1024,7 +1059,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         nstructsInPkg = -1;
 
         int nonNull = 0;
-        queuedForAnalysis.clear();
+
         for (Function oldFunc : spec.getFuncs()) {
             // High Order Functions are only analyzed on demand.
             if (!needsSpecialization(oldFunc)) {
@@ -1038,13 +1073,9 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
                 changed = true;
             }
         }
-        while (!queuedForAnalysis.isEmpty()) {
-            changed = true;
-            Function f = queuedForAnalysis.pop();
-            Function newFunc = doFunction(f);
-            if (newFunc != null)
-                newFuncs.add(newFunc);
-        }
+
+        closureStore.put("pkg:" + spec.getName(), symtab);
+
 
         if (newFuncs.size() != nonNull) {
             changed = true;

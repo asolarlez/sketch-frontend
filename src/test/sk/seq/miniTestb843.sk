@@ -1,0 +1,36 @@
+
+
+void forall<T>([int n], fun f, ref T[n] x){
+    for(int i=0; i<n; ++i){
+        f(x[i]);
+    }
+}
+
+T[n] combine<T>([int n], fun f, T[n] x, T[n] y ){
+    T[n] out;
+    for(int i=0; i<n; ++i){
+        out[i] = f(x[i], y[i]);
+    }
+    return out;
+}
+
+
+
+harness void main(int x){
+    assume x < 8;
+    
+    int[x] a;
+    int i=0;
+    void f(ref int s){
+         s = i++;
+    }
+    forall(f, a);
+    
+    int[x] b;
+    forall(f, b);
+    int[x] t = combine((u,v)->u+v, a, b);
+    
+    for(int ii=0; ii<x; ++ii){
+        assert t[ii] == 2*ii + x;
+    }        
+}

@@ -360,7 +360,9 @@ public class GetExprType extends FENullVisitor
         {
             String name = ((TypeStructRef)base).getName();
             ts = nres.getStruct(name);
-            assert ts != null : "GetExprType: missing struct information" + base;
+            if (ts == null) {
+                return null;
+            }
         }
         else
         {
@@ -609,7 +611,6 @@ public class GetExprType extends FENullVisitor
         }
 
 
-        assert rv != null : left.getCx() + ": Type ERROR: " + "The types are incompatible " + tl + " , " + tr;
 
         return rv;
 	}

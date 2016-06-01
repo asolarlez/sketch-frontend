@@ -110,8 +110,11 @@ public class EliminateLambdas extends BidirectionalPass {
             tparams.add(tname);
         }
 
-        // Type rettype = stv.getType(elambda.getExpression());
-        Function nf = Function.creator(elambda, freshVarName, FcnType.Generator).returnType(nyd).typeParams(tparams)
+        Type rettype = stv.getType(elambda.getExpression());
+        if (rettype == null) {
+            rettype = nyd;
+        }
+        Function nf = Function.creator(elambda, freshVarName, FcnType.Generator).returnType(rettype).typeParams(tparams)
                 .params(lparam)
                 .body(new StmtBlock(new StmtReturn(elambda.getExpression(), elambda.getExpression()))).create();
 

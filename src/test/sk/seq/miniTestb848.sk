@@ -1,0 +1,32 @@
+package A{
+    struct A{
+        int v;
+    }
+    void tt(fun f, int t){
+        assert f(new A(v=t)) == t;
+    }
+    void qq(fun f, int t){
+        assert f(new A(v = t)).x == t;
+    }
+}
+
+
+package B{
+    struct A{
+        int x;
+        int y;
+    }
+    
+    
+    harness void uu(int y){
+        fun U = (x)-> (new A(y=x.v)).y;
+        
+        A F(A@A t){
+            A a = new A(x = t.v);
+            return a;
+        }
+        qq(F, y);
+        tt(U, y);
+        
+    }        
+}

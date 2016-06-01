@@ -1,0 +1,15 @@
+
+
+T fst<T>(T x, T y){
+    return x;        
+}
+
+
+harness void main(int n, int[n] a){
+    assume n < 8;
+    int[n] b;
+    
+    assert fst(a,b) == a;
+    assert fst(4,5) == ??;
+    
+}
