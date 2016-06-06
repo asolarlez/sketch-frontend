@@ -517,19 +517,7 @@ else x = 0;
 }
 
 
-MultiType evaluate_poly(MultiType poly,MultiType x){
-MultiType pol_val_ls;
-assignMT(pol_val_ls, fuzzAssign0(new MultiType(flag = LIST, lst=new MTList(len=0,listValues={}))));
-void body0(MultiType y){
-MultiType pol_val;
-assignMT(pol_val, fuzzAssign1(fuzzOperator0((subscriptMTi(poly, y)), (fuzzOperator1((x), (y), POW_OP)), MUL_OP)));
-appendList(pol_val_ls, pol_val);
-}
-foreach(body0, fuzzLoopIter0(range3(fuzzInit0(new MultiType(val=0,flag=INTEGER)), fuzzInit1(len(fuzzInit2(poly))), fuzzInit3(new MultiType(val=1,flag=INTEGER)))));
-MultiType sum_pol;
-assignMT(sum_pol, fuzzAssign2(sum(fuzzInit4(pol_val_ls))));
-return sum_pol;
-}
+
 
 MultiType compute_deriv(MultiType poly){
 bit addBaseCase0;
@@ -546,25 +534,7 @@ foreach(body1, fuzzLoopIter1(range3(fuzzInit5(new MultiType(val=0,flag=INTEGER))
 return deriv_coeff_ls;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-MultiType polv;
-assignMT(polv, fuzzAssign5(fuzzOperator3((epsilon), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-MultiType x;
-assignMT(x, fuzzAssign6(x_0));
-while((fuzzCompOperator0(abs(fuzzInit9(polv)), epsilon, GT_COMP))){
-assignMT(polv, fuzzAssign7(evaluate_poly(fuzzInit10(poly), fuzzInit11(x))));
-if((fuzzCompOperator1(abs(fuzzInit12(polv)), epsilon, GT_COMP))){
-MultiType derv;
-assignMT(derv, fuzzAssign8(compute_deriv(fuzzInit13(poly))));
-MultiType derval;
-assignMT(derval, fuzzAssign9(evaluate_poly(fuzzInit14(derv), fuzzInit15(x))));
-assignMT(x, fuzzAssign10(fuzzOperator4((x), (fuzzOperator5((polv), (derval), DIV_OP)), SUB_OP)));
-}
-else{
-return x;
-}
-}
-}
+
 
 
 MultiType compute_deriv_teacher(MultiType poly){
@@ -761,11 +731,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;

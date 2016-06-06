@@ -25,7 +25,7 @@ int cmp(Str s1, Str s2){
 
 
 harness void mainB(){
-    Str tc([int n], int[n] x){ return new Str(n=n, buf=x); }
+    Str tc([int n], char[n] x){ return new Str(n=n, buf=x); }
     Str s0 = tc(6, ??);
     assert s0.n == 6 && s0.buf == "hello";
     

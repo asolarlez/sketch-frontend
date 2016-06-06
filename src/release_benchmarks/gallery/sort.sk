@@ -8,7 +8,7 @@
  * 
  */
 
-include "src/sketchlib/generators.skh";
+include "generators.skh";
 pragma options "--bnd-inline-amnt 3 --bnd-inbits 3"; 
    
 

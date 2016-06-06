@@ -534,18 +534,6 @@ else x = 0;
 }
 
 
-MultiType evaluate_poly(MultiType poly,MultiType x){
-MultiType exp;
-assignMT(exp, fuzzAssign0(new MultiType(val=0,flag=INTEGER)));
-MultiType polynomial;
-assignMT(polynomial, fuzzAssign1(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-void body0(MultiType n){
-appendList(polynomial, fuzzOperator0((n), (fuzzOperator1((x), (exp), POW_OP)), MUL_OP));
-assignMT(exp, fuzzAssign2(fuzzOperator2((exp), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-foreach(body0, fuzzLoopIter0(poly));
-return sum(fuzzInit0(subscriptMTul(polynomial, new MultiType(val=0,flag=INTEGER), len(fuzzInit1(polynomial)))));
-}
 
 MultiType compute_deriv(MultiType poly){
 bit addBaseCase0;
@@ -569,22 +557,6 @@ foreach(body1, fuzzLoopIter1(poly));
 return polynomial;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-MultiType index;
-assignMT(index, fuzzAssign8(new MultiType(val=0,flag=INTEGER)));
-MultiType iterations;
-assignMT(iterations, fuzzAssign9(new MultiType(val=1,flag=INTEGER)));
-void body2(MultiType n){
-assignMTArray(poly, index, fuzzAssign10(n));
-assignMT(index, fuzzAssign11(fuzzOperator6((index), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-foreach(body2, fuzzLoopIter2(poly));
-while((fuzzCompOperator1(abs(fuzzInit4(evaluate_poly(fuzzInit5(poly), fuzzInit6(x_0)))), epsilon, GT_COMP))){
-assignMT(x_0, fuzzAssign12(fuzzOperator7((x_0), (fuzzOperator8((evaluate_poly(fuzzInit7(poly), fuzzInit8(x_0))), (evaluate_poly(fuzzInit9(compute_deriv(fuzzInit10(poly))), fuzzInit11(x_0))), DIV_OP)), SUB_OP)));
-assignMT(iterations, fuzzAssign13(fuzzOperator9((iterations), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-return new MultiType(lst=new MTList(len=2, listValues={x_0,iterations}), flag=LIST);
-}
 
 
 MultiType compute_deriv_teacher(MultiType poly){
@@ -781,11 +753,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;

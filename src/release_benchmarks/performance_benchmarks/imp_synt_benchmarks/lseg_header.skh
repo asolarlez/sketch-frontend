@@ -1397,7 +1397,7 @@ generator bit any_literal(int locrange, int intrange, int locrange2, int intrang
 	else return !res;
 }
 
-bit gen_positive_conjuncts() {
+bit gen_positive_conjuncts(fun literal) {
 	bit res = true;
 	if (??) {
 		res = res && literal({| SLL | SLLSEG | NEXTTO | KEYLEQTO |}, 3, 1);

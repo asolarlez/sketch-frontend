@@ -1720,6 +1720,18 @@ public class TypeCheck extends BidirectionalPass {
             report(stmt, "assigning to non-lvalue");
         Type lt = driver.getType(newLHS);
         Type rt = driver.getType(newRHS);
+
+        if (lt == null) {
+            driver.doExpression(newLHS);
+            report(stmt, "Problem with assignment");
+            return stmt;
+        }
+        if (rt == null) {
+            driver.doExpression(newRHS);
+            report(stmt, "Problem with assignment");
+            return stmt;
+        }
+
         String lhsn = null;
         Expression lhsExp = newLHS;
 
