@@ -114,7 +114,7 @@ public class PreprocessStage extends MetaStage {
 		prog = (Program) prog.accept(new GlobalsToParams(varGen));
 
 		// prog.debugDump("************************************** 9");
-        prog.debugDump("BEFORE TIFAH");
+
         prog = (Program) prog.accept(new TypeInferenceForADTHoles());
         // prog = ir1.run(prog);
 //        prog.debugDump("************************************** Before type inference");

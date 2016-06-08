@@ -1,10 +1,35 @@
+\section{Advanced Usage and Diagnostics}
+
+
+\subsection{Interpreting Synthesizer Output}
+You can use the flag \C{-V n} to set the verbosity level of the synthesizer. You can use this to diagnose problems with your sketch, and to understand why a particular problem takes a long time to synthesize. 
+
+The first thing you need to understand about \Sk{} is that it works by first guessing a solution to the synthesis problem and then checking it. If the check fails, the system generates a counterexample and then searches for a new solution that works for that counterexample and repeats the process. When you run with \C{-V 5}, you can see each of these inductive synthesis and checking steps as they happen in real time. The synthesizer will output \C{BEGIN CHECK} and \C{END CHECK} before and after the checking phase respectively, and it will output \C{BEGIN FIND} and \C{END FIND} before and after the inductive synthesis phase. Therefore, if the synthesizer seems to be stuck when solving a problem, you can use this output to tell whether it is having trouble with the synthesis or with the checking phase. This is very important, because there are different strategies you can use to speed up the synthesis or the checking phases of the solver. 
+
+If the synthesizer tells you that your sketch has no solution, you can also pass the flag \C{--debug-cex} to ask the synthesizer to show you the counterexamples it is generating as it tries different solutions. Often, these counterexamples can help you pinpoint corner cases that you failed to consider in your sketch. 
+
+\flagdocb{V}{The verbosity flag takes as argument a verbosity level that can range from 0 (minimal output) to 15 (a lot of debug output everything)}
+
+\flagdoc{debug-cex}{ This flag tells the synthesizer to show you the counterexamples that it generates as it tries to find a solution to your problem. You need to pass verbosity of at least 3 to use this flag (\C{-V 3}).}
+
+
+\subsection{Parallel Solving}
+\seclabel{parallel}
+
+When running in parallel mode, the \Sk{} synthesizer will launch multiple processes and have each process use a combination of stochastic and symbolic search to find a solution to the synthesis problem. Not all problems will benefit from this style of parallelization, but for those that do, the benefits can be significant. 
+
+In general, parallelization will only help speed up the synthesis phase, so if your problem is taking a long time in the checking phase, it will not benefit from parallel solving. 
+
+It is also important to note that parallelization does not work well with the \C{minimize} construct. In particular, using parallelization with \C{minimize} can lead to solutions that are not actually minimal. 
+
+
 \subsection{Custom Code Generators}
 
 For many applications, the user's goal is not to generate C code, but instead to derive code details that will later be used by other applications. In order to simplify this process, \Sk{} makes it easy to create custom code generators that will be invoked by the sketch compiler at code generation time. 
 
 Custom code generators must implement the \C{FEVisitor} interface defined in the \C{sketch.compiler.ast.core} package and must have a default constructor that the compiler can use to instantiate them. In order to ask the compiler to use a custom code generator, you must label your custom code generator with the \C{@CodeGenerator} annotation. You must then package your code generator together with any additional classes it uses into a single jar file, and you must tell \Sk{} to use this jar file by using the flag \C{--fe-custom-codegen}. 
 
-\flagdoc{--fe-custom-codegen}{Flag takes as an argument the name of a jar file and forces \Sk{} to use the first code generator it finds in that file.}
+\flagdoc{fe-custom-codegen}{Flag takes as an argument the name of a jar file and forces \Sk{} to use the first code generator it finds in that file.}
 
 
 To illustrate how to create a custom code generator, the \Sk{} distribution includes a folder called \C{sketch-frontend/customcodegen} that contains a custom code generator called \C{SCP} that simply pretty-prints the program to the terminal. In order to get \Sk{} to use this class as a code generator, follow these simple steps:
@@ -43,3 +68,33 @@ Also, if you are doing advanced development on the system, you will sometimes wa
 the temporary files from being deleted. You can do this by using the \C{--fe-keep-tmp} flag.
 
 \flagdoc{fe-keep-tmp}{Keep intermediate files used by the sketch frontend to communicate with the solver.}
+
+
+
+\subsection{Extracting the intermediate representation}
+If you have your own SMT solver with support for quantifiers and you want to compare your performance with Sketch, you can ask the solver for the intermediate representation of the synthesis problem after it is done optimizing and desugaring the high-level language features. 
+
+\flagdoc{debug-output-dag}{This flag outputs the intermediate representation in an easy to parse (although not necessarily easy to read) format suitable for mechanical conversion into other solver formats. The flag takes as a parameter the file name to which to write the output.}
+
+The file will show all the nodes in the intermediate representation in topological order. There listing in \figref{irformat} shows all the different types of nodes and the format in which they are written. 
+\begin{figure}
+\begin{lstlisting}
+id = ARR_R	TYPE	index	inputarr
+id = ARR_W	TYPE	index	old-array	new-value
+id = ARR_CREATE TYPE	size	v0 v1 ....
+id = BINOP	TYPE	left	right	
+        // where BINOP can be AND, OR, XOR, PLUS, TIMES, DIV, MOD, LT, EQ
+id = UNOP	TYPE	parent	// where UNOP can be NOT or NEG
+id = SRC	TYPE	NAME	bits
+id = CTRL	TYPE	NAME	bits
+id = DST	TYPE	NAME	val
+id = UFUN	TYPE	NAME	OUT_NAME CALLID ( (size p1 p2 ...) | (***) )
+id = ARRACC	TYPE	index 	size	v0 v1 ...
+id = CONST	TYPE	val
+id = ARRASS	TYPE	val == c noval yesval
+id = ACTRL	TYPE	nbits b0 b1 b2 ...
+id = ASSERT	val	"msg"
+\end{lstlisting}
+\caption{Format for intermediate representation.}\figlabel{irformat}
+\end{figure}
+

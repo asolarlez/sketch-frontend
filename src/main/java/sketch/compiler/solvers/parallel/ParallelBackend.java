@@ -272,7 +272,7 @@ public class ParallelBackend extends SATBackend {
             monitor = new TimeoutMonitor(this, timeoutMins);
             monitor.start();
         } else if (pTrials <= 0) {
-            pTrials = cpu * 32 * 3;
+            pTrials = cpu; // * 32 * 3;
         }
 
         sync_parallel_solve(oracle, hasMinimize, timeoutMins, pTrials);
