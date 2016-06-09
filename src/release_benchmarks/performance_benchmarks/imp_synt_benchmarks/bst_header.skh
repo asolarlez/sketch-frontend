@@ -1,7 +1,7 @@
 #define BOUND 2
 
 
-include "helper.sk";
+include "helper.skh";
 
 
 bit bst(int l, int t);

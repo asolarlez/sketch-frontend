@@ -148,7 +148,7 @@ public class SketchOptions {
     public File[] getSolutionsFiles() {
         FilenameFilter f = new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.startsWith(getSolStringBase() + fileIdx);
+                return name.equals(getSolStringBase() + fileIdx);
             }
         };
         File[] files = sktmpdir().listFiles(f);
