@@ -87,42 +87,70 @@ public class ParallelBackend extends SATBackend {
                 if (worker_stat == null)
                     return worker_stat;
                 // double-check whether a solution/UNSAT is already determined
+
+                final int ALREADY_DONE = 0;
+                final int THIS_SOLVED = 1;
+                final int THIS_UNSAT = 2;
+                int state = -1;
                 synchronized (lock) {
                     if (parallel_solved || parallel_failed) {
-                        plog(prefix + " done, but aborted ===");
-                        cleanUpTmpSol();
-                        return null;
+                        state = ALREADY_DONE;
+                    } else {
+                        if (worker_stat.successful()) {
+                            state = THIS_SOLVED;
+                            parallel_solved = true;
+                        }
+                        if (worker_stat.unsat()) {
+                            state = THIS_UNSAT;
+                            parallel_failed = true;
+                        }
                     }
                 }
-
-                PrintStream out = new PrintStream(System.out, false);
-                if (worker_stat.successful()) {
+                // Only one thread can be in a state that is either THIS_SOLVED
+                // or THIS_UNSAT.
+                switch (state) {
+                case ALREADY_DONE:
                     synchronized (lock) {
-                        parallel_solved = true;
+                        plog(prefix + " done, but aborted ===");
                     }
+                    cleanUpTmpSol();
+                    return null;
+                case THIS_SOLVED: {
+                    PrintStream out = new PrintStream(System.out, false);
                     synchronized (lock) {
                         options.setSolFileIdx(Integer.toString(fileIdx));
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
                         log(2, "Stats for last run:\n" + worker_stat);
                         plog(out, prefix + " solved ===");
+                        out.flush();
                     }
-                } else {
-                    if (worker_stat.unsat()) {
-                        synchronized (lock) {
-                            parallel_failed = true;
-                        }
-                    }
+                    return worker_stat;
+                }
+                case THIS_UNSAT: {
+                    PrintStream out = new PrintStream(System.out, false);
                     cleanUpTmpSol();
                     synchronized (lock) {
                         plog(out, prefix + " start ===");
                         out.println(worker_stat.out);
                         log(2, "Stats for last run:\n" + worker_stat);
                         plog(out, prefix + " failed ===");
+                        out.flush();
                     }
+                    return worker_stat;
                 }
-                out.flush();
-                return worker_stat;
+                default:
+                    PrintStream out = new PrintStream(System.out, false);
+                    cleanUpTmpSol();
+                    synchronized (lock) {
+                        plog(out, prefix + " start ===");
+                        out.println(worker_stat.out);
+                        log(2, "Stats for last run:\n" + worker_stat);
+                        plog(out, prefix + " didn't succeed or fail ===");
+                        out.flush();
+                    }
+                    return worker_stat;
+                }
             }
         };
     }
