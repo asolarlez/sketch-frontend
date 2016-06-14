@@ -1,25 +1,14 @@
-adt A {
- B { int x; A a;}
-}
-
-A foo(A a) {
-	generator bit cond(fun g) { return g() == 2; }
-	return bar(a, cond);
-}
-
-generator T bar<T>(T t, fun cond) {
-	switch(t) {
-	repeat_case: {
-	if (cond( ()->(t.??) ))
-		return new B(x = 5);
-	return t;
-	}
-	}
-}
-
-harness void main() {
-	A a = new B(x = 1);
-	A b = new B(x = 2, a = a);
-	B c =  (B) foo(b);
-	assert(c.x == 5);
+harness void main(int i){
+    int[5] T;
+    int[7] Q;
+    int[8][2] P;
+    
+    T[4] = 8;
+    
+    assert (?? ? T : (?? ? Q : P[??]))[ ?? ? i : ?? ] == 8;
+    
+    
+    
+    
+    
 }

@@ -26,7 +26,7 @@ harness void main(){
     A boo(){
         return new A();
     }
-    moo(foo, boo);
+    Foo f = moo(foo, boo);
     Foo ttt(Foo x, Foo y){
         if(??){
             return x;

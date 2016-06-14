@@ -10,8 +10,18 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
-import sketch.compiler.ast.core.*;
+import static sketch.util.DebugOut.assertFalse;
+
+import sketch.compiler.ast.core.Annotation;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -27,12 +37,11 @@ import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
 import sketch.compiler.codegenerators.tojava.NodesToJava;
 import sketch.compiler.parallelEncoder.VarSetReplacer;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.Pair;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.wrapper.ScRichString;
-
-import static sketch.util.DebugOut.assertFalse;
 
 public class NodesToSuperCpp extends NodesToJava {
 
@@ -988,16 +997,26 @@ public class NodesToSuperCpp extends NodesToJava {
         Map<String, Expression> rmap = new HashMap<String, Expression>();
         VarSetReplacer vsr = new VarSetReplacer(rmap);
 
+        List<Type> ve = new ArrayList<Type>();
+        for (Expression actual : exp.getParams()) {
+            ve.add(getType(actual));
+        }
+
         Function f = nres.getFun(funName);
+        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, ve, nres, null);
+        Iterator<Type> actualTypes = ve.iterator();
         for (Parameter p : f.getParams()) {
             if (!first)
                 result += ", ";
             first = false;
 
             Expression actual =  actuals.next();
+            Type actType = actualTypes.next();
+
             Type parType = (Type) p.getType().accept(vsr);
+            parType = (Type) parType.accept(tren);
             parType = parType.addDefaultPkg(f.getPkg(), nres);
-            Type actType = getType(actual);
+
             rmap.put(p.getName(), actual);
             String partxt = (String) actual.accept(this);
             if (parType instanceof TypeArray) {

@@ -1,17 +1,77 @@
-pragma options "--bnd-unroll-amnt 33";
-
-void foo(ref int x){
-    x += 10;
+struct CSR {
+    int nnz; int rows; int cols;
+    int[nnz] data;
+    int[rows+1] rowStart;
+    int[nnz] colIdx;
 }
 
-
-harness void main(int n){
-    int[n] x;
-    for(int i=0; i<n; ++i){
-        x[i] = i;
-    }
-    if(n > 4){
-        foo(x[3]);
-        assert x[3] == 10+??;        
-    }
+void genfun([int rows, int cols], CSR mat, int[cols] vec, int[rows] r) {
+for (int G00005 = 0; (G00005) < ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)]));) {
+for (int G00006 = 0; (G00006) < ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)]));) {
+int assignG00007 = (G00006) + (1);
+int choiceG00008 = ??(3);
+assume 0 <= choiceG00008 && choiceG00008 < 5;
+if (choiceG00008 == 0) {(vec)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00007;}
+else if (choiceG00008 == 1) {(r)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00007;}
+else if (choiceG00008 == 2) {((mat).data)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00007;}
+else if (choiceG00008 == 3) {((mat).rowStart)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00007;}
+else if (choiceG00008 == 4) {((mat).colIdx)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? (G00006) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00007;}
 }
+int assignG00009 = (G00005) + (1);
+int choiceG00010 = ??(3);
+assume 0 <= choiceG00010 && choiceG00010 < 5;
+if (choiceG00010 == 0) {(vec)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00009;}
+else if (choiceG00010 == 1) {(r)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00009;}
+else if (choiceG00010 == 2) {((mat).data)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00009;}
+else if (choiceG00010 == 3) {((mat).rowStart)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00009;}
+else if (choiceG00010 == 4) {((mat).colIdx)[(??(1) ? ((??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ((??(1) ? (vec) : ??(1) ? (r) : ??(1) ? ((mat).data) : ??(1) ? ((mat).rowStart) : (mat).colIdx))[(??(1) ? (rows) : ??(1) ? (cols) : ??(1) ? (G00005) : ??(1) ? ((mat).nnz) : ??(1) ? ((mat).rows) : ??(1) ? ((mat).cols) : ??)])) : ??)] = assignG00009;}
+}
+}
+
+CSR makeCSR(int n, int m, int[n,m] mat) {
+    int[n*m] data = 0;
+    int[n+1] rowStart = 0;
+    int[n*m] colIdx = 0;
+    int nnz = 0;
+    for (int i = 0; i < n; ++i) {
+        rowStart[i] = nnz;
+        for (int j = 0; j < m; ++j) {
+            if (mat[i,j] != 0) { //omit this for "dense CSR"
+                data[nnz] = mat[i,j];
+                colIdx[nnz] = j;
+                ++nnz;
+            }
+        }
+    }
+    rowStart[n] = nnz;
+    return new CSR(nnz=nnz, rows=n, cols=m, data=data[0::nnz], rowStart=rowStart, colIdx=colIdx[0::nnz]);
+}
+
+void denseMV([int n, int m], int[n,m] mat, int[m] vec, ref int[n] r) {
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < m; ++j)
+            r[i] += mat[i,j] * vec[j];
+}
+
+harness void foo23(int[2,3] mat, int[3] vec) {
+    foo(mat, vec);
+}
+
+harness void foo32(int[3,2] mat, int[2] vec) {
+    foo(mat, vec);
+}
+
+harness void foo33(int[3, 3] mat, int[3] vec) {
+    foo(mat, vec);
+}
+
+void foo([int n, int m], int[n,m] mat, int[m] vec) {
+    CSR csr = makeCSR(n, m, mat);
+    int[n] rDense = 0;
+    int[n] rSparse = 0;
+    denseMV(n, m, mat, vec, rDense);
+
+    genfun(csr, vec, rSparse);
+    assert rDense == rSparse;
+}
+

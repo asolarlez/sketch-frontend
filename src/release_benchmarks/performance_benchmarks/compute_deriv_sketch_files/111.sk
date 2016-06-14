@@ -509,8 +509,8 @@ else x = 0;
 
 
 MultiType evaluate_poly(MultiType poly,MultiType x){
-MultiType currentPower;
-assignMT(currentPower, fuzzAssign0(new MultiType(val=0,flag=INTEGER)));
+MultiType currentPower2;
+assignMT(currentPower2, fuzzAssign0(new MultiType(val=0,flag=INTEGER)));
 MultiType polySum;
 assignMT(polySum, fuzzAssign1(new MultiType(val=0,flag=INTEGER)));
 void body0(MultiType currentPower){
@@ -529,8 +529,8 @@ MultiType currentPower;
 assignMT(currentPower, fuzzAssign4(new MultiType(val=0,flag=INTEGER)));
 MultiType derivPoly;
 assignMT(derivPoly, fuzzAssign5(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-void body1(MultiType currentPower){
-appendList(derivPoly, fuzzOperator3((subscriptMTi(poly, currentPower)), (currentPower), MUL_OP));
+void body1(MultiType currentPower2){
+appendList(derivPoly, fuzzOperator3((subscriptMTi(poly, currentPower2)), (currentPower2), MUL_OP));
 }
 foreach(body1, fuzzLoopIter1(range2(fuzzInit3(new MultiType(val=1,flag=INTEGER)), fuzzInit4(len(fuzzInit5(poly))))));
 return derivPoly;
@@ -746,11 +746,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;

@@ -29,6 +29,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
@@ -44,7 +45,6 @@ import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
-import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
@@ -108,7 +108,7 @@ public class SymbolTableVisitor extends FEReplacer
 
     private static final TypeRenamer emptyrenamer = new TypeRenamer();
 
-    public static TypeRenamer getRenaming(Function f, List<Type> efcTypes) {
+    public static TypeRenamer getRenaming(Function f, List<Type> efcTypes, NameResolver nres, Type expectedRet) {
         List<String> tps = f.getTypeParams();
         if (tps.isEmpty()) {
             return emptyrenamer;
@@ -139,6 +139,7 @@ public class SymbolTableVisitor extends FEReplacer
                 }
             }
         }
+        Map<String, Type> tmap = rv.tmap;
         for (Type actual : efcTypes) {
 			Parameter p = paramIt.next();
 			Type ptype = p.getType();
@@ -147,24 +148,36 @@ public class SymbolTableVisitor extends FEReplacer
             // then A should be int, but if I expect A[][] and the user gives int[]
             // then A should also be int. On the other hand, if I expect A[]
             // and the user gives int[][][], then A should be int[][]
-            Type tact = actual;
-            while (ptype instanceof TypeArray) {
-                TypeArray ta = (TypeArray) ptype;
-                ptype = ta.getBase();
-                if (tact instanceof TypeArray) {
-                    tact = ((TypeArray) actual).getBase();
+            Map<String, Type> lmap = ptype.unify(actual, st);
+            for (Entry<String, Type> entr : lmap.entrySet()) {
+                if (tmap.containsKey(entr.getKey())) {
+                    tmap.put(entr.getKey(), tmap.get(entr.getKey()).leastCommonPromotion(entr.getValue(), nres));
+                } else {
+                    tmap.put(entr.getKey(), entr.getValue());
                 }
             }
-            String tn = ptype.toString();
-            if (st.contains(tn)) {
-                if (tact instanceof TypeArray) {
-                    throw new ExceptionAtNode(
-                            "Generics not allowed to resolve to an array type " + tn +
-                                    "->" + tact, null);
+
+        }
+
+        if (expectedRet != null) {
+            Type ptype = f.getReturnType();
+            Type actual = expectedRet;
+            Map<String, Type> lmap = ptype.unify(actual, st);
+            for (Entry<String, Type> entr : lmap.entrySet()) {
+                if (tmap.containsKey(entr.getKey())) {
+                    tmap.put(entr.getKey(), tmap.get(entr.getKey()).leastCommonPromotion(entr.getValue(), nres));
+                } else {
+                    tmap.put(entr.getKey(), entr.getValue());
                 }
-                rv.tmap.put(tn, tact);
             }
         }
+
+        for (String tt : st) {
+            if (!rv.tmap.containsKey(tt)) {
+                rv.tmap.put(tt, NotYetComputedType.singleton);
+            }
+        }
+
         return rv;
     }
 
@@ -315,7 +328,7 @@ public class SymbolTableVisitor extends FEReplacer
         symtab.registerVar(par.getName(), par.getType(), par,
                 SymbolTable.KIND_FUNC_PARAM);
 
-        Type t = (Type) par.getType().accept(this);
+        Type t = doType(par.getType());
         if (t == par.getType()) {
             return par;
         } else {
@@ -456,6 +469,10 @@ public class SymbolTableVisitor extends FEReplacer
 		return new StmtVarDecl(stmt, newTypes, stmt.getNames(), newInits);
     }
 
+    public Type doType(Type t) {
+        return (Type) t.accept(this);
+    }
+
     public Object visitStructDef(StructDef ts) {
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
@@ -492,7 +509,7 @@ public class SymbolTableVisitor extends FEReplacer
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
 
         for (Entry<String, Type> entry : ts) {
-            Type type = (Type) entry.getValue().accept(this);
+            Type type = doType(entry.getValue());
             changed |= (type != entry.getValue());
             map.put(entry.getKey(), type);
         }

@@ -53,7 +53,8 @@ public class SynchronousTimedProcess {
         pb.directory(f_workDir);
         if (options.solverOpts.parallel) {
             String strategy = options.solverOpts.strategy.toString();
-            tmpFile = File.createTempFile(strategy, null, f_workDir);
+            File sktmpdir = options.sktmpdir();
+            tmpFile = File.createTempFile(strategy, null, sktmpdir);
             tmpFile.deleteOnExit();
             pb.redirectOutput(ProcessBuilder.Redirect.to(tmpFile));
         }

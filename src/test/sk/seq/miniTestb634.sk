@@ -4,7 +4,8 @@ struct A{
 }
 
 
-harness void main(){
-	A a = new A();
+harness void main(bit t){
+	A a = new A(x=t);
 	int[3] arr = a.{int}; // returns x field
+	assert arr[??] == t;
 }

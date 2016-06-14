@@ -1,0 +1,24 @@
+package A{
+    struct U{
+        int x;
+        
+    }
+    generator U makeU( int x){
+        return new U(x = x);
+    }
+    
+    
+}
+
+package B{
+    
+    struct U{
+        int v;
+    }
+    
+    harness void main(int i){
+        assert makeU(i).x == i;
+    }
+    
+    
+}

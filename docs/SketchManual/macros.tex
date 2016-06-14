@@ -101,6 +101,7 @@
 %\newenvironment{flagdoc}[1]{\begin{it}\paragraph{Flag \C{--#1}}}{\end{it}}
 
 \newcommand{\flagdoc}[2]{ \newglossaryentry{#1}{name={\texttt{-$ $-#1}}, description={#2}} \begin{it}\paragraph{Flag \gls{#1}}#2\end{it} }
+\newcommand{\flagdocb}[2]{ \newglossaryentry{#1}{name={\texttt{-#1}}, description={#2}} \begin{it}\paragraph{Flag \gls{#1}}#2\end{it} }
 
 
 

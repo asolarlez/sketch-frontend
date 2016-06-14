@@ -1,10 +1,15 @@
-adt foo {
-	int x;
-	int y;
+
+
+T fst<T>(T x, T y){
+    return x;        
 }
 
-harness void main() {
-	fun ll = ()->{| 1| 2| 3|};
-	foo a = ??({ll()});
-	assert(new foo(x = 1, y = 2) === a);
+
+harness void main(int n, int[n] a){
+    assume n < 8;
+    int[n] b;
+    
+    assert fst(a,b) == a;
+    assert fst(4,5) == ??;
+    
 }

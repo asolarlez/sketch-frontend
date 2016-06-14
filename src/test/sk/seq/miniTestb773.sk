@@ -1,7 +1,7 @@
 // Casting an expression to a function that uses local variables
 
 int apply(fun f, int var, fun g) {
-	int tops = g(moo, foo);
+	int tops = g();
 	return tops;
 }
 

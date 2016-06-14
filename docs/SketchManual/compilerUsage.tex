@@ -42,3 +42,12 @@ An alternative way is to use the \C{pragma} construct in the language. Anywhere 
    pragma options " $flags$ ";
 \end{lstlisting}
 This is very useful if your sketch requires a particular set of flags to synthesize. Flags passed through the command line take precedence over flags passed with \C{pragma}, so you can always use the command line to override options embedded in the file.
+
+
+\subsection{Parallel Solving}
+The \Sk{} synthesizer has a parallel mode which can yield significant speedups on certain problems. Parallel mode can be invoked by running with the flag \C{--slv-parallel}. By default, this flag will use one less than the total number of processors available in your system, but you can control the exact number of processors used by passing the additional flag \C{--slv-p-cpus}. Not all problems will benefit from parallel solving; some problems will actually be slowed down because of the added overhead, but for some problems, parallelism can provide a significant performance boost. \secref{parallel} goes into the details of how to get the most from parallel execution.
+
+
+
+\flagdoc{slv-parallel}{ This flags enables parallel mode, allowing the synthesizer to take advantage of multiple cores. By default, the synthesizer will use one less core than the total number of cores available in your system}
+\flagdoc{slv-p-cpus}{ This flag can be used in combination to the \C{--slv-parallel} flag to indicate to the synthesizer how many cores to use.}  

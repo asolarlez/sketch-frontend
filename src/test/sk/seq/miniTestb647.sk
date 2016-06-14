@@ -36,9 +36,9 @@ struct CBool extends coreAST{bit bval;}
 
 
 
-coreAST desugar(sourceAST s, int bnd){
+coreAST desugar(sourceAST s, int bnd2){
 	if(s == null){ return null; }
-	if(bnd <= 0){ return null; }
+	if(bnd2 <= 0){ return null; }
 		
 	generator int getOp(int op){ return {| op |Oplus | Ominus | Oneg | Oand | Oor | Onot | Ogt | Olt |}; }  
 	generator int getStr(){ return {| 1|2|3 |}; }
@@ -68,7 +68,7 @@ coreAST desugar(sourceAST s, int bnd){
 		coreAST[3] out;
 		int i=0;
 		repeat(n){
-			out[i] = desugar(fields[i], bnd-1); ++i;
+			out[i] = desugar(fields[i], bnd2-1); ++i;
 		}
 		return out;
 	} 

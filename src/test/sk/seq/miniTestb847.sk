@@ -1,15 +1,24 @@
-adt A {
-  int x;
-  A a;
+package A{
+    struct A{
+        int v;
+    }
+    void tt(fun f, int t){
+        assert f(new A(v=t)) == t;
+    }
 }
 
-generator T foo<T>(T t, fun igen) {
-	return new A( x = {| t.?? | igen() |} );
-}
 
-harness void main() {
-	A a = new A(x = 1);
-	A b = new A(x =2, a = a);
-	A c = foo(b, 5);
-	assert(c.x == 5);
+package B{
+    struct A{
+        int x;
+        int y;
+    }
+    
+    
+    harness void uu(int y){
+        fun U = (x)-> x.v;
+        
+        tt(U, y);
+        
+    }        
 }

@@ -649,12 +649,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
-
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;
   return new MultiType(flag = INTEGER, val = -operand.val);

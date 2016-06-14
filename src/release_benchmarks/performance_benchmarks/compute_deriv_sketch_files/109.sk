@@ -508,26 +508,7 @@ foreach(body1, fuzzLoopIter1(range2(fuzzInit3(new MultiType(val=1,flag=INTEGER))
 return listcoefficient;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-MultiType answer_found;
-assignMT(answer_found, fuzzAssign5(False));
-MultiType x_guess;
-assignMT(x_guess, fuzzAssign6(x_0));
-MultiType iterations;
-assignMT(iterations, fuzzAssign7(new MultiType(val=0,flag=INTEGER)));
-while((fuzzCompOperator0(answer_found, False, EQ_COMP))){
-assignMT(iterations, fuzzOperator4(iterations, new MultiType(val=1,flag=INTEGER), ADD_OP));
-MultiType value;
-assignMT(value, fuzzAssign8(evaluate_poly(fuzzInit6(poly), fuzzInit7(x_guess))));
-if((fuzzCompOperator1(abs(fuzzInit8(value)), epsilon, LTE_COMP))){
-assignMT(answer_found, fuzzAssign9(True));
-return new MultiType(lst=new MTList(len=2, listValues={x_guess,iterations}), flag=LIST);
-}
-else{
-assignMT(x_guess, fuzzAssign10(fuzzOperator5((x_guess), (fuzzOperator6((evaluate_poly(fuzzInit9(poly), fuzzInit10(x_guess))), (evaluate_poly(fuzzInit11(compute_deriv(fuzzInit12(poly))), fuzzInit13(x_guess))), DIV_OP)), SUB_OP)));
-}
-}
-}
+
 
 
 MultiType compute_deriv_teacher(MultiType poly){
@@ -724,11 +705,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;

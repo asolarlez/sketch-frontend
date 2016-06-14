@@ -21,6 +21,6 @@ harness void main(){
     B foo(){
         return new B();
     }
-    moo(foo);
-    boo(foo);
+    B t = moo(foo);
+    t = boo(foo);
 }

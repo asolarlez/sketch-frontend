@@ -649,26 +649,6 @@ assignMT(answer, fuzzAssign4(new MultiType(lst=new MTList(len=1, listValues={new
 return answer;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-assignMT(poly, fuzzAssign5(poly));
-MultiType myxtest;
-assignMT(myxtest, fuzzAssign6(x_0));
-MultiType testxworks;
-assignMT(testxworks, fuzzAssign7(False));
-MultiType testnumber;
-assignMT(testnumber, fuzzAssign8(new MultiType(val=0,flag=INTEGER)));
-while((fuzzCompOperator2(testxworks, False, EQ_COMP))){
-MultiType firstTest;
-assignMT(firstTest, fuzzAssign9(evaluate_poly(fuzzInit10(poly), fuzzInit11(myxtest))));
-assignMT(testnumber, fuzzOperator5(testnumber, new MultiType(val=1,flag=INTEGER), ADD_OP));
-if((fuzzCompOperator3(firstTest, new MultiType(val=0,flag=INTEGER), GT_COMP)) && (fuzzCompOperator4(firstTest, epsilon, LT_COMP)) || (fuzzCompOperator5(firstTest, new MultiType(val=0,flag=INTEGER), LT_COMP)) && (fuzzCompOperator6(firstTest, applyUnaryOp((epsilon), USub), GT_COMP))){
-return new MultiType(lst=new MTList(len=2, listValues={myxtest,testnumber}), flag=LIST);
-}
-else{
-assignMT(myxtest, fuzzAssign10(fuzzOperator6((myxtest), (fuzzOperator7((firstTest), (evaluate_poly(fuzzInit12(compute_deriv(fuzzInit13(poly))), fuzzInit14(myxtest))), DIV_OP)), SUB_OP)));
-}
-}
-}
 
 
 MultiType compute_deriv_teacher(MultiType poly){
@@ -865,11 +845,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;

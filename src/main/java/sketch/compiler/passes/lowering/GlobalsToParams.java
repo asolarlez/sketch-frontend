@@ -1,17 +1,18 @@
 package sketch.compiler.passes.lowering;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -26,7 +27,6 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.compiler.passes.structure.CallGraph.CallEdge;
-import sketch.util.datastructures.OrderedHashSet;
 import sketch.util.datastructures.TreemapSet;
 import sketch.util.datastructures.TypedHashMap;
 import sketch.util.datastructures.TypedTreeMap;
@@ -71,7 +71,7 @@ public class GlobalsToParams extends FEReplacer {
     protected final TempVarGen varGen;
     protected final TypedTreeMap<String, Function> glblInitFcns =
             new TypedTreeMap<String, Function>();
-    protected final OrderedHashSet<Function> fcnsToAdd = new OrderedHashSet<Function>();
+    protected final Map<String, List<Function>> fcnsToAdd = new HashMap<String, List<Function>>();
     protected Function enclosingFcn;
 
     public GlobalsToParams(TempVarGen varGen) {
@@ -133,6 +133,7 @@ public class GlobalsToParams extends FEReplacer {
         // same globals.
         for (Package pkg : prog.getPackages()) {
             nres.setPackage(pkg);
+            fcnsToAdd.put(pkg.getName(), new ArrayList<Function>());
             for (Function f : pkg.getFuncs()) {
                 if (f.getSpecification() != null) {
                     Function spec = nres.getFun(f.getSpecification());
@@ -168,7 +169,7 @@ public class GlobalsToParams extends FEReplacer {
                 final Function initFcn =
                         getInitFcn(fldName, fldNames.getType(fldName), fieldInit);
                 glblInitFcns.put(fldName, initFcn);
-                fcnsToAdd.add(initFcn);
+                fcnsToAdd.get(fldNames.pkgForField.get(fldName)).add(initFcn);
             }
         }
 
@@ -176,7 +177,7 @@ public class GlobalsToParams extends FEReplacer {
         // replace all function calls
         // System.err.println(this);
         prog = (Program) super.visitProgram(prog);
-        assert fcnsToAdd.isEmpty();
+
         nres = new NameResolver(prog); // get the new versions of functions into the nres.
         for (Package pkg : prog.getPackages()) {
             nres.setPackage(pkg);
@@ -222,10 +223,9 @@ public class GlobalsToParams extends FEReplacer {
         callGraph.getNres().setPackage(spec);
         spec = (Package) super.visitPackage(spec);
         final Vector<Function> fcns = new Vector<Function>(spec.getFuncs());
-        for (Function fcn : this.fcnsToAdd) {
+        for (Function fcn : this.fcnsToAdd.get(spec.getName())) {
             fcns.add(fcn);
         }
-        this.fcnsToAdd.clear();
         return new Package(spec, spec.getName(), spec.getStructs(),
                 Collections.EMPTY_LIST, fcns, spec.getSpAsserts());
     }
@@ -349,7 +349,7 @@ public class GlobalsToParams extends FEReplacer {
 
         StmtBlock body = new StmtBlock(assign);
         return Function.creator(ctx, varGen.nextVar("glblInit_" + glblName),
-                FcnType.Static).params(params).body(body).pkg(nres.curPkg().getName()).create();
+                FcnType.Static).params(params).body(body).pkg(fldNames.pkgForField.get(glblName)).create();
     }
 
     public class AddedParam {
@@ -401,6 +401,7 @@ public class GlobalsToParams extends FEReplacer {
                 new TypedHashMap<String, Type>();
         private final TypedHashMap<String, Expression> fieldInits =
                 new TypedHashMap<String, Expression>();
+        private final TypedHashMap<String, String> pkgForField = new TypedHashMap<String, String>();
         ShadowStack shadows = new ShadowStack(null);
 
         public void pushBlock() {
@@ -458,6 +459,7 @@ public class GlobalsToParams extends FEReplacer {
                 fieldTypes.put(fldName, ft);
                 fieldInits.put(fldName, field.getInit(i));
                 fieldNames.add(fldName);
+                pkgForField.put(fldName, pkg);
                 ++i;
             }
 

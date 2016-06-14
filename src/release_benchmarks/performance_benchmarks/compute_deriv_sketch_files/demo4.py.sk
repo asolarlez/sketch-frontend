@@ -1065,7 +1065,7 @@ MultiType createMTFromInt(int x){
   return new MultiType(val = x, flag=INTEGER);
 }
 
-MultiType createMTFromBit(int x){
+MultiType createMTFromBit(bit x){
   return new MultiType(bval = x, flag=BOOL);
 }
 

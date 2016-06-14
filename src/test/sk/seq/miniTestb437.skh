@@ -112,7 +112,7 @@ MultiType subscriptMT(MultiType list, MultiType index){
 MultiType subscriptMTu(MultiType list, MultiType rightIndex){
   assert list.flag == LIST;
   assert rightIndex.flag == INTEGER;
-  return new MultiType(lst= new MTList(listValues = list.listValues[0:rightIndex.val], len=rightIndex.val), flag = LIST);
+  return new MultiType(lst= new MTList(listValues = list.lst.listValues[0:rightIndex.val], len=rightIndex.val), flag = LIST);
 }
 
 
@@ -120,7 +120,7 @@ MultiType subscriptMTu(MultiType list, MultiType rightIndex){
 MultiType subscriptMTl(MultiType list, MultiType leftIndex){
   assert list.flag == LIST;
   assert leftIndex.flag == INTEGER;
-  return new MultiType(lst= new MTList(listValues=list.listValues[leftIndex.val:list.lst.len], len=list.lst.len-leftIndex.val), flag = LIST);
+  return new MultiType(lst= new MTList(listValues=list.lst.listValues[leftIndex.val:list.lst.len], len=list.lst.len-leftIndex.val), flag = LIST);
 }
 
 // x[i:j]
@@ -128,7 +128,7 @@ MultiType subscriptMTul(MultiType list, MultiType leftIndex, MultiType rightInde
   assert list.flag == LIST;
   assert leftIndex.flag == INTEGER;
   assert rightIndex.flag == INTEGER;
-  return new MultiType(lst= new MTList(listValues=list.listValues[leftIndex.val:rightIndex.val], len=rightIndex.val-leftIndex.val), flag = LIST);
+  return new MultiType(lst= new MTList(listValues=list.lst.listValues[leftIndex.val:rightIndex.val], len=rightIndex.val-leftIndex.val), flag = LIST);
 }
 
 

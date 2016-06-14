@@ -13,7 +13,7 @@ harness void main() {
 		return x;
 	}
 	
-	fun f = (x) -> x;
+	fun f = (q) -> q;
 	
 	int t = 0;
 	while(f(foo()) < 5) {

@@ -68,6 +68,7 @@ public class EliminateGenerics extends RemoveADTHoles {
         for (Expression actual : efc.getParams()) {
             lt.add(getType(actual));
         }
+<<<<<<< mine
 
         TypeRenamer tr = SymbolTableVisitor.getRenaming(f, lt);
 		// Unify return type
@@ -79,6 +80,9 @@ public class EliminateGenerics extends RemoveADTHoles {
 		if (tr.tmap.isEmpty()) {
 			return super.visitExprFunCall(efc);
 		}
+=======
+        TypeRenamer tr = SymbolTableVisitor.getRenaming(f, lt, nres, null);
+>>>>>>> theirs
         String sig = signature(f, tr);
         if(signatures.containsKey(sig)){
 			String newName = signatures.get(sig);

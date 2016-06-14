@@ -78,9 +78,9 @@ generator int exprG([int T], fun chose, int[T] ops){
  */
 generator int expr_cost([int N, int T], int[N] pars, int[T] ops, ref int cost){
     bit isb; int choice;
-    generator int tmp(ref int choice){
-        choice = ??;
-        return ?? ? pars[choice] : ??(2);
+    generator int tmp(ref int ch){
+        ch = ??;
+        return ?? ? pars[ch] : ??(2);
     }
     return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
 }
@@ -92,11 +92,12 @@ generator int expr_cost([int N, int T], int[N] pars, int[T] ops, ref int cost){
  * 
  */
 generator int expr_noc_cost([int N], int[N] pars, int T, int[T] ops, ref int cost){
-    bit isb; int choice;
+    bit isb;
     generator int tmp(ref int choice){
         choice = ??;
         return pars[choice];
     }
+    int choice;
     return exprb_cost(tmp, T, ops, true, true, isb, choice, cost);
 }
 

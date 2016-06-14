@@ -7,7 +7,7 @@ harness void main(){
         return x;
     }
     
-    fun f = (x)-> x + x + x;
+    fun f = (q)-> q + q + q;
     
     assert f(foo()) == 3;
  	

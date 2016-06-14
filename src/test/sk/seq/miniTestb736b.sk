@@ -16,7 +16,7 @@ harness void main(){
     Foo foo(Foo x){
         return new B();
     }
-    moo(foo, ff, gg);
+    moo(foo, ff, (Foo) gg);
 
 }
 

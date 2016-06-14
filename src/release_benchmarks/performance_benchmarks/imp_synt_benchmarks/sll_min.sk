@@ -1,4 +1,4 @@
-pragma options "--slv-simiters 300 --bnd-inbits 3 --bnd-inline-amnt 3 --bnd-unroll-amnt 3";
+pragma options "--slv-simiters 3 --bnd-inbits 3 --bnd-inline-amnt 3 --bnd-unroll-amnt 3";
 
 int HEAPSIZE = 4;
 int LOCVARSIZE = 3;

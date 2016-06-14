@@ -178,7 +178,8 @@ generator bit genScalarListPredicate (int lenRet, Tuple [lenRet] ret,
     genScalarListOperand(lenRet, ret, len1, l1, len2, l2, i, j, t, 2, lenRight);
 
   int [lenRight] rightOp = tmp2[0::lenRight];
-  int [lenLeft] leftOp = tmp1[0::lenLeft];
+  int ttt = lenLeft; 
+  int [ttt] leftOp = tmp1[0::lenLeft];
 
   return intListEquals(lenLeft, leftOp, lenRight, rightOp);
 }
@@ -613,31 +614,6 @@ generator int [16] genIntList (int len, int [len] l,
    }
 }
 
-generator bit genInvariant (int lenRet, Tuple [lenRet] ret, 
-                            int len1, int [len1] l1,
-                            int len2, int [len2] l2,
-                            int i, int j, int t1)
-{
-  int m = 0; 
-  int numPreds = ??(3);
-
-  repeat (numPreds)
-  {
-    bit b1 = genTupleListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-    //bit b2 = genScalarListPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-    bit b3 = genScalarPredicate(lenRet, ret, len1, l1, len2, l2, i, j, t1);
-
-    //out = out & {| b1 | b2 | b3 |};
-    out = out & {| b1 | b3 |};
-    //out = out & b1;
-    ++m;
-    assert m <= 2;
-  }
-  
-  assert numPreds <= 4;
-  
-  return out;
-}
 
 
 

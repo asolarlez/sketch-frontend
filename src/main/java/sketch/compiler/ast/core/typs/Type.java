@@ -15,6 +15,11 @@
  */
 
 package sketch.compiler.ast.core.typs;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -117,5 +122,11 @@ public abstract class Type
     public Type withMemType(CudaMemoryType memtyp) {
         throw new NotImplementedException();
     }
+
+    public abstract Collection<Type> getBaseTypes();
+
+    public abstract Map<String, Type> unify(Type t, Set<String> names);
+
+    public abstract String cleanName();
 
 }

@@ -38,12 +38,12 @@ harness void main(int q){
         assert t == y;
     }
     
-    void baz(int q){
+    void baz(int qq){
         void moo(){
-            assert q == y;
+            assert qq == y;
         }        
         moo();
-        assert q+zero() == y;
+        assert qq+zero() == y;
     }        
     foo(y-1+1, boo);
     fin(y-1+1, baz);

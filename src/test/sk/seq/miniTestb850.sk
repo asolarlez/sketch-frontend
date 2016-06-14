@@ -1,0 +1,25 @@
+package A{
+    
+    int foo2(int x){
+        return x;
+    }
+    
+    
+    generator int foo1( int x){
+        return foo2(x);
+    }
+    
+    
+}
+
+package B{
+    
+    int foo2(){
+        return 5;
+    }
+    
+    harness void main(int i){
+        assert foo1(i) == i;
+        assert foo2() == 5;
+    }        
+}

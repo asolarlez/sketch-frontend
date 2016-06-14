@@ -4,11 +4,20 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.*;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
+import sketch.compiler.ast.core.exprs.ExprBinary;
+import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprConstant;
+import sketch.compiler.ast.core.exprs.ExprField;
+import sketch.compiler.ast.core.exprs.ExprTernary;
+import sketch.compiler.ast.core.exprs.ExprUnary;
+import sketch.compiler.ast.core.exprs.ExprVar;
+import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -109,6 +118,29 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
                     par.getPtype());
         }
     }
+
+    public Object visitFunction(Function func) {
+
+        if (func.isSketchHarness() || func.getSpecification() != null) {
+            // On most functions, assertions in the types will get checked by
+            // callers, but not necessarily on harnesses.
+            newStatements = new ArrayList<Statement>();
+            for (Parameter par : func.getParams()) {
+                par.getType().accept(this);
+            }
+            if (!newStatements.isEmpty()) {
+                List<Statement> ls = newStatements;
+                newStatements = null;
+                Function newf = (Function) super.visitFunction(func);
+                ls.add(newf.getBody());
+                newf = newf.creator().body(new StmtBlock(ls)).create();
+                return newf;
+
+            }
+        }
+
+        return super.visitFunction(func);
+    }
 	
 	public Object visitExprTernary(ExprTernary exp){
 		Expression a = exp.getA().doExpr(this);
@@ -130,7 +162,7 @@ public class ProtectDangerousExprsAndShortCircuit extends SymbolTableVisitor {
 		if(t == TypePrimitive.nulltype){
 			t = TypePrimitive.inttype;
 		}
-		addStatement (new StmtVarDecl (exp,t, resName, null));
+        addStatement((Statement) (new StmtVarDecl(exp, t, resName, null)).accept(this));
 		ExprVar res = new ExprVar (exp, resName);
 
 		

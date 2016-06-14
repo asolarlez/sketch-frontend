@@ -904,23 +904,6 @@ else x = 0;
 }
 
 
-MultiType evaluate_poly(MultiType poly,MultiType x){
-MultiType computed_terms;
-assignMT(computed_terms, fuzzAssign0(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-void body0(MultiType term_no){
-MultiType power;
-assignMT(power, fuzzAssign1(term_no));
-MultiType coeficient;
-assignMT(coeficient, fuzzAssign2(subscriptMTi(poly, term_no)));
-MultiType term;
-assignMT(term, fuzzAssign3(fuzzOperator0((coeficient), (fuzzOperator1((x), (power), POW_OP)), MUL_OP)));
-appendList(computed_terms, term);
-}
-foreach(body0, fuzzLoopIter0(range2(fuzzInit0(new MultiType(val=0,flag=INTEGER)), fuzzInit1(len(fuzzInit2(poly))))));
-MultiType Ans;
-assignMT(Ans, fuzzAssign4(sum(fuzzInit3(computed_terms))));
-return Ans;
-}
 
 MultiType compute_deriv(MultiType poly){
 bit addBaseCase0;
@@ -1193,11 +1176,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;

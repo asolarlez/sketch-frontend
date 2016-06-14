@@ -9,6 +9,9 @@ import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
 
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printDebug;
+
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
@@ -29,9 +32,6 @@ import sketch.util.datastructures.IntRange;
 import sketch.util.exceptions.SketchNotResolvedException;
 import sketch.util.exceptions.SketchSolverException;
 import sketch.util.wrapper.ScRichString;
-
-import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.printDebug;
 
 public class SATBackend {
 
@@ -92,6 +92,9 @@ public class SATBackend {
             // negative integer, e.g., "-1", may look like an option
             int abs_seed = Math.abs(options.solverOpts.seed + i);
             commandLineOptions.add("" + abs_seed);
+            if (!options.solverOpts.randassign) {
+                commandLineOptions.add("-randassign");
+            }
         }
 
         // pick degree either from options...randdegrees
@@ -105,6 +108,7 @@ public class SATBackend {
             commandLineOptions.add("-randdegree");
             commandLineOptions.add("" + options.solverOpts.randdegree);
         }
+
 
         if (options.solverOpts.ntimes > 0) {
             commandLineOptions.add("-ntimes");
@@ -407,9 +411,15 @@ public class SATBackend {
         log ("Launching: "+ cmdLine);
     }
 
+    /**
+     * 
+     * @param proc
+     * @return This method returns false if the process should not be run.
+     */
     // will be overridden by parallel version
-    protected void beforeRunSolver(SynchronousTimedProcess proc) {
+    protected boolean checkBeforeRunning(SynchronousTimedProcess proc) {
         // utilize CEGIS process information here
+        return true;
     }
 
     private SATSolutionStatistics runSolver(String[] commandLine, int bits,
@@ -425,7 +435,9 @@ public class SATBackend {
                     "Could not instantiate solver (CEGIS) process.", e);
         }
 
-        beforeRunSolver(proc);
+        if (!checkBeforeRunning(proc)) {
+            throw new SketchSolverException("CEGIS was killed (assuming user kill); exiting.");
+        }
         final ProcessStatus status = proc.run(false);
 
         // deal with killed states

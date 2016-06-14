@@ -44,6 +44,9 @@ harness void main(int n, int[n] d){
             assert v.data[i] == ??;
         }
     }
+    if(n==2 && d[0] == 1 && d[1]==1){
+	assert ?? == 11;
+    }
 }
 
 void doSten(int n, ref int[n] x){    

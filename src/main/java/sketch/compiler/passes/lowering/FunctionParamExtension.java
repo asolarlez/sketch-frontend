@@ -8,9 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FunctionCreator;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
@@ -716,7 +723,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
                 lt.add(getType(actual));
             }
         }
-        TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt);
+        TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt, nres, null);
 
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);

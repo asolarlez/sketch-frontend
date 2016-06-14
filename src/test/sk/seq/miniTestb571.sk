@@ -901,23 +901,6 @@ else x = 0;
 }
 
 
-MultiType evaluate_poly(MultiType poly,MultiType x){
-MultiType i;
-assignMT(i, fuzzAssign0(new MultiType(val=0,flag=INTEGER)));
-MultiType f;
-assignMT(f, fuzzAssign1(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-while((fuzzCompOperator0(i, len(fuzzInit0(poly)), LT_COMP))){
-appendList(f, subscriptMTi(poly, i));
-void body0(MultiType a){
-assignMTArray(f, i, fuzzAssign2(fuzzOperator0((subscriptMTi(f, i)), (x), MUL_OP)));
-}
-foreach(body0, fuzzLoopIter0(range2(fuzzInit1(new MultiType(val=0, flag=INTEGER)),fuzzInit2(i))));
-assignMT(i, fuzzAssign3(fuzzOperator1((i), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-MultiType ans;
-assignMT(ans, fuzzAssign4(sum(fuzzInit3(f))));
-return ans;
-}
 
 MultiType compute_deriv(MultiType poly){
 // bit addBaseCase0;
@@ -934,56 +917,6 @@ assignMT(i, fuzzAssign7(fuzzOperator3((i), (new MultiType(val=1,flag=INTEGER)), 
 return deriv;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-MultiType x;
-assignMT(x, fuzzAssign8(x_0));
-MultiType root;
-assignMT(root, fuzzAssign9(new MultiType(val=0,flag=INTEGER)));
-MultiType i;
-assignMT(i, fuzzAssign10(new MultiType(val=1,flag=INTEGER)));
-MultiType f_dot;
-assignMT(f_dot, fuzzAssign11(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-while((fuzzCompOperator2(i, len(fuzzInit5(poly)), LT_COMP))){
-appendList(f_dot, fuzzOperator4((subscriptMTi(poly, i)), (i), MUL_OP));
-assignMT(i, fuzzAssign12(fuzzOperator5((i), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-MultiType iter_count;
-assignMT(iter_count, fuzzAssign13(new MultiType(val=0,flag=INTEGER)));
-while((fuzzCompOperator3(root, new MultiType(val=0,flag=INTEGER), EQ_COMP))){
-assignMT(iter_count, fuzzAssign14(fuzzOperator6((iter_count), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-assignMT(i, fuzzAssign15(new MultiType(val=0,flag=INTEGER)));
-MultiType f_x;
-assignMT(f_x, fuzzAssign16(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-while((fuzzCompOperator4(i, len(fuzzInit6(poly)), LT_COMP))){
-appendList(f_x, subscriptMTi(poly, i));
-void body1(MultiType a){
-assignMTArray(f_x, i, fuzzAssign17(fuzzOperator7((subscriptMTi(f_x, i)), (x), MUL_OP)));
-}
-foreach(body1, fuzzLoopIter1(range2(fuzzInit7(new MultiType(val=0, flag=INTEGER)),fuzzInit8(i))));
-assignMT(i, fuzzAssign18(fuzzOperator8((i), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-assignMT(f_x, fuzzAssign19(sum(fuzzInit9(f_x))));
-if((fuzzCompOperator5(abs(fuzzInit10(f_x)), epsilon, LT_COMP))){
-assignMT(root, fuzzAssign20(new MultiType(val=1,flag=INTEGER)));
-}
-else{
-assignMT(i, fuzzAssign21(new MultiType(val=0,flag=INTEGER)));
-MultiType f_dot_x;
-assignMT(f_dot_x, fuzzAssign22(new MultiType(lst=new MTList(len=0, listValues={}), flag=LIST)));
-while((fuzzCompOperator6(i, len(fuzzInit11(f_dot)), LT_COMP))){
-appendList(f_dot_x, subscriptMTi(f_dot, i));
-void body2(MultiType a){
-assignMTArray(f_dot_x, i, fuzzAssign23(fuzzOperator9((subscriptMTi(f_dot_x, i)), (x), MUL_OP)));
-}
-foreach(body2, fuzzLoopIter2(range2(fuzzInit12(new MultiType(val=0, flag=INTEGER)),fuzzInit13(i))));
-assignMT(i, fuzzAssign24(fuzzOperator10((i), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-}
-assignMT(f_dot_x, fuzzAssign25(sum(fuzzInit14(f_dot_x))));
-assignMT(x, fuzzAssign26(fuzzOperator11((x), (fuzzOperator12((f_x), (f_dot_x), DIV_OP)), SUB_OP)));
-}
-}
-return new MultiType(lst=new MTList(len=2, listValues={x,iter_count}), flag=LIST);
-}
 
 
 MultiType compute_deriv_teacher(MultiType poly){
@@ -1170,11 +1103,6 @@ bit applyCompOp(MultiType left, MultiType right, int compop){
 
 //-x, not y
 
-MultiType applyUnaryOp(MultiType operand, int op){
-  if(op == USub) return applyUnarySubOp(operand);
-  else if(op == UAdd) return applyUnaryAddOp(operand);
-  else if(op == UNot) return applyUnaryNotOp(operand);
-}
 
 MultiType applyUnarySubOp(MultiType operand){
   assert operand.flag == INTEGER;
