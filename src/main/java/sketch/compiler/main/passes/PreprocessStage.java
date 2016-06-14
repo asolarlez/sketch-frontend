@@ -98,14 +98,8 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         
 
-		prog = (Program) prog.accept(new TypeInferenceForADTHoles());
-		prog = (Program) prog.accept(new TypeInferenceForStars());
-		// Remove ADT holes will generate regens and adt holes
-		prog = (Program) prog.accept(new RemoveADTHoles(varGen,
-				options.bndOpts.arrSize, options.bndOpts.gucDepth));
-
         prog = (Program) prog.accept(new EliminateRegens(varGen));
-		// prog.debugDump("************************************** 7");
+		prog.debugDump("************************************** 7");
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
         // prog.debugDump();
@@ -117,12 +111,25 @@ public class PreprocessStage extends MetaStage {
 
 		// prog.debugDump("************************************** 9");
 
+		// TODO: Should eventually get rid of these type inference passes and integrate with bi-directional pass
         prog = (Program) prog.accept(new TypeInferenceForADTHoles());
         // prog = ir1.run(prog);
 //        prog.debugDump("************************************** Before type inference");
 		// prog.debugDump("before type inference");
 
         prog = (Program) prog.accept(new TypeInferenceForStars());
+
+		// TODO: Should try to get rid of regens in this pass or move this pass
+		// up
+		// Remove ADT holes will generate regens and adt holes
+		prog = (Program) prog.accept(new RemoveADTHoles(varGen,
+				options.bndOpts.arrSize, options.bndOpts.gucDepth));
+
+		// prog.debugDump("After remove ADT holes");
+
+		prog = (Program) prog.accept(new TypeInferenceForADTHoles());
+
+		prog = (Program) prog.accept(new TypeInferenceForStars());
 
 		prog = (Program) prog.accept(new EliminateFieldHoles());
 

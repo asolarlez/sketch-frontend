@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.ast.core.typs;
-import static java.util.Collections.unmodifiableList;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +28,7 @@ import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprTernary;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
+import static java.util.Collections.unmodifiableList;
 
 /**
  * A homogenous array type with a length. This type has a base type and an expression for
@@ -236,6 +235,10 @@ public class TypeArray extends Type
         // bases match, now compare lengths
         Expression thisLen = this.getLength();
         Expression thatLen = that.getLength();
+		if (thisLen == null || thatLen == null) {
+			// array type will be extended to match the required type
+			return TypeComparisonResult.EQ;
+		}
         if (thisLen.getIValue() != null && thatLen.getIValue() != null) {
             // both length expressions have integer values
             return TypeComparisonResult.knownOrNeq(thisLen.getIValue().equals(

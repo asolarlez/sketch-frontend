@@ -124,13 +124,12 @@ public class SymbolTableVisitor extends FEReplacer
             }
             boolean alloutputs = true;
             for (int i = 0; i < dif; ++i) {
-				// XXX: Not sure what this is doing
                 Parameter p = formals.get(formals.size() - 1 - i);
                 if (!p.isParameterOutput()) {
                     alloutputs = false;
                 }
             }
-			if (true || !alloutputs) {
+			if (!alloutputs) {
                 for (int i = 0; i < dif; ++i) {
                     Parameter p = paramIt.next();
                     if (!p.isImplicit()) {
@@ -143,7 +142,6 @@ public class SymbolTableVisitor extends FEReplacer
         for (Type actual : efcTypes) {
 			Parameter p = paramIt.next();
 			Type ptype = p.getType();
-
             // The idea is that if I expect A[] and the user gives int[]
             // then A should be int, but if I expect A[][] and the user gives int[]
             // then A should also be int. On the other hand, if I expect A[]

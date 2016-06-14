@@ -217,7 +217,8 @@ public class RemoveADTHoles extends TypeInferenceForADTHoles {
         if (sd.isInstantiable()) {
             newStmts.add(new StmtAssign(ev, new ExprNew(context, tt, expParams, false)));
         } else {
-            newStmts.add(new StmtAssign(ev, new ExprNew(context, null, expParams, true)));
+			newStmts.add(new StmtAssign(ev, new ExprNew(context, null, expParams,
+					true)));
         }
     }
 

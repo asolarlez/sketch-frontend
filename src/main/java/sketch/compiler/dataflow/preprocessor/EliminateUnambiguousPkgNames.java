@@ -9,7 +9,8 @@ public class EliminateUnambiguousPkgNames extends FEReplacer {
 	public Object visitTypeStructRef(TypeStructRef t) {
 		String name = t.getName();
 		String shortName = name.split("@")[0];
-		if (nres.getStructName(shortName).equals(name)) {
+		String defaultName = nres.getStructName(shortName);
+		if (defaultName != null && defaultName.equals(name)) {
 			return new TypeStructRef(shortName, false);
 		}
 		return t;

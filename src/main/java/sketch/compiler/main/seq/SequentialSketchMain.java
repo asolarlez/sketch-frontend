@@ -535,14 +535,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             }
         } else {
 
-            // These three passes need to be integrated into the Bidirectional
-            // framework.
-			//prog = (Program) prog.accept(new EliminateGenerics(true, varGen,
-			// options.bndOpts.arrSize, options.bndOpts.gucDepth));
-            prog = (Program) prog.accept(new ExpandRepeatCases());
-            prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
-            prog = (Program) prog.accept(new EliminateEmptyArrayLen());
-
             BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
             TypeCheck tchk = new TypeCheck();
             bda.addPass(tchk);
@@ -561,6 +553,14 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             if (!tchk.good) {
                 throw new ProgramParseException("Semantic check failed");
             }
+
+			// These three passes need to be integrated into the Bidirectional
+			// framework.
+			// prog = (Program) prog.accept(new EliminateGenerics(true, varGen,
+			// options.bndOpts.arrSize, options.bndOpts.gucDepth));
+			prog = (Program) prog.accept(new ExpandRepeatCases());
+			prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
+			prog = (Program) prog.accept(new EliminateEmptyArrayLen());
         }
 
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
