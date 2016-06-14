@@ -1,0 +1,16 @@
+int foo(fun f) {
+	return bar(f);
+}
+
+int bar(fun f) {
+	return tt(f);
+}
+
+int tt(fun f) {
+	return f();
+}
+
+harness void main(int x) {
+	assert foo(x) == x;
+}
+

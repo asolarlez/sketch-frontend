@@ -1,0 +1,21 @@
+pragma options "--bnd-inline-amnt 3 --bnd-arr-size 2";
+adt dstAST {
+	BlockD {int n; dstAST[n] stmts; dstAST node; }
+	AssertD {dstAST expr; }
+	VarD {int id; }
+	ArrInitD {int n; dstAST[n] elems; }
+	ArrRangeD {dstAST base; dstAST idx; }
+	NumD {int val; }
+	
+}
+
+harness void main(int n) {
+	if (n > 2) return;
+	dstAST[n] elems = ({new NumD(val = 1), new NumD(val = 2)})[0::n];
+	dstAST a = new ArrInitD(n = n, elems = elems);
+	dstAST[2] ee = null;
+	dstAST b = ??({n, ee, elems});
+	assert(a ===  b);
+	
+}
+

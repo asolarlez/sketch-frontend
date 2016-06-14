@@ -1,0 +1,84 @@
+adt BinaryTree {
+	Branch { int value; BinaryTree l; BinaryTree r; }
+	Leaf {int value;}
+	Empty {}
+}
+
+
+
+BinaryTree deleteNode(BinaryTree tree, int x) {
+	generator bit cond(fun g) { return {| 1| x (<|>|==) g()|} && {| 1 | isEmpty(g())|}; }
+	int min = MAX; BinaryTree tt = null;
+	generator BinaryTree rec_wrapper(BinaryTree t) { return deleteNode(t, x); }
+	return generalTransformer2(tree, rec_wrapper, cond, 0);
+	
+}
+
+
+generator Q generalTransformer2<T, Q>(T src, fun rec, fun cond, fun bgen) {
+	if (src == null) return null;
+	switch(src){
+		repeat_case:
+		{
+			//Q[] a = map(src.{T}, rec);
+	 		Q a = rec(src.??);
+	 		Q b = rec(src.??);
+			minrepeat {
+				if (cond( ()->(src.??) )) {
+					return null;
+					//if (??) extra(src.??);
+					//return ??({src.??, a, b, dgen(), igen(), bgen()});
+}}}}}
+
+
+
+/*T g<T>(){ }
+
+BinaryTree deleteNode(BinaryTree tree, int x) {
+	generator bit cond(fun g) { return {| 1| x (<|>|==) g() |} && {| 1 | isEmpty(g())|}; }
+	int min; BinaryTree tt;
+	generator void extra(BinaryTree t) {min = MAX; tt = extractMin(t, min); } 
+	generator BinaryTree rec_wrapper(BinaryTree t) { return deleteNode(t, x); }
+	generator BinaryTree genD() { return tt;}
+	generator int genInt() { return {|x|min|}; }
+	generator bit genBool() { return 0;}
+	return generalTransformer1(tree, rec_wrapper, cond, genD, genInt, genBool, extra);
+	
+}*/
+int MAX = 32; // Max of input integers
+
+BinaryTree extractMin(BinaryTree tree, ref int min) {
+	if (tree == null) return null;
+	switch(tree) { 
+		case Branch: {
+			BinaryTree t = extractMin(tree.l, min);
+			if (tree.value < min) {
+				min = tree.value;
+				return tree.r;
+			} else {
+				return new Branch(value = tree.value, l = t, r = tree.r);
+			}
+		}
+		case Leaf: {
+			min = tree.value;
+			return new Empty();	
+		}	
+		case Empty: {
+			return new Empty();
+		}
+	}
+}
+bit isEmpty(BinaryTree tree) {
+	if (tree == null) return false;
+	switch(tree) {
+		case Empty: return true;
+		default: return false;	
+	}	
+}
+
+
+harness void main() {
+	BinaryTree t = new Leaf(value = 5);
+	deleteNode(t, 2);
+}
+

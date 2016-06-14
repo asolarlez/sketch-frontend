@@ -1,0 +1,25 @@
+adt List {
+	Cons {int head; List tail; }
+	Nil {}
+}
+
+/*
+ * Function to be synthesized
+ */
+List insertL(List l, int v) {
+	generator List rec(List t) { return insertL(t, v); }
+	return recursiveReplacerGeneral(l, rec, v);
+}
+
+harness void main() {
+	 insertL(new Nil(), 5);
+}
+generator Q recursiveReplacerGeneral<T, Q>(T src, fun rec, fun igen) {
+	return src;
+}
+
+
+generator S recursiveReplacerCons<R, S>(R src, fun rec, fun igen) {
+	S ret = recursiveReplacerGeneral(src, rec, igen);
+	return ret;
+}
