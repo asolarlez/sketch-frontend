@@ -672,6 +672,14 @@ public class TypeCheck extends BidirectionalPass {
 
         Type lt = driver.getType(left);
         Type rt = driver.getType(right);
+        if (lt == null) {
+            report(left, "The expression " + left + " cannot be typed.");
+            return expr;
+        }
+        if (rt == null) {
+            report(left, "The expression " + right + " cannot be typed.");
+            return expr;
+        }
         if (lt instanceof TypeArray) {
             lt = ((TypeArray) lt).getBase();
             isLeftArr = true;
