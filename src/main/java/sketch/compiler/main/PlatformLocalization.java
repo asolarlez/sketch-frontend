@@ -11,13 +11,13 @@ import java.util.Properties;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import sketch.compiler.main.cmdline.SketchOptions;
-import sketch.util.exceptions.SketchSolverException;
-
 import static sketch.util.DebugOut.assertFalse;
 import static sketch.util.DebugOut.printDebug;
 import static sketch.util.DebugOut.printError;
 import static sketch.util.DebugOut.printWarning;
+
+import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.exceptions.SketchSolverException;
 
 /**
  * get any variables related to this specific compile, e.g. version number, and resolve
@@ -30,7 +30,7 @@ import static sketch.util.DebugOut.printWarning;
  */
 public class PlatformLocalization {
     protected static PlatformLocalization singleton;
-    public String version = "1.7.1";
+    public String version = "1.7.2";
     public String osname = System.getProperty("os.name");
     public String osarch = System.getProperty("os.arch");
     public Properties localization;
