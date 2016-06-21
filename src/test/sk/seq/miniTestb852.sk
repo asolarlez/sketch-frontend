@@ -1,0 +1,336 @@
+pragma options "--slv-lightverif --slv-simiters 50 --beopt:simstopsize 1200";
+
+bit J(int i) { return 1; }
+bit J0(int i) { return (i < d(0, 1)); }
+bit J1(int i) { return ((i >= d(0, 1)) && (i < d(0, 2))); }
+generator bit Scope_subsort(int _u, int i) {
+    if ((_u == 0)) return J1(i);
+    else if ((_u == 1)) return J0(i);
+    else if ((_u == 2)) return J(i);
+    else assert(false);
+}
+generator bit Scope_leaf(int _u, int i) {
+    if ((_u == 0)) return J0(i);
+    else if ((_u == 1)) return J1(i);
+    else assert(false);
+}
+generator int Scope_facts(int n) { return d(0, 2); }
+int N = 0;
+int W = 2;
+
+
+struct scalar { bit supp; int val; }
+
+|scalar| bot = |scalar|(supp=false, val=0);
+
+/*
+ * Core operations & arithmetic
+ *
+ **  'some', 'when', 'plus', 'minus', and 'applyb1' are written as generators  **
+ **  in order to force inlining, which is needed by the custom codegen.        **
+ */
+generator |scalar| some(int val) { return |scalar|(supp=true, val=val); }
+generator |scalar| when(bit guard, int val) { return |scalar|(supp=guard, val=guard?val:0); }
+|scalar| only(bit guard, |scalar| val) { return when(guard && val.supp, val.val); /* guard ? val : bot;*/ }
+|scalar| slash(|scalar| a, |scalar| b) { if (!a.supp) a = b; return a; }
+
+|scalar| apply2(fun op, |scalar| a, |scalar| b) { return only(a.supp && b.supp, op(a.val, b.val)); }
+generator bit      applyb1(fun op, |scalar| a) { return a.supp && op(a.val); }
+bit      applyb2(fun op, |scalar| a, |scalar| b) { return a.supp && b.supp && op(a.val, b.val); }
+
+generator |scalar| plus(int a, int b) { return some(a + b); }
+generator |scalar| minus(int a, int b) { return when(a>=b, a - b); }
+bit      lt(int a, int b) { return a < b; }
+bit      lt0(int a, int b) { return a < b; }
+bit      lt1(int a, int b) { return a < b; }
+bit      lt2(int a, int b) { return a < b; }
+
+/* minimum */
+
+int min2i(int a, int b) { return (a > b) ? b : a; }
+
+|scalar| min2(|scalar| a, |scalar| b) {
+  //return ( a.supp && (!b.supp || a.val < b.val) ) ? a : b;  /* AssertionError! */
+  //if ( a.supp && (!b.supp || a.val < b.val) ) return a; else return b; /* this is slightly slower */
+  if ( b.supp && (!a.supp || b.val < a.val) ) a = b;
+  return a;
+}
+
+void minz2(ref |scalar| a, |scalar| b) {
+  if (b.supp && (!a.supp || (b.val < a.val))) a = b;
+}
+
+void minz(int n, ref |scalar| acc, fun fn) {
+  for (int k = 0; k < n; ++k) {
+    |scalar| item = fn(k);
+    //acc = min2(acc, item);   /* Bad type for NOT 2 2 */
+    minz2(acc, item);
+  }
+}
+
+|scalar| min_acc(|scalar| acc, int n, fun fn) {
+  minz(n, acc, fn);
+  return acc;
+}
+
+|scalar| min(int n, fun fn) {
+  return min_acc(bot, n, fn);
+}
+
+/* maximum */
+
+int max2i(int a, int b) { return (a > b) ? a : b; }
+
+|scalar| max2(|scalar| a, |scalar| b) {
+  if ( b.supp && (!a.supp || b.val > a.val) ) a = b;
+  return a;
+}
+
+void maxz2(ref |scalar| a, |scalar| b) {
+  if (b.supp && (!a.supp || (b.val > a.val))) a = b;
+}
+
+void maxz(int n, ref |scalar| acc, fun fn) {
+  for (int k = 0; k < n; ++k) {
+    |scalar| item = fn(k);
+    maxz2(acc, item);
+  }
+}
+
+|scalar| max_acc(|scalar| acc, int n, fun fn) {
+  maxz(n, acc, fn);
+  return acc;
+}
+
+|scalar| max(int n, fun fn) {
+  return max_acc(bot, n, fn);
+}
+
+
+
+bit ENABLE_OFFSETS = 1;
+
+/* SHOULD BE AUTOGENED */
+bit __I(int i) { return 0; }
+bit __J(int i) { return 0; }
+
+// partitioning points
+bit[2] d_bits(int dom, int i);
+int d(int dom, int i) { int sum = 0; for (int k = 0; k < i; k++) { bit[2] b = d_bits(dom, k); sum += 2*b[1]+b[0]; } return sum; }
+
+
+generator bit Scope_subsort_offset(int _u, bit[2] b, int i) {
+    return Scope_subsort(_u, i) || (b[0] && Scope_subsort(_u, i + 1))
+                                || (b[1] && Scope_subsort(_u, i - 1));
+}
+
+
+/*
+generator bit Scope_subsort_min(int i) {
+    int _u = ??;
+    if (ENABLE_OFFSETS) {
+        bit[2] b = ??;
+        minimize(_u*4+b[1]+b[0]);
+        return Scope_subsort(_u, b, i);
+    }
+    else {
+        minimize(_u);
+        return Scope_subsort(_u, {0,0}, i);
+    }
+}*/
+
+bit Scope_2d(bit[W,3,W,3] t, bit lt, int i, int j) {
+  bit acc = false;
+  for (int p = 0; p < W; ++p)
+    for (int ps = -1; ps < 2; ps++)
+      for (int q = 0; q < W; ++q)
+        for (int qs = -1; qs < 2; qs++) {
+          if (!ENABLE_OFFSETS) {
+            if (ps != 0 || qs != 0) assert(t[p,ps+1,q,qs+1] == 0);
+          }
+          //if (ps < 0 || qs < 0) assert(t[p,ps+1,q,qs+1] == 0);  // Ideally, this would need to be minimized 
+          if (t[p,ps+1,q,qs+1])
+            acc = acc || ( Scope_leaf(p, ps+i) && Scope_leaf(q, qs+j) );
+        }
+  if (lt) acc = acc && (i < j);
+  return acc;
+}
+
+/* left here as reference */
+bit Scope_2d_easy(bit[W,W] t, bit lt, int i, int j) {
+  bit acc = false;
+  for (int p = 0; p < W; ++p)
+    for (int q = 0; q < W; ++q)
+      if (t[p,q])
+        acc = acc || ( Scope_leaf(p, i) && Scope_leaf(q, j) );
+  if (lt) acc = acc && (i < j);
+  return acc;
+}
+
+bit param(int u, int i) {
+  if (u == 0) return P1(i);
+  else if (u == 1) return P2(i);
+  else if (u == 2) return P3(i);
+  else assert(false);
+}
+
+int K = 3;
+
+bit Scope_2d_easier(bit[K,K] t, bit lt, int i, int j) {
+  bit acc = false;
+  int k = nparams();
+  for (int p = 0; p < k; ++p)
+    for (int q = 0; q < k; ++q)
+      if (t[p,q])
+        acc = acc || (param(p, i) && param(q, j));
+
+  if (lt) acc = acc && (i < j);
+  return acc;
+}
+
+generator int minimal(int i) { minimize(i); return i; }
+
+generator bit minimal_1(bit b) { minimize(b); return b; }
+generator bit[W] minimal_W(bit[W] a) { for (int i = 0; i < W; ++i) minimize(a[i]); return a; }
+generator bit[W][W] minimal_WxW(bit[W][W] a) { 
+  for (int i = 0; i < W; ++i) for (int j = 0; j < W; ++j) minimize(a[i][j]); return a; }
+
+
+
+|scalar| h(int n, fun theta, int i, int j) {
+    |scalar| f(int k) { return apply2(plus, apply2(plus, only((i < k), theta(i, k)), only((k < j), theta(k, j))), w(i, k, j)); }
+    return only((i < j), slash(slash(only((J0(i) && J0(j)), psi(i, j)), only((J0(i) && J1(j)), min_acc(psi(i, j), n, f))), only((J1(i) && J1(j)), psi(i, j))));
+}
+|scalar| f_0(int n, fun psi0, fun theta, int i, int j) {
+    |scalar| f0(int k) { return apply2(plus, apply2(plus, only((P1(k) && (i < k)), theta(i, k)), only((P1(k) && (k < j)), theta(k, j))), w(i, k, j)); }
+    return only(((P1(i) && P1(j)) && (i < j)), min_acc(psi0(i, j), n, f0));
+}
+|scalar| f_1(int n, fun psi0, fun theta, int i, int j) {
+    |scalar| f1(int k) { return apply2(plus, apply2(plus, only((i < k), theta(i, k)), only((k < j), theta(k, j))), w(i, k, j)); }
+    return slash(slash(only(((P1(i) && P1(j)) && (i < j)), psi0(i, j)), only((P1(i) && P2(j)), min_acc(psi0(i, j), n, f1))), only(((P2(i) && P2(j)) && (i < j)), psi0(i, j)));
+}
+@Param("selected: 0") int _0_(int n) { return n; }
+@Param("selected: 1") int _1_(int n) { return n; }
+generator int nparams() { return 3; }
+generator |scalar| f_i(int n, fun theta, int i, int j) { return {| f_0(_0_(n), Context_JJR, theta, i, j) | f_1(_1_(n), Context_JJR, theta, i, j) |}; }
+
+bit X(int a, int b) { return ((J0(a) && J1(b)) && (a < b)); }
+
+
+/* -- harness -- */
+
+int theta_val(int a, int b);
+bit theta_supp(int a, int b);
+|scalar| theta(int a, int b) { return when(theta_supp(a, b), theta_val(a, b)); }
+
+int w_val(int a, int b, int c);
+bit w_supp(int a, int b, int c);
+|scalar| w(int a, int b, int c) { return when(w_supp(a, b, c), w_val(a, b, c)); }
+
+int psi_val(int a, int b);
+bit psi_supp(int a, int b);
+|scalar| psi(int a, int b) { return when(psi_supp(a, b), psi_val(a, b)); }
+
+
+int t1 = ??;
+int t2 = ??;
+int t3 = ??;
+
+bit[2] offsets(bit[2] x) { return x; }
+
+@OffsetsForParam("P") bit[2] b1() { return offsets(??); }
+@OffsetsForParam("P") bit[2] b2() { return offsets(??); }
+@OffsetsForParam("P") bit[2] b3() { return offsets(??); }
+
+#define RANK(t, b) ((t)*3 + (b)[0] + (b)[1])
+generator int rank(int t, bit[2] b) { return t*3+b[0]+b[1]; }
+
+@Param("P")  bit P(int i)  { return Scope_subsort(??, i); }
+@Param("P") bit P1(int i) { return Scope_subsort_offset(t1, b1(), i); }
+@Param("P") bit P2(int i) { return Scope_subsort_offset(t2, b2(), i); }
+@Param("P") bit P3(int i) { return Scope_subsort_offset(t3, b3(), i); }
+
+@Inv("Q") bit Q(int i, int j) { return (Scope_2d_easier(/*minimal_4x4*/(??), minimal_1(??), i, j) || X(i,j)); }
+
+
+generator |scalar| Context_JJR(int i, int j) { return psi(i,j); }
+
+|scalar| thetaQ(int i, int j) { return only(Q(i,j), theta(i,j)); }
+
+
+
+|scalar| bot2d(int i, int j) { return bot; }
+
+//#define EXHAUST_IJ
+
+pragma options "--bnd-unroll-amnt 8";
+
+pragma options "--bnd-mbits 7";    /* this is needed because hole is multiplied by 6 */
+
+
+harness void test1(int n 
+#ifndef EXHAUST_IJ
+                   , int i, int j
+#endif
+                   ) {
+
+  n = Scope_facts(n);
+  assume n <= 8 && n > 0;
+  //N = n;
+
+
+#ifndef EXHAUST_IJ
+  assume i < n && i >= 0;
+  assume j < n && j >= 0;
+#endif
+ 
+ 
+  |scalar| jones(int x, int y) { return h(n, /*bot2d*/theta, x, y); }
+
+  bit ind = ??;
+
+/*
+  int tmax = t1;
+  int bsum = b1()[0];
+  if (nparams() > 1) { tmax = max2i(tmax, t2); bsum += b2()[0]; }
+  if (nparams() > 2) { tmax = max2i(tmax, t3); bsum += b3()[0]; }
+
+  minimize(tmax * 4 + bsum);
+  */
+  minimize(max2i(t1, max2i(t2, t3)) * 6 + (b1()[0] + b1()[1] + b2()[0] + b2()[1] + b3()[0] + b3()[1]));
+  //minimize(t1 * 4 + b1()[0]);
+
+#ifdef EXHAUST_IJ
+  for (int i = 0; i < n; i++)
+  for (int j = 0; j < n; j++) 
+#endif
+  {
+  if (ind) {
+     /*
+      |scalar| val = f_i(n, thetaQ, i, j);
+      if (X(i,j)) {
+        assert h(n, theta, i, j) == val;
+      }
+      else if (Q(i,j)) {
+        assert val == psi(i, j);
+      }
+      else {
+        assert val == bot || val == psi(i,j);
+      } */
+     
+      if (Q(i,j)) {
+        assert h(n, theta, i, j) == h(n, thetaQ, i, j);
+        assert h(n, thetaQ, i, j) == f_i(n, thetaQ, i, j);
+      }
+      
+  }
+  else {
+      if (X(i,j)) {
+        assert h(n, jones, i, j) == f_i(n, thetaQ, i, j);
+      }
+  }
+  }
+}
+
+
+

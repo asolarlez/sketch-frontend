@@ -22,13 +22,3 @@ void forall(int a, int b, fun f){
 		f(i);
 	}
 }
-
-harness
-void main(){
-	int N=10, M=10;
-	int[N,M] x;
-	int total = 0;
-	void inc(int v){ total += v; }
-	// foreach(x, (row)-> foreach(row, (v)->inc(v)  )  );
-	forall(0,N, (i)->forall(0,M, (j)->inc(x[i,j]) ) ); 
-}

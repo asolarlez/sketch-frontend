@@ -1,0 +1,51 @@
+
+adt ASTNode{
+    adt Expression{
+        Plus {Expression left; Expression right;}
+        Times {Expression left; Expression right;}
+        Num{ int n; }
+        Var{ int id; }
+    }
+    adt Statement{
+        Assign{ int lhs; Expression rhs; }
+        IfStmt{ Expression cond; Statement tpart; Statement epart; }
+        WhileStmt{Expression cond; Statement body;}
+    }    
+}
+
+
+int[n] eval([int n], Statement s, int[n] state){
+    switch(s){
+    case Assign:{ 
+        state[s.lhs] = calc(s.rhs, state); 
+        return state;
+    }
+    case IfStmt: 
+        if(calc(s.cond, state)> 0){ 
+            return eval(s.tpart, state); 
+        }else{ 
+            return eval(s.epart, state); 
+        }
+    case WhileStmt: 
+        if(calc(s.cond, state)>0){ 
+            return eval(s, eval(s.body, state)); 
+        }else{return state;}
+    }
+}
+
+
+int calc([int n], Expression e, int[n] state){
+    switch(e){
+    case Plus: return calc(e.left, state) + calc(e.right, state);
+    case Times: return calc(e.left, state) * calc(e.right, state);
+    case Num: return e.n;
+    case Var: return state[e.id];
+    }
+}
+
+
+harness void main(){
+    assert calc(new Num(n=5), {}) == 5;  
+    
+}
+

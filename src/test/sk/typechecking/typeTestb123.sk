@@ -1,0 +1,19 @@
+
+
+T foo<T>( T x ){
+    T apply(fun f){
+        return f(x);
+    }
+    int id(int y){
+        return y;
+    }
+    
+    return apply(id);
+}
+
+
+harness void main(int x){
+    
+    assert foo(x) == x;
+    
+}

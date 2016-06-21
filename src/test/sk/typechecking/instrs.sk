@@ -1,0 +1,251 @@
+int MEM_SIZE = 10; // What value should this be?
+
+int to_int(bit[18] n) {
+  int res = 0;
+  int i_n = 1;
+  for (int i = 0; i < 18; i++) {
+    if (n[i]) {
+      res += i_n;
+    }
+    i_n *= 2;
+  }
+
+  return res;
+}
+
+struct Stack {
+  bit[18] ptr;
+  bit[18][8] body;
+}
+
+Stack empty() { return new Stack(ptr = 0, body = {0,0,0,0,0,0,0,0}); }
+
+/* Whee, what ugly code! */
+void push_s(Stack stack, bit[18] n) {
+  stack.ptr = stack.ptr + 1;
+  if (to_int(stack.ptr) == 8) {
+    stack.ptr = 0;
+  }
+  stack.body[to_int(stack.ptr)] = n;
+}
+
+/* Ditto */
+bit[18] pop_s(Stack stack) {
+  bit[18] top = stack.body[to_int(stack.ptr)];
+  stack.ptr = stack.ptr + 1;
+  if (to_int(stack.ptr) == 8) {
+    stack.ptr = 0;
+  }
+  return top;
+}
+
+/* Maybe not terribly efficient. Meh. */
+struct State {
+  bit[18] a;
+  bit[18] b;
+  bit[18] p;
+  bit[18] r;
+  bit[18] s;
+  bit[18] t;
+  Stack data;
+  Stack ret;
+  bit[18][MEM_SIZE] memory;
+}
+
+State start() {
+  return new State(a      = 0,
+                   b      = 0,
+                   p      = 0,
+                   r      = 0,
+                   s      = 0,
+                   t      = 0,
+                   data   = empty(),
+                   ret    = empty(),
+                   memory = {});
+}
+
+State s = new State(a      = 0,
+                    b      = 0,
+                    p      = 0,
+                    r      = 0,
+                    s      = 0,
+                    t      = 0,
+                    data   = new Stack(ptr = 0, body = {0,0,0,0,0,0,0,0}),
+                    ret    = new Stack(ptr = 0, body = {0,0,0,0,0,0,0,0}),
+                    memory = {});
+
+void reset() {
+  s = start();
+}
+
+bit[18] pop_d(State s) {
+  bit[18] temp = s.t;
+  bit[18] res = pop_s(s.data);
+  s.t = s.s;
+  s.s = res;
+  return temp;
+}
+
+void push_d(State s, bit[18] value) {
+  push_s(s.data, s.s);
+  s.s = s.t;
+  s.t = value;
+}
+
+bit[18] pop_r(State s) {
+  bit[18] temp = s.r;
+  s.r = pop_s(s.ret);
+  return temp;
+}
+
+void push_r(State s, bit[18] value) {
+  push_s(s.ret, s.r);
+  s.r = value;
+}
+
+bit[18] ret() {
+  state.p = r;
+  return pop_r(s);
+}
+
+bit[18] exec() {
+  bit[18] temp = s.r;
+  s.r = s.p;
+  s.p = temp;
+  return 0;
+}
+
+bit[18] unext() {
+  if (s.r == 0) {
+    pop_r(s);
+  } else {
+    s.r--;
+    s.p--;
+  }
+  return 0;
+}
+
+bit[18] fetchP() {
+  push_d(s, s.memory[to_int(s.p)]);
+  s.p++;
+  return 0;
+}
+
+bit[18] fetchPlus() {
+  push_d(s, s.memory[to_int(s.a)]);
+  s.a++;
+  return 0;
+}
+
+bit[18] fetchB() {
+  push_d(s, s.memory[to_int(s.b)]);
+  return 0;
+}
+
+bit[18] fetch() {
+  push_d(s, s.memory[to_int(s.a)]);
+  return 0;
+}
+
+bit[18] storeP() {
+  bit[18] temp = pop_d(s);
+  s.memory[to_int(s.p)] = temp;
+  s.p++;
+  return 0;
+}
+
+bit[18] storePlus() {
+  bit[18] temp = pop_d(s);
+  s.memory[to_int(s.a)] = temp;
+  s.a++;
+  return 0;
+}
+
+bit[18] storeB() {
+  bit[18] temp = pop_d(s);
+  s.memory[to_int(s.b)] = temp;
+  return 0;
+}
+
+bit[18] store() {
+  bit[18] temp = pop_d(s);
+  s.memory[to_int(s.a)] = temp;
+  return 0;
+}
+
+bit[18] times2() {
+  s.t = s.t >> 1;
+  return 0;
+}
+
+bit[18] div2() {
+  s.t = s.t << 1;
+  return 0;
+}
+
+bit[18] not() {
+  s.t = ~s.t;
+  return 0;
+}
+
+bit[18] plus() {
+  bit[18] temp = pop_d(s);
+  s.t += temp;
+  return 0;
+}
+
+bit[18] and() {
+  bit[18] temp = pop_d(s);
+  s.t = s.t & temp;
+  return 0;
+}
+
+bit[18] or() {
+  bit[18] temp = pop_d(s);
+  s.t = s.t ^ temp;
+  return 0;
+}
+
+bit[18] drop() {
+  pop_d(s);
+  return 0;
+}
+
+bit[18] dup() {
+  push_d(s, s.t);
+  return 0;
+}
+
+bit[18] pop() {
+  push_d(s, pop_r(s));
+  return 0;
+}
+
+bit[18] over() {
+  push_d(s, s.s);
+  return 0;
+}
+
+bit[18] readA() {
+  push_d(s, s.a);
+  return 0;
+}
+
+bit[18] nop() {
+  return 0;
+}
+
+bit[18] push() {
+  push_r(s, pop_d(s));
+  return 0;
+}
+
+bit[18] setB() {
+  s.b = pop_d(s);
+  return 0;
+}
+
+bit[18] setA() {
+  s.a = pop_d(s);
+  return 0;
+}

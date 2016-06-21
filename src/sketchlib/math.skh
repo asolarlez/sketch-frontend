@@ -1,0 +1,9 @@
+package math;
+
+float sin(float v);
+float cos(float v);
+float tan(float v);
+float sqrt(float v);
+float abs(float v);
+float arctan(float v);
+generator float Pi(){ return 3.141592; }
