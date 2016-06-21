@@ -1120,7 +1120,7 @@ public class TypeCheck extends BidirectionalPass {
         }
         Type floattype = TypePrimitive.floattype;
         if (ct == null) {
-            report(expr, "incompatible types in binary expression: " + lt + " and " + rt + " are incompatible.");
+            report(expr, "incompatible types in binary expression " + expr + " : " + lt + " and " + rt + " are incompatible.");
             return;
         }
         // Check whether ct is an appropriate type.

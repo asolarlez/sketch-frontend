@@ -8,7 +8,7 @@ T[n] map<T>([int n], T[n] in, fun f){
 } 
 
 int len<T>([int n], T[n] ar){
-	return n;h
+	return n;
 } 
 
 void foreach<T>([int n], ref T[n] in, fun f){

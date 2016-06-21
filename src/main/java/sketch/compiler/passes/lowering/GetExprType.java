@@ -97,6 +97,9 @@ public class GetExprType extends FENullVisitor
     public Object visitExprAlt (ExprAlt ea) {
     	Type t1 = (Type) ea.getThis().accept(this);
     	Type t2 = (Type) ea.getThat().accept(this);
+        if (t1 == null || t2 == null) {
+            return null;
+        }
         Type ret = t1.leastCommonPromotion(t2, nres);
     	
     	return ret;
@@ -475,10 +478,8 @@ public class GetExprType extends FENullVisitor
         Type tc = (Type)exp.getC().accept(this);
         Type lub;
         if (tb == null) {
-            assert tc != null;
             return tc;
         } else if (tc == null) {
-            assert tb != null;
             return tb;
         } else if (tb.equals(new NotYetComputedType())) {
             lub = tc;
@@ -504,6 +505,9 @@ public class GetExprType extends FENullVisitor
         // A little more solid ground here: the type of -foo and !foo
         // will be the same as type of foo, except for bits...
 	Type t = (Type)exp.getExpr().accept(this);
+        if (t == null) {
+            return null;
+        }
 	// if <t> is a bit, then the unary expression could promote it
 	// to an int.
 	if (t.equals(TypePrimitive.bittype)) {

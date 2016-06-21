@@ -246,11 +246,13 @@ public class ParallelBackend extends SATBackend {
         if (!es.isShutdown())
             es.shutdownNow();
         // cancel any remaining tasks
+
+        // terminate any alive CEGIS processes
+        terminateSubprocesses();
+
         for (Future<SATSolutionStatistics> f : futures) {
             f.cancel(true);
         }
-        // terminate any alive CEGIS processes
-        terminateSubprocesses();
     }
 
     class TimeoutMonitor extends Thread {
@@ -334,6 +336,11 @@ public class ParallelBackend extends SATBackend {
                 } catch (IllegalThreadStateException e) {
                     plog("destroying " + p);
                     p.destroy(); // if still running, kill the process
+                    try {
+                        p.waitFor();
+                    } catch (InterruptedException e1) {
+                        plog("Wait threw exception");
+                    }
                 }
             }
             cegiss.clear();
