@@ -22,6 +22,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprLambda;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -516,6 +517,11 @@ public class InnerFunReplacer extends BidirectionalPass {
                 // NOTE xzl: if this arg is a function, it will be inlined.
                 if (!(p.getType() instanceof TypeFunction)) {
                     existingArgs.get(i - starti).accept(this);
+                } else {
+                    Expression e = existingArgs.get(i - starti);
+                    if (e instanceof ExprLambda) {
+                        e.accept(this);
+                    }
                 }
                 isAssignee = oldIsA;
             }
