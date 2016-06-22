@@ -3,7 +3,6 @@ package sketch.compiler.main.passes;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.cmdline.FrontendOptions.FloatEncoding;
 import sketch.compiler.dataflow.simplifier.ScalarizeVectorAssignments;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.lowering.*;
@@ -136,14 +135,23 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new SeparateInitializers());
 
 
-        // FIXME xzl: all replacing does not consider += -= etc.
-        if (options.feOpts.fpencoding == FloatEncoding.AS_BIT) {
+        
+        switch(options.feOpts.fpencoding){
+        case AS_BIT:
             prog = (Program) prog.accept(new ReplaceFloatsWithBits(varGen));
-        } else if (options.feOpts.fpencoding == FloatEncoding.AS_FFIELD) {
+            break;
+        case AS_FFIELD:
             prog = (Program) prog.accept(new ReplaceFloatsWithFiniteField(varGen));
-        } else if (options.feOpts.fpencoding == FloatEncoding.AS_FIXPOINT) {
+            break;
+        case AS_FIXPOINT:
             prog = (Program) prog.accept(new ReplaceFloatsWithFixpoint(varGen));
+            break;
+        case TO_BACKEND:
+            
         }
+        
+        
+
 
         prog = (Program) prog.accept(new LoopInvariantAssertionHoisting());
 

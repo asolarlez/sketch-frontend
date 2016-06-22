@@ -213,15 +213,11 @@ public class ParallelBackend extends SATBackend {
                     // found a worker that found a solution
                     if (r.successful()) {
                         plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
-                        es.shutdownNow(); // attempts to stop active tasks
-                        // break the iteration and go to finally block
                         break;
                     }
                     // found a worker that found the problem UNSAT
                     else if (r.unsat()) {
                         plog("=== resolved within " + (i + 1) + " complete parallel trial(s)");
-                        es.shutdownNow(); // attempts to stop active tasks
-                        // break the iteration and go to finally block
                         break;
                     }
                 } catch (CancellationException e) {
@@ -244,7 +240,7 @@ public class ParallelBackend extends SATBackend {
         // double-check the thread pool has been shut down
         // if *all* trials failed, it wasn't shut down
         if (!es.isShutdown())
-            es.shutdownNow();
+            es.shutdown();
         // cancel any remaining tasks
 
         // terminate any alive CEGIS processes
@@ -317,8 +313,12 @@ public class ParallelBackend extends SATBackend {
         // maintain CEGIS process, to terminate it directly
         // when another worker already found a solution. If a solution has
         // already been found, this method returns false.
+        boolean hasFinished = false;
+        synchronized (lock) {
+            hasFinished = parallel_solved || parallel_failed;
+        }
 
-        if (es.isShutdown()) {
+        if (es.isShutdown() || hasFinished) {
             return false;
         }
 
@@ -329,6 +329,7 @@ public class ParallelBackend extends SATBackend {
     }
 
     public void terminateSubprocesses() {
+        List<Process> mustwait = new ArrayList<Process>();
         synchronized (lock) {
             for (Process p : cegiss) {
                 try {
@@ -336,14 +337,17 @@ public class ParallelBackend extends SATBackend {
                 } catch (IllegalThreadStateException e) {
                     plog("destroying " + p);
                     p.destroy(); // if still running, kill the process
-                    try {
-                        p.waitFor();
-                    } catch (InterruptedException e1) {
-                        plog("Wait threw exception");
-                    }
+                    mustwait.add(p);
                 }
             }
             cegiss.clear();
+        }
+        for (Process p : mustwait) {
+            try {
+                p.waitFor();
+            } catch (InterruptedException e1) {
+                plog("Wait threw exception");
+            }
         }
     }
 
