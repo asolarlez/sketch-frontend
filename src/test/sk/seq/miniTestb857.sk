@@ -20,6 +20,7 @@ void f1<T>(T [MAXLEN] in, fun agg) {
 
 }
 
-harness void main(S1 [MAXLEN] s1) {
+harness void main() {
+  S1 [MAXLEN] s1;
   f1(s1, f3);
 }
