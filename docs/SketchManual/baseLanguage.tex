@@ -373,84 +373,6 @@ Notice that most operators support operands of different sizes; the smaller arra
 
 
 
-\subsection{Algebraic Data types}\seclabel{adts}
-Sketch also supports algebraic data types, or case classes as they are known in Scala. To illustrate the use of algebraic data types (ADTs), consider the \C{Tree} ADT defined below. 
-\begin{lstlisting}
-struct Tree{}
-
-struct Leaf extends Tree{
-	int value;
-}
-struct Branch extends Tree{
-	Tree left;
-	Tree right;
-}
-\end{lstlisting}
-\C{Tree} is an ADT by virtue of having two variants that extend it: \C{Leaf} and \C{Branch}. Both \C{Leaf} and \C{Branch} can be instantiated just like any other kind of record, and they are both subtypes of \C{Tree}. For example, the code below instantiates a small tree.
-
-\begin{lstlisting}
-Tree t1 = new Leaf(value=5);
-Tree t2 = new Leaf(value=6);
-Tree t3 = new Leaf(value=7);
-Tree t = new Branch(left=t1, right=new Branch(left=t2, right=t3));
-\end{lstlisting}
-The fact that Leaf and Branch extend \C{Tree} causes \C{Tree} to be abstract, so \C{Tree} itself cannot be instantiated. 
-
-Pattern matching in \Sk{} is done through the \C{switch} construct. The basic syntax is as follows:
-\begin{lstlisting}
-switch(var){
-   case C1: 
-   ...
-   case Cn:
-}
-\end{lstlisting}
-The argument \C{var} passed to switch must be a variable whose type is an ADT, and each case must be labeled with a different variant \C{Ci}. Within that case, the variable \C{var} will automatically acquire the type corresponding to the case. This is illustrated by the function below: 
-
-
-
-\begin{lstlisting}
-int sum(Tree t){
-   int v=0;
-   switch(t){
-      case Leaf:{
-        /*t is now of type Leaf in this block */
-        v = t.value;
-      }
-      case Branch:{
-        /*t is now of type Branch is this block */
-        v = sum(t.left)+sum(t.right);
-      }
-   }        
-   /*Outside the switch, t goes back to being of type Tree*/
-   return v;
-}
-\end{lstlisting}
-The \C{switch} construct looks a lot like the \C{switch} construct in C or Java, but its semantics are very different. First, the cases correspond to the possible types of \C{t}, as opposed to different values of an integer expression. Second, the argument to switch must be a variable, and the type of this variable will be different in each of the cases. And finally, the cases do not ``fall through'' the way they do in C; only one case can match, and only the block of code associated with the matching case will execute.
-
-The language allows hierarchies of ADTs. For example:
-\begin{lstlisting}
-struct ASTNode{}
-struct Expression extends ASTNode{}
-struct Statement extends ASTNode{}
-struct Plus extends Expression{Expression left; Expression right;}
-struct Times extends Expression{Expression left; Expression right;}
-struct IfStmt extends Statement{Expression cond; Statement tpart; Statement epart;}
-struct WhileStmt extends Statement{Expression cond; Statement body;}
-\end{lstlisting}
-So in this case, one can create instances of \C{Plus}, \C{Times}, \C{IfStmt} and \C{WhileStmt}, but not of \C{ASTNode} or of \C{Expression} and \C{Statement}. When pattern matching, however , one can have cases for \C{Expression} or \C{Statement} and those cases will match on any variant that is a subtype of them. 
-
-The following are some additional rules associated with ADTs. 
-\begin{itemize}
-\item Records representing an ADT can have fields, and those fields will be inherited by all the variant types.
-\item A parent and a variant \C{struct} cannot both have a field with the same name. 
-\item The type extended by a variant class should exist and be defined in the same package, so ADT definitions cannot span multiple packages (see \secref{pkg} for more on packages).
-\item The expression that is passed to switch(e) should always be a variable, and the labels for the cases should be variants of the type of that variable.
-\item Switch statements should cover all the cases.
-\item Implicit casting occurs from a subtype to a super type.
-\item Explicit casts can happen only from a supertype to a subtype. An incorrect cast will cause an assertion failure. 
-\end{itemize}
-
-
 
 \subsection{Automatic Padding and Typecasting}
 \seclabel{padding}
@@ -559,6 +481,107 @@ int[M] y = (bit[M])x;
 \end{lstlisting}
 If we knew that \C{N} is smaller than \C{M}, we could have written simply \C{y=x}, and the automatic padding would have made the assignment correct. Similarly, if we knew that \C{M} is smaller than or equal to \C{N}, assigning \C{y=x[0::M]} would have been legal. However, \C{y=x} fails when \C{M} is smaller than \C{N}, and x[0::M] fails when \C{M>N}. The cast on the other hand succeeds in both cases and has the expected behavior.
 \end{Example}
+
+
+
+\subsection{Algebraic Data types}\seclabel{adts}
+Sketch also supports algebraic data types, or case classes as they are known in Scala. To illustrate the use of algebraic data types (ADTs), consider the \C{Tree} ADT defined below. 
+\begin{lstlisting}
+adt Tree{
+    Leaf{ int value; }
+    Branch{ Tree left; Tree right; }
+}
+\end{lstlisting}
+\C{Tree} is an ADT by virtue of having two variants that extend it: \C{Leaf} and \C{Branch}. Both \C{Leaf} and \C{Branch} can be instantiated just like any other kind of record, and they are both subtypes of \C{Tree}. For example, the code below instantiates a small tree.
+
+\begin{lstlisting}
+Tree t1 = new Leaf(value=5);
+Tree t2 = new Leaf(value=6);
+Tree t3 = new Leaf(value=7);
+Tree t = new Branch(left=t1, right=new Branch(left=t2, right=t3));
+\end{lstlisting}
+The fact that Leaf and Branch extend \C{Tree} causes \C{Tree} to be abstract, so \C{Tree} itself cannot be instantiated. 
+
+Pattern matching in \Sk{} is done through the \C{switch} construct. The basic syntax is as follows:
+\begin{lstlisting}
+switch(var){
+   case C1: 
+   ...
+   case Cn:
+}
+\end{lstlisting}
+The argument \C{var} passed to switch must be a variable whose type is an ADT, and each case must be labeled with a different variant \C{Ci}. Within that case, the variable \C{var} will automatically acquire the type corresponding to the case. This is illustrated by the function below: 
+
+
+
+\begin{lstlisting}
+int sum(Tree t){
+   int v=0;
+   switch(t){
+      case Leaf:{
+        /*t is now of type Leaf in this block */
+        v = t.value;
+      }
+      case Branch:{
+        /*t is now of type Branch is this block */
+        v = sum(t.left)+sum(t.right);
+      }
+   }        
+   /*Outside the switch, t goes back to being of type Tree*/
+   return v;
+}
+\end{lstlisting}
+The \C{switch} construct looks a lot like the \C{switch} construct in C or Java, but its semantics are very different. First, the cases correspond to the possible types of \C{t}, as opposed to different values of an integer expression. Second, the argument to switch must be a variable, and the type of this variable will be different in each of the cases. And finally, the cases do not ``fall through'' the way they do in C; only one case can match, and only the block of code associated with the matching case will execute.
+
+The language allows hierarchies of ADTs. For example:
+\begin{lstlisting}
+adt ASTNode{
+    adt Expression{
+        Plus {Expression left; Expression right;}
+        Times {Expression left; Expression right;}
+        Num{ int n; }
+        Var{ int id; }
+    }
+    adt Statement{
+        Assign{ int lhs; Expression rhs; }
+        IfStmt{ Expression cond; Statement tpart; Statement epart; }
+        WhileStmt{Expression cond; Statement body;}
+    }    
+}
+\end{lstlisting}
+So in this case, one can create instances of \C{Plus}, \C{Times}, \C{IfStmt} and \C{WhileStmt}, but not of \C{ASTNode} or of \C{Expression} and \C{Statement}. When pattern matching, however , one can have cases for \C{Expression} or \C{Statement} and those cases will match on any variant that is a subtype of them. 
+
+The following are some additional rules associated with ADTs. 
+\begin{itemize}
+\item All fields of an ADT are immutable. 
+\item Records representing an ADT can have fields, and those fields will be inherited by all the variant types.
+\item A parent and a variant cannot both have a field with the same name. 
+\item The type extended by a variant class should exist and be defined in the same package, so ADT definitions cannot span multiple packages (see \secref{pkg} for more on packages).
+\item The expression that is passed to switch(e) should always be a variable, and the labels for the cases should be variants of the type of that variable.
+\item Switch statements should cover all the cases.
+\item Implicit casting occurs from a subtype to a super type.
+\item Explicit casts can happen only from a supertype to a subtype. An incorrect cast will cause an assertion failure. 
+\end{itemize}
+
+\subsection{Struct inheritance}
+In some cases, we want to make use of the ability of ADTs to define sub-types and to use switch to distinguish between cases, but we do not want to be restricted by the immutability requirement. In this case, we can use \C{struct} inheritance to achieve that goal. For example, we can write: 
+\begin{lstlisting}
+struct Tree{
+        int x;
+}
+
+struct Leaf extends Tree{
+    int value;
+}
+struct Branch extends Tree{
+    Tree left;
+    Tree right;
+}
+\end{lstlisting}
+
+We can use the above Branch, Leaf and Tree types the same way we would have if we had defined them using the \C{adt} syntax. The difference is that now, the \C{Leaf}s and \C{Branch}es will be mutable, so you can change their value after they have been created. There is a cost to this, though, in that the synthesizer will be able to handle immutable ADT values much more efficiently than these mutable structures.
+
+
 
 \subsection{Control Flow}
 The language supports the following constructs for control flow: \C{if-then}, \C{while}, \C{do-while}, \C{for}. These have the same syntax and semantics as in \C{C/C++} or \C{Java}. The language does not support a C-like \C{switch} statement, since \C{switch} is used for pattern matching instead (see \secref{adts}). The language also does not support \C{continue} and \C{break}, although they can easily be emulated with \C{return} by using closures (see \secref{closures}).
@@ -863,13 +886,51 @@ harness void main(int x) {
       return f();
   }
   
-  int t = apply(foo) $\cdot$ ??;
+  int t = apply(foo) * ??;
   
   assert t == x + x;
 }
 \end{lstlisting}
 
 \end{Example}
+
+\subsection{Polymorphism}
+
+Starting with version 1.7.1, Sketch has full support for polymorphic functions. A polymorphic function can be declared by including type parameters in its signature:
+\begin{lstlisting}
+$type$ $name$<$typeParams$>($type$ $pname$, $\ldots$){ $\ldots$ }
+\end{lstlisting}
+
+For example, the following is a well known forall function applied to arrays:
+
+\begin{lstlisting}
+void forall<T>([int n], fun f, ref T[n] x){
+    for(int i=0; i<n; ++i){
+        f(x[i]);
+    }
+}
+\end{lstlisting}
+
+When calling \C{forall}, \C{T} can be used in place of any data-type, including primitive types, structures, adts, and arrays thereof. The type \C{T}, however, cannot be instantiated to a function type.
+
+In order to use a polymorphic function, you just need to call it as you would any other function. 
+
+\begin{Example}
+\begin{lstlisting}
+harness void main(){
+    int sum=0;
+    generator void add(int t){
+        sum += t;
+    }
+    forall(add, {1,2,3,4,5});
+    assert sum == 15;
+    sum = 0;
+    forall( (u) -> forall(add, u),  { {1,2,0} , {3,4,5} } );
+    assert sum == 15;
+}
+\end{lstlisting}
+\end{Example}
+
 
 
 \subsection{Uninterpreted Functions}
@@ -1069,3 +1130,4 @@ harness void sketch( int x, int y, int z ){
    assert rec($\$(int)$) == (x + x) * (y - z);
 }
 \end{lstlisting}
+

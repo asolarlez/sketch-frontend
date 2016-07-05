@@ -108,6 +108,9 @@ public abstract class Type
      */
     public Type leastCommonPromotion(Type that, NameResolver nres)
     {
+        if (that == null) {
+            return null;
+        }
         if (this.promotesTo(that, nres))
             return that;
         if (that.promotesTo(this, nres))

@@ -1,0 +1,15 @@
+void forall(int a, int b, fun f){
+    for(int i=a; i<b; ++i){
+        f(i);
+    }
+}
+
+harness
+void main(){
+    int N=7, M=7;
+    int[N,M] x;
+    int total = 0;
+    void inc(int v){ total += v; }
+    // foreach(x, (row)-> foreach(row, (v)->inc(v)  )  );
+    forall(0,N, (i)->forall(0,M, (j)->inc(x[i,j]) ) ); 
+}

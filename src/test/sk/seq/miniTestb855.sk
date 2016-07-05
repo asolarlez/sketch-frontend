@@ -1,0 +1,9 @@
+int f(int x);
+
+harness void main(int x){
+    
+    int t = (f(x) == f(x-1) ? f(x) : f(x-1));
+    assert t == f(x-??);    
+    
+}
+

@@ -1,0 +1,47 @@
+include "instrs.sk";
+pragma options "--bnd-int-range 1000";
+
+struct Ret {
+  bit[18] s;
+  bit[18] t;
+}
+
+|Ret| spec(bit[18] t_reg, bit[18] s_reg) {
+  reset();
+  s.t = t_reg;
+  s.s = s_reg;
+  over();
+over();
+or();
+setA();
+and();
+readA();
+or();
+;
+  return |Ret| (s = s.s, t = s.t);
+}
+
+|Ret| sketch(bit[18] t_reg, bit[18] s_reg) implements spec {
+  reset();
+  s.t = t_reg;
+  s.s = s_reg;
+  bit[18] ignore = 0;
+   ignore = {| exec() | unext() | fetchP() | fetchPlus() | fetchB() | fetch() |
+    storeP() | storePlus() | storeB() | store() | times2() | div2() |
+    not() | plus() | and() | or() | drop() | dup() | pop() | over() |
+    readA() | nop() | push() | setB() | setA() |};
+ ignore = {| exec() | unext() | fetchP() | fetchPlus() | fetchB() | fetch() |
+    storeP() | storePlus() | storeB() | store() | times2() | div2() |
+    not() | plus() | and() | or() | drop() | dup() | pop() | over() |
+    readA() | nop() | push() | setB() | setA() |};
+ ignore = {| exec() | unext() | fetchP() | fetchPlus() | fetchB() | fetch() |
+    storeP() | storePlus() | storeB() | store() | times2() | div2() |
+    not() | plus() | and() | or() | drop() | dup() | pop() | over() |
+    readA() | nop() | push() | setB() | setA() |};
+ ignore = {| exec() | unext() | fetchP() | fetchPlus() | fetchB() | fetch() |
+    storeP() | storePlus() | storeB() | store() | times2() | div2() |
+    not() | plus() | and() | or() | drop() | dup() | pop() | over() |
+    readA() | nop() | push() | setB() | setA() |};
+
+  return |Ret|(s = s.s, t = s.t);
+}

@@ -14,11 +14,11 @@ import java.util.Set;
 
 import org.anarres.cpp.LexerException;
 
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
 import sketch.compiler.Directive;
 import sketch.compiler.ast.core.Program;
 import sketch.util.CPreprocessedFileStream;
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
 
 /**
  * A light wrapper around the main parser.
@@ -59,6 +59,7 @@ public class StreamItParser {
 		} catch (IOException ioe) {
 			throw new IllegalArgumentException("Something wrong with: "+fileName);
 		} catch (LexerException e) {
+            System.err.println("Error in file " + fileName);
 		    throw new RuntimeException(e);
         }
 	}

@@ -388,9 +388,6 @@ public class FunctionParamExtension extends SymbolTableVisitor
                             Parameter.OUT));
                 }
                 FunctionCreator fc = fun.creator().params(params);
-                if (fun.isUninterp()) {
-                    fc.returnType(TypePrimitive.voidtype);
-                }
                 funs.add(fc.create());
             }
 
@@ -471,7 +468,9 @@ public class FunctionParamExtension extends SymbolTableVisitor
 
 	public Object visitFunction(Function func) {
         retVar = null;
-		if(func.isUninterp() ) return func;
+        if (func.isUninterp()) {
+            return func.creator().returnType(TypePrimitive.voidtype).create();
+        }
 
 		{
 			currentRefParams.clear();

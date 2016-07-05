@@ -195,6 +195,9 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         if (b instanceof NotYetComputedType) {
             return a;
         }
+        if (a == null || b == null) {
+            return null;
+        }
         return a.leastCommonPromotion(b, nres);
     }
 
@@ -544,6 +547,9 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
                 tdstate.beforeRecursion(formalType, exp);
                 Expression newParam = doExpression(actual);
                 Type paramOriType = getType(newParam);
+                if (paramOriType == null) {
+                    throw new ExceptionAtNode("Bad Type for parameter " + newParam, actual);
+                }
                 Type actType = paramOriType.addDefaultPkg(nres.curPkg().getName(), nres);
                 Type att = actType;
                 while (ftt instanceof TypeArray) {

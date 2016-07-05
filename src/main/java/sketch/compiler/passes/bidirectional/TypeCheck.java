@@ -1,6 +1,7 @@
 package sketch.compiler.passes.bidirectional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -566,14 +567,20 @@ public class TypeCheck extends BidirectionalPass {
     public Object visitExprTypeCast(ExprTypeCast exp) {
         Type castedType = exp.getType();
         Expression newExpr = exp.getExpr();
+        Type curType = driver.getType(newExpr);
         if (castedType.isStruct()) {
-            Type curType = driver.getType(newExpr);
             // Make sure that curType is a super type of castedType
             if (!(castedType.promotesTo(curType, driver.getNres()) || curType.promotesTo(castedType, driver.getNres()))) {
                 report(exp, "Invalid explicit typecasting. Expression of type " + curType + " cannot be promoted to " + castedType);
                 return new ExprNullPtr();
             }
         }
+        String opname = "_cast_" + curType.cleanName() + "_" + castedType.cleanName();
+        Function f = nres().getFun(opname);
+        if (f != null) {
+            return new ExprFunCall(exp, opname, Collections.singletonList(newExpr));
+        }
+
         if (newExpr == exp.getExpr() && castedType == exp.getType())
             return exp;
         else
@@ -664,6 +671,14 @@ public class TypeCheck extends BidirectionalPass {
 
         Type lt = driver.getType(left);
         Type rt = driver.getType(right);
+        if (lt == null) {
+            report(left, "The expression " + left + " cannot be typed.");
+            return expr;
+        }
+        if (rt == null) {
+            report(left, "The expression " + right + " cannot be typed.");
+            return expr;
+        }
         if (lt instanceof TypeArray) {
             lt = ((TypeArray) lt).getBase();
             isLeftArr = true;
@@ -1104,7 +1119,7 @@ public class TypeCheck extends BidirectionalPass {
         }
         Type floattype = TypePrimitive.floattype;
         if (ct == null) {
-            report(expr, "incompatible types in binary expression: " + lt + " and " + rt + " are incompatible.");
+            report(expr, "incompatible types in binary expression " + expr + " : " + lt + " and " + rt + " are incompatible.");
             return;
         }
         // Check whether ct is an appropriate type.
