@@ -194,6 +194,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 if(fun.isStatic()){
                     funcsToAnalyze.add(fun);
                 }
+
                 return super.visitExprFunCall(exp);
             }else{
                 if(inlineStatics){

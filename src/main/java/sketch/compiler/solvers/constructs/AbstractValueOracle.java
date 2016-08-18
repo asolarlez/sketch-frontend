@@ -37,5 +37,7 @@ public abstract class AbstractValueOracle {
 
     public abstract Expression popValueForNode(FENode node, Type t);
 
+    public abstract Expression generatorHole(String name);
+
 	public abstract void loadFromStream(LineNumberReader in) throws IOException;
 }

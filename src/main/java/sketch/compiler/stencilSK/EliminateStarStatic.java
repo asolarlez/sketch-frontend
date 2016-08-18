@@ -4,18 +4,23 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -137,6 +142,33 @@ public class EliminateStarStatic extends SymbolTableVisitor {
             return ((ExprConstInt) expr).getVal();
         } else {
             return -1;
+        }
+    }
+
+    public Object visitExprFunCall(ExprFunCall efc) {
+        Function f = nres.getFun(efc.getName());
+
+        if (f.hasAnnotation("Gen")) {
+            Expression exp = oracle.generatorHole(efc.getName());
+            Map<String, Expression> repl = new HashMap<String, Expression>();
+            int i = 0;
+            Iterator<Parameter> pit = f.getParams().iterator();
+            Expression ev = null;
+            for (Expression param : efc.getParams()) {
+                Parameter formal = pit.next();
+                if (formal.isParameterOutput()) {
+                    ev = param;
+                } else {
+                    repl.put("IN_" + i, (Expression) param.accept(this));
+                }
+                ++i;
+
+            }
+            VarReplacer vr = new VarReplacer(repl);
+            addStatement(new StmtAssign(ev, (Expression) exp.accept(vr)));
+            return null;
+        } else {
+            return super.visitExprFunCall(efc);
         }
     }
 

@@ -344,9 +344,17 @@ public class NtsbVtype extends IntVtype {
             if (pkg == null) {
                 pkg = "ANNONYMOUS";
             }
+
+            String outtname;
+            if (fun.isUninterp() && fun.hasAnnotation("Gen")) {
+                outtname = "_GEN_" + fun.getAnnotation("Gen").get(0).contents();
+            } else {
+                outtname = fun.getName().toUpperCase() + "_" + pkg.toUpperCase();
+
+            }
+
         abstractValue outval =
-                    BOTTOM(name + "[*" + fun.getName().toUpperCase() + "_" +
-                            pkg.toUpperCase() + "]( " + plist + "  )(" +
+                    BOTTOM(name + "[*" + outtname + "]( " + plist + "  )(" +
                             pathCond + ")[ _p_out_" +
  fun.getName() + "_" + fun.getPkg() + "," +
                             clusterId + "]");
