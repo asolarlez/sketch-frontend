@@ -4,20 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.NameResolver;
-import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.SymbolTable.VarInfo;
-import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
@@ -211,6 +206,12 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         addStatement(st);
     }
 
+	public void doStatements(List<Statement> stmts) {
+		for (Statement st : stmts) {
+			addStatement(st);
+		}
+	}
+
     public <T extends FENode> T doT(T e) {
         T rv = e;
         for (BidirectionalPass fv : previsitors) {
@@ -282,10 +283,18 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitExprArrayInit(ExprArrayInit exp) {
-        Type common = TypePrimitive.bottomtype;
-        for (Expression e : exp.getElements()) {
-            common = merge(common, getType(e));
+		Type expected = tdstate.getExpected();
+		TypeArray ta = (TypeArray) expected;
+		Type common;
+		if (ta != null) {
+			common = ta.getBase();
+		} else {
+			common = TypePrimitive.bottomtype;
+			for (Expression e : exp.getElements()) {
+				common = merge(common, getType(e));
+			}
         }
+
         boolean hasChanged = false;
         List<Expression> newElements = new ArrayList<Expression>();
         for (Iterator iter = exp.getElements().iterator(); iter.hasNext();) {
@@ -324,7 +333,9 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
     public Object visitExprArrayRange(ExprArrayRange exp) {
         Type expected = tdstate.getExpected();
-        expected = new TypeArray(expected, null);
+		if (exp.hasSingleIndex()) {
+			expected = new TypeArray(expected, null);
+		}
         tdstate.beforeRecursion(expected, exp);
         final Expression newBase = doExpression(exp.getBase());
 
@@ -639,7 +650,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitExprTypeCast(ExprTypeCast exp) {
-        tdstate.beforeRecursion(TypePrimitive.bottomtype, exp);
+		tdstate.beforeRecursion(exp.getType(), exp);
         Expression expr = doExpression(exp.getExpr());
         Type t = doType(exp.getType());
         if (expr == exp.getExpr() && t == exp.getType())
@@ -924,7 +935,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitStmtLoop(StmtLoop stmt) {
-        tdstate.beforeRecursion(TypePrimitive.bittype, stmt);
+		tdstate.beforeRecursion(TypePrimitive.inttype, stmt);
         Expression newIter = doExpression(stmt.getIter());
         Statement newBody = procStatement(stmt.getBody());
         if (newIter == stmt.getIter() && newBody == stmt.getBody())
@@ -1170,7 +1181,12 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         for (ExprNamedParam en : expNew.getParams()) {
             Expression old = en.getExpr();
             if (tsr != null) {
-                Type told = tsr.getTypeDeep(en.getName(), nres);
+				Type told;
+				if (expNew.isHole()) {
+					told = getFieldsMap(tsr).get(en.getName());
+				} else {
+					told = tsr.getTypeDeep(en.getName(), nres);
+				}
                 told = doType(vr.replace(told));
                 tdstate.beforeRecursion(told, expNew);
             } else {
@@ -1195,6 +1211,41 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         }
 
     }
+
+	Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
+
+	private Map<String, Type> getFieldsMap(StructDef ts) {
+		String strName = ts.getFullName();
+		if (fTypesMap.containsKey(strName)) {
+			return fTypesMap.get(strName);
+		} else {
+			Map<String, Type> fieldsMap = new HashMap<String, Type>();
+			LinkedList<String> queue = new LinkedList<String>();
+			queue.add(strName);
+			while (!queue.isEmpty()) {
+				String current = queue.removeFirst();
+				StructDef curStruct = nres.getStruct(current);
+				List<String> children = nres.getStructChildren(current);
+				queue.addAll(children);
+				for (Entry<String, Type> field : curStruct.getFieldTypMap()) {
+					String name = field.getKey();
+					Type type = field.getValue();
+					if (fieldsMap.containsKey(name)
+							&& !fieldsMap.get(name).equals(type)) {
+						// throw error
+						throw new ExceptionAtNode("Two fields with name = "
+								+ name
+								+ " and different types. Rename one of them.",
+								ts);
+					} else {
+						fieldsMap.put(name, type);
+					}
+				}
+			}
+			fTypesMap.put(strName, fieldsMap);
+			return fieldsMap;
+		}
+	}
 
     public Object visitStmtFork(StmtFork loop) {
         // TODO Auto-generated method stub

@@ -56,7 +56,10 @@ import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.bidirectional.BidirectionalAnalysis;
+import sketch.compiler.passes.bidirectional.EliminateEmptyArrayLen;
 import sketch.compiler.passes.bidirectional.EliminateLambdas;
+import sketch.compiler.passes.bidirectional.EliminateListOfFieldsMacro;
+import sketch.compiler.passes.bidirectional.ExpandRepeatCases;
 import sketch.compiler.passes.bidirectional.InnerFunReplacer;
 import sketch.compiler.passes.bidirectional.ThreadClosure;
 import sketch.compiler.passes.bidirectional.TypeCheck;
@@ -547,22 +550,16 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             sketch.compiler.passes.bidirectional.RemoveFunctionParameters rfp = new sketch.compiler.passes.bidirectional.RemoveFunctionParameters();
             bda.addPass(rfp);
             bda.addPostPass(rfp.getPostPass());
+			bda.addPass(new ExpandRepeatCases());
+			bda.addPass(new EliminateListOfFieldsMacro());
+			bda.addPostPass(new EliminateEmptyArrayLen());
             prog = bda.doProgram(prog);
             prog = (Program) prog.accept(new ThreadClosure(rfp, ifrepl));
             prog = (Program) prog.accept(lamelim.getCleanup());
             if (!tchk.good) {
                 throw new ProgramParseException("Semantic check failed");
             }
-
-			// These three passes need to be integrated into the Bidirectional
-			// framework.
-			// prog = (Program) prog.accept(new EliminateGenerics(true, varGen,
-			// options.bndOpts.arrSize, options.bndOpts.gucDepth));
-			prog = (Program) prog.accept(new ExpandRepeatCases());
-			prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
-			prog = (Program) prog.accept(new EliminateEmptyArrayLen());
         }
-
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());
 

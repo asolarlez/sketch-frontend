@@ -98,7 +98,7 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
 
     @Override
     public Object visitExprADTHole(ExprADTHole exp) {
-        if (exp.getName() == null) {
+        /*if (exp.getName() == null) {
 			if (expType.promotesTo(TypePrimitive.inttype, nres)) {
 				return new ExprStar(exp);
 			}
@@ -108,7 +108,7 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
 				exp.setName(ts.getName());
 				expType = null;
 			}
-        }
+        }*/
         return exp;
     }
 
@@ -128,99 +128,102 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
         return o;
     }
 
-    @Override
-    public Object visitExprNew(ExprNew exp){
-        if (exp.isHole() && exp.getTypeToConstruct() == null){
+	@Override
+	public Object visitExprNew(ExprNew exp) {
+		if (exp.isHole() && exp.getTypeToConstruct() == null) {
 			if (expType != null && expType.isStruct()) {
-                ExprStar star = new ExprStar(exp, 5, TypePrimitive.int32type);
-                exp =
- new ExprNew(exp.getContext(), expType, exp.getParams(),
+				ExprStar star = new ExprStar(exp, 5, TypePrimitive.int32type);
+				exp = new ExprNew(exp.getContext(), expType, exp.getParams(),
 						true);
-                exp.setStar(star);
+				exp.setStar(star);
 				expType = null;
-            }else{
-                throw new ExceptionAtNode("Type must be of type struct", exp);
-            }
-        }
-        
-        Type nt = null;
-        if (exp.getTypeToConstruct() != null) {
-            nt = (Type) exp.getTypeToConstruct().accept(this);
-        }
-        StructDef str = null;
-        {
-            assert nt instanceof TypeStructRef;
-            str = nres.getStruct(((TypeStructRef) nt).getName());
-        }
-        boolean changed = false;
-        List<ExprNamedParam> enl =
-                new ArrayList<ExprNamedParam>(exp.getParams().size());
-        for (ExprNamedParam en : exp.getParams()) {
-            Type type;
-            if (exp.isHole()) {
-                type  = getFieldsMap(str).get(en.getName());
-            } else {
-                type = str.getFieldTypMap().get(en.getName());
-            }
-            StructDef cur = str;
-            while (type == null) {
-                cur = nres.getStruct(cur.getParentName());
-                type = cur.getFieldTypMap().get(en.getName());
-            }
+			} else {
+				throw new ExceptionAtNode("Type must be of type struct", exp);
+			}
+		}
+
+		Type nt = null;
+		if (exp.getTypeToConstruct() != null) {
+			nt = (Type) exp.getTypeToConstruct().accept(this);
+		}
+		StructDef str = null;
+		{
+			assert nt instanceof TypeStructRef;
+			str = nres.getStruct(((TypeStructRef) nt).getName());
+		}
+		boolean changed = false;
+		List<ExprNamedParam> enl = new ArrayList<ExprNamedParam>(exp
+				.getParams().size());
+		for (ExprNamedParam en : exp.getParams()) {
+			Type type;
+			if (exp.isHole()) {
+				type = getFieldsMap(str).get(en.getName());
+			} else {
+				type = str.getFieldTypMap().get(en.getName());
+			}
+			StructDef cur = str;
+			while (type == null) {
+				cur = nres.getStruct(cur.getParentName());
+				type = cur.getFieldTypMap().get(en.getName());
+			}
 			expType = type;
-            Expression old = en.getExpr();
-            Expression rhs = doExpression(old);
+			Expression old = en.getExpr();
+			Expression rhs = doExpression(old);
 			expType = null;
-            if (rhs != old) {
-                enl.add(new ExprNamedParam(en, en.getName(), rhs, en.getVariantName()));
-                changed = true;
-            } else {
-                enl.add(en);
-            }
-        }
+			if (rhs != old) {
+				enl.add(new ExprNamedParam(en, en.getName(), rhs, en
+						.getVariantName()));
+				changed = true;
+			} else {
+				enl.add(en);
+			}
+		}
 
-        if (nt != exp.getTypeToConstruct() || changed) {
-            if (!changed) {
-                enl = exp.getParams();
-            }
-            return new ExprNew(exp, nt, enl, exp.isHole(), exp.getStar());
-        } else {
-            return exp;
-        }
-        
-        
-    }
+		if (nt != exp.getTypeToConstruct() || changed) {
+			if (!changed) {
+				enl = exp.getParams();
+			}
+			return new ExprNew(exp, nt, enl, exp.isHole(), exp.getStar());
+		} else {
+			return exp;
+		}
 
-    Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
-    private Map<String, Type> getFieldsMap(StructDef ts) {
-        String strName = ts.getFullName();
-        if (fTypesMap.containsKey(strName)) {
-            return fTypesMap.get(strName);
-        } else {
-            Map<String, Type> fieldsMap = new HashMap<String, Type>();
-            LinkedList<String> queue = new LinkedList<String>();
-            queue.add(strName);
-            while (!queue.isEmpty()) {
-                String current = queue.removeFirst();
-                StructDef curStruct = nres.getStruct(current);
-                List<String> children = nres.getStructChildren(current);
-                queue.addAll(children);
-                for (Entry<String, Type> field : curStruct.getFieldTypMap()) {
-                    String name = field.getKey();
-                    Type type = field.getValue();
-                    if (fieldsMap.containsKey(name) && !fieldsMap.get(name).equals(type)) {
-                        //throw error
-                        throw new ExceptionAtNode("Two fields with name = " + name +
-                                " and different types. Rename one of them.", ts);
-                    } else {
-                        fieldsMap.put(name, type);
-                    }
-                }
-            }
-            fTypesMap.put(strName, fieldsMap);
-            return fieldsMap;
-        }
-    }
+	}
+
+	Map<String, Map<String, Type>> fTypesMap = new HashMap<String, Map<String, Type>>();
+
+	private Map<String, Type> getFieldsMap(StructDef ts) {
+		String strName = ts.getFullName();
+		if (fTypesMap.containsKey(strName)) {
+			return fTypesMap.get(strName);
+		} else {
+			Map<String, Type> fieldsMap = new HashMap<String, Type>();
+			LinkedList<String> queue = new LinkedList<String>();
+			queue.add(strName);
+			while (!queue.isEmpty()) {
+				String current = queue.removeFirst();
+				StructDef curStruct = nres.getStruct(current);
+				List<String> children = nres.getStructChildren(current);
+				queue.addAll(children);
+				for (Entry<String, Type> field : curStruct.getFieldTypMap()) {
+					String name = field.getKey();
+					Type type = field.getValue();
+					if (fieldsMap.containsKey(name)
+							&& !fieldsMap.get(name).equals(type)) {
+						// throw error
+						throw new ExceptionAtNode("Two fields with name = "
+								+ name
+								+ " and different types. Rename one of them.",
+								ts);
+					} else {
+						fieldsMap.put(name, type);
+					}
+				}
+			}
+			fTypesMap.put(strName, fieldsMap);
+			return fieldsMap;
+		}
+	}
 
 	@Override
 	public Object visitExprBinary(ExprBinary exp) {

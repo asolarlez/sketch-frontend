@@ -1,15 +1,7 @@
 package sketch.compiler.passes.bidirectional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.SymbolTable.VarInfo;
@@ -444,9 +436,10 @@ public class TypeCheck extends BidirectionalPass {
                             if (entry.getValue().isStruct()) {
                                 TypeStructRef tt = (TypeStructRef) entry.getValue();
                                 StructDef fieldStruct = nres.getStruct(tt.getName());
-                                if (!fieldStruct.immutable()) {
-                                    report(ts.getContext(), "Mutable structs are not allowed in immutable structs");
-                                }
+								// if (!fieldStruct.immutable()) {
+								// report(ts.getContext(),
+								// "Mutable structs are not allowed in immutable structs");
+								// }
                             }
                         }
                         checkADupFieldName(fieldNames, entry.getKey(), current.getContext(), "Two fields in the same struct can't share a name.");

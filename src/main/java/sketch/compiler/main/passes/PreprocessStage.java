@@ -5,15 +5,16 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.cmdline.SolverOptions.ReorderEncoding;
 import sketch.compiler.dataflow.cflowChecks.PerformFlowChecks;
 import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
-import sketch.compiler.dataflow.preprocessor.TypeInferenceForStars;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.compiler.passes.bidirectional.BidirectionalAnalysis;
+import sketch.compiler.passes.bidirectional.EliminateFieldHoles;
+import sketch.compiler.passes.bidirectional.ExpandExprNewHoles;
+import sketch.compiler.passes.bidirectional.RemoveADTHoles;
+import sketch.compiler.passes.bidirectional.TypeInferenceForStars;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
-import sketch.compiler.passes.preprocessing.EliminateFieldHoles;
 import sketch.compiler.passes.preprocessing.MainMethodCreateNospec;
-import sketch.compiler.passes.preprocessing.RemoveADTHoles;
-import sketch.compiler.passes.preprocessing.TypeInferenceForADTHoles;
 import sketch.compiler.passes.types.CheckProperFinality;
 
 /**
@@ -98,8 +99,8 @@ public class PreprocessStage extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         
 
-        prog = (Program) prog.accept(new EliminateRegens(varGen));
-		prog.debugDump("************************************** 7");
+		prog = (Program) prog.accept(new EliminateRegens(varGen));
+		// prog.debugDump("************************************** 7");
 
         prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
         // prog.debugDump();
@@ -111,27 +112,18 @@ public class PreprocessStage extends MetaStage {
 
 		// prog.debugDump("************************************** 9");
 
-		// TODO: Should eventually get rid of these type inference passes and integrate with bi-directional pass
-        prog = (Program) prog.accept(new TypeInferenceForADTHoles());
-        // prog = ir1.run(prog);
-//        prog.debugDump("************************************** Before type inference");
-		// prog.debugDump("before type inference");
+		BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
+		bda.addPass(new RemoveADTHoles(varGen, options.bndOpts.arrSize,
+				options.bndOpts.gucDepth));
 
-        prog = (Program) prog.accept(new TypeInferenceForStars());
-
-		// TODO: Should try to get rid of regens in this pass or move this pass
-		// up
-		// Remove ADT holes will generate regens and adt holes
-		prog = (Program) prog.accept(new RemoveADTHoles(varGen,
-				options.bndOpts.arrSize, options.bndOpts.gucDepth));
-
-		// prog.debugDump("After remove ADT holes");
-
-		prog = (Program) prog.accept(new TypeInferenceForADTHoles());
-
-		prog = (Program) prog.accept(new TypeInferenceForStars());
-
-		prog = (Program) prog.accept(new EliminateFieldHoles());
+		bda.addPass(new EliminateFieldHoles());
+		bda.addPass(new ExpandExprNewHoles());
+		prog = bda.doProgram(prog);
+		// todo: try to get rid of these
+		prog = (Program) prog.accept(new EliminateRegens(varGen));
+		bda = new BidirectionalAnalysis(varGen);
+		bda.addPass(new TypeInferenceForStars());
+		prog = bda.doProgram(prog);
 
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
             prog.accept(new PerformFlowChecks());

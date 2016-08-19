@@ -100,7 +100,9 @@ public class RemoveFunctionParameters extends BidirectionalPass {
         while (nres().getFun(newName) != null) {
             newName = oldName + (++nfcnt);
         }
-        nfnMemoize.put(oldName, newName);
+		if (!orig.isGenerator() || !orig.isGeneric()) {
+			nfnMemoize.put(oldName, newName);
+		}
         return newName;
     }
 

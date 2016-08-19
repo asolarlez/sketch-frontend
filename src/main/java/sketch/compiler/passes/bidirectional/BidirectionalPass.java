@@ -1,5 +1,7 @@
 package sketch.compiler.passes.bidirectional;
 
+import java.util.List;
+
 import sketch.compiler.ast.core.FEIdentityVisitor;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
@@ -31,5 +33,9 @@ public class BidirectionalPass extends FEIdentityVisitor {
     void addStatement(Statement s) {
         driver.doStatement(s);
     }
+
+	void addStatements(List<Statement> stmts) {
+		driver.doStatements(stmts);
+	}
 
 }

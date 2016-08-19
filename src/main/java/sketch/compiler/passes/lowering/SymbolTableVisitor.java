@@ -76,7 +76,7 @@ public class SymbolTableVisitor extends FEReplacer
     public static class TypeRenamer extends FEReplacer {
         public Map<String, Type> tmap = new HashMap<String, Type>();
 
-        String postfix() {
+		public String postfix() {
             String rv = "";
             for (Entry<String, Type> e : tmap.entrySet()) {
                 rv += "_" + e.getValue().toString().replace('@', '_');

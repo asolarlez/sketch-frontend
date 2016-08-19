@@ -114,6 +114,11 @@ public class EliminateLambdas extends BidirectionalPass {
         if (rettype == null) {
             rettype = nyd;
         }
+		if (rettype.equals(nyd)) {
+			String tname = driver.getVarGen().nextVar("T_");
+			rettype = new TypeStructRef(tname, false);
+			tparams.add(tname);
+		}
         Function nf = Function.creator(elambda, freshVarName, FcnType.Generator).returnType(rettype).typeParams(tparams)
                 .params(lparam)
                 .body(new StmtBlock(new StmtReturn(elambda.getExpression(), elambda.getExpression()))).create();

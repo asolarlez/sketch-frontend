@@ -4,18 +4,10 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.*;
-import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.SymbolTable.VarInfo;
-import sketch.compiler.ast.core.exprs.ExprArrayInit;
-import sketch.compiler.ast.core.exprs.ExprArrayRange;
+import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprLambda;
-import sketch.compiler.ast.core.exprs.ExprLocalVariables;
-import sketch.compiler.ast.core.exprs.ExprUnary;
-import sketch.compiler.ast.core.exprs.ExprVar;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -1491,7 +1483,7 @@ public class RemoveFunctionParameters extends FEReplacer {
      * constraints on the outputs. This class will specialize the types for these
      * functions by making them less generic.
      */
-	class FixPolymorphism extends ExpandRepeatCases {
+	class FixPolymorphism extends SymbolTableVisitor {
         /**
          * The tren type renamer keeps track of what generic types should be specialized
          * and to what.
@@ -1512,7 +1504,7 @@ public class RemoveFunctionParameters extends FEReplacer {
         Map<String, Function> doneFunctions = new HashMap<String, Function>();
 		Set<String> seenFunctions = new HashSet<String>();
         public FixPolymorphism() {
-			super();
+			super(null);
         }
 
 

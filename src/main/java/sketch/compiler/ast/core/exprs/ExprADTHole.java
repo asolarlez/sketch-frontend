@@ -7,7 +7,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
 public class ExprADTHole extends Expression {
-    private String name = null;
+	// private String name = null;
     private final List<Expression> params;
 	boolean simple = false;
 
@@ -41,11 +41,6 @@ public class ExprADTHole extends Expression {
 		this.simple = simple;
 	}
 
-    /** Returns the name of the type of returned ADT */
-    public String getName() {
-        return name;
-    }
-
     /** Returns the list of parameters */
     public List<Expression> getParams() {
         return params;
@@ -72,10 +67,6 @@ public class ExprADTHole extends Expression {
             notf = true;
         }
         return s;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
 	public boolean isSimple() {
