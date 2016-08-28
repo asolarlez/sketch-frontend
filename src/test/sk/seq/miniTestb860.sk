@@ -1,0 +1,65 @@
+
+pragma options "-p lowering --slv-seed 10 --bnd-mbits 10";
+
+@Gen("gtp")
+bit gtpred1(int x);
+
+@Gen("gtp")
+bit gtpred2(int x);
+
+@Gen("gtp")
+bit gtpred3(int x);
+
+@Gen("gtp")
+bit gtpred4(int x);
+
+int piecewise(int x){
+    if(gtpred1(x)){
+        return ??*x;
+    }else{
+        if(gtpred2(x)){
+            return ??*x;
+        }else{
+            if(gtpred3(x)){
+                return ??*x;
+            }else{
+                return ??*x;
+            }
+        }
+    }    
+}
+
+
+/*
+int piecewise(int x){
+    if(x > ??){
+        return ??*x;
+    }else{
+        if(x > ??){
+            return ??*x;
+        }else{
+            if(x > ??){
+                return ??*x;
+            }else{
+                return ??*x;
+            }
+        }
+    }    
+}
+*/
+
+int abs(int x){
+    if(gtpred4(x)){
+        return x;
+    }else{
+        return -x;
+    }    
+}
+
+
+harness void main(int x){
+    int t = abs(piecewise(x) - x*x);
+    assert t >= 0;
+    //assert t < 57;
+    minimize(t);    
+}
