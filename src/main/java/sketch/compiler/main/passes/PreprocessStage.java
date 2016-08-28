@@ -144,7 +144,6 @@ public class PreprocessStage extends MetaStage {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,
                             options.bndOpts.unrollAmnt, rctrl));
-            // prog.debugDump("after preprocess");
         }
         prog = (Program) prog.accept(new ExpandRepeatCases());
         // prog.debugDump();

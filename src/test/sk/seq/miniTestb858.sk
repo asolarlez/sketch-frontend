@@ -13,7 +13,6 @@ int abs(int x){
 }
 
 harness void main(int x){
-    
-    assert abs(x-10) >= ??;
-    
+    int t = ??;
+    assert abs(x-10) >= t;        
 }

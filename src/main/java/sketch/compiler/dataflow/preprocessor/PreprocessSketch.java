@@ -163,6 +163,24 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     ;
         }
 
+    int funcount = 0;
+
+    String freshFunName(String base) {
+        String newName = base + funcount;
+        ++funcount;
+        while (nres.getFun(newName) != null) {
+            newName = base + funcount;
+            ++funcount;
+        }
+        return newName;
+    }
+    Object specializeUninterpGen(Function fun, ExprFunCall exp) {
+        String newName = freshFunName(exp.getName());
+        Function newFun = fun.creator().name(newName).create();
+        funcsToAnalyze.add(newFun);
+        nres.registerFun(newFun);
+        return super.visitExprFunCall(new ExprFunCall(exp, newName, exp.getParams()));
+    }
 
     public Object visitExprFunCall(ExprFunCall exp)
     {
@@ -193,6 +211,11 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             if( fun.isUninterp()  || ( fun.isStatic() && !inlineStatics   ) ){
                 if(fun.isStatic()){
                     funcsToAnalyze.add(fun);
+                }
+
+                if (fun.isUninterp() && fun.isGenerator()) {
+                    // Specialize Uninterp Generator.
+                    return specializeUninterpGen(fun, exp);
                 }
 
                 return super.visitExprFunCall(exp);
