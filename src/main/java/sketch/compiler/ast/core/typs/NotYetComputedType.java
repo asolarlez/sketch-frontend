@@ -32,7 +32,8 @@ public class NotYetComputedType extends Type {
     }
 
     public String cleanName() {
-        throw new RuntimeException("This type is not known");
+		return "__";
+		// throw new RuntimeException("This type is not known");
     }
 
     @Override

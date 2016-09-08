@@ -32,7 +32,8 @@ public class TypeFunction extends Type {
     }
 
     public String cleanName() {
-        throw new RuntimeException("This type is not known");
+		return "___";
+		// throw new RuntimeException("This type is not known");
     }
 
     public Map<String, Type> unify(Type t, Set<String> names) {

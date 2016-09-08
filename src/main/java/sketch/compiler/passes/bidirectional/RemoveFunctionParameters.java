@@ -16,6 +16,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtFunDecl;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeFunction;
@@ -207,7 +208,11 @@ public class RemoveFunctionParameters extends BidirectionalPass {
 
         for (Expression actual : efc.getParams()) {
             Parameter p = fp.next();
-            if (!(p.getType() instanceof TypeFunction)) {
+			Type t = p.getType();
+			if (tren != null) {
+				t = tren.rename(t);
+			}
+			if (!(t instanceof TypeFunction)) {
                 params.add(actual);
             }
         }
@@ -334,6 +339,20 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                         Package oldpkg = nres().curPkg();
                         nres().setPackage(driver.pkgIndex(newFun.getPkg()));
                         Function post = driver.doFunction(newFun);
+						// Remove all remaining function parameters because they
+						// are not used
+						List<Parameter> nonFunParams = new ArrayList<Parameter>();
+						List<Parameter> params = post.getParams();
+						for (int i = 0; i < params.size(); i++) {
+							Parameter p = params.get(i);
+							if (!(p.getType() instanceof TypeFunction)) {
+								nonFunParams.add(p);
+							}
+						}
+						post = post.creator().returnType(post.getReturnType())
+								.params(nonFunParams).body(post.getBody())
+								.name(post.getName())
+								.typeParams(post.getTypeParams()).create();
                         driver.addFunction(post);
                         nres().setPackage(oldpkg);
                         driver.swapSymTable(reserve);
@@ -419,7 +438,12 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 Parameter newPar = (Parameter) par.accept(this);
                 if (!(par.getType() instanceof TypeFunction)) {
                     if (tren != null) {
-                        newPar = new Parameter(newPar, tren.rename(newPar.getType()), newPar.getName(), newPar.getPtype(), newPar.isImplicit());
+						Type t = tren.rename(newPar.getType());
+						if (t instanceof NotYetComputedType) {
+							t = TypePrimitive.inttype;
+						}
+						newPar = new Parameter(newPar, t, newPar.getName(),
+								newPar.getPtype(), newPar.isImplicit());
                     }
                     if (par != newPar)
                         samePars = false;
