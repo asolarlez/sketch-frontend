@@ -6,7 +6,7 @@ generator bit gtpred(int x);
 
 int piecewise(int x){
     repeat(5){
-        if(gtpred(x)){
+        if(gtpred(x)){ // x > ??
             return ??*x;
         }
     }
