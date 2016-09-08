@@ -52,8 +52,13 @@ public class SimplifyVarNames extends FEReplacer {
             if (prevlast < 0) {
                 prevlast = last;
             }
+			String s1;
+			if (prevlast == 0) {
+				s1 = name;
+			} else {
             assert prevlast > 0;
-            String s1 = name.substring(0, prevlast);
+				s1 = name.substring(0, prevlast);
+			}
 	        if(s1.length() == 0){
 	            if(name.contains("_out")){
 	                s1 = "_out";

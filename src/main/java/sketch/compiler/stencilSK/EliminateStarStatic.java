@@ -132,8 +132,7 @@ public class EliminateStarStatic extends SymbolTableVisitor {
             ExprArrayInit ainit = new ExprArrayInit(star, lst);
             return ainit;
 
-        }
- else {
+		} else {
             if (t.equals(TypePrimitive.chartype)) {
                 System.out.println("Is CT");
             }
@@ -180,29 +179,35 @@ public class EliminateStarStatic extends SymbolTableVisitor {
                 @Override
                 public Object visitExprFunCall(ExprFunCall fcall) {
                     Function f = lnres.getFun(fcall.getName());
+					if (f == null) {
+						throw new ExceptionAtNode("Backend returned a bad expression " + exp, efc);
+					}
                     int fpsize = f.getParams().size();
-                    if (f == null || fpsize > fcall.getParams().size() + 1) {
-                        throw new ExceptionAtNode("Backend returned a bad expression " + exp, efc);
+					int fcallsize = fcall.getParams().size();
+
+					if (fpsize == fcallsize) {
+						return super.visitExprFunCall(fcall);
+					} else if (fpsize == fcallsize + 1) {
+						Parameter out = f.getParams().get(fpsize - 1);
+						assert out.isParameterOutput() : ("Not an output parameter: " + out);
+						String outname = out.getName();
+						ths.addStatement(new StmtVarDecl(efc, out.getType(), outname, null));
+
+						List<Expression> params = new ArrayList<Expression>();
+						for (Expression old : fcall.getParams()) {
+							params.add((Expression) old.accept(this));
+						}
+						Expression rvar = new ExprVar(efc, outname);
+						// TODO:make sure there are no local name conflicts with
+						// outname
+						params.add(rvar);
+
+						ths.addStatement(new StmtExpr(new ExprFunCall(efc, fcall.getName(), params)));
+
+						return rvar;
+					} else {
+						throw new ExceptionAtNode("Backend returned a bad expression " + exp, efc);
                     }
-                    if (f.getParams().size() == fcall.getParams().size()) {
-                        return super.visitExprFunCall(fcall);
-                    }
-
-                    Parameter out = f.getParams().get(fpsize - 1);
-                    assert out.isParameterOutput();
-                    String outname = out.getName();
-                    ths.addStatement(new StmtVarDecl(efc, out.getType(), outname, null));
-
-                    List<Expression> params = new ArrayList<Expression>();
-                    for (Expression old : fcall.getParams()) {
-                        params.add((Expression) old.accept(this));
-                    }
-                    Expression rvar = new ExprVar(efc, outname);
-                    params.add(rvar);
-
-                    ths.addStatement(new StmtExpr(new ExprFunCall(efc, fcall.getName(), params)));
-
-                    return rvar;
                     // Declare return var;
 
                     // add extra parameter to fcall.
