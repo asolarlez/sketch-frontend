@@ -1,0 +1,1782 @@
+	generator int threshold(int attr, int simFn){
+		if(simFn == 0 && attr == 0) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 1 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 705;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 653;
+			if(ch == 4) return 687;
+			if(ch == 5) return 529;
+			if(ch == 6) return 600;
+			if(ch == 7) return 542;
+			if(ch == 8) return 312;
+
+		}
+		if(simFn == 2 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 577;
+			if(ch == 2) return 707;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 750;
+			if(ch == 5) return 816;
+			if(ch == 6) return 500;
+			if(ch == 7) return 666;
+
+		}
+		if(simFn == 3 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 750;
+			if(ch == 4) return 400;
+			if(ch == 5) return 500;
+			if(ch == 6) return 666;
+
+		}
+		if(simFn == 4 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 666;
+			if(ch == 3) return 750;
+
+		}
+		if(simFn == 5 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 333;
+			if(ch == 3) return 500;
+			if(ch == 4) return 600;
+			if(ch == 5) return 666;
+			if(ch == 6) return 250;
+
+		}
+		if(simFn == 6 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 516;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 617;
+			if(ch == 4) return 906;
+			if(ch == 5) return 559;
+			if(ch == 6) return 816;
+			if(ch == 7) return 661;
+			if(ch == 8) return 600;
+
+		}
+		if(simFn == 7 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 828;
+			if(ch == 3) return 266;
+			if(ch == 4) return 360;
+			if(ch == 5) return 437;
+			if(ch == 6) return 312;
+			if(ch == 7) return 666;
+			if(ch == 8) return 444;
+
+		}
+		if(simFn == 8 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 666;
+			if(ch == 3) return 935;
+
+		}
+		if(simFn == 9 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 828;
+			if(ch == 3) return 266;
+			if(ch == 4) return 360;
+			if(ch == 5) return 437;
+			if(ch == 6) return 312;
+			if(ch == 7) return 666;
+			if(ch == 8) return 444;
+
+		}
+		if(simFn == 10 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 577;
+			if(ch == 2) return 516;
+			if(ch == 3) return 801;
+			if(ch == 4) return 1000;
+			if(ch == 5) return 585;
+			if(ch == 6) return 462;
+			if(ch == 7) return 818;
+			if(ch == 8) return 632;
+
+		}
+		if(simFn == 11 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 642;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 266;
+			if(ch == 4) return 333;
+			if(ch == 5) return 400;
+			if(ch == 6) return 692;
+			if(ch == 7) return 214;
+			if(ch == 8) return 411;
+
+		}
+		if(simFn == 12 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 818;
+			if(ch == 3) return 636;
+
+		}
+		if(simFn == 13 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 642;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 266;
+			if(ch == 4) return 333;
+			if(ch == 5) return 400;
+			if(ch == 6) return 692;
+			if(ch == 7) return 214;
+			if(ch == 8) return 411;
+
+		}
+		if(simFn == 14 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 750;
+			if(ch == 4) return 400;
+			if(ch == 5) return 500;
+			if(ch == 6) return 666;
+
+		}
+		if(simFn == 15 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 384;
+			if(ch == 2) return 866;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 687;
+			if(ch == 5) return 352;
+			if(ch == 6) return 470;
+			if(ch == 7) return 312;
+
+		}
+		if(simFn == 16 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 925;
+			if(ch == 3) return 777;
+
+		}
+		if(simFn == 17 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 258;
+			if(ch == 2) return 452;
+			if(ch == 3) return 199;
+			if(ch == 4) return 1000;
+			if(ch == 5) return 171;
+			if(ch == 6) return 205;
+			if(ch == 7) return 185;
+			if(ch == 8) return 157;
+
+		}
+		if(simFn == 18 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 322;
+			if(ch == 2) return 549;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 783;
+			if(ch == 5) return 402;
+			if(ch == 6) return 277;
+			if(ch == 7) return 598;
+
+		}
+		if(simFn == 19 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 579;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 750;
+			if(ch == 4) return 552;
+			if(ch == 5) return 722;
+			if(ch == 6) return 666;
+
+		}
+		if(simFn == 20 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 811;
+			if(ch == 3) return 784;
+			if(ch == 4) return 823;
+			if(ch == 5) return 794;
+			if(ch == 6) return 860;
+			if(ch == 7) return 895;
+
+		}
+		if(simFn == 21 && attr == 0) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 929;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 860;
+			if(ch == 4) return 913;
+			if(ch == 5) return 917;
+			if(ch == 6) return 924;
+			if(ch == 7) return 958;
+
+		}
+		if(simFn == 22 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 333;
+			if(ch == 3) return 750;
+			if(ch == 4) return 500;
+			if(ch == 5) return 666;
+			if(ch == 6) return 250;
+
+		}
+		if(simFn == 23 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 639;
+			if(ch == 3) return 777;
+
+		}
+		if(simFn == 24 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 687;
+			if(ch == 3) return 656;
+			if(ch == 4) return 500;
+			if(ch == 5) return 733;
+			if(ch == 6) return 671;
+
+		}
+		if(simFn == 25 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 692;
+			if(ch == 3) return 457;
+
+		}
+		if(simFn == 26 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 514;
+			if(ch == 3) return 692;
+
+		}
+		if(simFn == 27 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 514;
+			if(ch == 3) return 692;
+
+		}
+		if(simFn == 28 && attr == 0) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 866;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 555;
+			if(ch == 4) return 944;
+			if(ch == 5) return 666;
+
+		}
+		if(simFn == 0 && attr == 1) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 1 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 224;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 750;
+			if(ch == 4) return 857;
+			if(ch == 5) return 666;
+			if(ch == 6) return 956;
+			if(ch == 7) return 863;
+
+		}
+		if(simFn == 2 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 866;
+			if(ch == 3) return 577;
+			if(ch == 4) return 1000;
+			if(ch == 5) return 408;
+			if(ch == 6) return 250;
+
+		}
+		if(simFn == 3 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 363;
+			if(ch == 4) return 857;
+			if(ch == 5) return 250;
+			if(ch == 6) return 571;
+
+		}
+		if(simFn == 4 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 4);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 666;
+			if(ch == 3) return 250;
+			if(ch == 4) return 800;
+
+		}
+		if(simFn == 5 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 142;
+			if(ch == 3) return 400;
+			if(ch == 4) return 750;
+			if(ch == 5) return 666;
+			if(ch == 6) return 222;
+
+		}
+		if(simFn == 6 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 778;
+			if(ch == 3) return 974;
+			if(ch == 4) return 917;
+			if(ch == 5) return 441;
+			if(ch == 6) return 538;
+			if(ch == 7) return 925;
+
+		}
+		if(simFn == 7 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 842;
+			if(ch == 3) return 368;
+			if(ch == 4) return 950;
+			if(ch == 5) return 857;
+			if(ch == 6) return 250;
+			if(ch == 7) return 636;
+
+		}
+		if(simFn == 8 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 4);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 538;
+			if(ch == 3) return 692;
+			if(ch == 4) return 823;
+
+		}
+		if(simFn == 9 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 842;
+			if(ch == 3) return 368;
+			if(ch == 4) return 950;
+			if(ch == 5) return 857;
+			if(ch == 6) return 250;
+			if(ch == 7) return 636;
+
+		}
+		if(simFn == 10 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 867;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 974;
+			if(ch == 4) return 400;
+			if(ch == 5) return 917;
+			if(ch == 6) return 346;
+			if(ch == 7) return 766;
+
+		}
+		if(simFn == 11 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 842;
+			if(ch == 3) return 619;
+			if(ch == 4) return 179;
+			if(ch == 5) return 950;
+			if(ch == 6) return 761;
+			if(ch == 7) return 250;
+
+		}
+		if(simFn == 12 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 416;
+			if(ch == 2) return 583;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 812;
+			if(ch == 5) return 941;
+
+		}
+		if(simFn == 13 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 842;
+			if(ch == 3) return 619;
+			if(ch == 4) return 179;
+			if(ch == 5) return 950;
+			if(ch == 6) return 761;
+			if(ch == 7) return 250;
+
+		}
+		if(simFn == 14 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 363;
+			if(ch == 4) return 857;
+			if(ch == 5) return 250;
+			if(ch == 6) return 571;
+
+		}
+		if(simFn == 15 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 899;
+			if(ch == 2) return 933;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 857;
+			if(ch == 5) return 956;
+			if(ch == 6) return 349;
+			if(ch == 7) return 863;
+
+		}
+		if(simFn == 16 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 713;
+			if(ch == 4) return 722;
+			if(ch == 5) return 694;
+			if(ch == 6) return 666;
+
+		}
+		if(simFn == 17 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 289;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 366;
+			if(ch == 4) return 271;
+			if(ch == 5) return 212;
+			if(ch == 6) return 277;
+			if(ch == 7) return 314;
+
+		}
+		if(simFn == 18 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 320;
+			if(ch == 2) return 741;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 777;
+			if(ch == 5) return 939;
+			if(ch == 6) return 398;
+			if(ch == 7) return 339;
+
+		}
+		if(simFn == 19 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 653;
+			if(ch == 4) return 690;
+			if(ch == 5) return 566;
+
+		}
+		if(simFn == 20 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 896;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 686;
+			if(ch == 4) return 884;
+			if(ch == 5) return 726;
+			if(ch == 6) return 952;
+			if(ch == 7) return 985;
+
+		}
+		if(simFn == 21 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 994;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 812;
+			if(ch == 4) return 942;
+			if(ch == 5) return 980;
+			if(ch == 6) return 726;
+			if(ch == 7) return 958;
+
+		}
+		if(simFn == 22 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 800;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 750;
+			if(ch == 4) return 500;
+			if(ch == 5) return 250;
+
+		}
+		if(simFn == 23 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 581;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 875;
+			if(ch == 4) return 849;
+			if(ch == 5) return 562;
+
+		}
+		if(simFn == 24 && attr == 1) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 833;
+			if(ch == 2) return 550;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 824;
+			if(ch == 5) return 857;
+			if(ch == 6) return 956;
+			if(ch == 7) return 863;
+
+		}
+		if(simFn == 25 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 833;
+			if(ch == 2) return 642;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 921;
+			if(ch == 5) return 571;
+
+		}
+		if(simFn == 26 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 833;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 657;
+			if(ch == 4) return 628;
+			if(ch == 5) return 926;
+
+		}
+		if(simFn == 27 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 833;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 657;
+			if(ch == 4) return 628;
+			if(ch == 5) return 926;
+
+		}
+		if(simFn == 28 && attr == 1) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 694;
+			if(ch == 3) return 888;
+
+		}
+		if(simFn == 0 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 1 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 545;
+			if(ch == 3) return 615;
+
+		}
+		if(simFn == 2 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 500;
+			if(ch == 3) return 816;
+
+		}
+		if(simFn == 3 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 500;
+			if(ch == 3) return 800;
+
+		}
+		if(simFn == 4 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 500;
+
+		}
+		if(simFn == 5 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 666;
+			if(ch == 3) return 333;
+
+		}
+		if(simFn == 6 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 763;
+			if(ch == 3) return 447;
+
+		}
+		if(simFn == 7 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 285;
+			if(ch == 3) return 583;
+
+		}
+		if(simFn == 8 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 500;
+
+		}
+		if(simFn == 9 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 285;
+			if(ch == 3) return 583;
+
+		}
+		if(simFn == 10 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 738;
+			if(ch == 3) return 251;
+
+		}
+		if(simFn == 11 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 142;
+			if(ch == 3) return 545;
+
+		}
+		if(simFn == 12 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 285;
+
+		}
+		if(simFn == 13 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 142;
+			if(ch == 3) return 545;
+
+		}
+		if(simFn == 14 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 500;
+			if(ch == 3) return 800;
+
+		}
+		if(simFn == 15 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 818;
+			if(ch == 3) return 615;
+
+		}
+		if(simFn == 16 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 777;
+
+		}
+		if(simFn == 17 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 157;
+			if(ch == 3) return 150;
+
+		}
+		if(simFn == 18 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 420;
+			if(ch == 3) return 673;
+
+		}
+		if(simFn == 19 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 722;
+			if(ch == 3) return 500;
+
+		}
+		if(simFn == 20 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 737;
+			if(ch == 3) return 871;
+
+		}
+		if(simFn == 21 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 842;
+			if(ch == 3) return 948;
+
+		}
+		if(simFn == 22 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 666;
+			if(ch == 3) return 500;
+
+		}
+		if(simFn == 23 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 933;
+
+		}
+		if(simFn == 24 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 681;
+			if(ch == 3) return 615;
+
+		}
+		if(simFn == 25 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 444;
+
+		}
+		if(simFn == 26 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 533;
+
+		}
+		if(simFn == 27 && attr == 2) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 533;
+
+		}
+		if(simFn == 28 && attr == 2) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 3);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 944;
+			if(ch == 3) return 875;
+
+		}
+		if(simFn == 0 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 1 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 583;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 363;
+			if(ch == 4) return 428;
+			if(ch == 5) return 916;
+			if(ch == 6) return 214;
+			if(ch == 7) return 500;
+
+		}
+		if(simFn == 2 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 3 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 4 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 5 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 6 && attr == 3) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 113;
+			if(ch == 3) return 83;
+			if(ch == 4) return 858;
+			if(ch == 5) return 188;
+
+		}
+		if(simFn == 7 && attr == 3) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 100;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 43;
+			if(ch == 4) return 750;
+			if(ch == 5) return 58;
+
+		}
+		if(simFn == 8 && attr == 3) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 900;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 142;
+			if(ch == 4) return 250;
+			if(ch == 5) return 90;
+
+		}
+		if(simFn == 9 && attr == 3) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 5);
+			if(ch == 0) return 0;
+			if(ch == 1) return 100;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 43;
+			if(ch == 4) return 750;
+			if(ch == 5) return 58;
+
+		}
+		if(simFn == 10 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 737;
+
+		}
+		if(simFn == 11 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 583;
+
+		}
+		if(simFn == 12 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 777;
+
+		}
+		if(simFn == 13 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 583;
+
+		}
+		if(simFn == 14 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 15 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 928;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 714;
+			if(ch == 4) return 727;
+			if(ch == 5) return 625;
+			if(ch == 6) return 916;
+			if(ch == 7) return 375;
+			if(ch == 8) return 666;
+
+		}
+		if(simFn == 16 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 694;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 777;
+			if(ch == 4) return 555;
+			if(ch == 5) return 755;
+			if(ch == 6) return 822;
+			if(ch == 7) return 766;
+
+		}
+		if(simFn == 17 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 100;
+			if(ch == 2) return 199;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 171;
+			if(ch == 5) return 143;
+			if(ch == 6) return 85;
+			if(ch == 7) return 150;
+			if(ch == 8) return 92;
+
+		}
+		if(simFn == 18 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 9);
+			if(ch == 0) return 0;
+			if(ch == 1) return 833;
+			if(ch == 2) return 547;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 561;
+			if(ch == 5) return 402;
+			if(ch == 6) return 627;
+			if(ch == 7) return 372;
+			if(ch == 8) return 277;
+			if(ch == 9) return 340;
+
+		}
+		if(simFn == 19 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 2);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 225;
+
+		}
+		if(simFn == 20 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 561;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 972;
+			if(ch == 4) return 536;
+			if(ch == 5) return 658;
+			if(ch == 6) return 310;
+			if(ch == 7) return 472;
+
+		}
+		if(simFn == 21 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 100;
+			if(ch == 2) return 536;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 561;
+			if(ch == 5) return 658;
+			if(ch == 6) return 310;
+			if(ch == 7) return 472;
+			if(ch == 8) return 986;
+
+		}
+		if(simFn == 22 && attr == 3) {
+			int ch = ??(2);
+			assert(ch >= 0 && ch <= 1);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+
+		}
+		if(simFn == 23 && attr == 3) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 400;
+			if(ch == 3) return 439;
+			if(ch == 4) return 250;
+			if(ch == 5) return 125;
+			if(ch == 6) return 319;
+
+		}
+		if(simFn == 24 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 545;
+			if(ch == 2) return 583;
+			if(ch == 3) return 1000;
+			if(ch == 4) return 625;
+			if(ch == 5) return 562;
+			if(ch == 6) return 916;
+			if(ch == 7) return 535;
+			if(ch == 8) return 500;
+
+		}
+		if(simFn == 25 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 8);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 300;
+			if(ch == 3) return 125;
+			if(ch == 4) return 400;
+			if(ch == 5) return 500;
+			if(ch == 6) return 153;
+			if(ch == 7) return 954;
+			if(ch == 8) return 250;
+
+		}
+		if(simFn == 26 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 909;
+			if(ch == 3) return 400;
+			if(ch == 4) return 439;
+			if(ch == 5) return 184;
+			if(ch == 6) return 250;
+			if(ch == 7) return 125;
+
+		}
+		if(simFn == 27 && attr == 3) {
+			int ch = ??(4);
+			assert(ch >= 0 && ch <= 7);
+			if(ch == 0) return 0;
+			if(ch == 1) return 1000;
+			if(ch == 2) return 909;
+			if(ch == 3) return 400;
+			if(ch == 4) return 439;
+			if(ch == 5) return 184;
+			if(ch == 6) return 250;
+			if(ch == 7) return 125;
+
+		}
+		if(simFn == 28 && attr == 3) {
+			int ch = ??(3);
+			assert(ch >= 0 && ch <= 6);
+			if(ch == 0) return 0;
+			if(ch == 1) return 694;
+			if(ch == 2) return 1000;
+			if(ch == 3) return 777;
+			if(ch == 4) return 555;
+			if(ch == 5) return 755;
+			if(ch == 6) return 822;
+
+		}
+	 return -1;	}
+void ATOM_SYNTH(int clause, int atom, int attr, int simfid, int thresh);
+//#define GRAMMAR //takes 30s, otherwise 3s. Synth with new procedure takes < 1s
+#ifdef GRAMMAR
+bit matches(int tupid){
+	bit b=false;
+		bit bclause_c0=true;
+		int attr_c0_a0 = ??(3);
+		assert(attr_c0_a0 >= 0 && attr_c0_a0 < 4);
+		int simfid_c0_a0 = ??(5);
+		assert(simfid_c0_a0 >= 0 && simfid_c0_a0 < 29);
+		int thresh_c0_a0 = threshold(attr_c0_a0,simfid_c0_a0);
+		ATOM_SYNTH(0,0,attr_c0_a0,simfid_c0_a0,thresh_c0_a0);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a0,simfid_c0_a0) >= thresh_c0_a0;
+		int attr_c0_a1 = ??(3);
+		assert(attr_c0_a1 >= 0 && attr_c0_a1 < 4);
+		int simfid_c0_a1 = ??(5);
+		assert(simfid_c0_a1 >= 0 && simfid_c0_a1 < 29);
+		int thresh_c0_a1 = threshold(attr_c0_a1,simfid_c0_a1);
+		ATOM_SYNTH(0,1,attr_c0_a1,simfid_c0_a1,thresh_c0_a1);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a1,simfid_c0_a1) >= thresh_c0_a1;
+		int attr_c0_a2 = ??(3);
+		assert(attr_c0_a2 >= 0 && attr_c0_a2 < 4);
+		int simfid_c0_a2 = ??(5);
+		assert(simfid_c0_a2 >= 0 && simfid_c0_a2 < 29);
+		int thresh_c0_a2 = threshold(attr_c0_a2,simfid_c0_a2);
+		ATOM_SYNTH(0,2,attr_c0_a2,simfid_c0_a2,thresh_c0_a2);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a2,simfid_c0_a2) >= thresh_c0_a2;
+		int attr_c0_a3 = ??(3);
+		assert(attr_c0_a3 >= 0 && attr_c0_a3 < 4);
+		int simfid_c0_a3 = ??(5);
+		assert(simfid_c0_a3 >= 0 && simfid_c0_a3 < 29);
+		int thresh_c0_a3 = threshold(attr_c0_a3,simfid_c0_a3);
+		ATOM_SYNTH(0,3,attr_c0_a3,simfid_c0_a3,thresh_c0_a3);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a3,simfid_c0_a3) >= thresh_c0_a3;
+		b=b || bclause_c0;
+	return b;
+}
+#else
+bit matches(int tupid){
+bit b=false;
+		bit bclause_c0=true;
+		int attr_c0_a0 = 0;
+		assert(attr_c0_a0 >= 0 && attr_c0_a0 < 4);
+		int simfid_c0_a0 = 12;
+		assert(simfid_c0_a0 >= 0 && simfid_c0_a0 < 29);
+		int thresh_c0_a0 = 612;
+		ATOM_SYNTH(0,0,attr_c0_a0,simfid_c0_a0,thresh_c0_a0);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a0,simfid_c0_a0) >= thresh_c0_a0;
+		int attr_c0_a1 = 0;
+		assert(attr_c0_a1 >= 0 && attr_c0_a1 < 4);
+		int simfid_c0_a1 = 4;
+		assert(simfid_c0_a1 >= 0 && simfid_c0_a1 < 29);
+		int thresh_c0_a1 = 583;
+		ATOM_SYNTH(0,1,attr_c0_a1,simfid_c0_a1,thresh_c0_a1);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a1,simfid_c0_a1) >= thresh_c0_a1;
+		int attr_c0_a2 = 0;
+		assert(attr_c0_a2 >= 0 && attr_c0_a2 < 4);
+		int simfid_c0_a2 = 17;
+		assert(simfid_c0_a2 >= 0 && simfid_c0_a2 < 29);
+		int thresh_c0_a2 = 143;
+		ATOM_SYNTH(0,2,attr_c0_a2,simfid_c0_a2,thresh_c0_a2);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a2,simfid_c0_a2) >= thresh_c0_a2;
+		int attr_c0_a3 = 1;
+		assert(attr_c0_a3 >= 0 && attr_c0_a3 < 4);
+		int simfid_c0_a3 = 21;
+		assert(simfid_c0_a3 >= 0 && simfid_c0_a3 < 29);
+		int thresh_c0_a3 = 718;
+		ATOM_SYNTH(0,3,attr_c0_a3,simfid_c0_a3,thresh_c0_a3);
+		bclause_c0 = bclause_c0 && simFn(tupid,attr_c0_a3,simfid_c0_a3) >= thresh_c0_a3;
+		b=b || bclause_c0;
+	return b;
+}
+#endif
+
+bit match(int tupid){
+return (tupid == 66) || (tupid == 98) || (tupid == 78) || (tupid == 74) || (tupid == 102) || (tupid == 24) || (tupid == 62) || (tupid == 52);
+
+}
+
+int simFn(int tupid, int attr, int simfid){
+	if((simfid == 0 && tupid == 41024 && attr==0) || (simfid == 2 && tupid == 41024 && attr==0) || (simfid == 3 && tupid == 41024 && attr==0) || (simfid == 4 && tupid == 41024 && attr==0) || (simfid == 5 && tupid == 41024 && attr==0) || (simfid == 10 && tupid == 41024 && attr==0) || (simfid == 11 && tupid == 41024 && attr==0) || (simfid == 12 && tupid == 41024 && attr==0) || (simfid == 13 && tupid == 41024 && attr==0) || (simfid == 14 && tupid == 41024 && attr==0) || (simfid == 22 && tupid == 41024 && attr==0) || (simfid == 0 && tupid == 41024 && attr==1) || (simfid == 0 && tupid == 41024 && attr==3) || (simfid == 2 && tupid == 41024 && attr==3) || (simfid == 3 && tupid == 41024 && attr==3) || (simfid == 4 && tupid == 41024 && attr==3) || (simfid == 5 && tupid == 41024 && attr==3) || (simfid == 6 && tupid == 41024 && attr==3) || (simfid == 7 && tupid == 41024 && attr==3) || (simfid == 8 && tupid == 41024 && attr==3) || (simfid == 9 && tupid == 41024 && attr==3) || (simfid == 10 && tupid == 41024 && attr==3) || (simfid == 11 && tupid == 41024 && attr==3) || (simfid == 12 && tupid == 41024 && attr==3) || (simfid == 13 && tupid == 41024 && attr==3) || (simfid == 14 && tupid == 41024 && attr==3) || (simfid == 22 && tupid == 41024 && attr==3) || (simfid == 0 && tupid == 66 && attr==0) || (simfid == 0 && tupid == 66 && attr==1) || (simfid == 0 && tupid == 66 && attr==3) || (simfid == 2 && tupid == 66 && attr==3) || (simfid == 3 && tupid == 66 && attr==3) || (simfid == 4 && tupid == 66 && attr==3) || (simfid == 5 && tupid == 66 && attr==3) || (simfid == 14 && tupid == 66 && attr==3) || (simfid == 22 && tupid == 66 && attr==3) || (simfid == 0 && tupid == 50334 && attr==0) || (simfid == 2 && tupid == 50334 && attr==0) || (simfid == 3 && tupid == 50334 && attr==0) || (simfid == 4 && tupid == 50334 && attr==0) || (simfid == 5 && tupid == 50334 && attr==0) || (simfid == 6 && tupid == 50334 && attr==0) || (simfid == 7 && tupid == 50334 && attr==0) || (simfid == 8 && tupid == 50334 && attr==0) || (simfid == 9 && tupid == 50334 && attr==0) || (simfid == 10 && tupid == 50334 && attr==0) || (simfid == 11 && tupid == 50334 && attr==0) || (simfid == 12 && tupid == 50334 && attr==0) || (simfid == 13 && tupid == 50334 && attr==0) || (simfid == 14 && tupid == 50334 && attr==0) || (simfid == 22 && tupid == 50334 && attr==0) || (simfid == 0 && tupid == 50334 && attr==2) || (simfid == 2 && tupid == 50334 && attr==2) || (simfid == 3 && tupid == 50334 && attr==2) || (simfid == 4 && tupid == 50334 && attr==2) || (simfid == 5 && tupid == 50334 && attr==2) || (simfid == 10 && tupid == 50334 && attr==2) || (simfid == 11 && tupid == 50334 && attr==2) || (simfid == 12 && tupid == 50334 && attr==2) || (simfid == 13 && tupid == 50334 && attr==2) || (simfid == 14 && tupid == 50334 && attr==2) || (simfid == 19 && tupid == 50334 && attr==2) || (simfid == 22 && tupid == 50334 && attr==2) || (simfid == 0 && tupid == 50334 && attr==3) || (simfid == 2 && tupid == 50334 && attr==3) || (simfid == 3 && tupid == 50334 && attr==3) || (simfid == 4 && tupid == 50334 && attr==3) || (simfid == 5 && tupid == 50334 && attr==3) || (simfid == 6 && tupid == 50334 && attr==3) || (simfid == 7 && tupid == 50334 && attr==3) || (simfid == 8 && tupid == 50334 && attr==3) || (simfid == 9 && tupid == 50334 && attr==3) || (simfid == 10 && tupid == 50334 && attr==3) || (simfid == 11 && tupid == 50334 && attr==3) || (simfid == 12 && tupid == 50334 && attr==3) || (simfid == 13 && tupid == 50334 && attr==3) || (simfid == 14 && tupid == 50334 && attr==3) || (simfid == 19 && tupid == 50334 && attr==3) || (simfid == 20 && tupid == 50334 && attr==3) || (simfid == 21 && tupid == 50334 && attr==3) || (simfid == 22 && tupid == 50334 && attr==3) || (simfid == 0 && tupid == 78818 && attr==0) || (simfid == 0 && tupid == 78818 && attr==1) || (simfid == 2 && tupid == 78818 && attr==1) || (simfid == 3 && tupid == 78818 && attr==1) || (simfid == 4 && tupid == 78818 && attr==1) || (simfid == 5 && tupid == 78818 && attr==1) || (simfid == 10 && tupid == 78818 && attr==1) || (simfid == 11 && tupid == 78818 && attr==1) || (simfid == 12 && tupid == 78818 && attr==1) || (simfid == 13 && tupid == 78818 && attr==1) || (simfid == 14 && tupid == 78818 && attr==1) || (simfid == 22 && tupid == 78818 && attr==1) || (simfid == 0 && tupid == 98 && attr==1) || (simfid == 0 && tupid == 98 && attr==2) || (simfid == 0 && tupid == 98 && attr==3) || (simfid == 2 && tupid == 98 && attr==3) || (simfid == 3 && tupid == 98 && attr==3) || (simfid == 4 && tupid == 98 && attr==3) || (simfid == 5 && tupid == 98 && attr==3) || (simfid == 10 && tupid == 98 && attr==3) || (simfid == 11 && tupid == 98 && attr==3) || (simfid == 12 && tupid == 98 && attr==3) || (simfid == 13 && tupid == 98 && attr==3) || (simfid == 14 && tupid == 98 && attr==3) || (simfid == 19 && tupid == 98 && attr==3) || (simfid == 22 && tupid == 98 && attr==3) || (simfid == 0 && tupid == 7260 && attr==1) || (simfid == 20 && tupid == 7260 && attr==1) || (simfid == 21 && tupid == 7260 && attr==1) || (simfid == 0 && tupid == 7260 && attr==2) || (simfid == 2 && tupid == 7260 && attr==2) || (simfid == 3 && tupid == 7260 && attr==2) || (simfid == 4 && tupid == 7260 && attr==2) || (simfid == 5 && tupid == 7260 && attr==2) || (simfid == 6 && tupid == 7260 && attr==2) || (simfid == 7 && tupid == 7260 && attr==2) || (simfid == 8 && tupid == 7260 && attr==2) || (simfid == 9 && tupid == 7260 && attr==2) || (simfid == 10 && tupid == 7260 && attr==2) || (simfid == 11 && tupid == 7260 && attr==2) || (simfid == 12 && tupid == 7260 && attr==2) || (simfid == 13 && tupid == 7260 && attr==2) || (simfid == 14 && tupid == 7260 && attr==2) || (simfid == 22 && tupid == 7260 && attr==2) || (simfid == 0 && tupid == 78 && attr==0) || (simfid == 0 && tupid == 78 && attr==2) || (simfid == 0 && tupid == 78 && attr==3) || (simfid == 1 && tupid == 78 && attr==3) || (simfid == 2 && tupid == 78 && attr==3) || (simfid == 3 && tupid == 78 && attr==3) || (simfid == 4 && tupid == 78 && attr==3) || (simfid == 5 && tupid == 78 && attr==3) || (simfid == 6 && tupid == 78 && attr==3) || (simfid == 7 && tupid == 78 && attr==3) || (simfid == 8 && tupid == 78 && attr==3) || (simfid == 9 && tupid == 78 && attr==3) || (simfid == 10 && tupid == 78 && attr==3) || (simfid == 11 && tupid == 78 && attr==3) || (simfid == 12 && tupid == 78 && attr==3) || (simfid == 13 && tupid == 78 && attr==3) || (simfid == 14 && tupid == 78 && attr==3) || (simfid == 19 && tupid == 78 && attr==3) || (simfid == 20 && tupid == 78 && attr==3) || (simfid == 21 && tupid == 78 && attr==3) || (simfid == 22 && tupid == 78 && attr==3) || (simfid == 23 && tupid == 78 && attr==3) || (simfid == 25 && tupid == 78 && attr==3) || (simfid == 26 && tupid == 78 && attr==3) || (simfid == 27 && tupid == 78 && attr==3) || (simfid == 0 && tupid == 18059 && attr==0) || (simfid == 0 && tupid == 18059 && attr==1) || (simfid == 0 && tupid == 18059 && attr==3) || (simfid == 2 && tupid == 18059 && attr==3) || (simfid == 3 && tupid == 18059 && attr==3) || (simfid == 4 && tupid == 18059 && attr==3) || (simfid == 5 && tupid == 18059 && attr==3) || (simfid == 6 && tupid == 18059 && attr==3) || (simfid == 7 && tupid == 18059 && attr==3) || (simfid == 8 && tupid == 18059 && attr==3) || (simfid == 9 && tupid == 18059 && attr==3) || (simfid == 10 && tupid == 18059 && attr==3) || (simfid == 11 && tupid == 18059 && attr==3) || (simfid == 12 && tupid == 18059 && attr==3) || (simfid == 13 && tupid == 18059 && attr==3) || (simfid == 14 && tupid == 18059 && attr==3) || (simfid == 19 && tupid == 18059 && attr==3) || (simfid == 22 && tupid == 18059 && attr==3) || (simfid == 0 && tupid == 74 && attr==0) || (simfid == 0 && tupid == 74 && attr==1) || (simfid == 0 && tupid == 74 && attr==2) || (simfid == 0 && tupid == 74 && attr==3) || (simfid == 2 && tupid == 74 && attr==3) || (simfid == 3 && tupid == 74 && attr==3) || (simfid == 4 && tupid == 74 && attr==3) || (simfid == 5 && tupid == 74 && attr==3) || (simfid == 6 && tupid == 74 && attr==3) || (simfid == 7 && tupid == 74 && attr==3) || (simfid == 8 && tupid == 74 && attr==3) || (simfid == 9 && tupid == 74 && attr==3) || (simfid == 10 && tupid == 74 && attr==3) || (simfid == 11 && tupid == 74 && attr==3) || (simfid == 12 && tupid == 74 && attr==3) || (simfid == 13 && tupid == 74 && attr==3) || (simfid == 14 && tupid == 74 && attr==3) || (simfid == 19 && tupid == 74 && attr==3) || (simfid == 22 && tupid == 74 && attr==3) || (simfid == 0 && tupid == 17805 && attr==0) || (simfid == 2 && tupid == 17805 && attr==0) || (simfid == 3 && tupid == 17805 && attr==0) || (simfid == 4 && tupid == 17805 && attr==0) || (simfid == 5 && tupid == 17805 && attr==0) || (simfid == 10 && tupid == 17805 && attr==0) || (simfid == 11 && tupid == 17805 && attr==0) || (simfid == 12 && tupid == 17805 && attr==0) || (simfid == 13 && tupid == 17805 && attr==0) || (simfid == 14 && tupid == 17805 && attr==0) || (simfid == 19 && tupid == 17805 && attr==0) || (simfid == 22 && tupid == 17805 && attr==0) || (simfid == 0 && tupid == 17805 && attr==1) || (simfid == 0 && tupid == 17805 && attr==3) || (simfid == 2 && tupid == 17805 && attr==3) || (simfid == 3 && tupid == 17805 && attr==3) || (simfid == 4 && tupid == 17805 && attr==3) || (simfid == 5 && tupid == 17805 && attr==3) || (simfid == 10 && tupid == 17805 && attr==3) || (simfid == 11 && tupid == 17805 && attr==3) || (simfid == 12 && tupid == 17805 && attr==3) || (simfid == 13 && tupid == 17805 && attr==3) || (simfid == 14 && tupid == 17805 && attr==3) || (simfid == 19 && tupid == 17805 && attr==3) || (simfid == 22 && tupid == 17805 && attr==3) || (simfid == 0 && tupid == 41847 && attr==0) || (simfid == 0 && tupid == 41847 && attr==1) || (simfid == 0 && tupid == 41847 && attr==2) || (simfid == 0 && tupid == 41847 && attr==3) || (simfid == 2 && tupid == 41847 && attr==3) || (simfid == 3 && tupid == 41847 && attr==3) || (simfid == 4 && tupid == 41847 && attr==3) || (simfid == 5 && tupid == 41847 && attr==3) || (simfid == 14 && tupid == 41847 && attr==3) || (simfid == 19 && tupid == 41847 && attr==3) || (simfid == 22 && tupid == 41847 && attr==3) || (simfid == 0 && tupid == 34056 && attr==0) || (simfid == 0 && tupid == 34056 && attr==1) || (simfid == 0 && tupid == 34056 && attr==3) || (simfid == 2 && tupid == 34056 && attr==3) || (simfid == 3 && tupid == 34056 && attr==3) || (simfid == 4 && tupid == 34056 && attr==3) || (simfid == 5 && tupid == 34056 && attr==3) || (simfid == 10 && tupid == 34056 && attr==3) || (simfid == 11 && tupid == 34056 && attr==3) || (simfid == 12 && tupid == 34056 && attr==3) || (simfid == 13 && tupid == 34056 && attr==3) || (simfid == 14 && tupid == 34056 && attr==3) || (simfid == 19 && tupid == 34056 && attr==3) || (simfid == 22 && tupid == 34056 && attr==3) || (simfid == 0 && tupid == 102 && attr==0) || (simfid == 0 && tupid == 102 && attr==2) || (simfid == 0 && tupid == 102 && attr==3) || (simfid == 2 && tupid == 102 && attr==3) || (simfid == 3 && tupid == 102 && attr==3) || (simfid == 4 && tupid == 102 && attr==3) || (simfid == 5 && tupid == 102 && attr==3) || (simfid == 10 && tupid == 102 && attr==3) || (simfid == 11 && tupid == 102 && attr==3) || (simfid == 12 && tupid == 102 && attr==3) || (simfid == 13 && tupid == 102 && attr==3) || (simfid == 14 && tupid == 102 && attr==3) || (simfid == 19 && tupid == 102 && attr==3) || (simfid == 20 && tupid == 102 && attr==3) || (simfid == 22 && tupid == 102 && attr==3) || (simfid == 0 && tupid == 11393 && attr==0) || (simfid == 2 && tupid == 11393 && attr==0) || (simfid == 3 && tupid == 11393 && attr==0) || (simfid == 4 && tupid == 11393 && attr==0) || (simfid == 5 && tupid == 11393 && attr==0) || (simfid == 14 && tupid == 11393 && attr==0) || (simfid == 20 && tupid == 11393 && attr==0) || (simfid == 22 && tupid == 11393 && attr==0) || (simfid == 0 && tupid == 11393 && attr==1) || (simfid == 0 && tupid == 11393 && attr==3) || (simfid == 2 && tupid == 11393 && attr==3) || (simfid == 3 && tupid == 11393 && attr==3) || (simfid == 4 && tupid == 11393 && attr==3) || (simfid == 5 && tupid == 11393 && attr==3) || (simfid == 6 && tupid == 11393 && attr==3) || (simfid == 7 && tupid == 11393 && attr==3) || (simfid == 8 && tupid == 11393 && attr==3) || (simfid == 9 && tupid == 11393 && attr==3) || (simfid == 10 && tupid == 11393 && attr==3) || (simfid == 11 && tupid == 11393 && attr==3) || (simfid == 12 && tupid == 11393 && attr==3) || (simfid == 13 && tupid == 11393 && attr==3) || (simfid == 14 && tupid == 11393 && attr==3) || (simfid == 19 && tupid == 11393 && attr==3) || (simfid == 22 && tupid == 11393 && attr==3) || (simfid == 0 && tupid == 57484 && attr==0) || (simfid == 2 && tupid == 57484 && attr==0) || (simfid == 3 && tupid == 57484 && attr==0) || (simfid == 4 && tupid == 57484 && attr==0) || (simfid == 5 && tupid == 57484 && attr==0) || (simfid == 14 && tupid == 57484 && attr==0) || (simfid == 20 && tupid == 57484 && attr==0) || (simfid == 21 && tupid == 57484 && attr==0) || (simfid == 22 && tupid == 57484 && attr==0) || (simfid == 0 && tupid == 57484 && attr==1) || (simfid == 0 && tupid == 57484 && attr==3) || (simfid == 2 && tupid == 57484 && attr==3) || (simfid == 3 && tupid == 57484 && attr==3) || (simfid == 4 && tupid == 57484 && attr==3) || (simfid == 5 && tupid == 57484 && attr==3) || (simfid == 10 && tupid == 57484 && attr==3) || (simfid == 11 && tupid == 57484 && attr==3) || (simfid == 12 && tupid == 57484 && attr==3) || (simfid == 13 && tupid == 57484 && attr==3) || (simfid == 14 && tupid == 57484 && attr==3) || (simfid == 19 && tupid == 57484 && attr==3) || (simfid == 22 && tupid == 57484 && attr==3) || (simfid == 0 && tupid == 79361 && attr==0) || (simfid == 0 && tupid == 79361 && attr==1) || (simfid == 0 && tupid == 24 && attr==0) || (simfid == 0 && tupid == 24 && attr==1) || (simfid == 0 && tupid == 24 && attr==3) || (simfid == 2 && tupid == 24 && attr==3) || (simfid == 3 && tupid == 24 && attr==3) || (simfid == 4 && tupid == 24 && attr==3) || (simfid == 5 && tupid == 24 && attr==3) || (simfid == 10 && tupid == 24 && attr==3) || (simfid == 11 && tupid == 24 && attr==3) || (simfid == 12 && tupid == 24 && attr==3) || (simfid == 13 && tupid == 24 && attr==3) || (simfid == 14 && tupid == 24 && attr==3) || (simfid == 22 && tupid == 24 && attr==3) || (simfid == 0 && tupid == 33586 && attr==0) || (simfid == 0 && tupid == 33586 && attr==1) || (simfid == 0 && tupid == 23042 && attr==0) || (simfid == 0 && tupid == 23042 && attr==1) || (simfid == 0 && tupid == 23042 && attr==3) || (simfid == 2 && tupid == 23042 && attr==3) || (simfid == 3 && tupid == 23042 && attr==3) || (simfid == 4 && tupid == 23042 && attr==3) || (simfid == 5 && tupid == 23042 && attr==3) || (simfid == 10 && tupid == 23042 && attr==3) || (simfid == 11 && tupid == 23042 && attr==3) || (simfid == 12 && tupid == 23042 && attr==3) || (simfid == 13 && tupid == 23042 && attr==3) || (simfid == 14 && tupid == 23042 && attr==3) || (simfid == 22 && tupid == 23042 && attr==3) || (simfid == 0 && tupid == 62 && attr==0) || (simfid == 0 && tupid == 62 && attr==1) || (simfid == 0 && tupid == 62 && attr==3) || (simfid == 2 && tupid == 62 && attr==3) || (simfid == 3 && tupid == 62 && attr==3) || (simfid == 4 && tupid == 62 && attr==3) || (simfid == 5 && tupid == 62 && attr==3) || (simfid == 6 && tupid == 62 && attr==3) || (simfid == 7 && tupid == 62 && attr==3) || (simfid == 8 && tupid == 62 && attr==3) || (simfid == 9 && tupid == 62 && attr==3) || (simfid == 10 && tupid == 62 && attr==3) || (simfid == 11 && tupid == 62 && attr==3) || (simfid == 12 && tupid == 62 && attr==3) || (simfid == 13 && tupid == 62 && attr==3) || (simfid == 14 && tupid == 62 && attr==3) || (simfid == 19 && tupid == 62 && attr==3) || (simfid == 22 && tupid == 62 && attr==3) || (simfid == 0 && tupid == 52 && attr==0) || (simfid == 20 && tupid == 52 && attr==0) || (simfid == 21 && tupid == 52 && attr==0) || (simfid == 0 && tupid == 52 && attr==1) || (simfid == 0 && tupid == 52 && attr==2) || (simfid == 0 && tupid == 52 && attr==3) || (simfid == 2 && tupid == 52 && attr==3) || (simfid == 3 && tupid == 52 && attr==3) || (simfid == 4 && tupid == 52 && attr==3) || (simfid == 5 && tupid == 52 && attr==3) || (simfid == 10 && tupid == 52 && attr==3) || (simfid == 11 && tupid == 52 && attr==3) || (simfid == 12 && tupid == 52 && attr==3) || (simfid == 13 && tupid == 52 && attr==3) || (simfid == 14 && tupid == 52 && attr==3) || (simfid == 19 && tupid == 52 && attr==3) || (simfid == 22 && tupid == 52 && attr==3) || (simfid == 0 && tupid == 83644 && attr==0) || (simfid == 0 && tupid == 83644 && attr==1) || (simfid == 0 && tupid == 83644 && attr==3) || (simfid == 2 && tupid == 83644 && attr==3) || (simfid == 3 && tupid == 83644 && attr==3) || (simfid == 4 && tupid == 83644 && attr==3) || (simfid == 5 && tupid == 83644 && attr==3) || (simfid == 10 && tupid == 83644 && attr==3) || (simfid == 11 && tupid == 83644 && attr==3) || (simfid == 12 && tupid == 83644 && attr==3) || (simfid == 13 && tupid == 83644 && attr==3) || (simfid == 14 && tupid == 83644 && attr==3) || (simfid == 19 && tupid == 83644 && attr==3) || (simfid == 22 && tupid == 83644 && attr==3) || (simfid == 0 && tupid == 32140 && attr==0) || (simfid == 2 && tupid == 32140 && attr==0) || (simfid == 3 && tupid == 32140 && attr==0) || (simfid == 4 && tupid == 32140 && attr==0) || (simfid == 5 && tupid == 32140 && attr==0) || (simfid == 14 && tupid == 32140 && attr==0) || (simfid == 22 && tupid == 32140 && attr==0) || (simfid == 0 && tupid == 32140 && attr==1) || (simfid == 0 && tupid == 32140 && attr==2)) return 0;
+	if((simfid == 7 && tupid == 41024 && attr==0) || (simfid == 9 && tupid == 41024 && attr==0)) return 25;
+	if((simfid == 7 && tupid == 23042 && attr==3) || (simfid == 9 && tupid == 23042 && attr==3)) return 31;
+	if((simfid == 11 && tupid == 11393 && attr==0) || (simfid == 13 && tupid == 11393 && attr==0)) return 39;
+	if((simfid == 7 && tupid == 24 && attr==3) || (simfid == 9 && tupid == 24 && attr==3)) return 43;
+	if((simfid == 7 && tupid == 78818 && attr==1) || (simfid == 9 && tupid == 78818 && attr==1) || (simfid == 7 && tupid == 98 && attr==3) || (simfid == 9 && tupid == 98 && attr==3)) return 58;
+	if((simfid == 17 && tupid == 17805 && attr==0) || (simfid == 6 && tupid == 23042 && attr==3)) return 62;
+	if((simfid == 6 && tupid == 41024 && attr==0)) return 74;
+	if((simfid == 10 && tupid == 11393 && attr==0)) return 75;
+	if((simfid == 8 && tupid == 23042 && attr==3)) return 76;
+	if((simfid == 7 && tupid == 34056 && attr==3) || (simfid == 9 && tupid == 34056 && attr==3) || (simfid == 12 && tupid == 11393 && attr==0) || (simfid == 6 && tupid == 24 && attr==3) || (simfid == 7 && tupid == 83644 && attr==3) || (simfid == 9 && tupid == 83644 && attr==3)) return 83;
+	if((simfid == 17 && tupid == 78 && attr==3) || (simfid == 17 && tupid == 41847 && attr==3)) return 85;
+	if((simfid == 7 && tupid == 50334 && attr==2) || (simfid == 9 && tupid == 50334 && attr==2) || (simfid == 11 && tupid == 57484 && attr==0) || (simfid == 13 && tupid == 57484 && attr==0) || (simfid == 8 && tupid == 24 && attr==3)) return 90;
+	if((simfid == 17 && tupid == 74 && attr==3) || (simfid == 17 && tupid == 79361 && attr==0)) return 92;
+	if((simfid == 1 && tupid == 41024 && attr==0)) return 99;
+	if((simfid == 11 && tupid == 41024 && attr==1) || (simfid == 13 && tupid == 41024 && attr==1) || (simfid == 7 && tupid == 102 && attr==3) || (simfid == 9 && tupid == 102 && attr==3) || (simfid == 17 && tupid == 102 && attr==3) || (simfid == 21 && tupid == 102 && attr==3) || (simfid == 21 && tupid == 11393 && attr==0) || (simfid == 7 && tupid == 52 && attr==3) || (simfid == 9 && tupid == 52 && attr==3) || (simfid == 17 && tupid == 52 && attr==3)) return 100;
+	if((simfid == 17 && tupid == 50334 && attr==2)) return 107;
+	if((simfid == 6 && tupid == 78818 && attr==1) || (simfid == 25 && tupid == 11393 && attr==0) || (simfid == 5 && tupid == 83644 && attr==0)) return 111;
+	if((simfid == 6 && tupid == 98 && attr==3)) return 113;
+	if((simfid == 17 && tupid == 34056 && attr==3) || (simfid == 17 && tupid == 83644 && attr==3)) return 114;
+	if((simfid == 8 && tupid == 78818 && attr==1)) return 117;
+	if((simfid == 17 && tupid == 50334 && attr==3) || (simfid == 17 && tupid == 57484 && attr==0)) return 121;
+	if((simfid == 25 && tupid == 7260 && attr==2) || (simfid == 23 && tupid == 62 && attr==3) || (simfid == 25 && tupid == 62 && attr==3) || (simfid == 26 && tupid == 62 && attr==3) || (simfid == 27 && tupid == 62 && attr==3) || (simfid == 22 && tupid == 83644 && attr==0)) return 125;
+	if((simfid == 17 && tupid == 34056 && attr==0)) return 129;
+	if((simfid == 26 && tupid == 78818 && attr==1) || (simfid == 27 && tupid == 78818 && attr==1) || (simfid == 7 && tupid == 11393 && attr==0) || (simfid == 9 && tupid == 11393 && attr==0) || (simfid == 7 && tupid == 57484 && attr==3) || (simfid == 9 && tupid == 57484 && attr==3) || (simfid == 5 && tupid == 83644 && attr==1)) return 133;
+	if((simfid == 25 && tupid == 18059 && attr==3) || (simfid == 17 && tupid == 11393 && attr==3) || (simfid == 11 && tupid == 57484 && attr==1) || (simfid == 13 && tupid == 57484 && attr==1)) return 136;
+	if((simfid == 8 && tupid == 98 && attr==3) || (simfid == 5 && tupid == 74 && attr==1) || (simfid == 5 && tupid == 41847 && attr==1) || (simfid == 23 && tupid == 11393 && attr==3) || (simfid == 25 && tupid == 11393 && attr==3) || (simfid == 26 && tupid == 11393 && attr==3) || (simfid == 27 && tupid == 11393 && attr==3) || (simfid == 25 && tupid == 23042 && attr==3) || (simfid == 11 && tupid == 52 && attr==2) || (simfid == 13 && tupid == 52 && attr==2) || (simfid == 5 && tupid == 32140 && attr==1)) return 142;
+	if((simfid == 17 && tupid == 62 && attr==3)) return 143;
+	if((simfid == 15 && tupid == 41024 && attr==0) || (simfid == 25 && tupid == 41024 && attr==3) || (simfid == 17 && tupid == 98 && attr==3) || (simfid == 17 && tupid == 7260 && attr==2) || (simfid == 17 && tupid == 57484 && attr==3) || (simfid == 17 && tupid == 52 && attr==2)) return 150;
+	if((simfid == 25 && tupid == 24 && attr==3)) return 153;
+	if((simfid == 6 && tupid == 34056 && attr==3) || (simfid == 6 && tupid == 83644 && attr==3)) return 154;
+	if((simfid == 17 && tupid == 78818 && attr==0) || (simfid == 17 && tupid == 98 && attr==2) || (simfid == 17 && tupid == 78 && attr==2) || (simfid == 17 && tupid == 74 && attr==2) || (simfid == 17 && tupid == 17805 && attr==3) || (simfid == 17 && tupid == 41847 && attr==2) || (simfid == 17 && tupid == 102 && attr==2) || (simfid == 17 && tupid == 52 && attr==0) || (simfid == 17 && tupid == 32140 && attr==2)) return 157;
+	if((simfid == 26 && tupid == 41024 && attr==3) || (simfid == 27 && tupid == 41024 && attr==3)) return 159;
+	if((simfid == 17 && tupid == 41024 && attr==3)) return 164;
+	if((simfid == 7 && tupid == 41024 && attr==1) || (simfid == 9 && tupid == 41024 && attr==1) || (simfid == 1 && tupid == 41024 && attr==3) || (simfid == 6 && tupid == 50334 && attr==2) || (simfid == 8 && tupid == 50334 && attr==2) || (simfid == 25 && tupid == 78818 && attr==1) || (simfid == 5 && tupid == 7260 && attr==1) || (simfid == 11 && tupid == 17805 && attr==1) || (simfid == 13 && tupid == 17805 && attr==1) || (simfid == 11 && tupid == 41847 && attr==3) || (simfid == 13 && tupid == 41847 && attr==3) || (simfid == 8 && tupid == 34056 && attr==3) || (simfid == 7 && tupid == 57484 && attr==0) || (simfid == 9 && tupid == 57484 && attr==0) || (simfid == 8 && tupid == 83644 && attr==3) || (simfid == 11 && tupid == 32140 && attr==0) || (simfid == 13 && tupid == 32140 && attr==0)) return 166;
+	if((simfid == 17 && tupid == 66 && attr==3) || (simfid == 17 && tupid == 18059 && attr==3) || (simfid == 26 && tupid == 23042 && attr==3) || (simfid == 27 && tupid == 23042 && attr==3) || (simfid == 17 && tupid == 62 && attr==0)) return 171;
+	if((simfid == 1 && tupid == 7260 && attr==1)) return 176;
+	if((simfid == 11 && tupid == 98 && attr==1) || (simfid == 13 && tupid == 98 && attr==1)) return 179;
+	if((simfid == 5 && tupid == 17805 && attr==1) || (simfid == 11 && tupid == 41847 && attr==1) || (simfid == 13 && tupid == 41847 && attr==1) || (simfid == 5 && tupid == 57484 && attr==1)) return 181;
+	if((simfid == 10 && tupid == 41024 && attr==1) || (simfid == 26 && tupid == 24 && attr==3) || (simfid == 27 && tupid == 24 && attr==3)) return 184;
+	if((simfid == 17 && tupid == 78 && attr==0)) return 185;
+	if((simfid == 6 && tupid == 102 && attr==3) || (simfid == 6 && tupid == 52 && attr==3)) return 188;
+	if((simfid == 11 && tupid == 83644 && attr==0) || (simfid == 13 && tupid == 83644 && attr==0)) return 191;
+	if((simfid == 17 && tupid == 50334 && attr==0) || (simfid == 26 && tupid == 11393 && attr==0) || (simfid == 27 && tupid == 11393 && attr==0) || (simfid == 17 && tupid == 32140 && attr==0)) return 192;
+	if((simfid == 17 && tupid == 41024 && attr==1) || (simfid == 17 && tupid == 66 && attr==0) || (simfid == 17 && tupid == 41847 && attr==0) || (simfid == 17 && tupid == 24 && attr==3)) return 199;
+	if((simfid == 8 && tupid == 41024 && attr==0) || (simfid == 5 && tupid == 41024 && attr==1) || (simfid == 26 && tupid == 7260 && attr==2) || (simfid == 27 && tupid == 7260 && attr==2) || (simfid == 7 && tupid == 17805 && attr==3) || (simfid == 9 && tupid == 17805 && attr==3) || (simfid == 5 && tupid == 23042 && attr==1) || (simfid == 3 && tupid == 83644 && attr==0) || (simfid == 14 && tupid == 83644 && attr==0)) return 200;
+	if((simfid == 17 && tupid == 74 && attr==0) || (simfid == 17 && tupid == 33586 && attr==1) || (simfid == 17 && tupid == 32140 && attr==1)) return 205;
+	if((simfid == 17 && tupid == 74 && attr==1)) return 212;
+	if((simfid == 25 && tupid == 50334 && attr==0) || (simfid == 1 && tupid == 24 && attr==3) || (simfid == 11 && tupid == 52 && attr==0) || (simfid == 13 && tupid == 52 && attr==0)) return 214;
+	if((simfid == 11 && tupid == 7260 && attr==1) || (simfid == 13 && tupid == 7260 && attr==1)) return 217;
+	if((simfid == 17 && tupid == 41847 && attr==1) || (simfid == 17 && tupid == 34056 && attr==1) || (simfid == 17 && tupid == 79361 && attr==1)) return 219;
+	if((simfid == 12 && tupid == 41024 && attr==1) || (simfid == 5 && tupid == 98 && attr==1) || (simfid == 22 && tupid == 17805 && attr==1) || (simfid == 22 && tupid == 57484 && attr==1) || (simfid == 22 && tupid == 83644 && attr==1)) return 222;
+	if((simfid == 10 && tupid == 57484 && attr==0)) return 223;
+	if((simfid == 1 && tupid == 98 && attr==1)) return 224;
+	if((simfid == 19 && tupid == 41024 && attr==3) || (simfid == 19 && tupid == 66 && attr==3) || (simfid == 19 && tupid == 57484 && attr==0) || (simfid == 19 && tupid == 24 && attr==3)) return 225;
+	if((simfid == 7 && tupid == 83644 && attr==0) || (simfid == 9 && tupid == 83644 && attr==0)) return 227;
+	if((simfid == 17 && tupid == 7260 && attr==1) || (simfid == 18 && tupid == 23042 && attr==3)) return 232;
+	if((simfid == 2 && tupid == 83644 && attr==1) || (simfid == 3 && tupid == 83644 && attr==1) || (simfid == 14 && tupid == 83644 && attr==1) || (simfid == 7 && tupid == 32140 && attr==0) || (simfid == 9 && tupid == 32140 && attr==0)) return 235;
+	if((simfid == 6 && tupid == 11393 && attr==0)) return 236;
+	if((simfid == 6 && tupid == 57484 && attr==3)) return 246;
+	if((simfid == 25 && tupid == 50334 && attr==3) || (simfid == 7 && tupid == 98 && attr==1) || (simfid == 9 && tupid == 98 && attr==1) || (simfid == 22 && tupid == 98 && attr==1) || (simfid == 23 && tupid == 98 && attr==3) || (simfid == 25 && tupid == 98 && attr==3) || (simfid == 26 && tupid == 98 && attr==3) || (simfid == 27 && tupid == 98 && attr==3) || (simfid == 22 && tupid == 7260 && attr==1) || (simfid == 2 && tupid == 74 && attr==1) || (simfid == 3 && tupid == 74 && attr==1) || (simfid == 4 && tupid == 74 && attr==1) || (simfid == 11 && tupid == 74 && attr==1) || (simfid == 13 && tupid == 74 && attr==1) || (simfid == 14 && tupid == 74 && attr==1) || (simfid == 22 && tupid == 74 && attr==1) || (simfid == 2 && tupid == 41847 && attr==1) || (simfid == 3 && tupid == 41847 && attr==1) || (simfid == 4 && tupid == 41847 && attr==1) || (simfid == 14 && tupid == 41847 && attr==1) || (simfid == 22 && tupid == 41847 && attr==1) || (simfid == 5 && tupid == 102 && attr==0) || (simfid == 22 && tupid == 102 && attr==0) || (simfid == 8 && tupid == 102 && attr==3) || (simfid == 5 && tupid == 33586 && attr==0) || (simfid == 8 && tupid == 52 && attr==3) || (simfid == 2 && tupid == 83644 && attr==0) || (simfid == 4 && tupid == 83644 && attr==1) || (simfid == 2 && tupid == 32140 && attr==1) || (simfid == 3 && tupid == 32140 && attr==1) || (simfid == 4 && tupid == 32140 && attr==1) || (simfid == 14 && tupid == 32140 && attr==1) || (simfid == 22 && tupid == 32140 && attr==1)) return 250;
+	if((simfid == 17 && tupid == 23042 && attr==1) || (simfid == 10 && tupid == 52 && attr==2)) return 251;
+	if((simfid == 23 && tupid == 18059 && attr==3) || (simfid == 26 && tupid == 18059 && attr==3) || (simfid == 27 && tupid == 18059 && attr==3)) return 254;
+	if((simfid == 17 && tupid == 102 && attr==0) || (simfid == 17 && tupid == 23042 && attr==3)) return 258;
+	if((simfid == 23 && tupid == 41024 && attr==3)) return 259;
+	if((simfid == 8 && tupid == 11393 && attr==0)) return 260;
+	if((simfid == 1 && tupid == 17805 && attr==1)) return 261;
+	if((simfid == 11 && tupid == 32140 && attr==1) || (simfid == 13 && tupid == 32140 && attr==1)) return 263;
+	if((simfid == 11 && tupid == 62 && attr==0) || (simfid == 13 && tupid == 62 && attr==0) || (simfid == 7 && tupid == 52 && attr==0) || (simfid == 9 && tupid == 52 && attr==0)) return 266;
+	if((simfid == 7 && tupid == 17805 && attr==1) || (simfid == 9 && tupid == 17805 && attr==1)) return 270;
+	if((simfid == 17 && tupid == 62 && attr==1)) return 271;
+	if((simfid == 23 && tupid == 50334 && attr==0)) return 275;
+	if((simfid == 17 && tupid == 78818 && attr==1) || (simfid == 18 && tupid == 78 && attr==0) || (simfid == 18 && tupid == 78 && attr==3) || (simfid == 17 && tupid == 24 && attr==1)) return 277;
+	if((simfid == 10 && tupid == 57484 && attr==1)) return 280;
+	if((simfid == 1 && tupid == 50334 && attr==2) || (simfid == 23 && tupid == 50334 && attr==2) || (simfid == 25 && tupid == 50334 && attr==2) || (simfid == 26 && tupid == 50334 && attr==2) || (simfid == 27 && tupid == 50334 && attr==2) || (simfid == 1 && tupid == 78818 && attr==1) || (simfid == 3 && tupid == 7260 && attr==1) || (simfid == 14 && tupid == 7260 && attr==1) || (simfid == 7 && tupid == 41847 && attr==1) || (simfid == 9 && tupid == 41847 && attr==1) || (simfid == 7 && tupid == 41847 && attr==3) || (simfid == 9 && tupid == 41847 && attr==3) || (simfid == 25 && tupid == 57484 && attr==3) || (simfid == 7 && tupid == 52 && attr==2) || (simfid == 9 && tupid == 52 && attr==2) || (simfid == 12 && tupid == 52 && attr==2)) return 285;
+	if((simfid == 6 && tupid == 41024 && attr==1) || (simfid == 2 && tupid == 7260 && attr==1) || (simfid == 10 && tupid == 41847 && attr==3)) return 288;
+	if((simfid == 17 && tupid == 33586 && attr==0) || (simfid == 17 && tupid == 52 && attr==1)) return 289;
+	if((simfid == 19 && tupid == 7260 && attr==2)) return 292;
+	if((simfid == 7 && tupid == 57484 && attr==1) || (simfid == 9 && tupid == 57484 && attr==1)) return 297;
+	if((simfid == 25 && tupid == 74 && attr==3) || (simfid == 11 && tupid == 34056 && attr==0) || (simfid == 13 && tupid == 34056 && attr==0) || (simfid == 11 && tupid == 34056 && attr==1) || (simfid == 13 && tupid == 34056 && attr==1) || (simfid == 15 && tupid == 32140 && attr==0)) return 300;
+	if((simfid == 7 && tupid == 7260 && attr==1) || (simfid == 9 && tupid == 7260 && attr==1) || (simfid == 1 && tupid == 83644 && attr==0)) return 304;
+	if((simfid == 3 && tupid == 17805 && attr==1) || (simfid == 14 && tupid == 17805 && attr==1) || (simfid == 3 && tupid == 57484 && attr==1) || (simfid == 14 && tupid == 57484 && attr==1)) return 307;
+	if((simfid == 17 && tupid == 18059 && attr==0) || (simfid == 10 && tupid == 41847 && attr==1)) return 308;
+	if((simfid == 20 && tupid == 62 && attr==3) || (simfid == 21 && tupid == 62 && attr==3)) return 310;
+	if((simfid == 25 && tupid == 17805 && attr==3) || (simfid == 7 && tupid == 62 && attr==0) || (simfid == 9 && tupid == 62 && attr==0) || (simfid == 1 && tupid == 52 && attr==0) || (simfid == 15 && tupid == 52 && attr==0)) return 312;
+	if((simfid == 17 && tupid == 66 && attr==1) || (simfid == 26 && tupid == 50334 && attr==0) || (simfid == 27 && tupid == 50334 && attr==0) || (simfid == 17 && tupid == 11393 && attr==1)) return 314;
+	if((simfid == 23 && tupid == 24 && attr==3)) return 319;
+	if((simfid == 17 && tupid == 41024 && attr==0) || (simfid == 17 && tupid == 18059 && attr==1) || (simfid == 18 && tupid == 62 && attr==1)) return 320;
+	if((simfid == 25 && tupid == 57484 && attr==1)) return 321;
+	if((simfid == 18 && tupid == 41024 && attr==3) || (simfid == 18 && tupid == 102 && attr==0)) return 322;
+	if((simfid == 10 && tupid == 17805 && attr==1)) return 332;
+	if((simfid == 25 && tupid == 41024 && attr==0) || (simfid == 2 && tupid == 41024 && attr==1) || (simfid == 3 && tupid == 41024 && attr==1) || (simfid == 4 && tupid == 41024 && attr==1) || (simfid == 8 && tupid == 41024 && attr==1) || (simfid == 14 && tupid == 41024 && attr==1) || (simfid == 22 && tupid == 41024 && attr==1) || (simfid == 15 && tupid == 50334 && attr==3) || (simfid == 4 && tupid == 7260 && attr==1) || (simfid == 5 && tupid == 78 && attr==0) || (simfid == 22 && tupid == 78 && attr==0) || (simfid == 11 && tupid == 18059 && attr==0) || (simfid == 13 && tupid == 18059 && attr==0) || (simfid == 1 && tupid == 18059 && attr==3) || (simfid == 2 && tupid == 17805 && attr==1) || (simfid == 15 && tupid == 17805 && attr==1) || (simfid == 12 && tupid == 41847 && attr==1) || (simfid == 12 && tupid == 41847 && attr==3) || (simfid == 5 && tupid == 34056 && attr==0) || (simfid == 5 && tupid == 34056 && attr==1) || (simfid == 11 && tupid == 102 && attr==0) || (simfid == 13 && tupid == 102 && attr==0) || (simfid == 15 && tupid == 57484 && attr==0) || (simfid == 2 && tupid == 57484 && attr==1) || (simfid == 15 && tupid == 57484 && attr==1) || (simfid == 8 && tupid == 57484 && attr==3) || (simfid == 11 && tupid == 79361 && attr==0) || (simfid == 13 && tupid == 79361 && attr==0) || (simfid == 18 && tupid == 79361 && attr==0) || (simfid == 22 && tupid == 33586 && attr==0) || (simfid == 5 && tupid == 33586 && attr==1) || (simfid == 11 && tupid == 33586 && attr==1) || (simfid == 13 && tupid == 33586 && attr==1) || (simfid == 2 && tupid == 23042 && attr==1) || (simfid == 3 && tupid == 23042 && attr==1) || (simfid == 4 && tupid == 23042 && attr==1) || (simfid == 14 && tupid == 23042 && attr==1) || (simfid == 22 && tupid == 23042 && attr==1) || (simfid == 23 && tupid == 23042 && attr==3) || (simfid == 5 && tupid == 52 && attr==2)) return 333;
+	if((simfid == 18 && tupid == 24 && attr==1)) return 339;
+	if((simfid == 18 && tupid == 62 && attr==3)) return 340;
+	if((simfid == 6 && tupid == 17805 && attr==3)) return 341;
+	if((simfid == 18 && tupid == 83644 && attr==0)) return 342;
+	if((simfid == 18 && tupid == 18059 && attr==3)) return 345;
+	if((simfid == 10 && tupid == 98 && attr==1)) return 346;
+	if((simfid == 15 && tupid == 83644 && attr==0)) return 347;
+	if((simfid == 6 && tupid == 57484 && attr==0)) return 348;
+	if((simfid == 15 && tupid == 98 && attr==1)) return 349;
+	if((simfid == 11 && tupid == 83644 && attr==1) || (simfid == 13 && tupid == 83644 && attr==1)) return 351;
+	if((simfid == 15 && tupid == 62 && attr==0)) return 352;
+	if((simfid == 1 && tupid == 11393 && attr==0)) return 354;
+	if((simfid == 7 && tupid == 18059 && attr==0) || (simfid == 9 && tupid == 18059 && attr==0) || (simfid == 25 && tupid == 34056 && attr==3) || (simfid == 25 && tupid == 83644 && attr==3)) return 357;
+	if((simfid == 10 && tupid == 7260 && attr==1) || (simfid == 18 && tupid == 7260 && attr==1)) return 358;
+	if((simfid == 7 && tupid == 102 && attr==0) || (simfid == 9 && tupid == 102 && attr==0)) return 360;
+	if((simfid == 25 && tupid == 41024 && attr==1) || (simfid == 26 && tupid == 41024 && attr==1) || (simfid == 27 && tupid == 41024 && attr==1) || (simfid == 3 && tupid == 98 && attr==1) || (simfid == 14 && tupid == 98 && attr==1) || (simfid == 7 && tupid == 34056 && attr==0) || (simfid == 9 && tupid == 34056 && attr==0) || (simfid == 1 && tupid == 62 && attr==3) || (simfid == 10 && tupid == 32140 && attr==0)) return 363;
+	if((simfid == 17 && tupid == 98 && attr==1)) return 366;
+	if((simfid == 19 && tupid == 32140 && attr==0)) return 367;
+	if((simfid == 15 && tupid == 50334 && attr==0) || (simfid == 7 && tupid == 74 && attr==1) || (simfid == 9 && tupid == 74 && attr==1) || (simfid == 7 && tupid == 32140 && attr==1) || (simfid == 9 && tupid == 32140 && attr==1)) return 368;
+	if((simfid == 11 && tupid == 33586 && attr==0) || (simfid == 13 && tupid == 33586 && attr==0)) return 370;
+	if((simfid == 10 && tupid == 83644 && attr==0)) return 371;
+	if((simfid == 18 && tupid == 24 && attr==3) || (simfid == 17 && tupid == 23042 && attr==0)) return 372;
+	if((simfid == 18 && tupid == 17805 && attr==1)) return 373;
+	if((simfid == 15 && tupid == 78 && attr==3)) return 375;
+	if((simfid == 17 && tupid == 17805 && attr==1) || (simfid == 17 && tupid == 57484 && attr==1) || (simfid == 11 && tupid == 23042 && attr==0) || (simfid == 13 && tupid == 23042 && attr==0)) return 378;
+	if((simfid == 19 && tupid == 50334 && attr==0) || (simfid == 19 && tupid == 23042 && attr==3)) return 379;
+	if((simfid == 12 && tupid == 7260 && attr==1) || (simfid == 15 && tupid == 102 && attr==0) || (simfid == 1 && tupid == 57484 && attr==3)) return 384;
+	if((simfid == 20 && tupid == 83644 && attr==0) || (simfid == 21 && tupid == 83644 && attr==0)) return 387;
+	if((simfid == 17 && tupid == 11393 && attr==0)) return 389;
+	if((simfid == 23 && tupid == 7260 && attr==2)) return 391;
+	if((simfid == 23 && tupid == 78818 && attr==1)) return 395;
+	if((simfid == 20 && tupid == 50334 && attr==0) || (simfid == 21 && tupid == 50334 && attr==0) || (simfid == 18 && tupid == 98 && attr==1) || (simfid == 18 && tupid == 11393 && attr==0)) return 398;
+	if((simfid == 11 && tupid == 78 && attr==0) || (simfid == 13 && tupid == 78 && attr==0) || (simfid == 5 && tupid == 18059 && attr==0) || (simfid == 10 && tupid == 74 && attr==1) || (simfid == 23 && tupid == 17805 && attr==3) || (simfid == 26 && tupid == 17805 && attr==3) || (simfid == 27 && tupid == 17805 && attr==3) || (simfid == 7 && tupid == 34056 && attr==1) || (simfid == 9 && tupid == 34056 && attr==1) || (simfid == 3 && tupid == 102 && attr==0) || (simfid == 14 && tupid == 102 && attr==0) || (simfid == 23 && tupid == 102 && attr==3) || (simfid == 26 && tupid == 102 && attr==3) || (simfid == 27 && tupid == 102 && attr==3) || (simfid == 3 && tupid == 33586 && attr==0) || (simfid == 14 && tupid == 33586 && attr==0) || (simfid == 5 && tupid == 62 && attr==1) || (simfid == 25 && tupid == 52 && attr==3)) return 400;
+	if((simfid == 18 && tupid == 50334 && attr==3) || (simfid == 18 && tupid == 98 && attr==3) || (simfid == 18 && tupid == 62 && attr==0)) return 402;
+	if((simfid == 18 && tupid == 11393 && attr==3)) return 404;
+	if((simfid == 7 && tupid == 33586 && attr==0) || (simfid == 9 && tupid == 33586 && attr==0)) return 407;
+	if((simfid == 2 && tupid == 98 && attr==1) || (simfid == 2 && tupid == 33586 && attr==0)) return 408;
+	if((simfid == 11 && tupid == 23042 && attr==1) || (simfid == 13 && tupid == 23042 && attr==1)) return 409;
+	if((simfid == 11 && tupid == 74 && attr==0) || (simfid == 13 && tupid == 74 && attr==0) || (simfid == 17 && tupid == 83644 && attr==0)) return 411;
+	if((simfid == 18 && tupid == 23042 && attr==0)) return 413;
+	if((simfid == 11 && tupid == 78818 && attr==0) || (simfid == 13 && tupid == 78818 && attr==0) || (simfid == 1 && tupid == 7260 && attr==2) || (simfid == 12 && tupid == 74 && attr==1) || (simfid == 23 && tupid == 11393 && attr==0) || (simfid == 10 && tupid == 32140 && attr==1) || (simfid == 12 && tupid == 32140 && attr==1)) return 416;
+	if((simfid == 18 && tupid == 50334 && attr==2) || (simfid == 18 && tupid == 78818 && attr==1) || (simfid == 18 && tupid == 98 && attr==2) || (simfid == 18 && tupid == 78 && attr==2) || (simfid == 18 && tupid == 74 && attr==2) || (simfid == 18 && tupid == 41847 && attr==2) || (simfid == 18 && tupid == 102 && attr==2) || (simfid == 18 && tupid == 32140 && attr==2)) return 420;
+	if((simfid == 6 && tupid == 83644 && attr==0)) return 422;
+	if((simfid == 1 && tupid == 74 && attr==3) || (simfid == 8 && tupid == 17805 && attr==3) || (simfid == 25 && tupid == 41847 && attr==1) || (simfid == 5 && tupid == 11393 && attr==1) || (simfid == 26 && tupid == 57484 && attr==1) || (simfid == 27 && tupid == 57484 && attr==1) || (simfid == 7 && tupid == 79361 && attr==0) || (simfid == 9 && tupid == 79361 && attr==0) || (simfid == 7 && tupid == 23042 && attr==0) || (simfid == 9 && tupid == 23042 && attr==0)) return 428;
+	if((simfid == 26 && tupid == 41024 && attr==0) || (simfid == 27 && tupid == 41024 && attr==0)) return 433;
+	if((simfid == 18 && tupid == 17805 && attr==3)) return 434;
+	if((simfid == 1 && tupid == 41024 && attr==1) || (simfid == 7 && tupid == 78 && attr==0) || (simfid == 9 && tupid == 78 && attr==0) || (simfid == 11 && tupid == 41847 && attr==0) || (simfid == 13 && tupid == 41847 && attr==0)) return 437;
+	if((simfid == 23 && tupid == 74 && attr==3) || (simfid == 26 && tupid == 74 && attr==3) || (simfid == 27 && tupid == 74 && attr==3) || (simfid == 23 && tupid == 52 && attr==3) || (simfid == 26 && tupid == 52 && attr==3) || (simfid == 27 && tupid == 52 && attr==3)) return 439;
+	if((simfid == 6 && tupid == 98 && attr==1)) return 441;
+	if((simfid == 26 && tupid == 41847 && attr==1) || (simfid == 27 && tupid == 41847 && attr==1)) return 442;
+	if((simfid == 28 && tupid == 50334 && attr==0) || (simfid == 28 && tupid == 7260 && attr==2) || (simfid == 7 && tupid == 74 && attr==0) || (simfid == 9 && tupid == 74 && attr==0) || (simfid == 6 && tupid == 41847 && attr==1) || (simfid == 28 && tupid == 57484 && attr==0) || (simfid == 7 && tupid == 33586 && attr==1) || (simfid == 9 && tupid == 33586 && attr==1) || (simfid == 25 && tupid == 52 && attr==2)) return 444;
+	if((simfid == 6 && tupid == 41847 && attr==3) || (simfid == 6 && tupid == 52 && attr==2) || (simfid == 6 && tupid == 32140 && attr==0)) return 447;
+	if((simfid == 17 && tupid == 24 && attr==0)) return 452;
+	if((simfid == 1 && tupid == 11393 && attr==3) || (simfid == 7 && tupid == 23042 && attr==1) || (simfid == 9 && tupid == 23042 && attr==1)) return 454;
+	if((simfid == 20 && tupid == 23042 && attr==3) || (simfid == 21 && tupid == 23042 && attr==3) || (simfid == 26 && tupid == 83644 && attr==1) || (simfid == 27 && tupid == 83644 && attr==1)) return 455;
+	if((simfid == 18 && tupid == 34056 && attr==3) || (simfid == 18 && tupid == 83644 && attr==3)) return 456;
+	if((simfid == 23 && tupid == 34056 && attr==3) || (simfid == 26 && tupid == 34056 && attr==3) || (simfid == 27 && tupid == 34056 && attr==3) || (simfid == 25 && tupid == 24 && attr==0) || (simfid == 23 && tupid == 83644 && attr==3) || (simfid == 26 && tupid == 83644 && attr==3) || (simfid == 27 && tupid == 83644 && attr==3)) return 457;
+	if((simfid == 18 && tupid == 32140 && attr==0)) return 458;
+	if((simfid == 20 && tupid == 41024 && attr==0) || (simfid == 21 && tupid == 41024 && attr==0) || (simfid == 7 && tupid == 78818 && attr==0) || (simfid == 9 && tupid == 78818 && attr==0) || (simfid == 8 && tupid == 41847 && attr==1) || (simfid == 10 && tupid == 34056 && attr==1) || (simfid == 12 && tupid == 34056 && attr==1)) return 461;
+	if((simfid == 10 && tupid == 34056 && attr==0) || (simfid == 10 && tupid == 52 && attr==0) || (simfid == 25 && tupid == 83644 && attr==1)) return 462;
+	if((simfid == 25 && tupid == 7260 && attr==1) || (simfid == 26 && tupid == 7260 && attr==1) || (simfid == 27 && tupid == 7260 && attr==1)) return 466;
+	if((simfid == 18 && tupid == 50334 && attr==0) || (simfid == 6 && tupid == 7260 && attr==1) || (simfid == 23 && tupid == 83644 && attr==0)) return 467;
+	if((simfid == 15 && tupid == 78 && attr==0) || (simfid == 7 && tupid == 41847 && attr==0) || (simfid == 9 && tupid == 41847 && attr==0)) return 470;
+	if((simfid == 20 && tupid == 98 && attr==3) || (simfid == 21 && tupid == 98 && attr==3)) return 472;
+	if((simfid == 6 && tupid == 17805 && attr==1)) return 475;
+	if((simfid == 18 && tupid == 57484 && attr==3)) return 476;
+	if((simfid == 25 && tupid == 23042 && attr==0) || (simfid == 26 && tupid == 23042 && attr==0) || (simfid == 27 && tupid == 23042 && attr==0)) return 481;
+	if((simfid == 18 && tupid == 57484 && attr==1)) return 484;
+	if((simfid == 7 && tupid == 83644 && attr==1) || (simfid == 9 && tupid == 83644 && attr==1)) return 488;
+	if((simfid == 20 && tupid == 11393 && attr==3) || (simfid == 21 && tupid == 11393 && attr==3)) return 489;
+	if((simfid == 24 && tupid == 41024 && attr==0) || (simfid == 24 && tupid == 50334 && attr==0) || (simfid == 24 && tupid == 50334 && attr==3) || (simfid == 5 && tupid == 78818 && attr==0) || (simfid == 15 && tupid == 78818 && attr==0) || (simfid == 22 && tupid == 78818 && attr==0) || (simfid == 24 && tupid == 78818 && attr==0) || (simfid == 19 && tupid == 78818 && attr==1) || (simfid == 8 && tupid == 7260 && attr==1) || (simfid == 3 && tupid == 78 && attr==0) || (simfid == 14 && tupid == 78 && attr==0) || (simfid == 24 && tupid == 78 && attr==0) || (simfid == 24 && tupid == 78 && attr==3) || (simfid == 10 && tupid == 18059 && attr==0) || (simfid == 22 && tupid == 18059 && attr==0) || (simfid == 5 && tupid == 74 && attr==0) || (simfid == 24 && tupid == 74 && attr==3) || (simfid == 1 && tupid == 17805 && attr==0) || (simfid == 7 && tupid == 17805 && attr==0) || (simfid == 9 && tupid == 17805 && attr==0) || (simfid == 20 && tupid == 17805 && attr==0) || (simfid == 21 && tupid == 17805 && attr==0) || (simfid == 25 && tupid == 17805 && attr==0) || (simfid == 4 && tupid == 17805 && attr==1) || (simfid == 5 && tupid == 41847 && attr==0) || (simfid == 23 && tupid == 41847 && attr==1) || (simfid == 8 && tupid == 41847 && attr==3) || (simfid == 2 && tupid == 34056 && attr==0) || (simfid == 3 && tupid == 34056 && attr==0) || (simfid == 4 && tupid == 34056 && attr==0) || (simfid == 12 && tupid == 34056 && attr==0) || (simfid == 14 && tupid == 34056 && attr==0) || (simfid == 19 && tupid == 34056 && attr==0) || (simfid == 22 && tupid == 34056 && attr==0) || (simfid == 2 && tupid == 34056 && attr==1) || (simfid == 3 && tupid == 34056 && attr==1) || (simfid == 4 && tupid == 34056 && attr==1) || (simfid == 14 && tupid == 34056 && attr==1) || (simfid == 22 && tupid == 34056 && attr==1) || (simfid == 1 && tupid == 34056 && attr==3) || (simfid == 2 && tupid == 102 && attr==0) || (simfid == 24 && tupid == 102 && attr==0) || (simfid == 1 && tupid == 102 && attr==3) || (simfid == 25 && tupid == 102 && attr==3) || (simfid == 24 && tupid == 11393 && attr==3) || (simfid == 12 && tupid == 57484 && attr==0) || (simfid == 4 && tupid == 57484 && attr==1) || (simfid == 12 && tupid == 57484 && attr==1) || (simfid == 5 && tupid == 79361 && attr==0) || (simfid == 15 && tupid == 79361 && attr==0) || (simfid == 22 && tupid == 79361 && attr==0) || (simfid == 24 && tupid == 79361 && attr==0) || (simfid == 5 && tupid == 79361 && attr==1) || (simfid == 4 && tupid == 33586 && attr==0) || (simfid == 2 && tupid == 33586 && attr==1) || (simfid == 3 && tupid == 33586 && attr==1) || (simfid == 4 && tupid == 33586 && attr==1) || (simfid == 14 && tupid == 33586 && attr==1) || (simfid == 22 && tupid == 33586 && attr==1) || (simfid == 5 && tupid == 23042 && attr==0) || (simfid == 24 && tupid == 23042 && attr==3) || (simfid == 5 && tupid == 62 && attr==0) || (simfid == 22 && tupid == 62 && attr==0) || (simfid == 24 && tupid == 62 && attr==0) || (simfid == 22 && tupid == 62 && attr==1) || (simfid == 5 && tupid == 52 && attr==0) || (simfid == 22 && tupid == 52 && attr==0) || (simfid == 2 && tupid == 52 && attr==2) || (simfid == 3 && tupid == 52 && attr==2) || (simfid == 4 && tupid == 52 && attr==2) || (simfid == 8 && tupid == 52 && attr==2) || (simfid == 14 && tupid == 52 && attr==2) || (simfid == 19 && tupid == 52 && attr==2) || (simfid == 22 && tupid == 52 && attr==2) || (simfid == 1 && tupid == 52 && attr==3) || (simfid == 4 && tupid == 83644 && attr==0) || (simfid == 1 && tupid == 83644 && attr==3)) return 500;
+	if((simfid == 10 && tupid == 33586 && attr==1)) return 501;
+	if((simfid == 17 && tupid == 83644 && attr==1)) return 506;
+	if((simfid == 19 && tupid == 41024 && attr==0) || (simfid == 18 && tupid == 7260 && attr==2)) return 508;
+	if((simfid == 23 && tupid == 23042 && attr==1)) return 511;
+	if((simfid == 19 && tupid == 11393 && attr==0) || (simfid == 26 && tupid == 24 && attr==0) || (simfid == 27 && tupid == 24 && attr==0)) return 514;
+	if((simfid == 6 && tupid == 57484 && attr==1)) return 515;
+	if((simfid == 20 && tupid == 41024 && attr==3) || (simfid == 21 && tupid == 41024 && attr==3) || (simfid == 10 && tupid == 62 && attr==0) || (simfid == 6 && tupid == 52 && attr==0)) return 516;
+	if((simfid == 19 && tupid == 33586 && attr==0)) return 519;
+	if((simfid == 10 && tupid == 83644 && attr==1)) return 520;
+	if((simfid == 20 && tupid == 50334 && attr==2) || (simfid == 21 && tupid == 50334 && attr==2) || (simfid == 24 && tupid == 17805 && attr==1) || (simfid == 24 && tupid == 57484 && attr==1)) return 523;
+	if((simfid == 24 && tupid == 32140 && attr==0)) return 524;
+	if((simfid == 12 && tupid == 18059 && attr==0)) return 526;
+	if((simfid == 18 && tupid == 41024 && attr==0) || (simfid == 6 && tupid == 18059 && attr==0) || (simfid == 12 && tupid == 83644 && attr==1)) return 527;
+	if((simfid == 19 && tupid == 41024 && attr==1) || (simfid == 19 && tupid == 23042 && attr==1)) return 528;
+	if((simfid == 24 && tupid == 7260 && attr==1) || (simfid == 1 && tupid == 78 && attr==0)) return 529;
+	if((simfid == 24 && tupid == 11393 && attr==0) || (simfid == 24 && tupid == 83644 && attr==0)) return 532;
+	if((simfid == 25 && tupid == 34056 && attr==1) || (simfid == 26 && tupid == 52 && attr==2) || (simfid == 27 && tupid == 52 && attr==2)) return 533;
+	if((simfid == 6 && tupid == 34056 && attr==0)) return 534;
+	if((simfid == 24 && tupid == 24 && attr==3) || (simfid == 1 && tupid == 23042 && attr==0)) return 535;
+	if((simfid == 20 && tupid == 24 && attr==3) || (simfid == 21 && tupid == 24 && attr==3)) return 536;
+	if((simfid == 6 && tupid == 74 && attr==1) || (simfid == 8 && tupid == 74 && attr==1) || (simfid == 15 && tupid == 57484 && attr==3) || (simfid == 6 && tupid == 32140 && attr==1) || (simfid == 8 && tupid == 32140 && attr==1)) return 538;
+	if((simfid == 24 && tupid == 41024 && attr==3) || (simfid == 20 && tupid == 7260 && attr==2) || (simfid == 21 && tupid == 7260 && attr==2) || (simfid == 24 && tupid == 7260 && attr==2)) return 541;
+	if((simfid == 1 && tupid == 24 && attr==0) || (simfid == 10 && tupid == 33586 && attr==0)) return 542;
+	if((simfid == 11 && tupid == 98 && attr==2) || (simfid == 13 && tupid == 98 && attr==2) || (simfid == 11 && tupid == 78 && attr==2) || (simfid == 13 && tupid == 78 && attr==2) || (simfid == 11 && tupid == 74 && attr==2) || (simfid == 13 && tupid == 74 && attr==2) || (simfid == 11 && tupid == 41847 && attr==2) || (simfid == 13 && tupid == 41847 && attr==2) || (simfid == 11 && tupid == 102 && attr==2) || (simfid == 13 && tupid == 102 && attr==2) || (simfid == 12 && tupid == 33586 && attr==1) || (simfid == 1 && tupid == 23042 && attr==3) || (simfid == 24 && tupid == 62 && attr==3) || (simfid == 1 && tupid == 52 && attr==2) || (simfid == 11 && tupid == 32140 && attr==2) || (simfid == 13 && tupid == 32140 && attr==2)) return 545;
+	if((simfid == 18 && tupid == 78818 && attr==0) || (simfid == 24 && tupid == 78818 && attr==1) || (simfid == 18 && tupid == 52 && attr==3)) return 547;
+	if((simfid == 18 && tupid == 66 && attr==0) || (simfid == 10 && tupid == 23042 && attr==0)) return 549;
+	if((simfid == 23 && tupid == 50334 && attr==3) || (simfid == 26 && tupid == 50334 && attr==3) || (simfid == 27 && tupid == 50334 && attr==3) || (simfid == 24 && tupid == 98 && attr==1) || (simfid == 20 && tupid == 32140 && attr==0) || (simfid == 21 && tupid == 32140 && attr==0)) return 550;
+	if((simfid == 19 && tupid == 78818 && attr==0) || (simfid == 19 && tupid == 7260 && attr==1) || (simfid == 19 && tupid == 78 && attr==0) || (simfid == 19 && tupid == 79361 && attr==0) || (simfid == 19 && tupid == 62 && attr==0) || (simfid == 19 && tupid == 52 && attr==0)) return 552;
+	if((simfid == 28 && tupid == 41024 && attr==0) || (simfid == 23 && tupid == 41024 && attr==1) || (simfid == 16 && tupid == 41024 && attr==3) || (simfid == 16 && tupid == 50334 && attr==2) || (simfid == 28 && tupid == 50334 && attr==2) || (simfid == 16 && tupid == 50334 && attr==3) || (simfid == 28 && tupid == 50334 && attr==3) || (simfid == 28 && tupid == 78818 && attr==1) || (simfid == 16 && tupid == 98 && attr==3) || (simfid == 28 && tupid == 98 && attr==3) || (simfid == 16 && tupid == 78 && attr==3) || (simfid == 28 && tupid == 78 && attr==3) || (simfid == 8 && tupid == 18059 && attr==0) || (simfid == 28 && tupid == 18059 && attr==0) || (simfid == 16 && tupid == 18059 && attr==3) || (simfid == 28 && tupid == 18059 && attr==3) || (simfid == 16 && tupid == 17805 && attr==3) || (simfid == 28 && tupid == 17805 && attr==3) || (simfid == 28 && tupid == 41847 && attr==1) || (simfid == 16 && tupid == 34056 && attr==3) || (simfid == 28 && tupid == 34056 && attr==3) || (simfid == 28 && tupid == 33586 && attr==0) || (simfid == 28 && tupid == 23042 && attr==3) || (simfid == 16 && tupid == 62 && attr==3) || (simfid == 28 && tupid == 62 && attr==3) || (simfid == 28 && tupid == 52 && attr==0) || (simfid == 28 && tupid == 83644 && attr==0) || (simfid == 16 && tupid == 83644 && attr==3) || (simfid == 28 && tupid == 83644 && attr==3) || (simfid == 28 && tupid == 32140 && attr==0)) return 555;
+	if((simfid == 20 && tupid == 18059 && attr==3) || (simfid == 21 && tupid == 18059 && attr==3)) return 557;
+	if((simfid == 6 && tupid == 62 && attr==0)) return 559;
+	if((simfid == 12 && tupid == 23042 && attr==0) || (simfid == 1 && tupid == 83644 && attr==1)) return 560;
+	if((simfid == 18 && tupid == 74 && attr==3) || (simfid == 20 && tupid == 74 && attr==3) || (simfid == 21 && tupid == 74 && attr==3) || (simfid == 20 && tupid == 57484 && attr==1)) return 561;
+	if((simfid == 23 && tupid == 74 && attr==1) || (simfid == 24 && tupid == 52 && attr==3)) return 562;
+	if((simfid == 19 && tupid == 74 && attr==1) || (simfid == 19 && tupid == 41847 && attr==1) || (simfid == 19 && tupid == 32140 && attr==1)) return 566;
+	if((simfid == 24 && tupid == 50334 && attr==2) || (simfid == 1 && tupid == 78818 && attr==0) || (simfid == 3 && tupid == 18059 && attr==0) || (simfid == 14 && tupid == 18059 && attr==0) || (simfid == 26 && tupid == 18059 && attr==0) || (simfid == 27 && tupid == 18059 && attr==0) || (simfid == 25 && tupid == 74 && attr==1) || (simfid == 8 && tupid == 34056 && attr==0) || (simfid == 6 && tupid == 34056 && attr==1) || (simfid == 8 && tupid == 34056 && attr==1) || (simfid == 3 && tupid == 62 && attr==1) || (simfid == 14 && tupid == 62 && attr==1)) return 571;
+	if((simfid == 24 && tupid == 17805 && attr==3)) return 576;
+	if((simfid == 2 && tupid == 78 && attr==0) || (simfid == 2 && tupid == 18059 && attr==0) || (simfid == 10 && tupid == 102 && attr==0) || (simfid == 10 && tupid == 79361 && attr==0) || (simfid == 2 && tupid == 62 && attr==1)) return 577;
+	if((simfid == 19 && tupid == 102 && attr==0)) return 579;
+	if((simfid == 10 && tupid == 23042 && attr==1)) return 580;
+	if((simfid == 23 && tupid == 98 && attr==1)) return 581;
+	if((simfid == 6 && tupid == 33586 && attr==0)) return 582;
+	if((simfid == 11 && tupid == 66 && attr==3) || (simfid == 13 && tupid == 66 && attr==3) || (simfid == 12 && tupid == 98 && attr==1) || (simfid == 7 && tupid == 98 && attr==2) || (simfid == 9 && tupid == 98 && attr==2) || (simfid == 1 && tupid == 98 && attr==3) || (simfid == 24 && tupid == 98 && attr==3) || (simfid == 7 && tupid == 78 && attr==2) || (simfid == 9 && tupid == 78 && attr==2) || (simfid == 7 && tupid == 74 && attr==2) || (simfid == 9 && tupid == 74 && attr==2) || (simfid == 12 && tupid == 17805 && attr==1) || (simfid == 7 && tupid == 41847 && attr==2) || (simfid == 9 && tupid == 41847 && attr==2) || (simfid == 7 && tupid == 102 && attr==2) || (simfid == 9 && tupid == 102 && attr==2) || (simfid == 7 && tupid == 32140 && attr==2) || (simfid == 9 && tupid == 32140 && attr==2)) return 583;
+	if((simfid == 10 && tupid == 74 && attr==0)) return 585;
+	if((simfid == 26 && tupid == 34056 && attr==1) || (simfid == 27 && tupid == 34056 && attr==1) || (simfid == 23 && tupid == 33586 && attr==0)) return 586;
+	if((simfid == 16 && tupid == 41024 && attr==1) || (simfid == 12 && tupid == 33586 && attr==0)) return 588;
+	if((simfid == 24 && tupid == 23042 && attr==0)) return 589;
+	if((simfid == 25 && tupid == 18059 && attr==0)) return 595;
+	if((simfid == 18 && tupid == 24 && attr==0)) return 598;
+	if((simfid == 1 && tupid == 74 && attr==0) || (simfid == 23 && tupid == 41847 && attr==3) || (simfid == 25 && tupid == 41847 && attr==3) || (simfid == 26 && tupid == 41847 && attr==3) || (simfid == 27 && tupid == 41847 && attr==3) || (simfid == 6 && tupid == 102 && attr==0) || (simfid == 2 && tupid == 11393 && attr==1) || (simfid == 3 && tupid == 11393 && attr==1) || (simfid == 4 && tupid == 11393 && attr==1) || (simfid == 14 && tupid == 11393 && attr==1) || (simfid == 22 && tupid == 11393 && attr==1) || (simfid == 5 && tupid == 24 && attr==0) || (simfid == 6 && tupid == 23042 && attr==0) || (simfid == 8 && tupid == 23042 && attr==0) || (simfid == 12 && tupid == 23042 && attr==1)) return 600;
+	if((simfid == 18 && tupid == 41024 && attr==1) || (simfid == 20 && tupid == 17805 && attr==1) || (simfid == 21 && tupid == 17805 && attr==1)) return 603;
+	if((simfid == 18 && tupid == 23042 && attr==1)) return 604;
+	if((simfid == 21 && tupid == 57484 && attr==1)) return 605;
+	if((simfid == 25 && tupid == 32140 && attr==1)) return 607;
+	if((simfid == 10 && tupid == 41847 && attr==0)) return 609;
+	if((simfid == 1 && tupid == 98 && attr==2) || (simfid == 15 && tupid == 98 && attr==2) || (simfid == 24 && tupid == 98 && attr==2) || (simfid == 1 && tupid == 78 && attr==2) || (simfid == 15 && tupid == 78 && attr==2) || (simfid == 24 && tupid == 78 && attr==2) || (simfid == 1 && tupid == 74 && attr==2) || (simfid == 15 && tupid == 74 && attr==2) || (simfid == 24 && tupid == 74 && attr==2) || (simfid == 1 && tupid == 17805 && attr==3) || (simfid == 15 && tupid == 17805 && attr==3) || (simfid == 1 && tupid == 41847 && attr==2) || (simfid == 15 && tupid == 41847 && attr==2) || (simfid == 24 && tupid == 41847 && attr==2) || (simfid == 1 && tupid == 102 && attr==2) || (simfid == 15 && tupid == 102 && attr==2) || (simfid == 24 && tupid == 102 && attr==2) || (simfid == 24 && tupid == 57484 && attr==3) || (simfid == 25 && tupid == 33586 && attr==1) || (simfid == 1 && tupid == 32140 && attr==2) || (simfid == 15 && tupid == 32140 && attr==2) || (simfid == 24 && tupid == 32140 && attr==2)) return 615;
+	if((simfid == 16 && tupid == 78818 && attr==1)) return 616;
+	if((simfid == 6 && tupid == 74 && attr==0) || (simfid == 6 && tupid == 33586 && attr==1)) return 617;
+	if((simfid == 11 && tupid == 62 && attr==1) || (simfid == 13 && tupid == 62 && attr==1)) return 619;
+	if((simfid == 24 && tupid == 41024 && attr==1) || (simfid == 23 && tupid == 7260 && attr==1) || (simfid == 24 && tupid == 18059 && attr==3) || (simfid == 1 && tupid == 41847 && attr==1) || (simfid == 24 && tupid == 34056 && attr==3) || (simfid == 15 && tupid == 102 && attr==3) || (simfid == 24 && tupid == 102 && attr==3) || (simfid == 24 && tupid == 57484 && attr==0) || (simfid == 1 && tupid == 79361 && attr==0) || (simfid == 11 && tupid == 79361 && attr==1) || (simfid == 13 && tupid == 79361 && attr==1) || (simfid == 23 && tupid == 33586 && attr==1) || (simfid == 6 && tupid == 23042 && attr==1) || (simfid == 8 && tupid == 23042 && attr==1) || (simfid == 15 && tupid == 52 && attr==3) || (simfid == 24 && tupid == 83644 && attr==3)) return 625;
+	if((simfid == 20 && tupid == 57484 && attr==3) || (simfid == 21 && tupid == 57484 && attr==3)) return 626;
+	if((simfid == 18 && tupid == 102 && attr==3)) return 627;
+	if((simfid == 26 && tupid == 74 && attr==1) || (simfid == 27 && tupid == 74 && attr==1)) return 628;
+	if((simfid == 16 && tupid == 23042 && attr==1)) return 629;
+	if((simfid == 25 && tupid == 33586 && attr==0)) return 631;
+	if((simfid == 10 && tupid == 78 && attr==0)) return 632;
+	if((simfid == 18 && tupid == 41847 && attr==3)) return 633;
+	if((simfid == 12 && tupid == 74 && attr==0) || (simfid == 12 && tupid == 41847 && attr==0) || (simfid == 15 && tupid == 11393 && attr==3) || (simfid == 20 && tupid == 23042 && attr==0) || (simfid == 21 && tupid == 23042 && attr==0) || (simfid == 15 && tupid == 23042 && attr==3) || (simfid == 7 && tupid == 62 && attr==1) || (simfid == 9 && tupid == 62 && attr==1)) return 636;
+	if((simfid == 23 && tupid == 52 && attr==0)) return 639;
+	if((simfid == 6 && tupid == 41847 && attr==0)) return 640;
+	if((simfid == 11 && tupid == 66 && attr==0) || (simfid == 13 && tupid == 66 && attr==0) || (simfid == 25 && tupid == 98 && attr==1) || (simfid == 26 && tupid == 17805 && attr==1) || (simfid == 27 && tupid == 17805 && attr==1) || (simfid == 12 && tupid == 83644 && attr==0)) return 642;
+	if((simfid == 20 && tupid == 41024 && attr==1) || (simfid == 21 && tupid == 41024 && attr==1)) return 643;
+	if((simfid == 10 && tupid == 78818 && attr==0)) return 645;
+	if((simfid == 19 && tupid == 34056 && attr==1) || (simfid == 19 && tupid == 33586 && attr==1)) return 646;
+	if((simfid == 7 && tupid == 79361 && attr==1) || (simfid == 9 && tupid == 79361 && attr==1) || (simfid == 8 && tupid == 33586 && attr==0) || (simfid == 25 && tupid == 23042 && attr==1)) return 647;
+	if((simfid == 23 && tupid == 17805 && attr==0) || (simfid == 26 && tupid == 17805 && attr==0) || (simfid == 27 && tupid == 17805 && attr==0) || (simfid == 23 && tupid == 32140 && attr==1)) return 649;
+	if((simfid == 1 && tupid == 18059 && attr==0)) return 652;
+	if((simfid == 19 && tupid == 18059 && attr==0) || (simfid == 1 && tupid == 102 && attr==0) || (simfid == 19 && tupid == 62 && attr==1)) return 653;
+	if((simfid == 6 && tupid == 79361 && attr==0)) return 654;
+	if((simfid == 24 && tupid == 52 && attr==0) || (simfid == 6 && tupid == 83644 && attr==1)) return 656;
+	if((simfid == 26 && tupid == 98 && attr==1) || (simfid == 27 && tupid == 98 && attr==1) || (simfid == 23 && tupid == 57484 && attr==3) || (simfid == 26 && tupid == 57484 && attr==3) || (simfid == 27 && tupid == 57484 && attr==3) || (simfid == 19 && tupid == 83644 && attr==0) || (simfid == 26 && tupid == 32140 && attr==1) || (simfid == 27 && tupid == 32140 && attr==1)) return 657;
+	if((simfid == 20 && tupid == 52 && attr==3) || (simfid == 21 && tupid == 52 && attr==3)) return 658;
+	if((simfid == 18 && tupid == 41847 && attr==1)) return 659;
+	if((simfid == 6 && tupid == 78 && attr==0) || (simfid == 20 && tupid == 41847 && attr==1) || (simfid == 21 && tupid == 41847 && attr==1)) return 661;
+	if((simfid == 23 && tupid == 41024 && attr==0) || (simfid == 5 && tupid == 66 && attr==0) || (simfid == 7 && tupid == 66 && attr==0) || (simfid == 9 && tupid == 66 && attr==0) || (simfid == 22 && tupid == 66 && attr==0) || (simfid == 5 && tupid == 66 && attr==1) || (simfid == 1 && tupid == 50334 && attr==3) || (simfid == 3 && tupid == 78818 && attr==0) || (simfid == 14 && tupid == 78818 && attr==0) || (simfid == 4 && tupid == 98 && attr==1) || (simfid == 5 && tupid == 98 && attr==2) || (simfid == 22 && tupid == 98 && attr==2) || (simfid == 15 && tupid == 98 && attr==3) || (simfid == 15 && tupid == 7260 && attr==2) || (simfid == 5 && tupid == 78 && attr==2) || (simfid == 22 && tupid == 78 && attr==2) || (simfid == 4 && tupid == 18059 && attr==0) || (simfid == 5 && tupid == 18059 && attr==1) || (simfid == 7 && tupid == 18059 && attr==1) || (simfid == 9 && tupid == 18059 && attr==1) || (simfid == 11 && tupid == 18059 && attr==1) || (simfid == 13 && tupid == 18059 && attr==1) || (simfid == 2 && tupid == 74 && attr==0) || (simfid == 3 && tupid == 74 && attr==0) || (simfid == 4 && tupid == 74 && attr==0) || (simfid == 8 && tupid == 74 && attr==0) || (simfid == 14 && tupid == 74 && attr==0) || (simfid == 19 && tupid == 74 && attr==0) || (simfid == 22 && tupid == 74 && attr==0) || (simfid == 1 && tupid == 74 && attr==1) || (simfid == 5 && tupid == 74 && attr==2) || (simfid == 22 && tupid == 74 && attr==2) || (simfid == 6 && tupid == 17805 && attr==0) || (simfid == 8 && tupid == 17805 && attr==0) || (simfid == 23 && tupid == 17805 && attr==1) || (simfid == 2 && tupid == 41847 && attr==0) || (simfid == 3 && tupid == 41847 && attr==0) || (simfid == 4 && tupid == 41847 && attr==0) || (simfid == 8 && tupid == 41847 && attr==0) || (simfid == 14 && tupid == 41847 && attr==0) || (simfid == 19 && tupid == 41847 && attr==0) || (simfid == 22 && tupid == 41847 && attr==0) || (simfid == 5 && tupid == 41847 && attr==2) || (simfid == 22 && tupid == 41847 && attr==2) || (simfid == 1 && tupid == 41847 && attr==3) || (simfid == 16 && tupid == 41847 && attr==3) || (simfid == 28 && tupid == 41847 && attr==3) || (simfid == 1 && tupid == 34056 && attr==0) || (simfid == 5 && tupid == 102 && attr==2) || (simfid == 22 && tupid == 102 && attr==2) || (simfid == 16 && tupid == 11393 && attr==3) || (simfid == 28 && tupid == 11393 && attr==3) || (simfid == 8 && tupid == 57484 && attr==0) || (simfid == 16 && tupid == 57484 && attr==3) || (simfid == 28 && tupid == 57484 && attr==3) || (simfid == 3 && tupid == 79361 && attr==0) || (simfid == 14 && tupid == 79361 && attr==0) || (simfid == 2 && tupid == 79361 && attr==1) || (simfid == 3 && tupid == 79361 && attr==1) || (simfid == 4 && tupid == 79361 && attr==1) || (simfid == 14 && tupid == 79361 && attr==1) || (simfid == 16 && tupid == 79361 && attr==1) || (simfid == 19 && tupid == 79361 && attr==1) || (simfid == 22 && tupid == 79361 && attr==1) || (simfid == 28 && tupid == 24 && attr==0) || (simfid == 16 && tupid == 24 && attr==1) || (simfid == 8 && tupid == 33586 && attr==1) || (simfid == 2 && tupid == 23042 && attr==0) || (simfid == 3 && tupid == 23042 && attr==0) || (simfid == 4 && tupid == 23042 && attr==0) || (simfid == 14 && tupid == 23042 && attr==0) || (simfid == 19 && tupid == 23042 && attr==0) || (simfid == 22 && tupid == 23042 && attr==0) || (simfid == 3 && tupid == 62 && attr==0) || (simfid == 14 && tupid == 62 && attr==0) || (simfid == 4 && tupid == 62 && attr==1) || (simfid == 16 && tupid == 62 && attr==1) || (simfid == 3 && tupid == 52 && attr==0) || (simfid == 14 && tupid == 52 && attr==0) || (simfid == 8 && tupid == 83644 && attr==1) || (simfid == 23 && tupid == 83644 && attr==1) || (simfid == 5 && tupid == 32140 && attr==2) || (simfid == 22 && tupid == 32140 && attr==2)) return 666;
+	if((simfid == 24 && tupid == 24 && attr==0)) return 671;
+	if((simfid == 18 && tupid == 52 && attr==2)) return 673;
+	if((simfid == 26 && tupid == 33586 && attr==1) || (simfid == 27 && tupid == 33586 && attr==1)) return 676;
+	if((simfid == 20 && tupid == 78818 && attr==1) || (simfid == 20 && tupid == 18059 && attr==0) || (simfid == 21 && tupid == 18059 && attr==0)) return 677;
+	if((simfid == 25 && tupid == 17805 && attr==1)) return 678;
+	if((simfid == 6 && tupid == 78818 && attr==0)) return 679;
+	if((simfid == 20 && tupid == 17805 && attr==3) || (simfid == 21 && tupid == 17805 && attr==3) || (simfid == 1 && tupid == 33586 && attr==0) || (simfid == 24 && tupid == 52 && attr==2)) return 681;
+	if((simfid == 1 && tupid == 50334 && attr==0) || (simfid == 26 && tupid == 33586 && attr==0) || (simfid == 27 && tupid == 33586 && attr==0)) return 684;
+	if((simfid == 20 && tupid == 98 && attr==1)) return 686;
+	if((simfid == 15 && tupid == 41024 && attr==1) || (simfid == 1 && tupid == 66 && attr==0) || (simfid == 15 && tupid == 66 && attr==0) || (simfid == 24 && tupid == 66 && attr==0) || (simfid == 25 && tupid == 83644 && attr==0) || (simfid == 26 && tupid == 83644 && attr==0) || (simfid == 27 && tupid == 83644 && attr==0)) return 687;
+	if((simfid == 16 && tupid == 41024 && attr==0)) return 688;
+	if((simfid == 19 && tupid == 98 && attr==1) || (simfid == 20 && tupid == 34056 && attr==3) || (simfid == 21 && tupid == 34056 && attr==3) || (simfid == 20 && tupid == 83644 && attr==3) || (simfid == 21 && tupid == 83644 && attr==3)) return 690;
+	if((simfid == 8 && tupid == 98 && attr==1) || (simfid == 25 && tupid == 74 && attr==0) || (simfid == 26 && tupid == 74 && attr==0) || (simfid == 27 && tupid == 74 && attr==0) || (simfid == 26 && tupid == 41847 && attr==0) || (simfid == 27 && tupid == 41847 && attr==0) || (simfid == 11 && tupid == 24 && attr==0) || (simfid == 13 && tupid == 24 && attr==0)) return 692;
+	if((simfid == 28 && tupid == 41024 && attr==3) || (simfid == 28 && tupid == 98 && attr==1) || (simfid == 16 && tupid == 7260 && attr==1) || (simfid == 18 && tupid == 17805 && attr==0) || (simfid == 16 && tupid == 41847 && attr==1) || (simfid == 28 && tupid == 23042 && attr==0) || (simfid == 16 && tupid == 52 && attr==1) || (simfid == 16 && tupid == 52 && attr==3) || (simfid == 28 && tupid == 52 && attr==3) || (simfid == 28 && tupid == 83644 && attr==1)) return 694;
+	if((simfid == 19 && tupid == 17805 && attr==1) || (simfid == 11 && tupid == 11393 && attr==1) || (simfid == 13 && tupid == 11393 && attr==1) || (simfid == 19 && tupid == 57484 && attr==1) || (simfid == 20 && tupid == 33586 && attr==0) || (simfid == 21 && tupid == 33586 && attr==0)) return 695;
+	if((simfid == 20 && tupid == 41847 && attr==3) || (simfid == 21 && tupid == 41847 && attr==3) || (simfid == 26 && tupid == 34056 && attr==0) || (simfid == 27 && tupid == 34056 && attr==0)) return 699;
+	if((simfid == 19 && tupid == 83644 && attr==1)) return 700;
+	if((simfid == 20 && tupid == 83644 && attr==1) || (simfid == 21 && tupid == 83644 && attr==1)) return 703;
+	if((simfid == 26 && tupid == 23042 && attr==1) || (simfid == 27 && tupid == 23042 && attr==1) || (simfid == 1 && tupid == 62 && attr==0)) return 705;
+	if((simfid == 2 && tupid == 78818 && attr==0) || (simfid == 2 && tupid == 79361 && attr==0) || (simfid == 2 && tupid == 62 && attr==0) || (simfid == 2 && tupid == 52 && attr==0)) return 707;
+	if((simfid == 23 && tupid == 34056 && attr==1)) return 708;
+	if((simfid == 21 && tupid == 78818 && attr==1)) return 710;
+	if((simfid == 16 && tupid == 98 && attr==1)) return 713;
+	if((simfid == 15 && tupid == 74 && attr==3) || (simfid == 1 && tupid == 41847 && attr==0) || (simfid == 8 && tupid == 83644 && attr==0)) return 714;
+	if((simfid == 19 && tupid == 11393 && attr==1)) return 717;
+	if((simfid == 19 && tupid == 66 && attr==0) || (simfid == 19 && tupid == 98 && attr==2) || (simfid == 16 && tupid == 7260 && attr==2) || (simfid == 19 && tupid == 78 && attr==2) || (simfid == 16 && tupid == 74 && attr==1) || (simfid == 19 && tupid == 74 && attr==2) || (simfid == 19 && tupid == 41847 && attr==2) || (simfid == 19 && tupid == 102 && attr==2) || (simfid == 16 && tupid == 23042 && attr==3) || (simfid == 16 && tupid == 32140 && attr==1) || (simfid == 19 && tupid == 32140 && attr==2)) return 722;
+	if((simfid == 20 && tupid == 74 && attr==1) || (simfid == 21 && tupid == 74 && attr==1)) return 726;
+	if((simfid == 15 && tupid == 62 && attr==3)) return 727;
+	if((simfid == 25 && tupid == 41847 && attr==0)) return 730;
+	if((simfid == 18 && tupid == 83644 && attr==1)) return 731;
+	if((simfid == 24 && tupid == 74 && attr==0) || (simfid == 1 && tupid == 34056 && attr==1)) return 733;
+	if((simfid == 10 && tupid == 66 && attr==3) || (simfid == 20 && tupid == 52 && attr==2)) return 737;
+	if((simfid == 10 && tupid == 98 && attr==2) || (simfid == 10 && tupid == 78 && attr==2) || (simfid == 10 && tupid == 74 && attr==2) || (simfid == 10 && tupid == 41847 && attr==2) || (simfid == 10 && tupid == 102 && attr==2) || (simfid == 10 && tupid == 32140 && attr==2)) return 738;
+	if((simfid == 16 && tupid == 83644 && attr==0)) return 739;
+	if((simfid == 18 && tupid == 74 && attr==1)) return 741;
+	if((simfid == 24 && tupid == 83644 && attr==1)) return 743;
+	if((simfid == 18 && tupid == 32140 && attr==1)) return 745;
+	if((simfid == 7 && tupid == 66 && attr==3) || (simfid == 9 && tupid == 66 && attr==3) || (simfid == 24 && tupid == 17805 && attr==0) || (simfid == 24 && tupid == 41847 && attr==1) || (simfid == 24 && tupid == 41847 && attr==3) || (simfid == 25 && tupid == 34056 && attr==0) || (simfid == 16 && tupid == 34056 && attr==1) || (simfid == 25 && tupid == 57484 && attr==0) || (simfid == 16 && tupid == 57484 && attr==1) || (simfid == 2 && tupid == 24 && attr==0) || (simfid == 3 && tupid == 24 && attr==0) || (simfid == 4 && tupid == 24 && attr==0) || (simfid == 14 && tupid == 24 && attr==0) || (simfid == 19 && tupid == 24 && attr==0) || (simfid == 22 && tupid == 24 && attr==0) || (simfid == 5 && tupid == 24 && attr==1) || (simfid == 22 && tupid == 24 && attr==1) || (simfid == 16 && tupid == 33586 && attr==0) || (simfid == 16 && tupid == 33586 && attr==1) || (simfid == 23 && tupid == 23042 && attr==0) || (simfid == 1 && tupid == 62 && attr==1) || (simfid == 5 && tupid == 52 && attr==1) || (simfid == 22 && tupid == 52 && attr==1) || (simfid == 12 && tupid == 32140 && attr==0) || (simfid == 23 && tupid == 32140 && attr==2)) return 750;
+	if((simfid == 16 && tupid == 102 && attr==3) || (simfid == 28 && tupid == 102 && attr==3)) return 755;
+	if((simfid == 24 && tupid == 18059 && attr==0)) return 760;
+	if((simfid == 1 && tupid == 57484 && attr==1) || (simfid == 11 && tupid == 52 && attr==1) || (simfid == 13 && tupid == 52 && attr==1)) return 761;
+	if((simfid == 6 && tupid == 98 && attr==2) || (simfid == 6 && tupid == 78 && attr==2) || (simfid == 6 && tupid == 74 && attr==2) || (simfid == 6 && tupid == 41847 && attr==2) || (simfid == 6 && tupid == 102 && attr==2) || (simfid == 18 && tupid == 57484 && attr==0) || (simfid == 6 && tupid == 32140 && attr==2)) return 763;
+	if((simfid == 16 && tupid == 17805 && attr==1)) return 765;
+	if((simfid == 16 && tupid == 66 && attr==3) || (simfid == 23 && tupid == 41847 && attr==0) || (simfid == 10 && tupid == 62 && attr==1)) return 766;
+	if((simfid == 8 && tupid == 17805 && attr==1) || (simfid == 10 && tupid == 79361 && attr==1) || (simfid == 12 && tupid == 79361 && attr==1)) return 769;
+	if((simfid == 7 && tupid == 11393 && attr==1) || (simfid == 9 && tupid == 11393 && attr==1)) return 772;
+	if((simfid == 18 && tupid == 33586 && attr==1)) return 773;
+	if((simfid == 12 && tupid == 66 && attr==3) || (simfid == 16 && tupid == 50334 && attr==0) || (simfid == 28 && tupid == 7260 && attr==1) || (simfid == 23 && tupid == 74 && attr==0) || (simfid == 28 && tupid == 41847 && attr==0) || (simfid == 24 && tupid == 34056 && attr==0) || (simfid == 16 && tupid == 57484 && attr==0) || (simfid == 23 && tupid == 79361 && attr==1) || (simfid == 16 && tupid == 24 && attr==3) || (simfid == 28 && tupid == 24 && attr==3) || (simfid == 1 && tupid == 23042 && attr==1) || (simfid == 16 && tupid == 52 && attr==0) || (simfid == 18 && tupid == 52 && attr==1) || (simfid == 16 && tupid == 52 && attr==2)) return 777;
+	if((simfid == 6 && tupid == 62 && attr==1)) return 778;
+	if((simfid == 23 && tupid == 18059 && attr==0) || (simfid == 18 && tupid == 74 && attr==0)) return 783;
+	if((simfid == 20 && tupid == 62 && attr==0)) return 784;
+	if((simfid == 6 && tupid == 79361 && attr==1) || (simfid == 8 && tupid == 79361 && attr==1) || (simfid == 1 && tupid == 32140 && attr==1)) return 785;
+	if((simfid == 20 && tupid == 23042 && attr==1) || (simfid == 21 && tupid == 23042 && attr==1)) return 790;
+	if((simfid == 18 && tupid == 33586 && attr==0)) return 792;
+	if((simfid == 20 && tupid == 41847 && attr==0) || (simfid == 21 && tupid == 41847 && attr==0) || (simfid == 20 && tupid == 102 && attr==0)) return 794;
+	if((simfid == 16 && tupid == 11393 && attr==0) || (simfid == 24 && tupid == 33586 && attr==0)) return 795;
+	if((simfid == 20 && tupid == 32140 && attr==1)) return 796;
+	if((simfid == 18 && tupid == 34056 && attr==1)) return 799;
+	if((simfid == 3 && tupid == 66 && attr==0) || (simfid == 14 && tupid == 66 && attr==0) || (simfid == 2 && tupid == 66 && attr==1) || (simfid == 3 && tupid == 66 && attr==1) || (simfid == 4 && tupid == 66 && attr==1) || (simfid == 14 && tupid == 66 && attr==1) || (simfid == 16 && tupid == 66 && attr==1) || (simfid == 19 && tupid == 66 && attr==1) || (simfid == 22 && tupid == 66 && attr==1) || (simfid == 3 && tupid == 98 && attr==2) || (simfid == 14 && tupid == 98 && attr==2) || (simfid == 3 && tupid == 78 && attr==2) || (simfid == 14 && tupid == 78 && attr==2) || (simfid == 2 && tupid == 18059 && attr==1) || (simfid == 3 && tupid == 18059 && attr==1) || (simfid == 4 && tupid == 18059 && attr==1) || (simfid == 6 && tupid == 18059 && attr==1) || (simfid == 8 && tupid == 18059 && attr==1) || (simfid == 10 && tupid == 18059 && attr==1) || (simfid == 12 && tupid == 18059 && attr==1) || (simfid == 14 && tupid == 18059 && attr==1) || (simfid == 16 && tupid == 18059 && attr==1) || (simfid == 19 && tupid == 18059 && attr==1) || (simfid == 22 && tupid == 18059 && attr==1) || (simfid == 3 && tupid == 74 && attr==2) || (simfid == 14 && tupid == 74 && attr==2) || (simfid == 3 && tupid == 41847 && attr==2) || (simfid == 14 && tupid == 41847 && attr==2) || (simfid == 23 && tupid == 34056 && attr==0) || (simfid == 3 && tupid == 102 && attr==2) || (simfid == 14 && tupid == 102 && attr==2) || (simfid == 16 && tupid == 11393 && attr==1) || (simfid == 25 && tupid == 79361 && attr==1) || (simfid == 26 && tupid == 79361 && attr==1) || (simfid == 27 && tupid == 79361 && attr==1) || (simfid == 19 && tupid == 24 && attr==1) || (simfid == 1 && tupid == 33586 && attr==1) || (simfid == 19 && tupid == 52 && attr==1) || (simfid == 1 && tupid == 32140 && attr==0) || (simfid == 8 && tupid == 32140 && attr==0) || (simfid == 3 && tupid == 32140 && attr==2) || (simfid == 14 && tupid == 32140 && attr==2)) return 800;
+	if((simfid == 10 && tupid == 66 && attr==0)) return 801;
+	if((simfid == 20 && tupid == 74 && attr==0) || (simfid == 20 && tupid == 34056 && attr==1) || (simfid == 20 && tupid == 33586 && attr==1) || (simfid == 21 && tupid == 33586 && attr==1)) return 811;
+	if((simfid == 21 && tupid == 98 && attr==1) || (simfid == 12 && tupid == 62 && attr==1)) return 812;
+	if((simfid == 18 && tupid == 79361 && attr==1)) return 814;
+	if((simfid == 2 && tupid == 66 && attr==0) || (simfid == 6 && tupid == 66 && attr==0) || (simfid == 2 && tupid == 98 && attr==2) || (simfid == 2 && tupid == 78 && attr==2) || (simfid == 2 && tupid == 74 && attr==2) || (simfid == 2 && tupid == 41847 && attr==2) || (simfid == 2 && tupid == 102 && attr==2) || (simfid == 21 && tupid == 32140 && attr==1) || (simfid == 2 && tupid == 32140 && attr==2)) return 816;
+	if((simfid == 10 && tupid == 24 && attr==0) || (simfid == 12 && tupid == 24 && attr==0) || (simfid == 15 && tupid == 52 && attr==2)) return 818;
+	if((simfid == 10 && tupid == 11393 && attr==1)) return 820;
+	if((simfid == 24 && tupid == 41847 && attr==0)) return 821;
+	if((simfid == 16 && tupid == 74 && attr==3) || (simfid == 28 && tupid == 74 && attr==3) || (simfid == 28 && tupid == 17805 && attr==1)) return 822;
+	if((simfid == 20 && tupid == 78 && attr==0) || (simfid == 8 && tupid == 62 && attr==1)) return 823;
+	if((simfid == 24 && tupid == 62 && attr==1)) return 824;
+	if((simfid == 7 && tupid == 24 && attr==0) || (simfid == 9 && tupid == 24 && attr==0)) return 828;
+	if((simfid == 21 && tupid == 34056 && attr==1)) return 830;
+	if((simfid == 15 && tupid == 41024 && attr==3) || (simfid == 18 && tupid == 66 && attr==3) || (simfid == 20 && tupid == 78818 && attr==0) || (simfid == 24 && tupid == 74 && attr==1) || (simfid == 15 && tupid == 41847 && attr==3) || (simfid == 20 && tupid == 79361 && attr==0) || (simfid == 24 && tupid == 33586 && attr==1) || (simfid == 24 && tupid == 23042 && attr==1) || (simfid == 25 && tupid == 62 && attr==1) || (simfid == 26 && tupid == 62 && attr==1) || (simfid == 27 && tupid == 62 && attr==1) || (simfid == 25 && tupid == 32140 && attr==0) || (simfid == 26 && tupid == 32140 && attr==0) || (simfid == 27 && tupid == 32140 && attr==0)) return 833;
+	if((simfid == 12 && tupid == 11393 && attr==1) || (simfid == 7 && tupid == 24 && attr==1) || (simfid == 9 && tupid == 24 && attr==1) || (simfid == 11 && tupid == 24 && attr==1) || (simfid == 13 && tupid == 24 && attr==1) || (simfid == 21 && tupid == 52 && attr==2)) return 842;
+	if((simfid == 8 && tupid == 57484 && attr==1)) return 846;
+	if((simfid == 25 && tupid == 18059 && attr==1) || (simfid == 18 && tupid == 34056 && attr==0)) return 847;
+	if((simfid == 23 && tupid == 62 && attr==1)) return 849;
+	if((simfid == 28 && tupid == 41024 && attr==1) || (simfid == 15 && tupid == 78818 && attr==1) || (simfid == 1 && tupid == 24 && attr==1) || (simfid == 3 && tupid == 24 && attr==1) || (simfid == 14 && tupid == 24 && attr==1) || (simfid == 15 && tupid == 24 && attr==1) || (simfid == 24 && tupid == 24 && attr==1) || (simfid == 3 && tupid == 52 && attr==1) || (simfid == 7 && tupid == 52 && attr==1) || (simfid == 9 && tupid == 52 && attr==1) || (simfid == 14 && tupid == 52 && attr==1)) return 857;
+	if((simfid == 6 && tupid == 66 && attr==3)) return 858;
+	if((simfid == 26 && tupid == 18059 && attr==1) || (simfid == 27 && tupid == 18059 && attr==1) || (simfid == 20 && tupid == 24 && attr==0) || (simfid == 21 && tupid == 24 && attr==0)) return 860;
+	if((simfid == 26 && tupid == 11393 && attr==1) || (simfid == 27 && tupid == 11393 && attr==1) || (simfid == 15 && tupid == 33586 && attr==0) || (simfid == 1 && tupid == 52 && attr==1) || (simfid == 15 && tupid == 52 && attr==1) || (simfid == 24 && tupid == 52 && attr==1)) return 863;
+	if((simfid == 15 && tupid == 74 && attr==0) || (simfid == 28 && tupid == 74 && attr==0) || (simfid == 24 && tupid == 34056 && attr==1) || (simfid == 1 && tupid == 79361 && attr==1) || (simfid == 2 && tupid == 24 && attr==1) || (simfid == 15 && tupid == 33586 && attr==1) || (simfid == 28 && tupid == 62 && attr==0) || (simfid == 2 && tupid == 52 && attr==1)) return 866;
+	if((simfid == 10 && tupid == 52 && attr==1) || (simfid == 16 && tupid == 83644 && attr==1)) return 867;
+	if((simfid == 1 && tupid == 11393 && attr==1)) return 869;
+	if((simfid == 23 && tupid == 18059 && attr==1) || (simfid == 15 && tupid == 11393 && attr==0)) return 870;
+	if((simfid == 20 && tupid == 98 && attr==2) || (simfid == 20 && tupid == 78 && attr==2) || (simfid == 20 && tupid == 74 && attr==2) || (simfid == 20 && tupid == 41847 && attr==2) || (simfid == 20 && tupid == 102 && attr==2) || (simfid == 20 && tupid == 32140 && attr==2)) return 871;
+	if((simfid == 6 && tupid == 11393 && attr==1)) return 872;
+	if((simfid == 15 && tupid == 41847 && attr==1) || (simfid == 15 && tupid == 34056 && attr==3) || (simfid == 28 && tupid == 11393 && attr==0) || (simfid == 23 && tupid == 57484 && attr==1) || (simfid == 23 && tupid == 52 && attr==1) || (simfid == 28 && tupid == 52 && attr==2) || (simfid == 15 && tupid == 83644 && attr==3)) return 875;
+	if((simfid == 15 && tupid == 7260 && attr==1)) return 882;
+	if((simfid == 20 && tupid == 34056 && attr==0) || (simfid == 20 && tupid == 52 && attr==1)) return 884;
+	if((simfid == 28 && tupid == 74 && attr==1) || (simfid == 16 && tupid == 17805 && attr==0) || (simfid == 28 && tupid == 17805 && attr==0) || (simfid == 15 && tupid == 34056 && attr==0) || (simfid == 16 && tupid == 23042 && attr==0) || (simfid == 28 && tupid == 52 && attr==1) || (simfid == 28 && tupid == 32140 && attr==1)) return 888;
+	if((simfid == 18 && tupid == 41847 && attr==0)) return 891;
+	if((simfid == 24 && tupid == 32140 && attr==1)) return 892;
+	if((simfid == 18 && tupid == 18059 && attr==1) || (simfid == 8 && tupid == 11393 && attr==1)) return 894;
+	if((simfid == 20 && tupid == 66 && attr==0) || (simfid == 18 && tupid == 18059 && attr==0)) return 895;
+	if((simfid == 20 && tupid == 62 && attr==1)) return 896;
+	if((simfid == 16 && tupid == 32140 && attr==2)) return 898;
+	if((simfid == 23 && tupid == 11393 && attr==1) || (simfid == 23 && tupid == 57484 && attr==0) || (simfid == 26 && tupid == 57484 && attr==0) || (simfid == 27 && tupid == 57484 && attr==0) || (simfid == 21 && tupid == 79361 && attr==0) || (simfid == 15 && tupid == 62 && attr==1)) return 899;
+	if((simfid == 8 && tupid == 66 && attr==3)) return 900;
+	if((simfid == 6 && tupid == 24 && attr==0)) return 906;
+	if((simfid == 26 && tupid == 66 && attr==3) || (simfid == 27 && tupid == 66 && attr==3) || (simfid == 25 && tupid == 11393 && attr==1)) return 909;
+	if((simfid == 28 && tupid == 57484 && attr==1) || (simfid == 20 && tupid == 79361 && attr==1)) return 911;
+	if((simfid == 15 && tupid == 18059 && attr==0) || (simfid == 1 && tupid == 18059 && attr==1) || (simfid == 24 && tupid == 11393 && attr==1) || (simfid == 21 && tupid == 62 && attr==0)) return 913;
+	if((simfid == 1 && tupid == 66 && attr==3) || (simfid == 15 && tupid == 66 && attr==3) || (simfid == 24 && tupid == 66 && attr==3) || (simfid == 15 && tupid == 18059 && attr==3) || (simfid == 1 && tupid == 57484 && attr==0)) return 916;
+	if((simfid == 21 && tupid == 102 && attr==0) || (simfid == 18 && tupid == 11393 && attr==1) || (simfid == 6 && tupid == 24 && attr==1) || (simfid == 10 && tupid == 24 && attr==1)) return 917;
+	if((simfid == 21 && tupid == 79361 && attr==1)) return 920;
+	if((simfid == 25 && tupid == 52 && attr==1)) return 921;
+	if((simfid == 28 && tupid == 34056 && attr==0)) return 922;
+	if((simfid == 21 && tupid == 74 && attr==0)) return 924;
+	if((simfid == 16 && tupid == 18059 && attr==0) || (simfid == 16 && tupid == 74 && attr==0) || (simfid == 16 && tupid == 41847 && attr==0) || (simfid == 6 && tupid == 52 && attr==1)) return 925;
+	if((simfid == 26 && tupid == 52 && attr==1) || (simfid == 27 && tupid == 52 && attr==1)) return 926;
+	if((simfid == 15 && tupid == 41847 && attr==0) || (simfid == 15 && tupid == 24 && attr==3)) return 928;
+	if((simfid == 21 && tupid == 78 && attr==0)) return 929;
+	if((simfid == 21 && tupid == 78818 && attr==0) || (simfid == 15 && tupid == 74 && attr==1) || (simfid == 28 && tupid == 79361 && attr==0) || (simfid == 24 && tupid == 79361 && attr==1) || (simfid == 23 && tupid == 52 && attr==2)) return 933;
+	if((simfid == 8 && tupid == 24 && attr==0)) return 935;
+	if((simfid == 18 && tupid == 66 && attr==1)) return 939;
+	if((simfid == 12 && tupid == 52 && attr==1)) return 941;
+	if((simfid == 20 && tupid == 18059 && attr==1) || (simfid == 21 && tupid == 34056 && attr==0) || (simfid == 21 && tupid == 52 && attr==1)) return 942;
+	if((simfid == 28 && tupid == 66 && attr==0) || (simfid == 28 && tupid == 78818 && attr==0) || (simfid == 28 && tupid == 98 && attr==2) || (simfid == 28 && tupid == 78 && attr==2) || (simfid == 28 && tupid == 74 && attr==2) || (simfid == 28 && tupid == 41847 && attr==2) || (simfid == 28 && tupid == 102 && attr==2) || (simfid == 15 && tupid == 23042 && attr==1) || (simfid == 28 && tupid == 23042 && attr==1) || (simfid == 28 && tupid == 32140 && attr==2)) return 944;
+	if((simfid == 21 && tupid == 18059 && attr==1)) return 947;
+	if((simfid == 21 && tupid == 98 && attr==2) || (simfid == 21 && tupid == 78 && attr==2) || (simfid == 21 && tupid == 74 && attr==2) || (simfid == 21 && tupid == 41847 && attr==2) || (simfid == 21 && tupid == 102 && attr==2) || (simfid == 21 && tupid == 32140 && attr==2)) return 948;
+	if((simfid == 7 && tupid == 66 && attr==1) || (simfid == 9 && tupid == 66 && attr==1) || (simfid == 11 && tupid == 66 && attr==1) || (simfid == 13 && tupid == 66 && attr==1)) return 950;
+	if((simfid == 20 && tupid == 24 && attr==1)) return 952;
+	if((simfid == 25 && tupid == 66 && attr==3)) return 954;
+	if((simfid == 16 && tupid == 34056 && attr==0) || (simfid == 20 && tupid == 11393 && attr==1)) return 955;
+	if((simfid == 1 && tupid == 66 && attr==1) || (simfid == 15 && tupid == 66 && attr==1) || (simfid == 24 && tupid == 66 && attr==1) || (simfid == 24 && tupid == 18059 && attr==1) || (simfid == 15 && tupid == 11393 && attr==1)) return 956;
+	if((simfid == 21 && tupid == 66 && attr==0) || (simfid == 21 && tupid == 62 && attr==1)) return 958;
+	if((simfid == 21 && tupid == 11393 && attr==1)) return 960;
+	if((simfid == 15 && tupid == 23042 && attr==0)) return 964;
+	if((simfid == 20 && tupid == 66 && attr==3)) return 972;
+	if((simfid == 6 && tupid == 66 && attr==1) || (simfid == 10 && tupid == 66 && attr==1)) return 974;
+	if((simfid == 15 && tupid == 83644 && attr==1)) return 975;
+	if((simfid == 21 && tupid == 24 && attr==1)) return 980;
+	if((simfid == 20 && tupid == 66 && attr==1)) return 985;
+	if((simfid == 21 && tupid == 66 && attr==3)) return 986;
+	if((simfid == 21 && tupid == 66 && attr==1)) return 994;
+	if((simfid == 0 && tupid == 41024 && attr==2) || (simfid == 1 && tupid == 41024 && attr==2) || (simfid == 2 && tupid == 41024 && attr==2) || (simfid == 3 && tupid == 41024 && attr==2) || (simfid == 4 && tupid == 41024 && attr==2) || (simfid == 5 && tupid == 41024 && attr==2) || (simfid == 6 && tupid == 41024 && attr==2) || (simfid == 7 && tupid == 41024 && attr==2) || (simfid == 8 && tupid == 41024 && attr==2) || (simfid == 9 && tupid == 41024 && attr==2) || (simfid == 10 && tupid == 41024 && attr==2) || (simfid == 11 && tupid == 41024 && attr==2) || (simfid == 12 && tupid == 41024 && attr==2) || (simfid == 13 && tupid == 41024 && attr==2) || (simfid == 14 && tupid == 41024 && attr==2) || (simfid == 15 && tupid == 41024 && attr==2) || (simfid == 16 && tupid == 41024 && attr==2) || (simfid == 17 && tupid == 41024 && attr==2) || (simfid == 18 && tupid == 41024 && attr==2) || (simfid == 19 && tupid == 41024 && attr==2) || (simfid == 20 && tupid == 41024 && attr==2) || (simfid == 21 && tupid == 41024 && attr==2) || (simfid == 22 && tupid == 41024 && attr==2) || (simfid == 23 && tupid == 41024 && attr==2) || (simfid == 24 && tupid == 41024 && attr==2) || (simfid == 25 && tupid == 41024 && attr==2) || (simfid == 26 && tupid == 41024 && attr==2) || (simfid == 27 && tupid == 41024 && attr==2) || (simfid == 28 && tupid == 41024 && attr==2) || (simfid == 4 && tupid == 66 && attr==0) || (simfid == 8 && tupid == 66 && attr==0) || (simfid == 12 && tupid == 66 && attr==0) || (simfid == 16 && tupid == 66 && attr==0) || (simfid == 23 && tupid == 66 && attr==0) || (simfid == 25 && tupid == 66 && attr==0) || (simfid == 26 && tupid == 66 && attr==0) || (simfid == 27 && tupid == 66 && attr==0) || (simfid == 8 && tupid == 66 && attr==1) || (simfid == 12 && tupid == 66 && attr==1) || (simfid == 23 && tupid == 66 && attr==1) || (simfid == 25 && tupid == 66 && attr==1) || (simfid == 26 && tupid == 66 && attr==1) || (simfid == 27 && tupid == 66 && attr==1) || (simfid == 28 && tupid == 66 && attr==1) || (simfid == 0 && tupid == 66 && attr==2) || (simfid == 1 && tupid == 66 && attr==2) || (simfid == 2 && tupid == 66 && attr==2) || (simfid == 3 && tupid == 66 && attr==2) || (simfid == 4 && tupid == 66 && attr==2) || (simfid == 5 && tupid == 66 && attr==2) || (simfid == 6 && tupid == 66 && attr==2) || (simfid == 7 && tupid == 66 && attr==2) || (simfid == 8 && tupid == 66 && attr==2) || (simfid == 9 && tupid == 66 && attr==2) || (simfid == 10 && tupid == 66 && attr==2) || (simfid == 11 && tupid == 66 && attr==2) || (simfid == 12 && tupid == 66 && attr==2) || (simfid == 13 && tupid == 66 && attr==2) || (simfid == 14 && tupid == 66 && attr==2) || (simfid == 15 && tupid == 66 && attr==2) || (simfid == 16 && tupid == 66 && attr==2) || (simfid == 17 && tupid == 66 && attr==2) || (simfid == 18 && tupid == 66 && attr==2) || (simfid == 19 && tupid == 66 && attr==2) || (simfid == 20 && tupid == 66 && attr==2) || (simfid == 21 && tupid == 66 && attr==2) || (simfid == 22 && tupid == 66 && attr==2) || (simfid == 23 && tupid == 66 && attr==2) || (simfid == 24 && tupid == 66 && attr==2) || (simfid == 25 && tupid == 66 && attr==2) || (simfid == 26 && tupid == 66 && attr==2) || (simfid == 27 && tupid == 66 && attr==2) || (simfid == 28 && tupid == 66 && attr==2) || (simfid == 23 && tupid == 66 && attr==3) || (simfid == 28 && tupid == 66 && attr==3) || (simfid == 0 && tupid == 50334 && attr==1) || (simfid == 1 && tupid == 50334 && attr==1) || (simfid == 2 && tupid == 50334 && attr==1) || (simfid == 3 && tupid == 50334 && attr==1) || (simfid == 4 && tupid == 50334 && attr==1) || (simfid == 5 && tupid == 50334 && attr==1) || (simfid == 6 && tupid == 50334 && attr==1) || (simfid == 7 && tupid == 50334 && attr==1) || (simfid == 8 && tupid == 50334 && attr==1) || (simfid == 9 && tupid == 50334 && attr==1) || (simfid == 10 && tupid == 50334 && attr==1) || (simfid == 11 && tupid == 50334 && attr==1) || (simfid == 12 && tupid == 50334 && attr==1) || (simfid == 13 && tupid == 50334 && attr==1) || (simfid == 14 && tupid == 50334 && attr==1) || (simfid == 15 && tupid == 50334 && attr==1) || (simfid == 16 && tupid == 50334 && attr==1) || (simfid == 17 && tupid == 50334 && attr==1) || (simfid == 18 && tupid == 50334 && attr==1) || (simfid == 19 && tupid == 50334 && attr==1) || (simfid == 20 && tupid == 50334 && attr==1) || (simfid == 21 && tupid == 50334 && attr==1) || (simfid == 22 && tupid == 50334 && attr==1) || (simfid == 23 && tupid == 50334 && attr==1) || (simfid == 24 && tupid == 50334 && attr==1) || (simfid == 25 && tupid == 50334 && attr==1) || (simfid == 26 && tupid == 50334 && attr==1) || (simfid == 27 && tupid == 50334 && attr==1) || (simfid == 28 && tupid == 50334 && attr==1) || (simfid == 15 && tupid == 50334 && attr==2) || (simfid == 4 && tupid == 78818 && attr==0) || (simfid == 8 && tupid == 78818 && attr==0) || (simfid == 12 && tupid == 78818 && attr==0) || (simfid == 16 && tupid == 78818 && attr==0) || (simfid == 23 && tupid == 78818 && attr==0) || (simfid == 25 && tupid == 78818 && attr==0) || (simfid == 26 && tupid == 78818 && attr==0) || (simfid == 27 && tupid == 78818 && attr==0) || (simfid == 0 && tupid == 78818 && attr==2) || (simfid == 1 && tupid == 78818 && attr==2) || (simfid == 2 && tupid == 78818 && attr==2) || (simfid == 3 && tupid == 78818 && attr==2) || (simfid == 4 && tupid == 78818 && attr==2) || (simfid == 5 && tupid == 78818 && attr==2) || (simfid == 6 && tupid == 78818 && attr==2) || (simfid == 7 && tupid == 78818 && attr==2) || (simfid == 8 && tupid == 78818 && attr==2) || (simfid == 9 && tupid == 78818 && attr==2) || (simfid == 10 && tupid == 78818 && attr==2) || (simfid == 11 && tupid == 78818 && attr==2) || (simfid == 12 && tupid == 78818 && attr==2) || (simfid == 13 && tupid == 78818 && attr==2) || (simfid == 14 && tupid == 78818 && attr==2) || (simfid == 15 && tupid == 78818 && attr==2) || (simfid == 16 && tupid == 78818 && attr==2) || (simfid == 17 && tupid == 78818 && attr==2) || (simfid == 18 && tupid == 78818 && attr==2) || (simfid == 19 && tupid == 78818 && attr==2) || (simfid == 20 && tupid == 78818 && attr==2) || (simfid == 21 && tupid == 78818 && attr==2) || (simfid == 22 && tupid == 78818 && attr==2) || (simfid == 23 && tupid == 78818 && attr==2) || (simfid == 24 && tupid == 78818 && attr==2) || (simfid == 25 && tupid == 78818 && attr==2) || (simfid == 26 && tupid == 78818 && attr==2) || (simfid == 27 && tupid == 78818 && attr==2) || (simfid == 28 && tupid == 78818 && attr==2) || (simfid == 0 && tupid == 78818 && attr==3) || (simfid == 1 && tupid == 78818 && attr==3) || (simfid == 2 && tupid == 78818 && attr==3) || (simfid == 3 && tupid == 78818 && attr==3) || (simfid == 4 && tupid == 78818 && attr==3) || (simfid == 5 && tupid == 78818 && attr==3) || (simfid == 6 && tupid == 78818 && attr==3) || (simfid == 7 && tupid == 78818 && attr==3) || (simfid == 8 && tupid == 78818 && attr==3) || (simfid == 9 && tupid == 78818 && attr==3) || (simfid == 10 && tupid == 78818 && attr==3) || (simfid == 11 && tupid == 78818 && attr==3) || (simfid == 12 && tupid == 78818 && attr==3) || (simfid == 13 && tupid == 78818 && attr==3) || (simfid == 14 && tupid == 78818 && attr==3) || (simfid == 15 && tupid == 78818 && attr==3) || (simfid == 16 && tupid == 78818 && attr==3) || (simfid == 17 && tupid == 78818 && attr==3) || (simfid == 18 && tupid == 78818 && attr==3) || (simfid == 19 && tupid == 78818 && attr==3) || (simfid == 20 && tupid == 78818 && attr==3) || (simfid == 21 && tupid == 78818 && attr==3) || (simfid == 22 && tupid == 78818 && attr==3) || (simfid == 23 && tupid == 78818 && attr==3) || (simfid == 24 && tupid == 78818 && attr==3) || (simfid == 25 && tupid == 78818 && attr==3) || (simfid == 26 && tupid == 78818 && attr==3) || (simfid == 27 && tupid == 78818 && attr==3) || (simfid == 28 && tupid == 78818 && attr==3) || (simfid == 0 && tupid == 98 && attr==0) || (simfid == 1 && tupid == 98 && attr==0) || (simfid == 2 && tupid == 98 && attr==0) || (simfid == 3 && tupid == 98 && attr==0) || (simfid == 4 && tupid == 98 && attr==0) || (simfid == 5 && tupid == 98 && attr==0) || (simfid == 6 && tupid == 98 && attr==0) || (simfid == 7 && tupid == 98 && attr==0) || (simfid == 8 && tupid == 98 && attr==0) || (simfid == 9 && tupid == 98 && attr==0) || (simfid == 10 && tupid == 98 && attr==0) || (simfid == 11 && tupid == 98 && attr==0) || (simfid == 12 && tupid == 98 && attr==0) || (simfid == 13 && tupid == 98 && attr==0) || (simfid == 14 && tupid == 98 && attr==0) || (simfid == 15 && tupid == 98 && attr==0) || (simfid == 16 && tupid == 98 && attr==0) || (simfid == 17 && tupid == 98 && attr==0) || (simfid == 18 && tupid == 98 && attr==0) || (simfid == 19 && tupid == 98 && attr==0) || (simfid == 20 && tupid == 98 && attr==0) || (simfid == 21 && tupid == 98 && attr==0) || (simfid == 22 && tupid == 98 && attr==0) || (simfid == 23 && tupid == 98 && attr==0) || (simfid == 24 && tupid == 98 && attr==0) || (simfid == 25 && tupid == 98 && attr==0) || (simfid == 26 && tupid == 98 && attr==0) || (simfid == 27 && tupid == 98 && attr==0) || (simfid == 28 && tupid == 98 && attr==0) || (simfid == 4 && tupid == 98 && attr==2) || (simfid == 8 && tupid == 98 && attr==2) || (simfid == 12 && tupid == 98 && attr==2) || (simfid == 16 && tupid == 98 && attr==2) || (simfid == 23 && tupid == 98 && attr==2) || (simfid == 25 && tupid == 98 && attr==2) || (simfid == 26 && tupid == 98 && attr==2) || (simfid == 27 && tupid == 98 && attr==2) || (simfid == 0 && tupid == 7260 && attr==0) || (simfid == 1 && tupid == 7260 && attr==0) || (simfid == 2 && tupid == 7260 && attr==0) || (simfid == 3 && tupid == 7260 && attr==0) || (simfid == 4 && tupid == 7260 && attr==0) || (simfid == 5 && tupid == 7260 && attr==0) || (simfid == 6 && tupid == 7260 && attr==0) || (simfid == 7 && tupid == 7260 && attr==0) || (simfid == 8 && tupid == 7260 && attr==0) || (simfid == 9 && tupid == 7260 && attr==0) || (simfid == 10 && tupid == 7260 && attr==0) || (simfid == 11 && tupid == 7260 && attr==0) || (simfid == 12 && tupid == 7260 && attr==0) || (simfid == 13 && tupid == 7260 && attr==0) || (simfid == 14 && tupid == 7260 && attr==0) || (simfid == 15 && tupid == 7260 && attr==0) || (simfid == 16 && tupid == 7260 && attr==0) || (simfid == 17 && tupid == 7260 && attr==0) || (simfid == 18 && tupid == 7260 && attr==0) || (simfid == 19 && tupid == 7260 && attr==0) || (simfid == 20 && tupid == 7260 && attr==0) || (simfid == 21 && tupid == 7260 && attr==0) || (simfid == 22 && tupid == 7260 && attr==0) || (simfid == 23 && tupid == 7260 && attr==0) || (simfid == 24 && tupid == 7260 && attr==0) || (simfid == 25 && tupid == 7260 && attr==0) || (simfid == 26 && tupid == 7260 && attr==0) || (simfid == 27 && tupid == 7260 && attr==0) || (simfid == 28 && tupid == 7260 && attr==0) || (simfid == 0 && tupid == 7260 && attr==3) || (simfid == 1 && tupid == 7260 && attr==3) || (simfid == 2 && tupid == 7260 && attr==3) || (simfid == 3 && tupid == 7260 && attr==3) || (simfid == 4 && tupid == 7260 && attr==3) || (simfid == 5 && tupid == 7260 && attr==3) || (simfid == 6 && tupid == 7260 && attr==3) || (simfid == 7 && tupid == 7260 && attr==3) || (simfid == 8 && tupid == 7260 && attr==3) || (simfid == 9 && tupid == 7260 && attr==3) || (simfid == 10 && tupid == 7260 && attr==3) || (simfid == 11 && tupid == 7260 && attr==3) || (simfid == 12 && tupid == 7260 && attr==3) || (simfid == 13 && tupid == 7260 && attr==3) || (simfid == 14 && tupid == 7260 && attr==3) || (simfid == 15 && tupid == 7260 && attr==3) || (simfid == 16 && tupid == 7260 && attr==3) || (simfid == 17 && tupid == 7260 && attr==3) || (simfid == 18 && tupid == 7260 && attr==3) || (simfid == 19 && tupid == 7260 && attr==3) || (simfid == 20 && tupid == 7260 && attr==3) || (simfid == 21 && tupid == 7260 && attr==3) || (simfid == 22 && tupid == 7260 && attr==3) || (simfid == 23 && tupid == 7260 && attr==3) || (simfid == 24 && tupid == 7260 && attr==3) || (simfid == 25 && tupid == 7260 && attr==3) || (simfid == 26 && tupid == 7260 && attr==3) || (simfid == 27 && tupid == 7260 && attr==3) || (simfid == 28 && tupid == 7260 && attr==3) || (simfid == 4 && tupid == 78 && attr==0) || (simfid == 8 && tupid == 78 && attr==0) || (simfid == 12 && tupid == 78 && attr==0) || (simfid == 16 && tupid == 78 && attr==0) || (simfid == 23 && tupid == 78 && attr==0) || (simfid == 25 && tupid == 78 && attr==0) || (simfid == 26 && tupid == 78 && attr==0) || (simfid == 27 && tupid == 78 && attr==0) || (simfid == 28 && tupid == 78 && attr==0) || (simfid == 0 && tupid == 78 && attr==1) || (simfid == 1 && tupid == 78 && attr==1) || (simfid == 2 && tupid == 78 && attr==1) || (simfid == 3 && tupid == 78 && attr==1) || (simfid == 4 && tupid == 78 && attr==1) || (simfid == 5 && tupid == 78 && attr==1) || (simfid == 6 && tupid == 78 && attr==1) || (simfid == 7 && tupid == 78 && attr==1) || (simfid == 8 && tupid == 78 && attr==1) || (simfid == 9 && tupid == 78 && attr==1) || (simfid == 10 && tupid == 78 && attr==1) || (simfid == 11 && tupid == 78 && attr==1) || (simfid == 12 && tupid == 78 && attr==1) || (simfid == 13 && tupid == 78 && attr==1) || (simfid == 14 && tupid == 78 && attr==1) || (simfid == 15 && tupid == 78 && attr==1) || (simfid == 16 && tupid == 78 && attr==1) || (simfid == 17 && tupid == 78 && attr==1) || (simfid == 18 && tupid == 78 && attr==1) || (simfid == 19 && tupid == 78 && attr==1) || (simfid == 20 && tupid == 78 && attr==1) || (simfid == 21 && tupid == 78 && attr==1) || (simfid == 22 && tupid == 78 && attr==1) || (simfid == 23 && tupid == 78 && attr==1) || (simfid == 24 && tupid == 78 && attr==1) || (simfid == 25 && tupid == 78 && attr==1) || (simfid == 26 && tupid == 78 && attr==1) || (simfid == 27 && tupid == 78 && attr==1) || (simfid == 28 && tupid == 78 && attr==1) || (simfid == 4 && tupid == 78 && attr==2) || (simfid == 8 && tupid == 78 && attr==2) || (simfid == 12 && tupid == 78 && attr==2) || (simfid == 16 && tupid == 78 && attr==2) || (simfid == 23 && tupid == 78 && attr==2) || (simfid == 25 && tupid == 78 && attr==2) || (simfid == 26 && tupid == 78 && attr==2) || (simfid == 27 && tupid == 78 && attr==2) || (simfid == 15 && tupid == 18059 && attr==1) || (simfid == 28 && tupid == 18059 && attr==1) || (simfid == 0 && tupid == 18059 && attr==2) || (simfid == 1 && tupid == 18059 && attr==2) || (simfid == 2 && tupid == 18059 && attr==2) || (simfid == 3 && tupid == 18059 && attr==2) || (simfid == 4 && tupid == 18059 && attr==2) || (simfid == 5 && tupid == 18059 && attr==2) || (simfid == 6 && tupid == 18059 && attr==2) || (simfid == 7 && tupid == 18059 && attr==2) || (simfid == 8 && tupid == 18059 && attr==2) || (simfid == 9 && tupid == 18059 && attr==2) || (simfid == 10 && tupid == 18059 && attr==2) || (simfid == 11 && tupid == 18059 && attr==2) || (simfid == 12 && tupid == 18059 && attr==2) || (simfid == 13 && tupid == 18059 && attr==2) || (simfid == 14 && tupid == 18059 && attr==2) || (simfid == 15 && tupid == 18059 && attr==2) || (simfid == 16 && tupid == 18059 && attr==2) || (simfid == 17 && tupid == 18059 && attr==2) || (simfid == 18 && tupid == 18059 && attr==2) || (simfid == 19 && tupid == 18059 && attr==2) || (simfid == 20 && tupid == 18059 && attr==2) || (simfid == 21 && tupid == 18059 && attr==2) || (simfid == 22 && tupid == 18059 && attr==2) || (simfid == 23 && tupid == 18059 && attr==2) || (simfid == 24 && tupid == 18059 && attr==2) || (simfid == 25 && tupid == 18059 && attr==2) || (simfid == 26 && tupid == 18059 && attr==2) || (simfid == 27 && tupid == 18059 && attr==2) || (simfid == 28 && tupid == 18059 && attr==2) || (simfid == 4 && tupid == 74 && attr==2) || (simfid == 8 && tupid == 74 && attr==2) || (simfid == 12 && tupid == 74 && attr==2) || (simfid == 16 && tupid == 74 && attr==2) || (simfid == 23 && tupid == 74 && attr==2) || (simfid == 25 && tupid == 74 && attr==2) || (simfid == 26 && tupid == 74 && attr==2) || (simfid == 27 && tupid == 74 && attr==2) || (simfid == 15 && tupid == 17805 && attr==0) || (simfid == 0 && tupid == 17805 && attr==2) || (simfid == 1 && tupid == 17805 && attr==2) || (simfid == 2 && tupid == 17805 && attr==2) || (simfid == 3 && tupid == 17805 && attr==2) || (simfid == 4 && tupid == 17805 && attr==2) || (simfid == 5 && tupid == 17805 && attr==2) || (simfid == 6 && tupid == 17805 && attr==2) || (simfid == 7 && tupid == 17805 && attr==2) || (simfid == 8 && tupid == 17805 && attr==2) || (simfid == 9 && tupid == 17805 && attr==2) || (simfid == 10 && tupid == 17805 && attr==2) || (simfid == 11 && tupid == 17805 && attr==2) || (simfid == 12 && tupid == 17805 && attr==2) || (simfid == 13 && tupid == 17805 && attr==2) || (simfid == 14 && tupid == 17805 && attr==2) || (simfid == 15 && tupid == 17805 && attr==2) || (simfid == 16 && tupid == 17805 && attr==2) || (simfid == 17 && tupid == 17805 && attr==2) || (simfid == 18 && tupid == 17805 && attr==2) || (simfid == 19 && tupid == 17805 && attr==2) || (simfid == 20 && tupid == 17805 && attr==2) || (simfid == 21 && tupid == 17805 && attr==2) || (simfid == 22 && tupid == 17805 && attr==2) || (simfid == 23 && tupid == 17805 && attr==2) || (simfid == 24 && tupid == 17805 && attr==2) || (simfid == 25 && tupid == 17805 && attr==2) || (simfid == 26 && tupid == 17805 && attr==2) || (simfid == 27 && tupid == 17805 && attr==2) || (simfid == 28 && tupid == 17805 && attr==2) || (simfid == 4 && tupid == 41847 && attr==2) || (simfid == 8 && tupid == 41847 && attr==2) || (simfid == 12 && tupid == 41847 && attr==2) || (simfid == 16 && tupid == 41847 && attr==2) || (simfid == 23 && tupid == 41847 && attr==2) || (simfid == 25 && tupid == 41847 && attr==2) || (simfid == 26 && tupid == 41847 && attr==2) || (simfid == 27 && tupid == 41847 && attr==2) || (simfid == 15 && tupid == 34056 && attr==1) || (simfid == 28 && tupid == 34056 && attr==1) || (simfid == 0 && tupid == 34056 && attr==2) || (simfid == 1 && tupid == 34056 && attr==2) || (simfid == 2 && tupid == 34056 && attr==2) || (simfid == 3 && tupid == 34056 && attr==2) || (simfid == 4 && tupid == 34056 && attr==2) || (simfid == 5 && tupid == 34056 && attr==2) || (simfid == 6 && tupid == 34056 && attr==2) || (simfid == 7 && tupid == 34056 && attr==2) || (simfid == 8 && tupid == 34056 && attr==2) || (simfid == 9 && tupid == 34056 && attr==2) || (simfid == 10 && tupid == 34056 && attr==2) || (simfid == 11 && tupid == 34056 && attr==2) || (simfid == 12 && tupid == 34056 && attr==2) || (simfid == 13 && tupid == 34056 && attr==2) || (simfid == 14 && tupid == 34056 && attr==2) || (simfid == 15 && tupid == 34056 && attr==2) || (simfid == 16 && tupid == 34056 && attr==2) || (simfid == 17 && tupid == 34056 && attr==2) || (simfid == 18 && tupid == 34056 && attr==2) || (simfid == 19 && tupid == 34056 && attr==2) || (simfid == 20 && tupid == 34056 && attr==2) || (simfid == 21 && tupid == 34056 && attr==2) || (simfid == 22 && tupid == 34056 && attr==2) || (simfid == 23 && tupid == 34056 && attr==2) || (simfid == 24 && tupid == 34056 && attr==2) || (simfid == 25 && tupid == 34056 && attr==2) || (simfid == 26 && tupid == 34056 && attr==2) || (simfid == 27 && tupid == 34056 && attr==2) || (simfid == 28 && tupid == 34056 && attr==2) || (simfid == 4 && tupid == 102 && attr==0) || (simfid == 8 && tupid == 102 && attr==0) || (simfid == 12 && tupid == 102 && attr==0) || (simfid == 16 && tupid == 102 && attr==0) || (simfid == 23 && tupid == 102 && attr==0) || (simfid == 25 && tupid == 102 && attr==0) || (simfid == 26 && tupid == 102 && attr==0) || (simfid == 27 && tupid == 102 && attr==0) || (simfid == 28 && tupid == 102 && attr==0) || (simfid == 0 && tupid == 102 && attr==1) || (simfid == 1 && tupid == 102 && attr==1) || (simfid == 2 && tupid == 102 && attr==1) || (simfid == 3 && tupid == 102 && attr==1) || (simfid == 4 && tupid == 102 && attr==1) || (simfid == 5 && tupid == 102 && attr==1) || (simfid == 6 && tupid == 102 && attr==1) || (simfid == 7 && tupid == 102 && attr==1) || (simfid == 8 && tupid == 102 && attr==1) || (simfid == 9 && tupid == 102 && attr==1) || (simfid == 10 && tupid == 102 && attr==1) || (simfid == 11 && tupid == 102 && attr==1) || (simfid == 12 && tupid == 102 && attr==1) || (simfid == 13 && tupid == 102 && attr==1) || (simfid == 14 && tupid == 102 && attr==1) || (simfid == 15 && tupid == 102 && attr==1) || (simfid == 16 && tupid == 102 && attr==1) || (simfid == 17 && tupid == 102 && attr==1) || (simfid == 18 && tupid == 102 && attr==1) || (simfid == 19 && tupid == 102 && attr==1) || (simfid == 20 && tupid == 102 && attr==1) || (simfid == 21 && tupid == 102 && attr==1) || (simfid == 22 && tupid == 102 && attr==1) || (simfid == 23 && tupid == 102 && attr==1) || (simfid == 24 && tupid == 102 && attr==1) || (simfid == 25 && tupid == 102 && attr==1) || (simfid == 26 && tupid == 102 && attr==1) || (simfid == 27 && tupid == 102 && attr==1) || (simfid == 28 && tupid == 102 && attr==1) || (simfid == 4 && tupid == 102 && attr==2) || (simfid == 8 && tupid == 102 && attr==2) || (simfid == 12 && tupid == 102 && attr==2) || (simfid == 16 && tupid == 102 && attr==2) || (simfid == 23 && tupid == 102 && attr==2) || (simfid == 25 && tupid == 102 && attr==2) || (simfid == 26 && tupid == 102 && attr==2) || (simfid == 27 && tupid == 102 && attr==2) || (simfid == 28 && tupid == 11393 && attr==1) || (simfid == 0 && tupid == 11393 && attr==2) || (simfid == 1 && tupid == 11393 && attr==2) || (simfid == 2 && tupid == 11393 && attr==2) || (simfid == 3 && tupid == 11393 && attr==2) || (simfid == 4 && tupid == 11393 && attr==2) || (simfid == 5 && tupid == 11393 && attr==2) || (simfid == 6 && tupid == 11393 && attr==2) || (simfid == 7 && tupid == 11393 && attr==2) || (simfid == 8 && tupid == 11393 && attr==2) || (simfid == 9 && tupid == 11393 && attr==2) || (simfid == 10 && tupid == 11393 && attr==2) || (simfid == 11 && tupid == 11393 && attr==2) || (simfid == 12 && tupid == 11393 && attr==2) || (simfid == 13 && tupid == 11393 && attr==2) || (simfid == 14 && tupid == 11393 && attr==2) || (simfid == 15 && tupid == 11393 && attr==2) || (simfid == 16 && tupid == 11393 && attr==2) || (simfid == 17 && tupid == 11393 && attr==2) || (simfid == 18 && tupid == 11393 && attr==2) || (simfid == 19 && tupid == 11393 && attr==2) || (simfid == 20 && tupid == 11393 && attr==2) || (simfid == 21 && tupid == 11393 && attr==2) || (simfid == 22 && tupid == 11393 && attr==2) || (simfid == 23 && tupid == 11393 && attr==2) || (simfid == 24 && tupid == 11393 && attr==2) || (simfid == 25 && tupid == 11393 && attr==2) || (simfid == 26 && tupid == 11393 && attr==2) || (simfid == 27 && tupid == 11393 && attr==2) || (simfid == 28 && tupid == 11393 && attr==2) || (simfid == 0 && tupid == 57484 && attr==2) || (simfid == 1 && tupid == 57484 && attr==2) || (simfid == 2 && tupid == 57484 && attr==2) || (simfid == 3 && tupid == 57484 && attr==2) || (simfid == 4 && tupid == 57484 && attr==2) || (simfid == 5 && tupid == 57484 && attr==2) || (simfid == 6 && tupid == 57484 && attr==2) || (simfid == 7 && tupid == 57484 && attr==2) || (simfid == 8 && tupid == 57484 && attr==2) || (simfid == 9 && tupid == 57484 && attr==2) || (simfid == 10 && tupid == 57484 && attr==2) || (simfid == 11 && tupid == 57484 && attr==2) || (simfid == 12 && tupid == 57484 && attr==2) || (simfid == 13 && tupid == 57484 && attr==2) || (simfid == 14 && tupid == 57484 && attr==2) || (simfid == 15 && tupid == 57484 && attr==2) || (simfid == 16 && tupid == 57484 && attr==2) || (simfid == 17 && tupid == 57484 && attr==2) || (simfid == 18 && tupid == 57484 && attr==2) || (simfid == 19 && tupid == 57484 && attr==2) || (simfid == 20 && tupid == 57484 && attr==2) || (simfid == 21 && tupid == 57484 && attr==2) || (simfid == 22 && tupid == 57484 && attr==2) || (simfid == 23 && tupid == 57484 && attr==2) || (simfid == 24 && tupid == 57484 && attr==2) || (simfid == 25 && tupid == 57484 && attr==2) || (simfid == 26 && tupid == 57484 && attr==2) || (simfid == 27 && tupid == 57484 && attr==2) || (simfid == 28 && tupid == 57484 && attr==2) || (simfid == 4 && tupid == 79361 && attr==0) || (simfid == 8 && tupid == 79361 && attr==0) || (simfid == 12 && tupid == 79361 && attr==0) || (simfid == 16 && tupid == 79361 && attr==0) || (simfid == 23 && tupid == 79361 && attr==0) || (simfid == 25 && tupid == 79361 && attr==0) || (simfid == 26 && tupid == 79361 && attr==0) || (simfid == 27 && tupid == 79361 && attr==0) || (simfid == 15 && tupid == 79361 && attr==1) || (simfid == 28 && tupid == 79361 && attr==1) || (simfid == 0 && tupid == 79361 && attr==2) || (simfid == 1 && tupid == 79361 && attr==2) || (simfid == 2 && tupid == 79361 && attr==2) || (simfid == 3 && tupid == 79361 && attr==2) || (simfid == 4 && tupid == 79361 && attr==2) || (simfid == 5 && tupid == 79361 && attr==2) || (simfid == 6 && tupid == 79361 && attr==2) || (simfid == 7 && tupid == 79361 && attr==2) || (simfid == 8 && tupid == 79361 && attr==2) || (simfid == 9 && tupid == 79361 && attr==2) || (simfid == 10 && tupid == 79361 && attr==2) || (simfid == 11 && tupid == 79361 && attr==2) || (simfid == 12 && tupid == 79361 && attr==2) || (simfid == 13 && tupid == 79361 && attr==2) || (simfid == 14 && tupid == 79361 && attr==2) || (simfid == 15 && tupid == 79361 && attr==2) || (simfid == 16 && tupid == 79361 && attr==2) || (simfid == 17 && tupid == 79361 && attr==2) || (simfid == 18 && tupid == 79361 && attr==2) || (simfid == 19 && tupid == 79361 && attr==2) || (simfid == 20 && tupid == 79361 && attr==2) || (simfid == 21 && tupid == 79361 && attr==2) || (simfid == 22 && tupid == 79361 && attr==2) || (simfid == 23 && tupid == 79361 && attr==2) || (simfid == 24 && tupid == 79361 && attr==2) || (simfid == 25 && tupid == 79361 && attr==2) || (simfid == 26 && tupid == 79361 && attr==2) || (simfid == 27 && tupid == 79361 && attr==2) || (simfid == 28 && tupid == 79361 && attr==2) || (simfid == 0 && tupid == 79361 && attr==3) || (simfid == 1 && tupid == 79361 && attr==3) || (simfid == 2 && tupid == 79361 && attr==3) || (simfid == 3 && tupid == 79361 && attr==3) || (simfid == 4 && tupid == 79361 && attr==3) || (simfid == 5 && tupid == 79361 && attr==3) || (simfid == 6 && tupid == 79361 && attr==3) || (simfid == 7 && tupid == 79361 && attr==3) || (simfid == 8 && tupid == 79361 && attr==3) || (simfid == 9 && tupid == 79361 && attr==3) || (simfid == 10 && tupid == 79361 && attr==3) || (simfid == 11 && tupid == 79361 && attr==3) || (simfid == 12 && tupid == 79361 && attr==3) || (simfid == 13 && tupid == 79361 && attr==3) || (simfid == 14 && tupid == 79361 && attr==3) || (simfid == 15 && tupid == 79361 && attr==3) || (simfid == 16 && tupid == 79361 && attr==3) || (simfid == 17 && tupid == 79361 && attr==3) || (simfid == 18 && tupid == 79361 && attr==3) || (simfid == 19 && tupid == 79361 && attr==3) || (simfid == 20 && tupid == 79361 && attr==3) || (simfid == 21 && tupid == 79361 && attr==3) || (simfid == 22 && tupid == 79361 && attr==3) || (simfid == 23 && tupid == 79361 && attr==3) || (simfid == 24 && tupid == 79361 && attr==3) || (simfid == 25 && tupid == 79361 && attr==3) || (simfid == 26 && tupid == 79361 && attr==3) || (simfid == 27 && tupid == 79361 && attr==3) || (simfid == 28 && tupid == 79361 && attr==3) || (simfid == 15 && tupid == 24 && attr==0) || (simfid == 16 && tupid == 24 && attr==0) || (simfid == 23 && tupid == 24 && attr==0) || (simfid == 4 && tupid == 24 && attr==1) || (simfid == 8 && tupid == 24 && attr==1) || (simfid == 12 && tupid == 24 && attr==1) || (simfid == 23 && tupid == 24 && attr==1) || (simfid == 25 && tupid == 24 && attr==1) || (simfid == 26 && tupid == 24 && attr==1) || (simfid == 27 && tupid == 24 && attr==1) || (simfid == 28 && tupid == 24 && attr==1) || (simfid == 0 && tupid == 24 && attr==2) || (simfid == 1 && tupid == 24 && attr==2) || (simfid == 2 && tupid == 24 && attr==2) || (simfid == 3 && tupid == 24 && attr==2) || (simfid == 4 && tupid == 24 && attr==2) || (simfid == 5 && tupid == 24 && attr==2) || (simfid == 6 && tupid == 24 && attr==2) || (simfid == 7 && tupid == 24 && attr==2) || (simfid == 8 && tupid == 24 && attr==2) || (simfid == 9 && tupid == 24 && attr==2) || (simfid == 10 && tupid == 24 && attr==2) || (simfid == 11 && tupid == 24 && attr==2) || (simfid == 12 && tupid == 24 && attr==2) || (simfid == 13 && tupid == 24 && attr==2) || (simfid == 14 && tupid == 24 && attr==2) || (simfid == 15 && tupid == 24 && attr==2) || (simfid == 16 && tupid == 24 && attr==2) || (simfid == 17 && tupid == 24 && attr==2) || (simfid == 18 && tupid == 24 && attr==2) || (simfid == 19 && tupid == 24 && attr==2) || (simfid == 20 && tupid == 24 && attr==2) || (simfid == 21 && tupid == 24 && attr==2) || (simfid == 22 && tupid == 24 && attr==2) || (simfid == 23 && tupid == 24 && attr==2) || (simfid == 24 && tupid == 24 && attr==2) || (simfid == 25 && tupid == 24 && attr==2) || (simfid == 26 && tupid == 24 && attr==2) || (simfid == 27 && tupid == 24 && attr==2) || (simfid == 28 && tupid == 24 && attr==2) || (simfid == 28 && tupid == 33586 && attr==1) || (simfid == 0 && tupid == 33586 && attr==2) || (simfid == 1 && tupid == 33586 && attr==2) || (simfid == 2 && tupid == 33586 && attr==2) || (simfid == 3 && tupid == 33586 && attr==2) || (simfid == 4 && tupid == 33586 && attr==2) || (simfid == 5 && tupid == 33586 && attr==2) || (simfid == 6 && tupid == 33586 && attr==2) || (simfid == 7 && tupid == 33586 && attr==2) || (simfid == 8 && tupid == 33586 && attr==2) || (simfid == 9 && tupid == 33586 && attr==2) || (simfid == 10 && tupid == 33586 && attr==2) || (simfid == 11 && tupid == 33586 && attr==2) || (simfid == 12 && tupid == 33586 && attr==2) || (simfid == 13 && tupid == 33586 && attr==2) || (simfid == 14 && tupid == 33586 && attr==2) || (simfid == 15 && tupid == 33586 && attr==2) || (simfid == 16 && tupid == 33586 && attr==2) || (simfid == 17 && tupid == 33586 && attr==2) || (simfid == 18 && tupid == 33586 && attr==2) || (simfid == 19 && tupid == 33586 && attr==2) || (simfid == 20 && tupid == 33586 && attr==2) || (simfid == 21 && tupid == 33586 && attr==2) || (simfid == 22 && tupid == 33586 && attr==2) || (simfid == 23 && tupid == 33586 && attr==2) || (simfid == 24 && tupid == 33586 && attr==2) || (simfid == 25 && tupid == 33586 && attr==2) || (simfid == 26 && tupid == 33586 && attr==2) || (simfid == 27 && tupid == 33586 && attr==2) || (simfid == 28 && tupid == 33586 && attr==2) || (simfid == 0 && tupid == 33586 && attr==3) || (simfid == 1 && tupid == 33586 && attr==3) || (simfid == 2 && tupid == 33586 && attr==3) || (simfid == 3 && tupid == 33586 && attr==3) || (simfid == 4 && tupid == 33586 && attr==3) || (simfid == 5 && tupid == 33586 && attr==3) || (simfid == 6 && tupid == 33586 && attr==3) || (simfid == 7 && tupid == 33586 && attr==3) || (simfid == 8 && tupid == 33586 && attr==3) || (simfid == 9 && tupid == 33586 && attr==3) || (simfid == 10 && tupid == 33586 && attr==3) || (simfid == 11 && tupid == 33586 && attr==3) || (simfid == 12 && tupid == 33586 && attr==3) || (simfid == 13 && tupid == 33586 && attr==3) || (simfid == 14 && tupid == 33586 && attr==3) || (simfid == 15 && tupid == 33586 && attr==3) || (simfid == 16 && tupid == 33586 && attr==3) || (simfid == 17 && tupid == 33586 && attr==3) || (simfid == 18 && tupid == 33586 && attr==3) || (simfid == 19 && tupid == 33586 && attr==3) || (simfid == 20 && tupid == 33586 && attr==3) || (simfid == 21 && tupid == 33586 && attr==3) || (simfid == 22 && tupid == 33586 && attr==3) || (simfid == 23 && tupid == 33586 && attr==3) || (simfid == 24 && tupid == 33586 && attr==3) || (simfid == 25 && tupid == 33586 && attr==3) || (simfid == 26 && tupid == 33586 && attr==3) || (simfid == 27 && tupid == 33586 && attr==3) || (simfid == 28 && tupid == 33586 && attr==3) || (simfid == 0 && tupid == 23042 && attr==2) || (simfid == 1 && tupid == 23042 && attr==2) || (simfid == 2 && tupid == 23042 && attr==2) || (simfid == 3 && tupid == 23042 && attr==2) || (simfid == 4 && tupid == 23042 && attr==2) || (simfid == 5 && tupid == 23042 && attr==2) || (simfid == 6 && tupid == 23042 && attr==2) || (simfid == 7 && tupid == 23042 && attr==2) || (simfid == 8 && tupid == 23042 && attr==2) || (simfid == 9 && tupid == 23042 && attr==2) || (simfid == 10 && tupid == 23042 && attr==2) || (simfid == 11 && tupid == 23042 && attr==2) || (simfid == 12 && tupid == 23042 && attr==2) || (simfid == 13 && tupid == 23042 && attr==2) || (simfid == 14 && tupid == 23042 && attr==2) || (simfid == 15 && tupid == 23042 && attr==2) || (simfid == 16 && tupid == 23042 && attr==2) || (simfid == 17 && tupid == 23042 && attr==2) || (simfid == 18 && tupid == 23042 && attr==2) || (simfid == 19 && tupid == 23042 && attr==2) || (simfid == 20 && tupid == 23042 && attr==2) || (simfid == 21 && tupid == 23042 && attr==2) || (simfid == 22 && tupid == 23042 && attr==2) || (simfid == 23 && tupid == 23042 && attr==2) || (simfid == 24 && tupid == 23042 && attr==2) || (simfid == 25 && tupid == 23042 && attr==2) || (simfid == 26 && tupid == 23042 && attr==2) || (simfid == 27 && tupid == 23042 && attr==2) || (simfid == 28 && tupid == 23042 && attr==2) || (simfid == 4 && tupid == 62 && attr==0) || (simfid == 8 && tupid == 62 && attr==0) || (simfid == 12 && tupid == 62 && attr==0) || (simfid == 16 && tupid == 62 && attr==0) || (simfid == 23 && tupid == 62 && attr==0) || (simfid == 25 && tupid == 62 && attr==0) || (simfid == 26 && tupid == 62 && attr==0) || (simfid == 27 && tupid == 62 && attr==0) || (simfid == 28 && tupid == 62 && attr==1) || (simfid == 0 && tupid == 62 && attr==2) || (simfid == 1 && tupid == 62 && attr==2) || (simfid == 2 && tupid == 62 && attr==2) || (simfid == 3 && tupid == 62 && attr==2) || (simfid == 4 && tupid == 62 && attr==2) || (simfid == 5 && tupid == 62 && attr==2) || (simfid == 6 && tupid == 62 && attr==2) || (simfid == 7 && tupid == 62 && attr==2) || (simfid == 8 && tupid == 62 && attr==2) || (simfid == 9 && tupid == 62 && attr==2) || (simfid == 10 && tupid == 62 && attr==2) || (simfid == 11 && tupid == 62 && attr==2) || (simfid == 12 && tupid == 62 && attr==2) || (simfid == 13 && tupid == 62 && attr==2) || (simfid == 14 && tupid == 62 && attr==2) || (simfid == 15 && tupid == 62 && attr==2) || (simfid == 16 && tupid == 62 && attr==2) || (simfid == 17 && tupid == 62 && attr==2) || (simfid == 18 && tupid == 62 && attr==2) || (simfid == 19 && tupid == 62 && attr==2) || (simfid == 20 && tupid == 62 && attr==2) || (simfid == 21 && tupid == 62 && attr==2) || (simfid == 22 && tupid == 62 && attr==2) || (simfid == 23 && tupid == 62 && attr==2) || (simfid == 24 && tupid == 62 && attr==2) || (simfid == 25 && tupid == 62 && attr==2) || (simfid == 26 && tupid == 62 && attr==2) || (simfid == 27 && tupid == 62 && attr==2) || (simfid == 28 && tupid == 62 && attr==2) || (simfid == 4 && tupid == 52 && attr==0) || (simfid == 8 && tupid == 52 && attr==0) || (simfid == 12 && tupid == 52 && attr==0) || (simfid == 18 && tupid == 52 && attr==0) || (simfid == 25 && tupid == 52 && attr==0) || (simfid == 26 && tupid == 52 && attr==0) || (simfid == 27 && tupid == 52 && attr==0) || (simfid == 4 && tupid == 52 && attr==1) || (simfid == 8 && tupid == 52 && attr==1) || (simfid == 0 && tupid == 83644 && attr==2) || (simfid == 1 && tupid == 83644 && attr==2) || (simfid == 2 && tupid == 83644 && attr==2) || (simfid == 3 && tupid == 83644 && attr==2) || (simfid == 4 && tupid == 83644 && attr==2) || (simfid == 5 && tupid == 83644 && attr==2) || (simfid == 6 && tupid == 83644 && attr==2) || (simfid == 7 && tupid == 83644 && attr==2) || (simfid == 8 && tupid == 83644 && attr==2) || (simfid == 9 && tupid == 83644 && attr==2) || (simfid == 10 && tupid == 83644 && attr==2) || (simfid == 11 && tupid == 83644 && attr==2) || (simfid == 12 && tupid == 83644 && attr==2) || (simfid == 13 && tupid == 83644 && attr==2) || (simfid == 14 && tupid == 83644 && attr==2) || (simfid == 15 && tupid == 83644 && attr==2) || (simfid == 16 && tupid == 83644 && attr==2) || (simfid == 17 && tupid == 83644 && attr==2) || (simfid == 18 && tupid == 83644 && attr==2) || (simfid == 19 && tupid == 83644 && attr==2) || (simfid == 20 && tupid == 83644 && attr==2) || (simfid == 21 && tupid == 83644 && attr==2) || (simfid == 22 && tupid == 83644 && attr==2) || (simfid == 23 && tupid == 83644 && attr==2) || (simfid == 24 && tupid == 83644 && attr==2) || (simfid == 25 && tupid == 83644 && attr==2) || (simfid == 26 && tupid == 83644 && attr==2) || (simfid == 27 && tupid == 83644 && attr==2) || (simfid == 28 && tupid == 83644 && attr==2) || (simfid == 16 && tupid == 32140 && attr==0) || (simfid == 23 && tupid == 32140 && attr==0) || (simfid == 15 && tupid == 32140 && attr==1) || (simfid == 4 && tupid == 32140 && attr==2) || (simfid == 8 && tupid == 32140 && attr==2) || (simfid == 12 && tupid == 32140 && attr==2) || (simfid == 25 && tupid == 32140 && attr==2) || (simfid == 26 && tupid == 32140 && attr==2) || (simfid == 27 && tupid == 32140 && attr==2) || (simfid == 0 && tupid == 32140 && attr==3) || (simfid == 1 && tupid == 32140 && attr==3) || (simfid == 2 && tupid == 32140 && attr==3) || (simfid == 3 && tupid == 32140 && attr==3) || (simfid == 4 && tupid == 32140 && attr==3) || (simfid == 5 && tupid == 32140 && attr==3) || (simfid == 6 && tupid == 32140 && attr==3) || (simfid == 7 && tupid == 32140 && attr==3) || (simfid == 8 && tupid == 32140 && attr==3) || (simfid == 9 && tupid == 32140 && attr==3) || (simfid == 10 && tupid == 32140 && attr==3) || (simfid == 11 && tupid == 32140 && attr==3) || (simfid == 12 && tupid == 32140 && attr==3) || (simfid == 13 && tupid == 32140 && attr==3) || (simfid == 14 && tupid == 32140 && attr==3) || (simfid == 15 && tupid == 32140 && attr==3) || (simfid == 16 && tupid == 32140 && attr==3) || (simfid == 17 && tupid == 32140 && attr==3) || (simfid == 18 && tupid == 32140 && attr==3) || (simfid == 19 && tupid == 32140 && attr==3) || (simfid == 20 && tupid == 32140 && attr==3) || (simfid == 21 && tupid == 32140 && attr==3) || (simfid == 22 && tupid == 32140 && attr==3) || (simfid == 23 && tupid == 32140 && attr==3) || (simfid == 24 && tupid == 32140 && attr==3) || (simfid == 25 && tupid == 32140 && attr==3) || (simfid == 26 && tupid == 32140 && attr==3) || (simfid == 27 && tupid == 32140 && attr==3) || (simfid == 28 && tupid == 32140 && attr==3)) return 1000;
+
+}
+void ASSERTSCHOICE(int ac);
+
+harness void main(){
+	bit bt_41024 = matches(41024);
+
+	assert(!bt_41024);
+	bit bt_66 = matches(66);
+
+	assert(bt_66);
+	bit bt_50334 = matches(50334);
+
+	assert(!bt_50334);
+	bit bt_78818 = matches(78818);
+
+	assert(!bt_78818);
+	bit bt_98 = matches(98);
+
+	assert(bt_98);
+	bit bt_7260 = matches(7260);
+
+	assert(!bt_7260);
+	bit bt_78 = matches(78);
+
+	assert(bt_78);
+	bit bt_18059 = matches(18059);
+
+	assert(!bt_18059);
+	bit bt_74 = matches(74);
+
+	assert(bt_74);
+	bit bt_17805 = matches(17805);
+
+	assert(!bt_17805);
+	bit bt_41847 = matches(41847);
+
+	assert(!bt_41847);
+	bit bt_34056 = matches(34056);
+
+	assert(!bt_34056);
+	bit bt_102 = matches(102);
+
+	assert(bt_102);
+	bit bt_11393 = matches(11393);
+
+	assert(!bt_11393);
+	bit bt_57484 = matches(57484);
+
+	assert(!bt_57484);
+	bit bt_79361 = matches(79361);
+
+	assert(!bt_79361);
+	bit bt_24 = matches(24);
+
+	assert(bt_24);
+	bit bt_33586 = matches(33586);
+
+	assert(!bt_33586);
+	bit bt_23042 = matches(23042);
+
+	assert(!bt_23042);
+	bit bt_62 = matches(62);
+
+	assert(bt_62);
+	bit bt_52 = matches(52);
+
+	assert(bt_52);
+	bit bt_83644 = matches(83644);
+
+	assert(!bt_83644);
+	bit bt_32140 = matches(32140);
+
+	assert(!bt_32140);
+
+}

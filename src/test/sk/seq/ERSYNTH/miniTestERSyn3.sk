@@ -1,0 +1,108 @@
+pragma options "--beopt:-er-simeval-file ./miniTestERSyn3-simeval.table";
+
+void ATOM_SYNTH(int clause, int atom, int attr);
+bit SIMTH_SYNTH(int simfn, int thresh);
+@Gen("eratom")
+generator bit eratompred(int tupid, int attr);
+
+bit matches(int tupid){
+	bit b = false;
+		bit bclause_c0=true;
+			int attr_c0_a0 = ??(3);
+			assert(attr_c0_a0 >= 0 && attr_c0_a0 < 4);
+			ATOM_SYNTH(0,0,attr_c0_a0);
+			bclause_c0 = bclause_c0 && eratompred(tupid,attr_c0_a0);
+
+			int attr_c0_a1 = ??(3);
+			assert(attr_c0_a1 >= 0 && attr_c0_a1 < 4);
+			ATOM_SYNTH(0,1,attr_c0_a1);
+			bclause_c0 = bclause_c0 && eratompred(tupid,attr_c0_a1);
+
+			int attr_c0_a2 = ??(3);
+			assert(attr_c0_a2 >= 0 && attr_c0_a2 < 4);
+			ATOM_SYNTH(0,2,attr_c0_a2);
+			bclause_c0 = bclause_c0 && eratompred(tupid,attr_c0_a2);
+
+			int attr_c0_a3 = ??(3);
+			assert(attr_c0_a3 >= 0 && attr_c0_a3 < 4);
+			ATOM_SYNTH(0,3,attr_c0_a3);
+			bclause_c0 = bclause_c0 && eratompred(tupid,attr_c0_a3);
+
+		b=b || bclause_c0;
+	return b;
+}
+
+
+
+harness void main(){
+	bit bt_41024 = matches(41024);
+
+	assert(!bt_41024);
+	bit bt_66 = matches(66);
+
+	assert(bt_66);
+	bit bt_50334 = matches(50334);
+
+	assert(!bt_50334);
+	bit bt_78818 = matches(78818);
+
+	assert(!bt_78818);
+	bit bt_98 = matches(98);
+
+	assert(bt_98);
+	bit bt_7260 = matches(7260);
+
+	assert(!bt_7260);
+	bit bt_78 = matches(78);
+
+	assert(bt_78);
+	bit bt_18059 = matches(18059);
+
+	assert(!bt_18059);
+	bit bt_74 = matches(74);
+
+	assert(bt_74);
+	bit bt_17805 = matches(17805);
+
+	assert(!bt_17805);
+	bit bt_41847 = matches(41847);
+
+	assert(!bt_41847);
+	bit bt_34056 = matches(34056);
+
+	assert(!bt_34056);
+	bit bt_102 = matches(102);
+
+	assert(bt_102);
+	bit bt_11393 = matches(11393);
+
+	assert(!bt_11393);
+	bit bt_57484 = matches(57484);
+
+	assert(!bt_57484);
+	bit bt_79361 = matches(79361);
+
+	assert(!bt_79361);
+	bit bt_24 = matches(24);
+
+	assert(bt_24);
+	bit bt_33586 = matches(33586);
+
+	assert(!bt_33586);
+	bit bt_23042 = matches(23042);
+
+	assert(!bt_23042);
+	bit bt_62 = matches(62);
+
+	assert(bt_62);
+	bit bt_52 = matches(52);
+
+	assert(bt_52);
+	bit bt_83644 = matches(83644);
+
+	assert(!bt_83644);
+	bit bt_32140 = matches(32140);
+
+	assert(!bt_32140);
+
+}
