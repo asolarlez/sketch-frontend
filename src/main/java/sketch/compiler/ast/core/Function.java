@@ -1,5 +1,7 @@
 package sketch.compiler.ast.core;
 
+import static sketch.util.Misc.nonnull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +14,6 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.util.datastructures.HashmapList;
 import sketch.util.wrapper.ScRichString;
-import static sketch.util.Misc.nonnull;
 
 /**
  * A function definition. This contains the name, return type, parameter list, and body of
@@ -53,6 +54,9 @@ public class Function extends FENode {
         // Function that is inlined, producing more star values. Also helper functions for
         // PROMELA.
         Generator("generator"),
+
+        UninterpGenerator("generator"),
+
         // Init("init");
         Model("model");
 
@@ -353,7 +357,7 @@ public class Function extends FENode {
     }
 
     public boolean isUninterp() {
-        return getFcnType() == FcnType.Uninterp;
+        return getFcnType() == FcnType.Uninterp || getFcnType() == FcnType.UninterpGenerator;
     }
 
     public boolean isStatic() {
@@ -370,7 +374,7 @@ public class Function extends FENode {
     }
 
     public boolean isGenerator() {
-        return getFcnType() == FcnType.Generator;
+        return getFcnType() == FcnType.Generator || getFcnType() == FcnType.UninterpGenerator;
     }
 
     public boolean isWrapper() {

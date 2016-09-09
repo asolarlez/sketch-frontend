@@ -7,4 +7,4 @@ float sqrt(float v);
 float abs(float v);
 float arctan(float v);
 float _cast_int_float(int v);
-generator float Pi(){ return 3.141592; }
+generator float Pi(){ return 3.1415926535897932384626433832795; }

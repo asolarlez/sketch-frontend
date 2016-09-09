@@ -15,6 +15,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.Function.FcnType;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
@@ -2172,6 +2173,10 @@ nvarContext,
                     if (isReplacer) {
                         newfuns.get(pkgName).add(nstmt);
                     }
+                } else {
+                    if (f.isGenerator()) {
+                        newfuns.get(pkgName).add(f.creator().type(FcnType.Uninterp).create());
+                    }
                 }
                 funcsAnalyzed.add(f.getFullName());
             }
@@ -2218,7 +2223,7 @@ nvarContext,
         }
 
         for(Function sf : spec.getFuncs()){
-            if(sf.isUninterp()){
+            if (sf.isUninterp() && !sf.isGenerator()) {
                 if( isReplacer ){ newFuncs.add(sf); }
             }
         }

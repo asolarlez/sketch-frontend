@@ -57,6 +57,7 @@ public class SynchronousTimedProcess {
             tmpFile = File.createTempFile(strategy, null, sktmpdir);
             tmpFile.deleteOnExit();
             pb.redirectOutput(ProcessBuilder.Redirect.to(tmpFile));
+            pb.redirectErrorStream(true);
         }
         if (options.solverOpts.ntimes > 1) {
             pb.redirectErrorStream(true);

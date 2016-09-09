@@ -1,0 +1,18 @@
+
+pragma options "-p lowering";
+
+@Gen("gtp")
+bit gtpred(int x);
+
+int abs(int x){
+    if(gtpred(x)){
+        return x;
+    }else{
+        return -x;
+    }    
+}
+
+harness void main(int x){
+    int t = ??;
+    assert abs(x-10) >= t;        
+}

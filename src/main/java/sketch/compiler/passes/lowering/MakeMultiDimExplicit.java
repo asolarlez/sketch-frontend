@@ -62,11 +62,17 @@ public class MakeMultiDimExplicit extends SymbolTableVisitor {
         Map<String, Expression> pmap = new HashMap<String, Expression>();
         VarReplacer vrep = new VarReplacer(pmap);
 
+        List<Type> actualTypes = new ArrayList<Type>();
+        for (Expression ap : exp.getParams()) {
+            actualTypes.add(getType(ap));
+        }
+        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, TypePrimitive.voidtype);
+
         for (Expression param : exp.getParams()) {
             Parameter p = ip.next();
             Expression newParam = doExpression(param);
             pmap.put(p.getName(), newParam);
-            Type tleft = (Type) p.getType().accept(vrep);
+            Type tleft = (Type) ((Type) p.getType().accept(vrep)).accept(tren);
             Type tright = getType(newParam);
             if (needsWork(tleft, tright)) {
                 String rhv = varGen.nextVar();

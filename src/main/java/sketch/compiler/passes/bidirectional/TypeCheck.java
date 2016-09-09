@@ -799,23 +799,18 @@ public class TypeCheck extends BidirectionalPass {
             if (func.isSketchHarness()) {
 
                 for (Parameter f1 : func.getParams()) {
-                    if (f1.getType() instanceof TypeStructRef) {
-                        // TODO: should only allow immutable structs
-                        // report(func,
-                        // "A harness function can not have a structure or array
-                        // of structures as input: " +
-                        // f1);
-                    return func;
+                Collection<Type> bt = f1.getType().getBaseTypes();
+                if (bt.size() != 1) {
+                    report(func, "Type not supported for harness " + f1.getType());
+                }
+                Type baseType = bt.iterator().next();
+                if (baseType instanceof TypeStructRef) {
+                    TypeStructRef tsr = (TypeStructRef) baseType;
+                    StructDef sd = nres.getStruct(tsr.getName());
+                    if (sd == null || !sd.immutable()) {
+                        report(func, "A harness function can not have a structure or array of structures as input: " + f1);
                     }
-                    if (f1.getType() instanceof TypeArray) {
-                        if (((TypeArray) f1.getType()).getAbsoluteBase() instanceof TypeStructRef) {
-                            // report(func,
-                            // "A harness function can not have a structure or
-                            // array of structures as input: "
-                            // +
-                            // f1);
-                        return func;
-                        }
+                    return func;
                     }
                 }
             }

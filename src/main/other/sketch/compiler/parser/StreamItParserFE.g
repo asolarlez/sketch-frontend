@@ -573,7 +573,7 @@ function_decl returns [Function f] {
 
             f = fc.create();
 	}
-	| SEMI  { f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
+	| SEMI  { f = Function.creator(getContext(id), id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
 	;
 
 return_type returns [Type t] { t=null; }

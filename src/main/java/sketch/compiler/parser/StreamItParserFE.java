@@ -760,7 +760,7 @@ inputState.guessing--;
 			{
 				match(SEMI);
 				if ( inputState.guessing==0 ) {
-					f = Function.creator(getContext(id), id.getText(), Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create();
+					f = Function.creator(getContext(id), id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create();
 				}
 				break;
 			}

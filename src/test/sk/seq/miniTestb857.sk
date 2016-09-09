@@ -1,0 +1,26 @@
+//@Description SQL Synthesis Example (Cheung et al.)
+pragma options "--bnd-unroll-amnt 10 --bnd-inbits 2 --beopt:simiters 10";// --bnd-arr-size 6";
+
+#define MAXLEN 10
+
+struct S1 {
+}
+
+int f3<T>(T [MAXLEN] t2) {
+  return 0;
+}
+
+void f2<T>(T [MAXLEN] in, ref T [MAXLEN][MAXLEN] t1) {
+}
+
+void f1<T>(T [MAXLEN] in, fun agg) {
+
+  T [MAXLEN][MAXLEN] t1;
+  f2(in, t1);
+
+}
+
+harness void main() {
+  S1 [MAXLEN] s1;
+  f1(s1, f3);
+}

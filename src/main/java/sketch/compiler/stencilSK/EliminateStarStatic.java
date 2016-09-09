@@ -4,18 +4,28 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.StmtAssign;
+import sketch.compiler.ast.core.stmts.StmtExpr;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
@@ -25,6 +35,7 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.solvers.constructs.AbstractValueOracle;
 import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.util.DebugOut;
+import sketch.util.exceptions.ExceptionAtNode;
 
 public class EliminateStarStatic extends SymbolTableVisitor {
 
@@ -140,6 +151,75 @@ public class EliminateStarStatic extends SymbolTableVisitor {
             return ((ExprConstInt) expr).getVal();
         } else {
             return -1;
+        }
+    }
+
+    @Override
+    public Object visitExprFunCall(final ExprFunCall efc) {
+        Function f = nres.getFun(efc.getName());
+
+        if (f.hasAnnotation("Gen")) {
+            final Expression exp = oracle.generatorHole(efc.getName());
+            Map<String, Expression> repl = new HashMap<String, Expression>();
+            int i = 0;
+            Iterator<Parameter> pit = f.getParams().iterator();
+            Expression ev = null;
+            for (Expression param : efc.getParams()) {
+                Parameter formal = pit.next();
+                if (formal.isParameterOutput()) {
+                    ev = param;
+                } else {
+                    repl.put("IN_" + i, (Expression) param.accept(this));
+                }
+                ++i;
+
+            }
+            VarReplacer vr = new VarReplacer(repl);
+
+            final NameResolver lnres = nres;
+            final EliminateStarStatic ths = this;
+
+            FEReplacer elimFuns = new FEReplacer() {
+                @Override
+                public Object visitExprFunCall(ExprFunCall fcall) {
+                    Function f = lnres.getFun(fcall.getName());
+                    int fpsize = f.getParams().size();
+                    if (f == null || fpsize > fcall.getParams().size() + 1) {
+                        throw new ExceptionAtNode("Backend returned a bad expression " + exp, efc);
+                    }
+                    if (f.getParams().size() == fcall.getParams().size()) {
+                        return super.visitExprFunCall(fcall);
+                    }
+
+                    Parameter out = f.getParams().get(fpsize - 1);
+                    assert out.isParameterOutput();
+                    String outname = out.getName();
+                    ths.addStatement(new StmtVarDecl(efc, out.getType(), outname, null));
+
+                    List<Expression> params = new ArrayList<Expression>();
+                    for (Expression old : fcall.getParams()) {
+                        params.add((Expression) old.accept(this));
+                    }
+                    Expression rvar = new ExprVar(efc, outname);
+                    params.add(rvar);
+
+                    ths.addStatement(new StmtExpr(new ExprFunCall(efc, fcall.getName(), params)));
+
+                    return rvar;
+                    // Declare return var;
+
+                    // add extra parameter to fcall.
+                    // return the fresh var we created.
+
+                }
+            };
+
+            Expression exp2 = (Expression) exp.accept(vr);
+            exp2 = (Expression) exp2.accept(elimFuns);
+            addStatement(new StmtAssign(ev, exp2));
+            return null;
+        } else {
+            return super.visitExprFunCall(efc);
         }
     }
 
