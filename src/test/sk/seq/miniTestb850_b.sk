@@ -1,0 +1,7 @@
+bit foo (fun bar) {
+	return (bar(()->1));
+}
+
+harness void main() {
+	assert(foo((t)->true));
+}

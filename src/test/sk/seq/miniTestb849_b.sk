@@ -1,0 +1,13 @@
+adt List {
+	Cons {int head; List tail; }
+	Nil {}
+}
+
+bit foo (List l, fun bar) {
+	return (bar(()->l.??));
+}
+
+harness void main() {
+	List l = new Nil();
+	assert(foo(l, true));
+}
