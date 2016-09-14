@@ -1,0 +1,209 @@
+
+include "generics.skh";
+include "math.skh";
+include "Geometry.skh";
+include "Car.skh";
+pragma options "--fe-fpencoding TO_BACKEND -p lowering --debug-show-dag";
+
+
+package World;
+
+struct Barrier{
+    Point p1;
+    Point p2;
+}
+
+struct World{
+    int nbar;
+    int ncar;
+    
+    Barrier[nbar] barriers;
+    Car[ncar] cars;    
+}
+
+adt Obstacle{
+    float dist;
+    OCar{}
+    OBar{}    
+}
+
+
+struct Perception{
+    int n;
+    Obstacle[n] sensors;
+}
+
+
+
+float distToLine(Point x, float angle, Barrier b){
+    float p1x = b.p1.x;
+    float p1y = b.p1.y;
+    float p2x = b.p2.x;
+    float p2y = b.p2.y;
+    /*  p1*alpha + p2*(1-alpha) = (x.x * d*sin(ang), x.y*d*cos(ang)) 
+     *              o----.--------o
+     *                  /
+     *                 /
+     *                / __
+     *               / ang )
+     *              x-----
+     *              
+     *              
+     *    p1.x*alpha + p2.x*(1-alpha) = x.x*d*sin(ang);
+     *    p1.y*alpha + p2.y*(1-alpha) = x.y*d*cos(ang);
+     *    
+     *    p1.x*alpha + p2.x*(1-alpha)              p1.y*alpha + p2.y*(1-alpha)
+     *    ---------------------------       =      ---------------------------
+     *               (x.x*sin(ang))                   (x.y*cos(ang))
+     *               
+     *               
+     *     alpha * (p1x - p2x)        p2x                   alpha * (p1y - p2y)        p2y
+     *             ------------   +  -------------- =                ------------   +  -------------- 
+     *             (x.x*sin(ang))    (x.x*sin(ang))                  (x.y*cos(ang))    (x.y*cos(ang))
+     *             
+     *     
+     * 
+     */
+    double xsin = x.x*sin(angle);
+    double ycos = x.y*cos(angle);
+    double alpha = (p2y/ycos - p2x/xsin) / ((p1x-p2x)/xsin - (p1y-p2y)/ycos );
+    double d = (p1x*alpha + p2x*(1.0-alpha)) / (x.x*sin(angle));
+    return d;    
+    
+}
+
+
+float relativeAngle(Car c, Car other){
+    /*
+     *     ^
+     *   X |        /
+     *     |       /  carAng           .(other.x, other.y)
+     *     |      .(c.x,c.y)
+     *     |
+     *     ------------> Y
+     */
+    
+       
+    float oang = ang(other.p .- c.p );
+    return Pi()/4.0;
+    
+    
+    //return oang - c.carAng;
+}
+
+
+harness 
+void testRelativeAngle(){
+    assert relativeAngle(car(0.0, 0.0, 0.0), car(1.0, 1.0, 0.0) ) == Pi()/4.0;
+    //assert relativeAngle(car(0.0, 0.0, Pi()/2.0), car(1.0, 1.0, 0.0) ) == -Pi()/4.0;
+    //assert relativeAngle(car(0.0, 0.0, Pi()/2.0), car(-1.0, 1.0, 0.0) ) == {| (-)? Pi()*(1.0 | 2.0 | 3.0 | 4.0) / (4.0 | 2.0 | 1.0 ) |};
+}
+
+
+
+float carDist(Car c1, Car c2){
+    return norm(c1.p .- c2.p);
+}
+
+/**
+ * If the sensor angle is between p1Ang and p2Ang, return true.
+ * Harder than just comparing p1Ang < sensorAng < p2Ang because of polar coordinates
+ */
+bit between(float p1Ang, float sensorAng, float p2Ang){
+    
+    float p1b = p1Ang;
+    float p2b = p2Ang;
+    generator float expr(){
+        return {| (p1b | p2b | Pi() | (Pi()/2.0) | 0.0) (+ | -) (p1b | p2b | Pi() | (Pi()/2.0) | 0.0)|};
+    }
+    generator bit comp(){
+        return expr() > expr();
+    }
+    generator void gen(){
+        if( comp() ){
+            p1b = expr();
+            p2b = expr();
+        }
+    }
+    repeat(3){
+        gen();
+    }
+    assert p1b < p2b;
+    assert p2b - p1b < Pi();
+    
+    //At this point we have that p2Ang > p1Ang and p2Ang - p1Ang <= Pi(), so they are canonical.
+    if( p1Ang < sensorAng  && sensorAng < p2Ang ){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+//harness 
+void testBetween(){
+    assert between(Pi() / 10.0, 2.0*Pi() / 10.0, 3.0*Pi() / 10.0 );
+    
+}
+
+
+
+/**
+ * This function returns the car's perception of the world.
+ */
+Perception perceive(World w, Car c){
+    int nsensors = c.nsensors;
+    Obstacle[nsensors] sensors;
+    
+    float sensorToAngle(int sensor){
+        return 2.0*Pi()*((float)sensor / (float)nsensors) - Pi();
+    }
+    int angleToSensor(float angle){
+        assume angle>=-Pi() && angle <= Pi();
+        float pos = angle / (2.0*Pi());
+        return (int)( (pos+0.5)*(float)nsensors);
+    }
+    
+    void checkCar(Car other){
+        float relAng = relativeAngle(c, other);        
+        int idx = angleToSensor(relAng);
+        float dist = carDist(c, other);
+        if(sensors[idx] == null){
+            sensors[idx] = new OCar(dist = dist);  
+        }else{
+            Obstacle obs = sensors[idx];            
+            if(obs.dist > dist){
+                sensors[idx] = new OCar(dist = dist);
+            }
+        }        
+    }
+    
+    void checkBarrier(Barrier b){
+        /*
+         *     ^
+         *   X |        /                     x p2
+         *     |       /  carAng              |
+         *     |      .(c.x,c.y)              |
+         *     |                              x p1
+         *     ------------> Y
+         */
+        for(int i=0; i<nsensors; ++i){
+            float sensorAng = sensorToAngle(i) - c.carAng;
+            float p1Ang = ang(b.p1 .- c.p);
+            float p2Ang = ang(b.p2 .- c.p);
+            if(between(p1Ang, sensorAng, p2Ang)){
+               float dist = distToLine(c.p, sensorAng, b);
+               if(sensors[i] == null){
+                   sensors[i] = new OBar(dist = dist); 
+               }else{
+                   if(sensors[i].dist > dist){
+                       sensors[i] = new OBar(dist = dist);
+                   }
+               }
+            }            
+        }        
+    }
+    
+    foreach(w.barriers, checkBarrier);
+    foreach(w.cars, checkCar);
+    return new Perception(n=nsensors, sensors= sensors);
+}

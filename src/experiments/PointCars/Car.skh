@@ -1,0 +1,38 @@
+
+include "Geometry.skh";
+
+package Car;
+
+float dT;
+
+struct Car{
+    Point p;
+    float v;
+    float carAng;
+    float angV; // carAngle changes at rate v*angV;
+    float accel; //acce
+    int nsensors;
+}
+
+Car car(float x, float y, float ang){
+    return new Car(p = new Point(x=x, y=y), carAng = ang);
+}
+
+
+/*
+ *     ^
+ *   X |        /
+ *     |       /  carAng
+ *     |      .(x,y)
+ *     |
+ *     ------------> Y
+ */
+
+void move(Car c, float dT){
+    c.p.x = c.p.x + c.v * sin(c.carAng)*dT;
+    c.p.y = c.p.y + c.v * cos(c.carAng)*dT;
+    c.v = c.v + c.accel*dT;
+    c.carAng = c.carAng + c.v* c.angV*dT;
+}
+
+
