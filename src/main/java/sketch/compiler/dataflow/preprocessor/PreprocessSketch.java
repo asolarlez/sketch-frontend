@@ -332,7 +332,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 								.getName());
 						if (depthHoles != null && !depthHoles.isEmpty()) {
 							ExprVar ev = depthHoles.remove(0);
-							int maxDepth = arc.GUC_DEPTH - arc.inlineLevel(exp);
+							int maxDepth = arc.GUC_DEPTH - arc.inlineLevel(exp) + 1;
 							ExprStar hole = new ExprStar(exp, 0, maxDepth, 3);
 							hole.setType(TypePrimitive.inttype);
 							hole.makeSpecial(depthHoles);
