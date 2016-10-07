@@ -284,7 +284,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
 			AdvancedRControl arc = (AdvancedRControl) rcontrol;
             if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
-				if (arc.inlineLevel(exp) >= 2) { // Definitely inline upto depth
+				if (arc.inlineLevel(exp) > 2) { // Definitely inline upto depth
 													// 2
             		List<ExprVar> depthHoles = arc.depthHoles.get(exp.getName());
             		if (depthHoles == null) {
