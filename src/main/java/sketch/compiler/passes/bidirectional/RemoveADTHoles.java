@@ -141,6 +141,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 			Map<Type, Integer> count = new HashMap<Type, Integer>();
 			Map<String, ExprVar> varMap = new HashMap<String, ExprVar>();
 			List<ExprNamedParam> newADTparams = new ArrayList<ExprNamedParam>();
+			List<Expression> nonNullFields = new ArrayList<Expression>();
 			for (StructFieldEnt e : cur.getFieldEntriesInOrder()) { // TODO: this should be deep
 				Type t = e.getType();
 				if (t.isArray()) {
@@ -149,13 +150,22 @@ public class RemoveADTHoles extends BidirectionalPass {
 				}
 				ExprVar var = getExprVarForParam(t, count, map, e.getName(),
 						newStmts, params);
+				if (t.isStruct()) {
+					nonNullFields.add(var);
+				}
 				newADTparams.add(new ExprNamedParam(context, e.getName(), var));
 				varMap.put(e.getName(), var);
 			}
+			List<Statement> ifBlock = new ArrayList<Statement>();
 			Statement nadt = new StmtAssign(ev, new ExprNew(context, new TypeStructRef(cur.getName(), false), newADTparams,
 					false));
+			ifBlock.add(nadt);
+			for (Expression e : nonNullFields) {
+				ifBlock.add(new StmtAssert(context, new ExprBinary(e, "!=",
+						new ExprNullPtr()), false));
+			}
 			Expression cond = new ExprBinary(cvar, "==", new ExprConstInt(i));
-			newStmts.add(new StmtIfThen(context, cond, new StmtBlock(nadt),
+			newStmts.add(new StmtIfThen(context, cond, new StmtBlock(ifBlock),
 					null));
 			
 		}
@@ -316,7 +326,7 @@ public class RemoveADTHoles extends BidirectionalPass {
             List<String> nonRecCases = getNonRecCases(name);
             boolean first = true;
             Expression curExp = new ExprNullPtr();
-
+			if (false) {
             for (String c : nonRecCases) {
                 TypeStructRef childType = new TypeStructRef(c, false);
 				String vname = driver.varGen.nextVar(ev.getName());
@@ -337,6 +347,7 @@ public class RemoveADTHoles extends BidirectionalPass {
             if (curExp instanceof ExprAlt) {
                 curExp = new ExprRegen(context, curExp);
             }
+			}
 
             newStmts.add(new StmtAssign(context, ev, curExp));
             return;
