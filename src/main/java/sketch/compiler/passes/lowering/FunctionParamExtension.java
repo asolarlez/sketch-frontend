@@ -8,16 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FunctionCreator;
-import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.Type;
@@ -805,6 +798,11 @@ public class FunctionParamExtension extends SymbolTableVisitor
 		}
 		assert tempVars.size()==1; //TODO handle the case when it's >1
 		return tempVars.get(0);
+	}
+
+	@Override
+	public Object visitExprADTHole(ExprADTHole exp) {
+		return exp;
 	}
 
 	@Override

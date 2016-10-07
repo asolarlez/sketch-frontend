@@ -55,14 +55,7 @@ import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
-import sketch.compiler.passes.bidirectional.BidirectionalAnalysis;
-import sketch.compiler.passes.bidirectional.EliminateEmptyArrayLen;
-import sketch.compiler.passes.bidirectional.EliminateLambdas;
-import sketch.compiler.passes.bidirectional.EliminateListOfFieldsMacro;
-import sketch.compiler.passes.bidirectional.ExpandRepeatCases;
-import sketch.compiler.passes.bidirectional.InnerFunReplacer;
-import sketch.compiler.passes.bidirectional.ThreadClosure;
-import sketch.compiler.passes.bidirectional.TypeCheck;
+import sketch.compiler.passes.bidirectional.*;
 import sketch.compiler.passes.cleanup.EliminateAliasesInRefParams;
 import sketch.compiler.passes.cuda.CopyCudaMemTypeToFcnReturn;
 import sketch.compiler.passes.cuda.FlattenStmtBlocks2;
@@ -123,7 +116,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
     public RecursionControl visibleRControl (Program p) {
 		// return new BaseRControl(params.inlineAmt);
         return new AdvancedRControl(options.bndOpts.branchAmnt,
-                options.bndOpts.inlineAmnt, true, p);
+				options.bndOpts.inlineAmnt, options.bndOpts.gucDepth, true, p);
 	}
 
 	/**
@@ -370,7 +363,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                     , options.bndOpts.unrollAmnt 
                     , options.bndOpts.arrSize
 , new AdvancedRControl(
-                                options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt,
+						options.bndOpts.branchAmnt, options.bndOpts.inlineAmnt,
+						options.bndOpts.gucDepth,
                                 true, p), false);
         log("MAX LOOP UNROLLING = " + options.bndOpts.unrollAmnt);
         log("MAX FUNC INLINING  = " + options.bndOpts.inlineAmnt);
@@ -524,7 +518,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 //		prog.debugDump("********************************************* Before remove lambda expression");
         if (false) {
 
-            prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
+			// prog = (Program) prog.accept(new
+			// RemoveFunctionParameters(varGen));
 
             prog = (Program) prog.accept(new ExpandRepeatCases());
             prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
@@ -553,7 +548,14 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 			bda.addPass(new ExpandRepeatCases());
 			bda.addPass(new EliminateListOfFieldsMacro());
 			bda.addPostPass(new EliminateEmptyArrayLen());
-            prog = bda.doProgram(prog);
+			bda.addPass(new RemoveADTHoles(options.bndOpts.arrSize,
+					options.bndOpts.gucDepth));
+			bda.addPass(new FilterRegexChoices());
+			bda.addPass(new EliminateFieldHoles());
+			bda.addPass(new ExpandExprNewHoles());
+			prog = bda.doProgram(prog);
+			
+			// prog.debugDump();
             prog = (Program) prog.accept(new ThreadClosure(rfp, ifrepl));
             prog = (Program) prog.accept(lamelim.getCleanup());
             if (!tchk.good) {
@@ -562,7 +564,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         }
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());
-
+		prog = (Program) prog.accept(new EliminateEmptyArrAcc());
         // prog = (getBeforeSemanticCheckStage()).run(prog);
 
         if (!options.feOpts.lowOverhead) {

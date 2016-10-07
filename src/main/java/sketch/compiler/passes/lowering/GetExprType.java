@@ -16,8 +16,6 @@
 
 package sketch.compiler.passes.lowering;
 
-import static sketch.util.Misc.nonnull;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,16 +31,11 @@ import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.SymbolTable.VarInfo;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
@@ -58,6 +51,7 @@ import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.TypeErrorException;
 import sketch.util.exceptions.UnrecognizedVariableException;
+import static sketch.util.Misc.nonnull;
 
 /**
  * Visitor that returns the type of an expression.  This needs to be
@@ -95,14 +89,15 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprAlt (ExprAlt ea) {
-    	Type t1 = (Type) ea.getThis().accept(this);
-    	Type t2 = (Type) ea.getThat().accept(this);
-        if (t1 == null || t2 == null) {
-            return null;
-        }
-        Type ret = t1.leastCommonPromotion(t2, nres);
-    	
-    	return ret;
+		return new NotYetComputedType();
+		// Type t1 = (Type) ea.getThis().accept(this);
+		// Type t2 = (Type) ea.getThat().accept(this);
+		// if (t1 == null || t2 == null) {
+		// return null;
+		// }
+		// Type ret = t1.leastCommonPromotion(t2, nres);
+		//
+		// return ret;
     }
 
 

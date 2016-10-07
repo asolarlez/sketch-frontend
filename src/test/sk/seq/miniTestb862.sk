@@ -1,30 +1,8 @@
-
-pragma options "-p lowering --slv-seed 10 --bnd-mbits 10";
-
-@Gen("gtp")
-generator bit gtpred(int x);
-
-int piecewise(int x){
-    repeat(5){
-        if(gtpred(x)){ // x > ??
-            return ??*x;
-        }
-    }
+generator T foo<T>() {
+	if (??) return ??;
+	return foo();
 }
 
-
-int abs(int x){
-    if(gtpred(x)){
-        return x;
-    }else{
-        return -x;
-    }    
-}
-
-
-harness void main(int x){
-    int t = abs(piecewise(x) - x*x);
-    assert t >= 0;
-    // assert t < 57;
-    minimize(t);    
+harness void main() {
+	assert(foo() == 5);
 }

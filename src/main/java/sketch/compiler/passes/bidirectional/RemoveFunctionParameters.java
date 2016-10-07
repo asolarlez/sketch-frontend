@@ -101,9 +101,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
         while (nres().getFun(newName) != null) {
             newName = oldName + (++nfcnt);
         }
-		if (!orig.isGenerator() || !orig.isGeneric()) {
-			nfnMemoize.put(oldName, newName);
-		}
+		nfnMemoize.put(oldName, newName);
         return newName;
     }
 
@@ -147,6 +145,17 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 }
             }
         }
+		Type retType = driver.tdstate.getExpected();
+		Type funRetType = orig.getReturnType();
+		Map<String, Type> lmap = funRetType.unify(retType, tparams);
+		for (Entry<String, Type> st : lmap.entrySet()) {
+			if (tmap.containsKey(st.getKey())) {
+				tmap.put(st.getKey(), tmap.get(st.getKey())
+						.leastCommonPromotion(st.getValue(), nres()));
+			} else {
+				tmap.put(st.getKey(), st.getValue());
+			}
+		}
         for (Entry<String, Type> st : tmap.entrySet()) {
             if (st.getValue() instanceof TypeArray) {
                 hasArrayUnifs = true;

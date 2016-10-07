@@ -8,9 +8,6 @@ import sketch.compiler.dataflow.preprocessor.PreprocessSketch;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.passes.bidirectional.BidirectionalAnalysis;
-import sketch.compiler.passes.bidirectional.EliminateFieldHoles;
-import sketch.compiler.passes.bidirectional.ExpandExprNewHoles;
-import sketch.compiler.passes.bidirectional.RemoveADTHoles;
 import sketch.compiler.passes.bidirectional.TypeInferenceForStars;
 import sketch.compiler.passes.lowering.*;
 import sketch.compiler.passes.optimization.ReplaceMinLoops;
@@ -102,28 +99,20 @@ public class PreprocessStage extends MetaStage {
 		prog = (Program) prog.accept(new EliminateRegens(varGen));
 		// prog.debugDump("************************************** 7");
 
-        prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
-        // prog.debugDump();
+
+
+		// prog.debugDump("************************************** 9");
+		// prog.debugDump("Before processing ADTs");
+
+		BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
+		bda.addPass(new TypeInferenceForStars());
+		prog = bda.doProgram(prog);
+
+		prog = (Program) prog.accept(new FunctionParamExtension(true, varGen));
 
 		// prog.debugDump("************************************** 8");
 
-
 		prog = (Program) prog.accept(new GlobalsToParams(varGen));
-
-		// prog.debugDump("************************************** 9");
-
-		BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
-		bda.addPass(new RemoveADTHoles(varGen, options.bndOpts.arrSize,
-				options.bndOpts.gucDepth));
-
-		bda.addPass(new EliminateFieldHoles());
-		bda.addPass(new ExpandExprNewHoles());
-		prog = bda.doProgram(prog);
-		// todo: try to get rid of these
-		prog = (Program) prog.accept(new EliminateRegens(varGen));
-		bda = new BidirectionalAnalysis(varGen);
-		bda.addPass(new TypeInferenceForStars());
-		prog = bda.doProgram(prog);
 
         if (!SketchOptions.getSingleton().feOpts.lowOverhead) {
             prog.accept(new PerformFlowChecks());

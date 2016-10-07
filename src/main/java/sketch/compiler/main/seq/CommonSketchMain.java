@@ -134,6 +134,9 @@ public class CommonSketchMain {
             backendOptions.add("-sprandbias");
             backendOptions.add("" + options.solverOpts.spRandBias);
         }
+		if (!options.solverOpts.unoptimized) {
+			backendOptions.add("-independentharnesses");
+		}
     }
 
     protected void log(String msg) {

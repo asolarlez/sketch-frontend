@@ -163,7 +163,7 @@ Expression ExprPostfixNQ =
 
 Expression ExprPrimary =
     yyValue:Term  l:Selector*
-        { for (Selector s : l)  yyValue = new ExprChoiceSelect (yyValue, s); }
+        { for (Selector s : l)  if (s == null) yyValue = new ExprField(yyValue,yyValue,"", true); else yyValue = new ExprChoiceSelect (yyValue, s); }
     ;
 
 Expression ExprPrimaryNQ =
@@ -254,7 +254,7 @@ Select Sel =
     ".":s  id:Id
         { yyValue = new SelectField (id); }
     / ".":s "??":s
-    	{ yyValue = new SelectField(""); }
+    	{ yyValue = null; }
     ;
 
 Expression Var =

@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
+import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
@@ -55,14 +54,12 @@ class ArrayTypeReplacer extends SymbolTableVisitor {
  * This class expands GUCs into constructors of some maximum depth.
  */
 public class RemoveADTHoles extends BidirectionalPass {
-    TempVarGen varGen;
     FENode context;
     TypeStructRef oriType;
     int maxArrSize;
     int gucDepth;
 
-    public RemoveADTHoles(TempVarGen varGen, int arrSize, int gucDepth) {
-        this.varGen = varGen;
+	public RemoveADTHoles(int arrSize, int gucDepth) {
         this.maxArrSize = arrSize;
         this.gucDepth = gucDepth;
     }
@@ -90,7 +87,12 @@ public class RemoveADTHoles extends BidirectionalPass {
 		} else {
 			exp = (ExprADTHole) newexp;
 		}
-        TypeStructRef ts =  (TypeStructRef) driver.tdstate.getExpected();// new TypeStructRef(exp.getName(), false);
+		Type t = driver.tdstate.getExpected();
+		if (!(t instanceof TypeStructRef)) {
+			return new ExprStar(exp);
+		}
+		TypeStructRef ts = (TypeStructRef) t;// new TypeStructRef(exp.getName(),
+												// false);
         context = exp;
         oriType = ts;
         List<Statement> newStmts = new ArrayList<Statement>();
@@ -106,24 +108,129 @@ public class RemoveADTHoles extends BidirectionalPass {
 
 	private Expression processSimpleADTHole(TypeStructRef type,
 			List<Expression> params, List<Statement> newStmts) {
-		String tempVar = varGen.nextVar(type.getName().split("@")[0] + "_");
+		String tempVar = driver.varGen.nextVar(type.getName().split("@")[0]
+				+ "_");
 		Statement decl = (new StmtVarDecl(context, type, tempVar, null));
 		newStmts.add(decl);
-		symtab().registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
+		// symtab().registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
 		ExprVar ev = new ExprVar(context, tempVar);
 
-		List<ExprVar> depthHoles = new ArrayList<ExprVar>();
-		createNewAdt(ev, type, params, newStmts, 1, true, depthHoles);
+		createNewAdt(ev, type, params, newStmts);
 		return ev;
+	}
+
+	private void createNewAdt(ExprVar ev, TypeStructRef tt,
+			List<Expression> params, List<Statement> newStmts) {
+		String name = tt.getName();
+		StructDef sd = nres().getStruct(name);
+
+		List<ExprNamedParam> expParams = createADTParams(tt.getName(),
+				newStmts, tt, params);
+
+		// Create a new adt with the exprvars above
+		if (sd.isInstantiable()) {
+			newStmts.add(new StmtAssign(ev, new ExprNew(context, tt, expParams,
+					false)));
+		} else {
+			newStmts.add(new StmtAssign(ev, new ExprNew(context, null,
+					expParams, true)));
+		}
+	}
+
+	private List<ExprNamedParam> createADTParams(String name,
+			List<Statement> stmts, Type type, List<Expression> params) {
+		List<ExprNamedParam> newADTparams = new ArrayList<ExprNamedParam>();
+		Map<Type, List<ExprVar>> map = new HashMap<Type, List<ExprVar>>();
+		LinkedList<String> queue = new LinkedList<String>();
+		queue.add(name);
+		while (!queue.isEmpty()) {
+			String curName = queue.pop();
+			StructDef cur = nres().getStruct(curName);
+			Map<Type, Integer> count = new HashMap<Type, Integer>();
+			Map<String, ExprVar> varMap = new HashMap<String, ExprVar>();
+			for (StructFieldEnt e : cur.getFieldEntriesInOrder()) {
+				Type t = e.getType();
+				if (t.isArray()) {
+					TypeArray ta = (TypeArray) t;
+					t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
+				}
+				ExprVar var = getExprVarForParam(t, count, map, e.getName(),
+						stmts, type, params);
+				newADTparams.add(new ExprNamedParam(context, e.getName(), var,
+						curName));
+				varMap.put(e.getName(), var);
+			}
+			queue.addAll(nres().getStructChildren(curName));
+		}
+		return newADTparams;
+	}
+
+	private ExprVar getExprVarForParam(Type t, Map<Type, Integer> count,
+			Map<Type, List<ExprVar>> map, String fName, List<Statement> stmts,
+			Type adtType, List<Expression> params) {
+		if (!count.containsKey(t)) {
+			count.put(t, 0);
+		}
+		if (!map.containsKey(t)) {
+			map.put(t, new ArrayList<ExprVar>());
+		}
+		int c = count.get(t);
+		List<ExprVar> varsForType = map.get(t);
+		if (c >= varsForType.size() || (!t.isArray() && !t.isStruct())) {
+			String tempVar = driver.varGen.nextVar(fName.split("@")[0]);
+			Statement decl = (new StmtVarDecl(context, t, tempVar, null));
+			stmts.add(decl);
+			ExprVar ev = new ExprVar(context, tempVar);
+			varsForType.add(ev);
+			stmts.add(getBaseExprs(t, params, ev));
+		}
+		ExprVar var;
+		if (!t.isArray() && !t.isStruct()) {
+			var = varsForType.get(varsForType.size() - 1);
+		} else {
+			var = varsForType.get(c);
+		}
+
+		count.put(t, ++c);
+		return var;
+	}
+
+	private StmtBlock getBaseExprs(Type type, List<Expression> params,
+			ExprVar var) {
+		List<Statement> stmts = new ArrayList<Statement>();
+		List<Expression> baseExprs = getExprsOfType(params, type);
+		if (baseExprs.isEmpty()) {
+			stmts.add(new StmtAssign(var, type.defaultValue()));
+		} else {
+			ExprStar choice = new ExprStar(context);
+			String name = driver.varGen.nextVar("choice");
+			ExprVar choicevar = new ExprVar(context,
+ name);
+			stmts.add(new StmtVarDecl(context, TypePrimitive.inttype, name,
+					choice));
+			stmts.add(new StmtAssert(context, new ExprBinary(new ExprBinary(
+					ExprConstInt.zero, "<=", choicevar), "&&", new ExprBinary(
+					choicevar, "<", ExprConstant.createConstant(choicevar, ""
+							+ baseExprs.size()))),
+					"regen " + choice.getSname(), StmtAssert.UBER));
+			for (int i = 0; i < baseExprs.size(); i++) {
+				Expression cond = new ExprBinary(choicevar, "==",
+						ExprConstant.createConstant(choicevar, "" + i));
+				stmts.add(new StmtIfThen(context, cond, new StmtBlock(
+						new StmtAssign(var, baseExprs.get(i))), null));
+			}
+		}
+		return new StmtBlock(stmts);
 	}
 
     private Expression processADTHole(TypeStructRef type, List<Expression> params,
  List<Statement> newStmts)
     {
-        String tempVar = varGen.nextVar(type.getName().split("@")[0] + "_");
+		String tempVar = driver.varGen.nextVar(type.getName().split("@")[0]
+				+ "_");
         Statement decl = (new StmtVarDecl(context, type, tempVar, null));
         newStmts.add(decl);
-		symtab().registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
+		// symtab().registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
         ExprVar ev = new ExprVar(context, tempVar);
 
 		List<ExprVar> depthVars = new ArrayList<ExprVar>();
@@ -154,7 +261,7 @@ public class RemoveADTHoles extends BidirectionalPass {
                         new ExprBinary(ExprBinary.BINOP_OR, new ExprBinary(
                                 ExprBinary.BINOP_LE, depthHoles.get(i), new ExprConstInt(i)), cond);
             }
-            Statement ifBlock = getBaseExprs(tt, params, ev, depth == 1);
+			Statement ifBlock = getBaseExprs(tt, params, ev, depth <= 1);
             List<Statement> elseStmts = new ArrayList<Statement>();
             if (depth > 1) {
                 TypeStructRef oldOriType = oriType;
@@ -188,11 +295,11 @@ public class RemoveADTHoles extends BidirectionalPass {
 
             for (String c : nonRecCases) {
                 TypeStructRef childType = new TypeStructRef(c, false);
-                String vname = varGen.nextVar(ev.getName());
+				String vname = driver.varGen.nextVar(ev.getName());
                 Statement decl = (new StmtVarDecl(context, tt, vname, null));
                 newStmts.add(decl);
-				symtab().registerVar(vname, childType, decl,
-						SymbolTable.KIND_LOCAL);
+				// symtab().registerVar(vname, childType, decl,
+				// SymbolTable.KIND_LOCAL);
                 ExprVar newV = new ExprVar(context, vname);
                 createNewAdt(newV, childType, params, newStmts, 1, false, new ArrayList());
                 if (first) {
@@ -279,10 +386,10 @@ public class RemoveADTHoles extends BidirectionalPass {
         int c = count.get(t);
         List<ExprVar> varsForType = map.get(t);
         if (c >= varsForType.size() || (!t.isArray() && !t.isStruct())) {
-            String tempVar = varGen.nextVar(fName.split("@")[0]);
+			String tempVar = driver.varGen.nextVar(fName.split("@")[0]);
             Statement decl = (new StmtVarDecl(context, t, tempVar, null));
             stmts.add(decl);
-			symtab().registerVar(tempVar, t, decl, SymbolTable.KIND_LOCAL);
+			// symtab().registerVar(tempVar, t, decl, SymbolTable.KIND_LOCAL);
             ExprVar ev = new ExprVar(context, tempVar);
             varsForType.add(ev);
 
@@ -291,7 +398,7 @@ public class RemoveADTHoles extends BidirectionalPass {
                 newDepths.add(depthHoles.get(i));
             }
 			if (depth > 2 && t.promotesTo(adtType, nres())) {
-				String hvar = varGen.nextVar("_h");
+				String hvar = driver.varGen.nextVar("_h");
                 ExprStar hole = new ExprStar(context, 0, depth - 2, 3);
                 hole.makeSpecial(depthHoles);
 				stmts.add(new StmtVarDecl(context, TypePrimitive.inttype, hvar,
@@ -357,7 +464,7 @@ public class RemoveADTHoles extends BidirectionalPass {
         boolean first = true;
         Expression curExp = null;
         for (Expression e : baseExprs) {
-            String tmp = varGen.nextVar("tmp");
+			String tmp = driver.varGen.nextVar("tmp");
             stmts.add(new StmtVarDecl(context, type, tmp, e));
             if (first) {
                 curExp = new ExprVar(context, tmp);
@@ -399,7 +506,7 @@ public class RemoveADTHoles extends BidirectionalPass {
                     arrelems.add(getGeneralExprOfType(ta.getBase(), params, stmts,
                             considerNonRec));
                 }
-                String tmp = varGen.nextVar("tmp");
+				String tmp = driver.varGen.nextVar("tmp");
                 stmts.add(new StmtVarDecl(context, ta,tmp, new ExprArrayRange(context, new ExprArrayInit(context, arrelems),
                         new ExprArrayRange.RangeLen(ExprConstInt.zero, length))));
                 return new ExprVar(context, tmp);
@@ -417,10 +524,11 @@ public class RemoveADTHoles extends BidirectionalPass {
             }
             TypeStructRef tt = (TypeStructRef) type;
 
-            String tempVar = varGen.nextVar(tt.getName().split("@")[0] + "_");
+			String tempVar = driver.varGen.nextVar(tt.getName().split("@")[0]
+					+ "_");
             Statement decl = (new StmtVarDecl(context, tt, tempVar, null));
             stmts.add(decl);
-			symtab().registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
+			// symtab().registerVar(tempVar, tt, decl, SymbolTable.KIND_LOCAL);
             ExprVar ev = new ExprVar(context, tempVar);
             TypeStructRef oldOriType = oriType;
             oriType = tt;
@@ -473,7 +581,9 @@ public class RemoveADTHoles extends BidirectionalPass {
 						&& (!ta.getLength().isConstant() || ta.getLength()
 								.getIValue() > 0)) {
                     if (!(exp instanceof ExprVar)) {
+						driver.tdstate.beforeRecursion(tt, exp);
                         exp = (Expression) (new CloneHoles()).process(exp).accept(this);
+						driver.tdstate.beforeRecursion(null, null);
                     }
                     filteredExprs.add(new ExprTernary(exp, ExprTernary.TEROP_COND, 
                     		new ExprBinary(exp, ExprBinary.BINOP_GT, ta.getLength(), ExprConstInt.zero),
@@ -486,7 +596,9 @@ public class RemoveADTHoles extends BidirectionalPass {
 					continue;
 				}
                 if (!(exp instanceof ExprVar)) {
+					driver.tdstate.beforeRecursion(tt, exp);
                     exp = (Expression) (new CloneHoles()).process(exp).accept(this);
+					driver.tdstate.beforeRecursion(null, null);
                 }
                 if (t.isArray() && tt.isArray()) {
                     exp =

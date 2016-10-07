@@ -52,6 +52,7 @@ public class AdvancedRControl extends RecursionControl {
 	Stack<Integer> bfStack;
 	int branchingTheshold;
 	private int MAX_INLINE;	
+	private int GUC_DEPTH;
 	Map<String, FunInfo> funmap;
 	WeightFunctions funWeighter = new WeightFunctions();
 	int FACTOR = 0;
@@ -168,10 +169,11 @@ public class AdvancedRControl extends RecursionControl {
 	
 	
 	
-    public AdvancedRControl(int branchingThreshold, int maxInline, boolean ignoreStatics,
+    public AdvancedRControl(int branchingThreshold, int maxInline, int gucDepth, boolean ignoreStatics,
             Program prog)
     {
 		this.branchingTheshold = branchingThreshold;
+		this.GUC_DEPTH = gucDepth;
 		bfStack = new Stack<Integer>();
 		bfStack.push(1);
 		prog.accept(new PopFunMap());
@@ -286,12 +288,18 @@ public class AdvancedRControl extends RecursionControl {
 
 	public boolean testCall(ExprFunCall fc) {
         FunInfo fi = funmap.get(nres.getFunName(fc.getName()));
+		Function fun = nres.getFun(fc.getName());
 		/*
 		if(tracing){
 			System.out.print("testing call " + fc.getName() + " fi.rdepth = " + fi.rdepth);
 		}
 		*/
-		if( fi.rdepth < MAX_INLINE ){
+		int bnd = MAX_INLINE;
+		if (fun.hasAnnotation("guc")) {
+			bnd = GUC_DEPTH;
+		}
+		// System.out.println(fc.getName() + " " + fi.rdepth + " " + bnd);
+		if (fi.rdepth < bnd) {
 			if(tracing){
 			//	System.out.println(" succeed");
 			}

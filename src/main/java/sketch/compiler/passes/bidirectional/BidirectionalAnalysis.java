@@ -268,7 +268,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     public Object visitExprAlt(ExprAlt exp) {
         Type tths = getType(exp.getThis());
         Type tthat = getType(exp.getThat());
-        Type common = merge(tths, tthat);
+		Type common = tdstate.getExpected();// merge(tths, tthat);
 
         tdstate.beforeRecursion(common, exp);
         Expression ths = doExpression(exp.getThis());
@@ -323,7 +323,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         }
         if (!hasChanged)
             return exp;
-        return new ExprADTHole(exp, newParams);
+		return new ExprADTHole(exp, newParams, exp.isSimple());
     }
 
     public Object visitExprTupleAccess(ExprTupleAccess exp) {
