@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNew;
@@ -21,8 +22,11 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.stmts.StmtBlock;
+import sketch.compiler.ast.core.stmts.StmtIfThen;
+import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
@@ -30,6 +34,7 @@ import sketch.compiler.dataflow.DataflowWithFixpoint;
 import sketch.compiler.dataflow.MethodState.Level;
 import sketch.compiler.dataflow.abstractValue;
 import sketch.compiler.dataflow.nodesToSB.IntVtype;
+import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.RecursionControl;
 import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
@@ -277,6 +282,20 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             int level = state.getLevel();
             int ctlevel = state.getCTlevel();
             Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
+			AdvancedRControl arc = (AdvancedRControl) rcontrol;
+            if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
+				if (arc.inlineLevel(exp) >= 2) { // Definitely inline upto depth
+													// 2
+            		List<ExprVar> depthHoles = arc.depthHoles.get(exp.getName());
+            		if (depthHoles == null) {
+						depthHoles = new ArrayList<ExprVar>();
+            			arc.depthHoles.put(exp.getName(), depthHoles);
+            		}
+					String name = varGen.nextVar("IH_");
+					ExprVar ev = new ExprVar(exp, name);
+					depthHoles.add(0, ev);
+            	}
+			}
             try {
                 Level lvl2;
                 List<Expression> nactuals = new ArrayList<Expression>();
@@ -308,7 +327,30 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 nres.setPackage(pkgs.get(fun.getPkg()));
                 try {
                     Statement body = (Statement) nbody.accept(this);
-                    addStatement(body);
+                    if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
+						List<ExprVar> depthHoles = arc.depthHoles.get(exp
+								.getName());
+						if (depthHoles != null && !depthHoles.isEmpty()) {
+							ExprVar ev = depthHoles.remove(0);
+							int maxDepth = arc.GUC_DEPTH - arc.inlineLevel(exp);
+							ExprStar hole = new ExprStar(exp, 0, maxDepth, 3);
+							hole.setType(TypePrimitive.inttype);
+							hole.makeSpecial(depthHoles);
+							addStatement(new StmtVarDecl(exp,
+									TypePrimitive.inttype, ev.getName(), hole));
+							Expression cond = new ExprBinary(ExprBinary.BINOP_GT, ev, new ExprConstInt(0));
+				            for (int i = 0; i < depthHoles.size(); i++) {
+				                cond =
+				                        new ExprBinary(ExprBinary.BINOP_AND, new ExprBinary(
+				                                ExprBinary.BINOP_GT, depthHoles.get(i), new ExprConstInt(i+1)), cond);
+				            }
+				            addStatement(new StmtIfThen(exp, cond, new StmtBlock(body), null));
+						} else {
+							addStatement(body);
+                    	}
+					} else {
+						addStatement(body);
+                    }
                 } finally {
                     Iterator<Expression> actualParams = nactuals.iterator();
                     Iterator<Parameter> formalParams = nparams.iterator();

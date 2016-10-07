@@ -11,17 +11,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import sketch.compiler.ast.core.FENode;
-import sketch.compiler.ast.core.FEReplacer;
-import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.*;
 import sketch.compiler.ast.core.Function.FcnType;
-import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
-import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.Program;
-import sketch.compiler.ast.core.SymbolTable;
-import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.stmts.*;
@@ -52,7 +44,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     protected RecursionControl rcontrol;
     /* Bounds for loop unrolling and function inlining (initialized arbitrarily). */
     protected int MAX_UNROLL = 0;
-    private TempVarGen varGen;
+	protected TempVarGen varGen;
     protected abstractValueType vtype;
     protected Expression exprRV=null;
     protected boolean isReplacer;

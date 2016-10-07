@@ -1,6 +1,7 @@
 package sketch.compiler.dataflow.recursionCtrl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -10,6 +11,7 @@ import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
@@ -52,11 +54,12 @@ public class AdvancedRControl extends RecursionControl {
 	Stack<Integer> bfStack;
 	int branchingTheshold;
 	private int MAX_INLINE;	
-	private int GUC_DEPTH;
+	public int GUC_DEPTH;
 	Map<String, FunInfo> funmap;
 	WeightFunctions funWeighter = new WeightFunctions();
 	int FACTOR = 0;
     final boolean ignoreStatics;
+	public Map<String, List<ExprVar>> depthHoles;
 	/**
 	 * For each function, we must keep the following information: <BR>
 	 * - Current recursion depth <BR>
@@ -184,6 +187,7 @@ public class AdvancedRControl extends RecursionControl {
 		FACTOR = (funWeighter.maxWeight * 2 ) / 3;
 		MAX_INLINE = maxInline;		
         this.ignoreStatics = ignoreStatics;
+		this.depthHoles = new HashMap<String, List<ExprVar>>();
 	}
 	
 	
