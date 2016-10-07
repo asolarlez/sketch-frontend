@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.*;
@@ -123,17 +124,40 @@ public class RemoveADTHoles extends BidirectionalPass {
 			List<Expression> params, List<Statement> newStmts) {
 		String name = tt.getName();
 		StructDef sd = nres().getStruct(name);
-
-		List<ExprNamedParam> expParams = createADTParams(tt.getName(),
-				newStmts, tt, params);
-
-		// Create a new adt with the exprvars above
-		if (sd.isInstantiable()) {
-			newStmts.add(new StmtAssign(ev, new ExprNew(context, tt, expParams,
-					false)));
-		} else {
-			newStmts.add(new StmtAssign(ev, new ExprNew(context, null,
-					expParams, true)));
+		Map<Type, List<ExprVar>> map = new HashMap<Type, List<ExprVar>>();
+		List<String> cases = this.getCasesInOrder(name);
+		ExprStar choice = new ExprStar(context);
+		String cname = driver.varGen.nextVar("choice");
+		ExprVar cvar = new ExprVar(context, cname);
+		newStmts.add(new StmtVarDecl(context, TypePrimitive.inttype, cname,
+				choice));
+		newStmts.add(new StmtAssert(context, new ExprBinary(new ExprBinary(
+				ExprConstInt.zero, "<=", cvar), "&&", new ExprBinary(cvar, "<",
+				ExprConstant.createConstant(cvar, "" + cases.size()))),
+				"regen " + choice.getSname(), StmtAssert.UBER));
+		for (int i = 0; i < cases.size(); i++) {
+			String curName = cases.get(i);
+			StructDef cur = nres().getStruct(curName);
+			Map<Type, Integer> count = new HashMap<Type, Integer>();
+			Map<String, ExprVar> varMap = new HashMap<String, ExprVar>();
+			List<ExprNamedParam> newADTparams = new ArrayList<ExprNamedParam>();
+			for (StructFieldEnt e : cur.getFieldEntriesInOrder()) { // TODO: this should be deep
+				Type t = e.getType();
+				if (t.isArray()) {
+					TypeArray ta = (TypeArray) t;
+					t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
+				}
+				ExprVar var = getExprVarForParam(t, count, map, e.getName(),
+						newStmts, params);
+				newADTparams.add(new ExprNamedParam(context, e.getName(), var));
+				varMap.put(e.getName(), var);
+			}
+			Statement nadt = new StmtAssign(ev, new ExprNew(context, new TypeStructRef(cur.getName(), false), newADTparams,
+					false));
+			Expression cond = new ExprBinary(cvar, "==", new ExprConstInt(i));
+			newStmts.add(new StmtIfThen(context, cond, new StmtBlock(nadt),
+					null));
+			
 		}
 	}
 
@@ -155,7 +179,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 					t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
 				}
 				ExprVar var = getExprVarForParam(t, count, map, e.getName(),
-						stmts, type, params);
+						stmts, params);
 				newADTparams.add(new ExprNamedParam(context, e.getName(), var,
 						curName));
 				varMap.put(e.getName(), var);
@@ -167,7 +191,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 
 	private ExprVar getExprVarForParam(Type t, Map<Type, Integer> count,
 			Map<Type, List<ExprVar>> map, String fName, List<Statement> stmts,
-			Type adtType, List<Expression> params) {
+			List<Expression> params) {
 		if (!count.containsKey(t)) {
 			count.put(t, 0);
 		}
@@ -645,4 +669,40 @@ public class RemoveADTHoles extends BidirectionalPass {
         }
         return nonRecCases;
     }
+
+	private List<String> getCasesInOrder(String name) {
+		Map<Integer, List<String>> allCases = new HashMap<Integer, List<String>>();
+		TypeStructRef type = new TypeStructRef(name, false);
+
+		LinkedList<String> queue = new LinkedList<String>();
+		queue.add(name);
+		while (!queue.isEmpty()) {
+			String n = queue.removeFirst();
+			List<String> children = nres().getStructChildren(n);
+			if (children.isEmpty()) {
+				StructDef ts = nres().getStruct(n);
+				int recCount = 0;
+				for (StructFieldEnt f : ts.getFieldEntriesInOrder()) {
+					if (f.getType().promotesTo(type, nres()))
+						recCount++;
+				}
+				if (allCases.containsKey(recCount)) {
+					allCases.get(recCount).add(n);
+				} else {
+					List<String> cases = new ArrayList<String>();
+					cases.add(n);
+					allCases.put(recCount, cases);
+				}
+
+			} else {
+				queue.addAll(children);
+			}
+		}
+		Set<Integer> counts = allCases.keySet();
+		List<String> orderedCases = new ArrayList<String>();
+		for (int c : counts) {
+			orderedCases.addAll(allCases.get(c));
+		}
+		return orderedCases;
+	}
 }
