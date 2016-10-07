@@ -148,8 +148,10 @@ public class RemoveADTHoles extends BidirectionalPass {
 					TypeArray ta = (TypeArray) t;
 					t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
 				}
+				Expression cond = new ExprBinary(cvar, ">=",
+						new ExprConstInt(i));
 				ExprVar var = getExprVarForParam(t, count, map, e.getName(),
-						newStmts, params);
+						newStmts, params, cond);
 				if (t.isStruct()) {
 					nonNullFields.add(var);
 				}
@@ -189,7 +191,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 					t = (Type) ta.accept(new ArrayTypeReplacer(varMap));
 				}
 				ExprVar var = getExprVarForParam(t, count, map, e.getName(),
-						stmts, params);
+						stmts, params, ExprConstInt.one);
 				newADTparams.add(new ExprNamedParam(context, e.getName(), var,
 						curName));
 				varMap.put(e.getName(), var);
@@ -201,7 +203,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 
 	private ExprVar getExprVarForParam(Type t, Map<Type, Integer> count,
 			Map<Type, List<ExprVar>> map, String fName, List<Statement> stmts,
-			List<Expression> params) {
+			List<Expression> params, Expression cond) {
 		if (!count.containsKey(t)) {
 			count.put(t, 0);
 		}
@@ -216,7 +218,8 @@ public class RemoveADTHoles extends BidirectionalPass {
 			stmts.add(decl);
 			ExprVar ev = new ExprVar(context, tempVar);
 			varsForType.add(ev);
-			stmts.add(getBaseExprs(t, params, ev));
+			stmts.add(new StmtIfThen(context, cond, new StmtBlock(getBaseExprs(
+					t, params, ev)), null));
 		}
 		ExprVar var;
 		if (!t.isArray() && !t.isStruct()) {
@@ -235,6 +238,8 @@ public class RemoveADTHoles extends BidirectionalPass {
 		List<Expression> baseExprs = getExprsOfType(params, type);
 		if (baseExprs.isEmpty()) {
 			stmts.add(new StmtAssign(var, type.defaultValue()));
+		} else if (baseExprs.size() == 1) {
+			stmts.add(new StmtAssign(var, baseExprs.get(0)));
 		} else {
 			ExprStar choice = new ExprStar(context);
 			String name = driver.varGen.nextVar("choice");
