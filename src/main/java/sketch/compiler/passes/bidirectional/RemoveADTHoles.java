@@ -326,7 +326,7 @@ public class RemoveADTHoles extends BidirectionalPass {
             List<String> nonRecCases = getNonRecCases(name);
             boolean first = true;
             Expression curExp = new ExprNullPtr();
-			if (false) {
+
             for (String c : nonRecCases) {
                 TypeStructRef childType = new TypeStructRef(c, false);
 				String vname = driver.varGen.nextVar(ev.getName());
@@ -347,7 +347,6 @@ public class RemoveADTHoles extends BidirectionalPass {
             if (curExp instanceof ExprAlt) {
                 curExp = new ExprRegen(context, curExp);
             }
-			}
 
             newStmts.add(new StmtAssign(context, ev, curExp));
             return;
