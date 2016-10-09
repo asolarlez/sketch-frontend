@@ -3,6 +3,7 @@ package sketch.compiler.passes.optimization;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
+import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -101,16 +102,32 @@ public class ReplaceMinLoops extends FEReplacer {
 			if (stmt instanceof StmtIfThen) {
 				StmtIfThen sif = (StmtIfThen) stmt;
 				Expression cond = sif.getCond();
-				if (cond.isConstant()) {
-					if (cond.getIValue() == 1 && cannotBeRepeated(sif.getCons())) 
-						return true;
-					if (cond.getIValue() == 0 && cannotBeRepeated(sif.getAlt()))
-						return true;
-				} else {
-					if (cannotBeRepeated(sif.getCons())
-							&& cannotBeRepeated(sif.getAlt()))
-						return true;
+				int condVal = 2; // Not yet fixed
+				if (cond.isConstant())
+					condVal = cond.getIValue();
+				// If cond is a function call and that function just returns
+				// true or false
+				if (cond instanceof ExprFunCall) {
+					Function fun = nres.getFun(((ExprFunCall) cond).getName());
+					Statement body = fun.getBody();
+					if (body instanceof StmtBlock
+							&& ((StmtBlock) body).size() == 1) {
+						body = ((StmtBlock) body).getStmts().get(0);
+					}
+					if (body instanceof StmtReturn) {
+						Expression value = ((StmtReturn) body).getValue();
+						if (value.isConstant())
+							condVal = value.getIValue();
+					}
 				}
+				if (condVal == 1 && cannotBeRepeated(sif.getCons()))
+					return true;
+				if (condVal == 0 && cannotBeRepeated(sif.getAlt()))
+					return true;
+
+				if (cannotBeRepeated(sif.getCons())
+						&& cannotBeRepeated(sif.getAlt()))
+					return true;
 			}
 		}
 		return false;

@@ -12,6 +12,7 @@ import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFieldsListMacro;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
@@ -31,6 +32,10 @@ public class EliminateListOfFieldsMacro extends BidirectionalPass {
         if (t.isStruct())
             if (nres.isTemplate(((TypeStructRef) t).getName()))
                 return exp;
+		if (t instanceof NotYetComputedType) {
+			return new ExprArrayInit(exp.getContext(),
+					new ArrayList<Expression>());
+		}
 		final Expression left = exp.getLeft();
 		if (driver.getType(left).isStruct()) {
 			StructDef ts = driver.getStructDef((TypeStructRef) driver

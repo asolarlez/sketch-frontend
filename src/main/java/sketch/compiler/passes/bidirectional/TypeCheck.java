@@ -1401,8 +1401,10 @@ public class TypeCheck extends BidirectionalPass {
         Type lt = driver.getType(ea.getThis());
         Type rt = driver.getType(ea.getThat());
 
-        if (lt != null && rt != null && null == lt.leastCommonPromotion(rt, driver.getNres()))
-            report(ea, "alternatives have incompatible types '" + lt + "', '" + rt + "'");
+		// if (lt != null && rt != null && null == lt.leastCommonPromotion(rt,
+		// driver.getNres()))
+		// report(ea, "alternatives have incompatible types '" + lt + "', '" +
+		// rt + "'");
         return ea;
     }
 

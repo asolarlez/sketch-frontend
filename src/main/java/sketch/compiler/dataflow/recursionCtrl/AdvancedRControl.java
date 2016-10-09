@@ -59,6 +59,7 @@ public class AdvancedRControl extends RecursionControl {
 	WeightFunctions funWeighter = new WeightFunctions();
 	int FACTOR = 0;
     final boolean ignoreStatics;
+	int numGuc = 0;
 	public Map<String, List<ExprVar>> depthHoles;
 	/**
 	 * For each function, we must keep the following information: <BR>
@@ -227,6 +228,9 @@ public class AdvancedRControl extends RecursionControl {
         FunInfo fi = funmap.get(nres.getFunName(fun.getName()));
 		fi.rdepth--;
 		--tt;
+		Function f = nres.getFun(fun.getName());
+		if (f.hasAnnotation("guc"))
+			numGuc--;
 	}
 
 	public String callStack(){
@@ -243,6 +247,9 @@ public class AdvancedRControl extends RecursionControl {
 		debugMsg = fc.getName();
 		++tt;
 		fi.rdepth++;
+		if (fun.hasAnnotation("guc")) {
+			numGuc++;
+		}
 	}
 
 	public boolean leaveCallsBehind(){
@@ -301,6 +308,8 @@ public class AdvancedRControl extends RecursionControl {
 		int bnd = MAX_INLINE;
 		if (fun.hasAnnotation("guc")) {
 			bnd = GUC_DEPTH;
+			if (numGuc > GUC_DEPTH)
+				return false;
 		}
 		// System.out.println(fc.getName() + " " + fi.rdepth + " " + bnd);
 		if (fi.rdepth < bnd) {
