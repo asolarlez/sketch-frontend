@@ -15,16 +15,11 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.*;
-import sketch.compiler.ast.core.exprs.regens.ExprAlt;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
+import sketch.compiler.ast.core.exprs.regens.*;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectorVisitor;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
-import sketch.compiler.ast.core.exprs.regens.ExprRegen;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -208,11 +203,18 @@ public class EliminateRegens extends SymbolTableVisitor {
         public Object visitExprArrayRange(ExprArrayRange ear){
             List<Expression> exps = new ArrayList<Expression> ();
             List<Expression> bases = (List<Expression>) ear.getBase().accept(this);
+            if (ear.hasSingleIndex()) {
             List<Expression> offsets = (List<Expression>) ear.getOffset().accept(this);
             for(Expression base: bases)
                 for(Expression offset: offsets){
                     exps.add(new ExprArrayRange(base, offset));
                 }
+			} else { // TODO: check this
+				ExprArrayRange.RangeLen range = ear.getSelection();
+				for (Expression base : bases) {
+					exps.add(new ExprArrayRange(ear, base, range));
+				}
+            }
             return exps;
         }
         

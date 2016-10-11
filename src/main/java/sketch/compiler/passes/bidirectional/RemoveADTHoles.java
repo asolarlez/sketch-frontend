@@ -90,7 +90,13 @@ public class RemoveADTHoles extends BidirectionalPass {
 		}
 		Type t = driver.tdstate.getExpected();
 		if (!(t instanceof TypeStructRef)) {
-			return new ExprStar(exp);
+			if (t.equals(TypePrimitive.bittype)) {
+				return new ExprStar(exp, 1);
+			} else if (t.equals(TypePrimitive.inttype)) {
+				return new ExprStar(exp, 2);
+			} else {
+				return t.defaultValue();
+			}
 		}
 		TypeStructRef ts = (TypeStructRef) t;// new TypeStructRef(exp.getName(),
 												// false);
@@ -216,10 +222,44 @@ public class RemoveADTHoles extends BidirectionalPass {
 			String tempVar = driver.varGen.nextVar(fName.split("@")[0]);
 			Statement decl = (new StmtVarDecl(context, t, tempVar, null));
 			stmts.add(decl);
+			// symtab().registerVar(tempVar, t, decl, SymbolTable.KIND_LOCAL);
 			ExprVar ev = new ExprVar(context, tempVar);
 			varsForType.add(ev);
-			stmts.add(new StmtIfThen(context, cond, new StmtBlock(getBaseExprs(
-					t, params, ev)), null));
+			boolean done = false;
+			if (t.isArray()) {
+				TypeArray ta = (TypeArray) t;
+				Type baseType = ta.getBase();
+				if (baseType.isStruct()) {
+					List<Expression> arrelems = new ArrayList<Expression>();
+					Expression length = ta.getLength();
+					int size = length.isConstant() ? length.getIValue()
+							: maxArrSize;
+
+					// TODO: is there a better way of dealing with this
+					for (int i = 0; i < size; i++) {
+						ExprVar v = getExprVarForParam(baseType, count, map,
+								fName, stmts, params, cond);
+						arrelems.add(v);
+					}
+					ExprStar hole = new ExprStar(context);
+					Expression cond1 = hole;
+					Statement ifBlock = getBaseExprs(t, params, ev);
+					Statement elseBlock = new StmtBlock(new StmtAssign(context, ev,
+							new ExprArrayRange(context, new ExprArrayInit(
+									context, arrelems),
+									new ExprArrayRange.RangeLen(
+											ExprConstInt.zero, length))));
+					stmts.add(new StmtIfThen(context, cond,
+							new StmtBlock(new StmtIfThen(context, cond1,
+									ifBlock, elseBlock)), null));
+					done = true;
+				}
+
+			}
+			if (!done) {
+				stmts.add(new StmtIfThen(context, cond, new StmtBlock(
+						getBaseExprs(t, params, ev)), null));
+			}
 		}
 		ExprVar var;
 		if (!t.isArray() && !t.isStruct()) {
@@ -235,7 +275,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 	private StmtBlock getBaseExprs(Type type, List<Expression> params,
 			ExprVar var) {
 		List<Statement> stmts = new ArrayList<Statement>();
-		List<Expression> baseExprs = getExprsOfType(params, type);
+		List<Expression> baseExprs = getExprsOfType1(params, type);
 		if (baseExprs.isEmpty()) {
 			stmts.add(new StmtAssign(var, type.defaultValue()));
 		} else if (baseExprs.size() == 1) {
@@ -261,6 +301,46 @@ public class RemoveADTHoles extends BidirectionalPass {
 		}
 		return new StmtBlock(stmts);
 	}
+	
+	private List<Expression> getExprsOfType1(List<Expression> params, Type tt) {
+        List<Expression> filteredExprs = new ArrayList<Expression>();
+        for (Expression exp : params) {
+			Type t = driver.getType(exp);
+			if (t.isStruct()
+					&& (nres().isTemplate(((TypeStructRef) t).getName()) || nres()
+							.getStruct(((TypeStructRef) t).getName()) == null)) {
+				driver.tdstate.beforeRecursion(tt, exp);
+				Expression newexp = driver.doExpression(exp);
+				filteredExprs.add(newexp);
+				driver.tdstate.beforeRecursion(null, null);
+				continue;
+			}
+			if (t.promotesTo(tt, nres())) {
+				if (tt.isStruct() && t.equals(TypePrimitive.bottomtype)) {
+					// skip
+					continue;
+				}
+                if (!(exp instanceof ExprVar)) {
+					driver.tdstate.beforeRecursion(tt, exp);
+                    exp = (Expression) (new CloneHoles()).process(exp).accept(this);
+					driver.tdstate.beforeRecursion(null, null);
+                }
+				t = driver.getType(exp);
+				if (t.isArray() && tt.isArray()) {
+                    exp =
+                    		new ExprTernary(exp, ExprTernary.TEROP_COND, 
+                            new ExprBinary(exp, ExprBinary.BINOP_GT, ((TypeArray) t).getLength(), ExprConstInt.zero),
+                             new ExprArrayRange(context, exp, 
+                            		 new ExprArrayRange.RangeLen(ExprConstInt.zero, ((TypeArray) tt).getLength())),
+                             tt.defaultValue());
+                    		
+                           ;
+				}
+                filteredExprs.add(exp);
+            }
+        }
+        return filteredExprs;
+    }
 
     private Expression processADTHole(TypeStructRef type, List<Expression> params,
  List<Statement> newStmts)
@@ -698,8 +778,14 @@ public class RemoveADTHoles extends BidirectionalPass {
 				StructDef ts = nres().getStruct(n);
 				int recCount = 0;
 				for (StructFieldEnt f : ts.getFieldEntriesInOrder()) {
-					if (f.getType().promotesTo(type, nres()))
+					Type t = f.getType();
+					if (t.promotesTo(type, nres()))
 						recCount++;
+					if (t.isArray()
+							&& ((TypeArray) t).getBase().promotesTo(type,
+									nres())) {
+						recCount++;
+					}
 				}
 				if (allCases.containsKey(recCount)) {
 					allCases.get(recCount).add(n);

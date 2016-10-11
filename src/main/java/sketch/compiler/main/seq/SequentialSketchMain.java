@@ -70,7 +70,15 @@ import sketch.compiler.passes.lowering.ExtractComplexLoopConditions;
 import sketch.compiler.passes.lowering.ReplaceImplicitVarDecl;
 import sketch.compiler.passes.lowering.SemanticChecker;
 import sketch.compiler.passes.lowering.SemanticChecker.ParallelCheckOption;
-import sketch.compiler.passes.preprocessing.*;
+import sketch.compiler.passes.preprocessing.ConvertArrayAssignmentsToInout;
+import sketch.compiler.passes.preprocessing.CreateHarnesses;
+import sketch.compiler.passes.preprocessing.DisambiguateCallsAndTypeCheck;
+import sketch.compiler.passes.preprocessing.EliminateTripleEquals;
+import sketch.compiler.passes.preprocessing.ExpressionCastingReplacer;
+import sketch.compiler.passes.preprocessing.LocalVariablesReplacer;
+import sketch.compiler.passes.preprocessing.MethodRename;
+import sketch.compiler.passes.preprocessing.MinimizeFcnCall;
+import sketch.compiler.passes.preprocessing.SetDeterministicFcns;
 import sketch.compiler.passes.preprocessing.spmd.PidReplacer;
 import sketch.compiler.passes.preprocessing.spmd.SpmdbarrierCall;
 import sketch.compiler.passes.printers.DumpAST;
@@ -548,6 +556,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 			bda.addPass(new ExpandRepeatCases());
 			bda.addPass(new EliminateListOfFieldsMacro());
 			bda.addPostPass(new EliminateEmptyArrayLen());
+			bda.addPostPass(new EliminateEmptyArrAcc());
 			bda.addPass(new RemoveADTHoles(options.bndOpts.arrSize,
 					options.bndOpts.gucDepth));
 			bda.addPass(new FilterRegexChoices());
@@ -564,7 +573,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         }
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen));
         prog = (Program) prog.accept(new MinimizeFcnCall());
-		prog = (Program) prog.accept(new EliminateEmptyArrAcc());
         // prog = (getBeforeSemanticCheckStage()).run(prog);
 
         if (!options.feOpts.lowOverhead) {

@@ -18,7 +18,6 @@ package sketch.compiler.passes.lowering;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -435,15 +434,18 @@ public class GetExprType extends FENullVisitor
 
             if (retType instanceof TypeArray) {
                 Map<String, Expression> mm = new HashMap<String, Expression>();
-                Iterator<Parameter> ip = fn.getParams().iterator();
-				if (fn.getParams().size() > exp.getParams().size()) {
-					int diff = fn.getParams().size() - exp.getParams().size();
+				int i = 0;
+				List<Parameter> actParams = fn.getParams();
+				if (actParams.size() > exp.getParams().size()) {
+					int diff = actParams.size() - exp.getParams().size();
 					for (int k = 0; k < diff; ++k) {
-						ip.next();
+						if (actParams.get(k).isImplicit()) {
+							i++;
+						}
 					}
 				}
                 for (Expression p : exp.getParams()) {
-                    Parameter formal = ip.next();
+					Parameter formal = actParams.get(i++);
                     mm.put(formal.getName(), p);
                 }
                 VarReplacer vr = new VarReplacer(mm);

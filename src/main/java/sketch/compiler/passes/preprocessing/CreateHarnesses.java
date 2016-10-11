@@ -625,6 +625,9 @@ public class CreateHarnesses extends SymbolTableVisitor {
                     cur =
                             new ExprBinary(ctx, ExprBinary.BINOP_AND, recCheck, cur);
                 }
+				if (ft.isArray()) {
+
+				}
             }
             swt.addCaseBlock(c.split("@")[0], new StmtReturn(ctx, cur));
         }
@@ -652,8 +655,13 @@ public class CreateHarnesses extends SymbolTableVisitor {
                 StructDef ts = nres.getStruct(n);
                 int recCount = 0;
                 for (StructFieldEnt f : ts.getFieldEntriesInOrder()) {
-                    if (f.getType().promotesTo(type, nres))
+					Type t = f.getType();
+					if (t.promotesTo(type, nres))
                         recCount++;
+					if (t.isArray()
+							&& ((TypeArray) t).getBase().promotesTo(type, nres)) {
+						recCount += 5;
+					}
                 }
                 if (allCases.containsKey(recCount)) {
                     allCases.get(recCount).add(n);
