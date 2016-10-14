@@ -59,7 +59,7 @@ public class AdvancedRControl extends RecursionControl {
 	WeightFunctions funWeighter = new WeightFunctions();
 	int FACTOR = 0;
     final boolean ignoreStatics;
-	int numGuc = 0;
+	public int numGuc = 0;
 	public Map<String, List<ExprVar>> depthHoles;
 	/**
 	 * For each function, we must keep the following information: <BR>
