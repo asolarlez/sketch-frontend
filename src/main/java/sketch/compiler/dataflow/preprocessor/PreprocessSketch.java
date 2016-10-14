@@ -286,10 +286,10 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
 			if (arc.numGuc >= 2) { // Definitely inline upto depth
 													// 2
-            		List<ExprVar> depthHoles = arc.depthHoles.get(exp.getName());
+					List<ExprVar> depthHoles = arc.depthHoles.get("guc");
             		if (depthHoles == null) {
 						depthHoles = new ArrayList<ExprVar>();
-            			arc.depthHoles.put(exp.getName(), depthHoles);
+						arc.depthHoles.put("guc", depthHoles);
             		}
 					String name = varGen.nextVar("IH_");
 					ExprVar ev = new ExprVar(exp, name);
@@ -328,8 +328,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 try {
                     Statement body = (Statement) nbody.accept(this);
                     if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
-						List<ExprVar> depthHoles = arc.depthHoles.get(exp
-								.getName());
+						List<ExprVar> depthHoles = arc.depthHoles.get("guc");
 						if (depthHoles != null && !depthHoles.isEmpty()) {
 							ExprVar ev = depthHoles.remove(0);
 							int maxDepth = arc.GUC_DEPTH - arc.inlineLevel(exp) + 1;
