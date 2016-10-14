@@ -126,6 +126,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Don't optimize using specification")
     public boolean unoptimized = false;
 
+	@CliParameter(help = "Treat harnesses as independent")
+	public boolean sepHarnesses = false;
+
     public enum ReorderEncoding {
         exponential, quadratic
     }
