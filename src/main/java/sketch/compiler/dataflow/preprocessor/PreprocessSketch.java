@@ -333,7 +333,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 						if (depthHoles != null && !depthHoles.isEmpty()) {
 							if (arc.numGuc >= 2 && arc.numGuc <= 3) {
 							ExprVar ev = depthHoles.remove(0);
-							int maxDepth = arc.GUC_DEPTH - arc.inlineLevel(exp) + 1;
+							int maxDepth = arc.GUC_DEPTH - arc.numGuc + 1;
 							ExprStar hole = new ExprStar(exp, 0, maxDepth, 3);
 							hole.setType(TypePrimitive.inttype);
 							hole.makeSpecial(depthHoles);
@@ -343,10 +343,11 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 							} else {
 								cond = ExprConstInt.one;
 							}
+							int d = arc.numGuc - 3 + 1;
 				            for (int i = 0; i < depthHoles.size(); i++) {
 				                cond =
 				                        new ExprBinary(ExprBinary.BINOP_AND, new ExprBinary(
-				                                ExprBinary.BINOP_GT, depthHoles.get(i), new ExprConstInt(i+1)), cond);
+				                                ExprBinary.BINOP_GT, depthHoles.get(i), new ExprConstInt(i+d)), cond);
 				            }
 				            addStatement(new StmtIfThen(exp, cond, new StmtBlock(body), null));
 						} else {
