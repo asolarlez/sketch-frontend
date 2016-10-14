@@ -285,7 +285,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 			AdvancedRControl arc = (AdvancedRControl) rcontrol;
 			boolean hasADTOutput = false;
 			for (Parameter p : fun.getParams()) {
-				if (p.isParameterReference() && p.getType().isStruct()) {
+				if ((p.isParameterReference() || p.isParameterOutput())
+						&& p.getType().isStruct()) {
 					hasADTOutput = true;
 				}
 			}
