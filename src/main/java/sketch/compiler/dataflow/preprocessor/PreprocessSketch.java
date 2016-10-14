@@ -284,7 +284,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
 			AdvancedRControl arc = (AdvancedRControl) rcontrol;
             if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
-			if (arc.numGuc >= 2) { // Definitely inline upto depth
+			if (arc.numGuc >= 2 && arc.numGuc <= 3) { // Definitely inline upto depth
 													// 2
 					List<ExprVar> depthHoles = arc.depthHoles.get("guc");
             		if (depthHoles == null) {
@@ -329,7 +329,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                     Statement body = (Statement) nbody.accept(this);
                     if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
 						List<ExprVar> depthHoles = arc.depthHoles.get("guc");
+						Expression cond;
 						if (depthHoles != null && !depthHoles.isEmpty()) {
+							if (arc.numGuc >= 2 && arc.numGuc <= 3) {
 							ExprVar ev = depthHoles.remove(0);
 							int maxDepth = arc.GUC_DEPTH - arc.inlineLevel(exp) + 1;
 							ExprStar hole = new ExprStar(exp, 0, maxDepth, 3);
@@ -337,7 +339,10 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 							hole.makeSpecial(depthHoles);
 							addStatement(new StmtVarDecl(exp,
 									TypePrimitive.inttype, ev.getName(), hole));
-							Expression cond = new ExprBinary(ExprBinary.BINOP_GT, ev, new ExprConstInt(0));
+							cond = new ExprBinary(ExprBinary.BINOP_GT, ev, new ExprConstInt(0));
+							} else {
+								cond = ExprConstInt.one;
+							}
 				            for (int i = 0; i < depthHoles.size(); i++) {
 				                cond =
 				                        new ExprBinary(ExprBinary.BINOP_AND, new ExprBinary(
