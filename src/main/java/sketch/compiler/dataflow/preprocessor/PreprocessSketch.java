@@ -283,7 +283,13 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             int ctlevel = state.getCTlevel();
             Level lvl = state.pushLevel("visitExprFunCall2 " + exp.getName());
 			AdvancedRControl arc = (AdvancedRControl) rcontrol;
-            if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
+			boolean hasADTOutput = false;
+			for (Parameter p : fun.getParams()) {
+				if (p.isParameterReference() && p.getType().isStruct()) {
+					hasADTOutput = true;
+				}
+			}
+            if (hasADTOutput && fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
 			if (arc.numGuc >= 2 && arc.numGuc <= 3) { // Definitely inline upto depth
 													// 2
 					List<ExprVar> depthHoles = arc.depthHoles.get("guc");
@@ -327,7 +333,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
                 nres.setPackage(pkgs.get(fun.getPkg()));
                 try {
                     Statement body = (Statement) nbody.accept(this);
-                    if (fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
+                    if (hasADTOutput && fun.hasAnnotation("guc") && fun.hasAnnotation("random")) {
 						List<ExprVar> depthHoles = arc.depthHoles.get("guc");
 						Expression cond;
 						if (depthHoles != null && !depthHoles.isEmpty()) {
