@@ -93,7 +93,7 @@ public class RemoveADTHoles extends BidirectionalPass {
 			if (t.equals(TypePrimitive.bittype)) {
 				return new ExprStar(exp, 1);
 			} else if (t.equals(TypePrimitive.inttype)) {
-				return new ExprStar(exp, 2);
+				return new ExprStar(exp, 1);
 			} else {
 				return t.defaultValue();
 			}
