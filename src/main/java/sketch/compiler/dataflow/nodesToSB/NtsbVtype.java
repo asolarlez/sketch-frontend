@@ -82,7 +82,8 @@ public class NtsbVtype extends IntVtype {
 
                 String head = "";
                 if (star.special()) {
-                    head += "SPVAR " + star.upperBound() + " ";
+					head += "SPVAR " + star.lowerBound() + " "
+							+ star.upperBound() + " ";
                     head += " $ ";
 					for (ExprVar ev : star.parentHoles()) {
 						NtsbValue val = (NtsbValue) eval
