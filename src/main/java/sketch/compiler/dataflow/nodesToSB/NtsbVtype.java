@@ -98,7 +98,14 @@ public class NtsbVtype extends IntVtype {
                 if (star.isCounter()) {
                     rval += " %";
                 }
-                rval += star.isAngelicMax() ? " +> " : "> ";
+				if (star.isAngelicMax()) {
+					rval += " +> ";
+				} else if (t.equals(TypePrimitive.floattype)
+						|| t.equals(TypePrimitive.doubletype)) {
+					rval += " $> ";
+				} else {
+					rval += "> ";
+				}
                 nv = new NtsbValue(rval, true);
                 if(avlist != null) avlist.add(nv);
             }

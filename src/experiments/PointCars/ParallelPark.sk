@@ -1,0 +1,160 @@
+include "math.skh";
+pragma options "--fe-fpencoding TO_BACKEND";
+
+
+harness void tester(){
+    float t1 = parallel();    
+    assert(t1 <= 10.0); 
+}
+
+void car(ref float cxb, ref float cyb, ref float cxf, ref float cyf,
+            float ang, float v){
+    float YL = cyf - cyb;
+    float XL = cxf - cxb;
+    float H = sqrt(YL*YL + XL*XL);
+    float coa = (XL/H);
+    float sia = (YL/H);
+    float DY = v*(sin(ang)*coa + cos(ang)*sia);
+    float DX = v*(cos(ang)*coa - sin(ang)*sia);
+    
+    
+    
+    cxf += DX;
+    cyf += DY;
+    float tt = (DX + XL)* coa + (DY + YL)*sia;
+    float q = (DX*coa) + (XL*coa) + (DY*sia) + (YL*sia) -
+     0.5*sqrt(4.0*(tt*tt) - 4.0*(DX*DX + 2.0*DX*XL + DY*(DY + 2.0*YL)) );
+    cxb += q*coa;
+    cyb += q*sia;    
+}
+
+
+void detectColision(float cxb, float cyb, float cxf, float cyf, float cw, float l, float w){    
+    /*
+    *collision type 1   
+    * corner of car (px, py) is inside the front obstacle
+    *                             \
+    *                              +
+                                    \
+            (l,w)___\______
+                |    +
+                |     \
+                |      (px, py)
+    */        
+    float YL = cyf - cyb;
+    float XL = cxf - cxb;
+    float H = sqrt(YL*YL + XL*XL);
+    float d = cw/2.0;
+    float py = cyb - (d*XL/H);
+    float px = cxb + (d*YL/H);
+    
+    assert(!(px > l && py < w) );
+    //if(px>l && py < w){
+    //	error += 100.0;
+    //}
+            
+    
+    /* 
+     *collision type 2.
+     * Corner (l,w) of the front obstacle is inside my car
+     *                         \
+     *                          +
+     *                           \    
+     *           \     (l,w)_________
+     *            +      |
+     *             \     |
+     *              (px, py)
+     * The dot product between the vector from (px,py) to (l,w) to the two edge
+     * vectors emanating from (px,py) is greater than zero
+    */
+
+    assert(!((l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 &&
+            (l-px)*(XL) + (w-py)*(YL) > 0.0));
+    //if( (l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 &&
+    //    (l-px)*(XL) + (w-py)*(YL) > 0.0 ){
+    //   error += 100.0;
+    //}     
+    
+}
+
+
+
+
+/*
+ *                       |------ H -------| 
+ *                        ________________              _ _
+ *                       |                |              |
+ *             (cxb,cyb) +                + (cxf, cyf)   cw
+ *                       |________________|      _ _    _|_
+ *                       ________________        _g_
+ *   |             (l,w)/|
+ *   |                   |
+ *   |                   |
+ *   |-------------------| (l,0)
+ *   (0,0)
+ */
+
+float parallel(){
+    
+    float Err = 0.0;
+    
+    float w = 5.0;
+    float l = 15.0;
+    float g = 1.0;
+    
+    float H = 10.0;
+    float cw = 3.0;
+    float cxb = 0.0; 
+    float cyb = 0.0; 
+    float cxf = 0.0; 
+    float cyf = 0.0; 
+    
+    cxb = l;
+    cyb = w + g + cw/2.0;
+    cxf = cxb + H;
+    cyf = cyb;
+    
+    float ang = 0.0;
+    float v = 2.0;
+    float td = 0.0;
+    
+    int stage = 10;
+    int STRAIGHTBACK = 0;
+    int INTURN = 10;
+    int OUTTURN = 20;
+    
+  
+    for(int i=0; i<10; ++i){
+        /*if(stage < 8) { // stage = 0;
+            car(cxb, cyb, cxf, cyf, ang, -v);
+            if(td > ??){//(-5,5)
+                stage = INTURN;
+            }else{
+                stage = STRAIGHTBACK;
+            }
+        }else{*/
+            /*if(stage < 18){
+                ang = ang - (19.4/20.0);
+                car(cxb, cyb, cxf, cyf, ang, -v);
+                if(td > -2.0){
+                    stage = OUTTURN;
+                } 
+            }else{*/
+    		if (i < ??) {
+    			ang = ang - (??/20.0);
+    	        car(cxb, cyb, cxf, cyf, ang, -v);
+    		} else {
+                ang = ang + (??/20.0);
+                car(cxb, cyb, cxf, cyf, ang, -v);
+    		}
+            //}
+        //}
+        detectColision(cxb, cyb, cxf, cyf, cw, l, w);
+        td = td + v;
+    }
+    
+    
+    Err += (cxb*cxb) + ((cyb- cw/2.0)*(cyb- cw/2.0)) + ((cxf-H)*(cxf-H)) +
+    ((cyf- cw/2.0)*(cyf- cw/2.0));
+    return Err;
+}
