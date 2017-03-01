@@ -1,10 +1,17 @@
 package math;
 
+@Native("{_out = sinf(v);}")
 float sin(float v);
+@Native("{_out = cosf(v);}")
 float cos(float v);
+@Native("{_out = tanf(v);}")
 float tan(float v);
+@Native("{_out = sqrtf(v);}")
 float sqrt(float v);
+@Native("{_out = fabs(v);}")
 float abs(float v);
+@Native("{_out = atanf(v);}")
 float arctan(float v);
+@Native("{_out = (int)v;}")
 float _cast_int_float(int v);
 generator float Pi(){ return 3.1415926535897932384626433832795; }

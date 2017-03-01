@@ -4,7 +4,7 @@ pragma options "--fe-fpencoding TO_BACKEND";
 
 harness void tester(){
     float t1 = parallel();    
-    assert(t1 <= 10.0); 
+    assert(t1 <= 1.0); 
 }
 
 void car(ref float cxb, ref float cyb, ref float cxf, ref float cyf,
@@ -49,9 +49,6 @@ void detectColision(float cxb, float cyb, float cxf, float cyf, float cw, float 
     float px = cxb + (d*YL/H);
     
     assert(!(px > l && py < w) );
-    //if(px>l && py < w){
-    //	error += 100.0;
-    //}
             
     
     /* 
@@ -59,21 +56,23 @@ void detectColision(float cxb, float cyb, float cxf, float cyf, float cw, float 
      * Corner (l,w) of the front obstacle is inside my car
      *                         \
      *                          +
-     *                           \    
+     *                           \ (qx, qy)   
      *           \     (l,w)_________
      *            +      |
      *             \     |
      *              (px, py)
-     * The dot product between the vector from (px,py) to (l,w) to the two edge
-     * vectors emanating from (px,py) is greater than zero
+     * The dot product between the vector from (px,py) to (l,w) and to the two edge
+     * vectors emanating from (px,py) is greater than zero, 
+     * and also from the vector from q to p.
     */
 
-    assert(!((l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 &&
-            (l-px)*(XL) + (w-py)*(YL) > 0.0));
-    //if( (l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 &&
-    //    (l-px)*(XL) + (w-py)*(YL) > 0.0 ){
-    //   error += 100.0;
-    //}     
+    float qx = px + XL; 
+    float qy = py + YL;
+    assert(!((l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 && // dot between (l,w)-p and cb - p
+            (l-px)*(XL) + (w-py)*(YL) > 0.0 &&         // dot between (l,w)-p and q-p (which is the same as (XL,YL))
+            (l-qx)*(px-qx) + (w-qy)*(py-qy) > 0.0)     // dot between (l,w)-q and p-q
+            );
+      
     
 }
 
@@ -123,23 +122,8 @@ float parallel(){
     int INTURN = 10;
     int OUTTURN = 20;
     
-  
-    for(int i=0; i<10; ++i){
-        /*if(stage < 8) { // stage = 0;
-            car(cxb, cyb, cxf, cyf, ang, -v);
-            if(td > ??){//(-5,5)
-                stage = INTURN;
-            }else{
-                stage = STRAIGHTBACK;
-            }
-        }else{*/
-            /*if(stage < 18){
-                ang = ang - (19.4/20.0);
-                car(cxb, cyb, cxf, cyf, ang, -v);
-                if(td > -2.0){
-                    stage = OUTTURN;
-                } 
-            }else{*/
+    print(cxb, cyb, cxf, cyf);
+    for(int i=0; i<10; ++i){        
     		if (i < ??) {
     			ang = ang - (??/20.0);
     	        car(cxb, cyb, cxf, cyf, ang, -v);
@@ -147,9 +131,9 @@ float parallel(){
                 ang = ang + (??/20.0);
                 car(cxb, cyb, cxf, cyf, ang, -v);
     		}
-            //}
-        //}
+
         detectColision(cxb, cyb, cxf, cyf, cw, l, w);
+        print(cxb, cyb, cxf, cyf);
         td = td + v;
     }
     
@@ -158,3 +142,6 @@ float parallel(){
     ((cyf- cw/2.0)*(cyf- cw/2.0));
     return Err;
 }
+
+@Native("{ cout<<\"fromPoints(\"<<cxb<<\",\"<<cyb<<\",\"<<cxf<<\",\"<<cyf<<\");\"<<endl; }")
+void print(float cxb, float cyb, float cxf, float cyf){}

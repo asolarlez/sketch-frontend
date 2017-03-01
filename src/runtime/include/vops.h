@@ -1,6 +1,6 @@
 #ifndef VOPS_H
 #define VOPS_H 1
-
+#include <cmath>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
