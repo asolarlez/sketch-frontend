@@ -98,11 +98,11 @@ float parallel(){
     float Err = 0.0;
     
     float w = 5.0;
-    float l = 15.0;
+    float l = 10.0;
     float g = 1.0;
     
-    float H = 10.0;
-    float cw = 3.0;
+    float H = 8.0;
+    float cw = 5.0;
     float cxb = 0.0; 
     float cyb = 0.0; 
     float cxf = 0.0; 
