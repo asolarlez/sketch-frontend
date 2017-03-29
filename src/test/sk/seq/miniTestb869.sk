@@ -1,0 +1,60 @@
+pragma options "-V 10 --bnd-unroll-amnt 16";
+
+int div(int a, int b){    
+   if(b != 0){
+        return a/b;
+    }else{
+        return a;
+    } 
+}
+
+harness void main(int al, int ah, int bl, int bh, int a, int b){
+    al = al-10;
+    ah = ah - 10;
+    bl = bl - 10;
+    bh = bh - 10; 
+    a = a - 10;
+    b = b - 10; 
+    assume al <= a; 
+    assume a <= ah;
+    assume bl <= b;
+    assume b <= bh;
+    int[2] r = range(al, ah, bl, bh);
+    assert r[0] <= div(a, b);
+    assert r[1] >= div(a,b);
+    
+}
+
+
+int[2] range(int alo, int ahi, int blo, int bhi){
+ /*   if(alo > 0 && blo > 0){
+        return { div(alo, bhi), div(ahi, blo) };
+    }
+    if(ahi < 0 && bhi < 0){
+        return { div(ahi, blo), div(alo, bhi) };
+    } */
+
+    
+
+
+
+    generator int gen2(){
+        if(??) return div({|(-)? (alo | ahi) |}, {|blo | bhi|});
+        else return {| alo | ahi | blo | bhi | 0 | 1 | -1 |};
+    }
+    generator bit gen1(){
+        bit t = 1;
+        repeat(??){
+        int x = gen2();
+        int y = gen2();
+        t = t && {| x (> | >= | ==) y |};
+        }
+        return  t;
+    }
+    repeat(??){
+        if(gen1()){
+            return {gen2(), gen2()};
+        }
+    }
+
+}
