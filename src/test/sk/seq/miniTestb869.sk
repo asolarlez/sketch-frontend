@@ -1,7 +1,7 @@
-pragma options "-V 10 --bnd-unroll-amnt 16";
+pragma options "-V 10 --bnd-unroll-amnt 3 --bnd-mbits 4 --debug-show-dag";
 
-int div(int a, int b){    
-   if(b != 0){
+int div(int a, int b){
+    if(b != 0){
         return a/b;
     }else{
         return a;
@@ -19,39 +19,55 @@ harness void main(int al, int ah, int bl, int bh, int a, int b){
     assume a <= ah;
     assume bl <= b;
     assume b <= bh;
+    assume bh != 0;
+    assume bl != 0;
+
     int[2] r = range(al, ah, bl, bh);
     assert r[0] <= div(a, b);
     assert r[1] >= div(a,b);
-    
+    if(al == 5  && ah == 10 && bl == 2 && bh == 4){        
+        assert (r[1]-r[0]) < 5;
+    }
+    if(al == -10  && ah == -5 && bl == -4 && bh == -2){        
+        assert (r[1]-r[0]) < 5;
+    }
+    if(al == -10  && ah == -5 && bl == 2 && bh == 4){        
+        assert (r[1]-r[0]) < 5;
+    }
+    if(al == 5  && ah == 10 && bl == -4 && bh == -2){        
+        assert (r[1]-r[0]) < 5;
+    }
 }
 
 
 int[2] range(int alo, int ahi, int blo, int bhi){
- /*   if(alo > 0 && blo > 0){
-        return { div(alo, bhi), div(ahi, blo) };
+    if(alo > 0 && blo > 0){
+        return {div(alo, bhi), div(ahi, blo)};
     }
-    if(ahi < 0 && bhi < 0){
-        return { div(ahi, blo), div(alo, bhi) };
-    } */
-
-    
-
-
-
     generator int gen2(){
         if(??) return div({|(-)? (alo | ahi) |}, {|blo | bhi|});
-        else return {| alo | ahi | blo | bhi | 0 | 1 | -1 |};
+        else return {| (-)? ( alo | ahi | blo | bhi | 0 | 1)  |};
+    }
+
+    if(ahi <= 0 && bhi < 0){
+        return {gen2(), gen2()};
+    }
+    if(ahi <= 0 && blo > 0){
+        return {gen2(), gen2()};
+    }
+    if(alo > 0 && bhi < 0){
+        return {gen2(), gen2()};
     }
     generator bit gen1(){
         bit t = 1;
-        repeat(??){
+        minrepeat{
         int x = gen2();
         int y = gen2();
         t = t && {| x (> | >= | ==) y |};
         }
         return  t;
     }
-    repeat(??){
+    minrepeat{
         if(gen1()){
             return {gen2(), gen2()};
         }
