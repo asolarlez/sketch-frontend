@@ -1645,6 +1645,9 @@ public class TypeCheck extends BidirectionalPass {
         // System.out.println("checkBasicTyping::SymbolTableVisitor::visitExprArrayRange");
 
         Type bt = driver.getType((Expression) expr.getBase().accept(this));
+		if (bt instanceof NotYetComputedType) {
+			return expr;
+		}
         if (bt != null) {
             if (!(bt instanceof TypeArray))
                 report(expr, "array access with a non-array base");

@@ -719,7 +719,7 @@ switch_statement returns [Statement s]
 		{((StmtSwitch)s).addCaseBlock("default",b);}
 		)
 		|
-		(TK_repeat_case COLON b = pseudo_block
+		(TK_cases QUESTION COLON b = pseudo_block
 		{((StmtSwitch)s).addCaseBlock("repeat", b);}))?
 		RCURLY
 		
@@ -799,13 +799,9 @@ func_call returns [Expression x] { x = null; List l; }
 	
 	;
 
-expr_get returns [Expression x] { x = null; List l; }
-	: t:NDVAL2 LPAREN LCURLY l = expr_get_params RCURLY RPAREN
-		{ x = new ExprADTHole(getContext(t), l); }
-	;
 
 expr_simple_adt returns [Expression x] { x = null; List l; }
-	: t: TK_new NDVAL2 LPAREN LCURLY l = expr_get_params RCURLY RPAREN
+	: t: TK_new TK_cons QUESTION LPAREN l = expr_get_params  RPAREN
 		{ x = new ExprADTHole(getContext(t), l, true); }
 	;
 expr_get_params returns [List l] { l = new ArrayList(); Expression x; }
@@ -1093,7 +1089,7 @@ postfix_expr returns [Expression x] { x = null;  int untype = -1;}
 
 primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> rl;Type t = null; }
 	:	x=tminic_value_expr
-		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | LCURLY t = data_type  {x = new ExprFieldsListMacro(x, x, t);} RCURLY)
+		(	DOT  ( field:ID 			{ x = new ExprField(x, x, field.getText(), false); } | NDVAL2 { x= new ExprField(x,x,"", true);} | TK_fields QUESTION  {x = new ExprFieldsListMacro(x, x);} )
 		|	l:LSQUARE
 					rl=array_range { x = new ExprArrayRange(x, x, rl); }
 			RSQUARE
@@ -1103,7 +1099,6 @@ primary_expr returns [Expression x] { x = null; Vector<ExprArrayRange.RangeLen> 
 
 tminic_value_expr returns [Expression x] { x = null; }
 	:	LPAREN x=right_expr RPAREN
-	|   (expr_get) => x = expr_get
 	|   (expr_simple_adt) => x = expr_simple_adt
 	|	(func_call) => x=func_call
 	| 	(constructor_expr) => x = constructor_expr	

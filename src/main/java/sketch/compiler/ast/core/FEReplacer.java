@@ -301,11 +301,10 @@ public class FEReplacer implements FEVisitor
 
     public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
         Expression left = doExpression(exp.getLeft());
-        Type t = (Type) exp.getType().accept(this);
-        if (left == exp.getLeft() && t == exp.getType()) {
+		if (left == exp.getLeft()) {
             return exp;
         } else {
-            return new ExprFieldsListMacro(exp, left, t);
+			return new ExprFieldsListMacro(exp, left);
         }
 
     }

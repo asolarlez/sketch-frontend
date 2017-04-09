@@ -345,7 +345,7 @@ public class GetExprType extends FENullVisitor
     }
 
     public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
-        return new TypeArray(exp.getType(), null);
+		return new NotYetComputedType();
     }
 
     public Object visitExprField(ExprField exp)

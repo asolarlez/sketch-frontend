@@ -104,6 +104,9 @@ tokens {
     
     "let";
     "precond";
+    "cons";
+    "fields";
+    "cases";
 }
 {
   public static String lastComment = null;

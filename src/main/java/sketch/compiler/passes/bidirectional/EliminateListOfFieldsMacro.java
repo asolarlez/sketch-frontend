@@ -28,7 +28,9 @@ public class EliminateListOfFieldsMacro extends BidirectionalPass {
     @Override
     public Object visitExprFieldsListMacro(ExprFieldsListMacro exp) {
 		NameResolver nres = nres();
-        Type t = exp.getType();
+		Type t = driver.tdstate.getExpected();
+		assert (t.isArray());
+		t = ((TypeArray) t).getBase();
         if (t.isStruct())
             if (nres.isTemplate(((TypeStructRef) t).getName()))
                 return exp;

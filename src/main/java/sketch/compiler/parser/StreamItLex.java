@@ -53,12 +53,14 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("case", this), new Integer(32));
 	literals.put(new ANTLRHashString("precond", this), new Integer(60));
 	literals.put(new ANTLRHashString("loop", this), new Integer(8));
+	literals.put(new ANTLRHashString("cases", this), new Integer(63));
 	literals.put(new ANTLRHashString("for", this), new Integer(30));
 	literals.put(new ANTLRHashString("false", this), new Integer(40));
 	literals.put(new ANTLRHashString("true", this), new Integer(39));
 	literals.put(new ANTLRHashString("global", this), new Integer(51));
 	literals.put(new ANTLRHashString("let", this), new Integer(59));
 	literals.put(new ANTLRHashString("assert_max", this), new Integer(46));
+	literals.put(new ANTLRHashString("cons", this), new Integer(61));
 	literals.put(new ANTLRHashString("void", this), new Integer(20));
 	literals.put(new ANTLRHashString("float", this), new Integer(17));
 	literals.put(new ANTLRHashString("boolean", this), new Integer(16));
@@ -86,6 +88,7 @@ public StreamItLex(LexerSharedInputState state) {
 	literals.put(new ANTLRHashString("model", this), new Integer(50));
 	literals.put(new ANTLRHashString("break", this), new Integer(35));
 	literals.put(new ANTLRHashString("new", this), new Integer(11));
+	literals.put(new ANTLRHashString("fields", this), new Integer(62));
 	literals.put(new ANTLRHashString("return", this), new Integer(38));
 	literals.put(new ANTLRHashString("spmdfork", this), new Integer(53));
 	literals.put(new ANTLRHashString("assert", this), new Integer(45));
