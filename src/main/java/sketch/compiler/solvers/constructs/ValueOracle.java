@@ -74,14 +74,16 @@ public class ValueOracle extends AbstractValueOracle {
     protected ExprConstant getVal(FENode node, String var, Type t) {
         Expression val = valMap.get(var);
 
-		if(val != null){
-            if (t.equals(TypePrimitive.chartype)) {
-                return ExprConstChar.createFromInt(val.getIValue());
-            } else {
-                return (ExprConstant) val;
-		    }
-		}		
-		return new ExprConstInt(node, -1);
+        if (val == null) {
+            val = new ExprConstInt(node, 0);
+        }
+
+        if (t.equals(TypePrimitive.chartype)) {
+            return ExprConstChar.createFromInt(val.getIValue());
+        } else {
+            return (ExprConstant) val;
+        }
+
 	}
 	
     public ExprConstant popValueForNode(FENode node, Type t) {

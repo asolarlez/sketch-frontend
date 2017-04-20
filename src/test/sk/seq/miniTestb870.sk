@@ -1,0 +1,311 @@
+pragma options "--bnd-cbits 7";
+pragma options "--bnd-inline-amnt 6";
+pragma options "--fe-fpencoding AS_FIXPOINT";
+
+
+int TID = 5;
+
+package array{
+
+struct Array_bit {
+  int length;
+  bit[length] A;
+}
+
+struct Array_char {
+  int length;
+  char[length] A;
+}
+
+struct Array_int {
+  int length;
+  int[length] A;
+}
+
+struct Array_float {
+  int length;
+  float[length] A;
+}
+
+struct Array_double {
+  int length;
+  double[length] A;
+}
+
+struct Array_Object {
+  int length;
+  Object[length] A;
+}
+}
+
+
+package Object{
+
+Object Object_Object(Object self) {
+    return self;
+}
+
+struct Object {
+  int           __cid;
+  Array_char    _value_String;
+  int           _count_String;
+  Array_char    _value_StringBuffer;
+  int           _count_StringBuffer;
+  T            t;
+}
+}
+
+
+package meta{
+
+adt T {
+  Str     { Object o; }
+  Len     { T t; }
+  Concat  { T t1; T t2; }
+  Replace { T t1; T t2; T t3; }
+  Plus    { T left; T right; }
+  Error   { }
+}
+
+Object string()                  { return new Object(__cid=String(),t=new Str()); }
+Object length(T t)               { return new Object(__cid=String(),t=new Len(t=t)); }
+Object concat(T t1, T t2)        { return new Object(__cid=String(),t=new Concat(t1=t1,t2=t2)); }
+Object replace(T t1, T t2, T t3) { return new Object(__cid=String(),t=new Replace(t1=t1,t2=t2,t3=t3)); }
+Object plus(T left, T right)     { return new Object(__cid=String(),t=new Plus(left=left,right=right)); }
+
+T xform(T t) {
+  T t1; T t2 = null; T t3 = null;
+  T tt1; T tt2; T tt3;
+  switch(t) {
+  case Str:     { return t; }
+  case Len:     { t1 = t.t; }
+  case Plus:    { t1 = t.left; t2 = t.right; }
+  case Concat:  { t1 = t.t1; t2 = t.t2; }
+  case Replace: { t1 = t.t1; t2 = t.t2; t3 = t.t3; }
+  case Error:   { return t; }
+  }
+  if (t2 != null) {
+      tt1 = xform(t1);
+      tt2 = xform(t2);
+      if (t3 != null) tt3 = xform(t3);
+      switch(t) {
+      case Concat:  return new Concat(t1=tt1, t2=tt2);
+      case Replace: return new Replace(t1=tt1, t2=tt2, t3=tt3);
+      case Plus:    return new Plus(left=tt1, right=tt2);
+      case Str:     return new Error();
+      case Error:   return new Error();
+      case Len:     return new Error();
+      }
+  }
+  else {
+    switch(t1) {
+    case Str: return t;
+    case Replace: return xform(new Len(t=t1.t1));
+    case Concat: {
+      tt1 = xform(new Len(t=t1.t1));
+      tt2 = xform(new Len(t=t1.t2));
+      return new Plus(left=tt1, right=tt2);
+    }
+    case Len: return new Error();
+    case Plus: return new Error();
+    case Error: return new Error();
+    }
+  }
+}
+
+// distinct class IDs
+int CharSequence()         { return 3; }
+int Object()               { return 1; }
+int String()               { return 7; }
+
+// Uninterpreted functions
+}
+
+
+package test{
+
+harness void mn() {
+  if (TID==0) t0();
+  else if (TID==1) t1();
+  else if (TID==2) t2();
+  else if (TID==3) t3();
+  else if (TID==4) t4();
+  else if (TID==5) t5();
+  else if (TID==6) t6();
+  else if (TID==7) t7();
+  else if (TID==8) t8();
+}
+
+// len(concat(s1,s2)) == len(s1) + len(s2)
+void t0() {
+  Object s1 = string();
+  Object s2 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len12 = plus(len1.t, len2.t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object lenc12 = (c12.__cid == String() ? length(c12.t) : null);
+  assert xform(lenc12.t) === len12.t;
+}
+
+// len(concat(s1,s2)) + len(concat(s3,s4)) == len(s1) + len(s2) + len(s3) + len(s4)
+void t1() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object s4 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len3 = (s3.__cid == String() ? length(s3.t) : null);
+  Object len4 = (s4.__cid == String() ? length(s4.t) : null);
+  Object len1234 = plus(plus(len1.t,len2.t).t,plus(len3.t, len4.t).t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object c34 = (s3.__cid == String() ? concat(s3.t, s4.t) : null);
+  Object lenc12 = (c12.__cid == String() ? length(c12.t) : null);
+  Object lenc34 = (c34.__cid == String() ? length(c34.t) : null);
+  Object lenc12c34 = plus(lenc12.t, lenc34.t);
+  assert xform(lenc12c34.t) === len1234.t;
+}
+
+// len(concat(s1,s2)) + len(concat(s3,s4)) + len(concat(s5,s6)) == len(s1) + len(s2) + len(s3) + len(s4) + len(s5) + len(s6)
+void t2() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object s4 = string();
+  Object s5 = string();
+  Object s6 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len3 = (s3.__cid == String() ? length(s3.t) : null);
+  Object len4 = (s4.__cid == String() ? length(s4.t) : null);
+  Object len5 = (s5.__cid == String() ? length(s5.t) : null);
+  Object len6 = (s6.__cid == String() ? length(s6.t) : null);
+  Object len123456 = plus(plus(plus(len1.t,len2.t).t,plus(len3.t,len4.t).t).t,plus(len5.t,len6.t).t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object c34 = (s3.__cid == String() ? concat(s3.t, s4.t) : null);
+  Object c56 = (s5.__cid == String() ? concat(s5.t, s6.t) : null);
+  Object lenc12 = (c12.__cid == String() ? length(c12.t) : null);
+  Object lenc34 = (c34.__cid == String() ? length(c34.t) : null);
+  Object lenc56 = (c56.__cid == String() ? length(c56.t) : null);
+  Object lenc12c34c56 = plus(plus(lenc12.t,lenc34.t).t,lenc56.t);
+  assert xform(lenc12c34c56.t) === len123456.t;
+}
+
+// len(concat(s1,s2)) + len(concat(s3,s4)) + len(concat(s5,s6)) + len(concat(s7,s8)) == len(s1) + len(s2) + len(s3) + len(s4) + len(s5) + len(s6) + len(s7) + len(s8)
+void t3() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object s4 = string();
+  Object s5 = string();
+  Object s6 = string();
+  Object s7 = string();
+  Object s8 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len3 = (s3.__cid == String() ? length(s3.t) : null);
+  Object len4 = (s4.__cid == String() ? length(s4.t) : null);
+  Object len5 = (s5.__cid == String() ? length(s5.t) : null);
+  Object len6 = (s6.__cid == String() ? length(s6.t) : null);
+  Object len7 = (s7.__cid == String() ? length(s7.t) : null);
+  Object len8 = (s8.__cid == String() ? length(s8.t) : null);
+  Object len12345678 = plus(plus(plus(len1.t,len2.t).t,plus(len3.t,len4.t).t).t,
+                plus(plus(len5.t,len6.t).t,plus(len7.t,len8.t).t).t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object c34 = (s3.__cid == String() ? concat(s3.t, s4.t) : null);
+  Object c56 = (s5.__cid == String() ? concat(s5.t, s6.t) : null);
+  Object c78 = (s7.__cid == String() ? concat(s7.t, s8.t) : null);
+  Object lenc12 = (c12.__cid == String() ? length(c12.t) : null);
+  Object lenc34 = (c34.__cid == String() ? length(c34.t) : null);
+  Object lenc56 = (c56.__cid == String() ? length(c56.t) : null);
+  Object lenc78 = (c78.__cid == String() ? length(c78.t) : null);
+  Object lenc12c34c56c78 = plus(plus(lenc12.t,lenc34.t).t,plus(lenc56.t,lenc78.t).t);
+  assert xform(lenc12c34c56c78.t) === len12345678.t;
+}
+
+// len(concat(concat(s1,s2),s3) == len(s1) + len(s2) + len(s3)
+void t4() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len3 = (s3.__cid == String() ? length(s3.t) : null);
+  Object len123 = plus(plus(len1.t,len2.t).t,len3.t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object cc123 = (c12.__cid == String() ? concat(c12.t, s3.t) : null);
+  Object lencc123 = (cc123.__cid == String() ? length(cc123.t) : null);
+  assert xform(lencc123.t) === len123.t;
+}
+
+// len(concat(concat(concat(s1,s2),s3),s4)) == len(s1) + len(s2) + len(s3) + len(s4)
+void t5() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object s4 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len3 = (s3.__cid == String() ? length(s3.t) : null);
+  Object len4 = (s4.__cid == String() ? length(s4.t) : null);
+  Object len1234 = plus(plus(plus(len1.t,len2.t).t,len3.t).t,len4.t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object cc123 = (c12.__cid == String() ? concat(c12.t, s3.t) : null);
+  Object ccc1234 = (cc123.__cid == String() ? concat(cc123.t, s4.t) : null);
+  Object lenccc1234 = (ccc1234.__cid == String() ? length(ccc1234.t) : null);
+  assert lenccc1234.t === lenccc1234.t;    // These are the same?!
+  /* assert xform(lenccc1234.t) === len1234.t; */   // This fails too.
+}
+
+// len(concat(concat(concat(s1,s2),s3),concat(s4,s5)) == len(s1) + len(s2) + len(s3) + len(s4) + len(s5)
+void t6() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object s4 = string();
+  Object s5 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len3 = (s3.__cid == String() ? length(s3.t) : null);
+  Object len4 = (s4.__cid == String() ? length(s4.t) : null);
+  Object len5 = (s5.__cid == String() ? length(s5.t) : null);
+  Object len12345 = plus(plus(plus(len1.t,len2.t).t,len3.t).t,
+             plus(len4.t,len5.t).t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object c45 = (s4.__cid == String() ? concat(s4.t, s5.t) : null);
+  Object cc123 = (c12.__cid == String() ? concat(c12.t, s3.t) : null);
+  Object ccc123c45 = (cc123.__cid == String() ? concat(cc123.t,c45.t) : null);
+  Object lenccc123c45 = (ccc123c45.__cid == String() ? length(ccc123c45.t) : null);
+  assert xform(lenccc123c45.t) === len12345.t;
+}
+
+// len(concat(s1,concat(s1,concat(s1,concat(s1,s2))))) == len(s1) + len(s1) + len(s1) + len(s1) + len(s2)
+void t7() {
+  Object s1 = string();
+  Object s2 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object len2 = (s2.__cid == String() ? length(s2.t) : null);
+  Object len11112 = plus(len1.t,plus(len1.t,plus(len1.t,plus(len1.t,len2.t).t).t).t);
+  Object c12 = (s1.__cid == String() ? concat(s1.t, s2.t) : null);
+  Object c1c12 = (s1.__cid == String() ? concat(s1.t, c12.t) : null);
+  Object c1c1c12 = (s1.__cid == String() ? concat(s1.t, c1c12.t) : null);
+  Object c1c1c1c12 = (s1.__cid == String() ? concat(s1.t, c1c1c12.t) : null);
+  Object lenc1c1c1c12 = (c1c1c1c12.__cid == String() ? length(c1c1c1c12.t) : null);
+  assert xform(lenc1c1c1c12.t) === len11112.t;
+}
+
+/*****************************************************************************/
+/* len(replace) tests */
+/*****************************************************************************/
+// len(replace(s1,s2,s4)) == len(s1)
+void t8() {
+  Object s1 = string();
+  Object s2 = string();
+  Object s3 = string();
+  Object len1 = (s1.__cid == String() ? length(s1.t) : null);
+  Object r12 = (s1.__cid == String() ? replace(s1.t, s2.t, s3.t) : null);
+  Object lenr12 = (r12.__cid == String() ? length(r12.t) : null);
+  assert xform(lenr12.t) == len1.t;
+}
+}

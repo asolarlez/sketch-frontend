@@ -79,6 +79,9 @@ public class BoundOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Maximum depth of src tuples")
     public int srcTupleDepth = 2;
+    
+    @CliParameter(help = "Maximum depth for ADT equality comparisons")
+    public int eqDepth = 6;
 
     @CliParameter(help = "Maximum depth of angelic tuples")
     public int angTupleDepth = 1;

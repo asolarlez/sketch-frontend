@@ -1,0 +1,12 @@
+
+harness void main(){
+    int x = ??;
+    int y = ??;
+    int t = x + y;
+    assert t < 5;
+    int q = {1,1,1,1,1,1,1,1,t, 9}[x];
+    int v = q * 100;
+    int u = x * v;
+    assert x > 3;
+    assert u == ??(9);    
+}
