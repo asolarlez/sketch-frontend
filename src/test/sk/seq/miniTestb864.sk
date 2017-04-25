@@ -1,0 +1,19 @@
+adt A {
+	bit x;
+}
+int foo(A a, fun cond) {
+	if (cond(()->field(a))) {
+		return 1; 
+	} else {
+		return 0;
+	}
+}
+harness void main() {
+	generator bit cond(fun g) {return g() == 1;}
+	A a = new A(x = 1);
+	assert(foo(a, cond) == 1);
+}
+
+generator T field<T,S>(S e) {
+	return e.{T}[??];
+}

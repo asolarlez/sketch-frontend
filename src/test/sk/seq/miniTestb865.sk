@@ -1,0 +1,13 @@
+adt A {
+	bit x;
+}
+
+harness void main() {
+	A a = new A(x = 1);
+	A[5] arr = field(a);
+	assert(arr[0] == null);
+}
+
+generator T field<T,S>(S e) {
+	return e.{T}[??];
+}

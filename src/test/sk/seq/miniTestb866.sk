@@ -1,0 +1,5 @@
+harness void main(int x, int y, int z) {
+	int[3] arr = {x, y, z};
+	int t = {| 0 | arr[0] |};
+	assert(t == x);
+}
