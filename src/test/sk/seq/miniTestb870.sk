@@ -125,15 +125,15 @@ int String()               { return 7; }
 package test{
 
 harness void mn() {
-  if (TID==0) t0();
-  else if (TID==1) t1();
-  else if (TID==2) t2();
-  else if (TID==3) t3();
-  else if (TID==4) t4();
-  else if (TID==5) t5();
-  else if (TID==6) t6();
-  else if (TID==7) t7();
-  else if (TID==8) t8();
+   t0();
+  t1();
+  t2();
+  t3();
+  t4();
+  t5();
+  t6();
+  t7();
+  t8();
 }
 
 // len(concat(s1,s2)) == len(s1) + len(s2)

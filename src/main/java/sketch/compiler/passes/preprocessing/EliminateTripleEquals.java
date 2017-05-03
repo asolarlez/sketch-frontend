@@ -106,14 +106,14 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
 
         if (expr.getOp() == ExprBinary.BINOP_EQ) {
             Type lt = getType(expr.getLeft());
-            if (lt instanceof TypeStructRef) {
+            if (lt instanceof TypeStructRef && !(expr.getRight() instanceof ExprNullPtr)) {
                 TypeStructRef ltr = (TypeStructRef) lt;
                 StructDef sdef = nres.getStruct(ltr.getName());
                 if (sdef.immutable()) {
                     Expression left = (Expression) expr.getLeft().doExpr(this);
                     Expression right = (Expression) expr.getRight().doExpr(this);
 
-                    Type rt = (TypeStructRef) getType(right);
+                    Type rt = getType(right);
                     Type parent;
                     if (lt.promotesTo(rt, nres))
                         parent = rt;
