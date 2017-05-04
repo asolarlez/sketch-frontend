@@ -58,13 +58,15 @@ class ArrayTypeReplacer1 extends SymbolTableVisitor {
  * two different ADT values.
  */
 public class EliminateTripleEquals extends SymbolTableVisitor {
-    final int DEPTH = 5;
+    int depth;
     TempVarGen varGen;
     Map<String, String> equalsFuns = new HashMap<String, String>();
     List<Function> newFuns;
-    public EliminateTripleEquals(TempVarGen varGen) {
+
+    public EliminateTripleEquals(TempVarGen varGen, int depth) {
         super(null);
         this.varGen = varGen;
+        this.depth = depth;
     }
 
     @Override
@@ -97,10 +99,41 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             List<Expression> pm = new ArrayList<Expression>();
             pm.add(left);
             pm.add(right);
-            pm.add(ExprConstInt.createConstant(DEPTH));
+            pm.add(ExprConstInt.createConstant(depth));
 
             return new ExprFunCall(expr, funName, pm);
         }
+
+        if (expr.getOp() == ExprBinary.BINOP_EQ) {
+            Type lt = getType(expr.getLeft());
+            if (lt instanceof TypeStructRef && !(expr.getRight() instanceof ExprNullPtr)) {
+                TypeStructRef ltr = (TypeStructRef) lt;
+                StructDef sdef = nres.getStruct(ltr.getName());
+                if (sdef.immutable()) {
+                    Expression left = (Expression) expr.getLeft().doExpr(this);
+                    Expression right = (Expression) expr.getRight().doExpr(this);
+
+                    Type rt = getType(right);
+                    Type parent;
+                    if (lt.promotesTo(rt, nres))
+                        parent = rt;
+                    else if (rt.promotesTo(lt, nres))
+                        parent = lt;
+                    else
+                        throw new ExceptionAtNode("== Types don't match", expr);
+
+                    String funName = createEqualsFun((TypeStructRef) parent, expr);
+
+                    List<Expression> pm = new ArrayList<Expression>();
+                    pm.add(left);
+                    pm.add(right);
+                    pm.add(ExprConstInt.createConstant(depth));
+
+                    return new ExprFunCall(expr, funName, pm);
+                }
+            }
+        }
+
         return super.visitExprBinary(expr);
     }
 
@@ -201,14 +234,21 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             Type t, List<Statement> stmts, String pkgName, ExprVar bnd, Expression lorig)
     {
         if (t.isStruct()) {
-            String funName = createEqualsFun((TypeStructRef) t, context);
+            TypeStructRef tref = (TypeStructRef) t;
+            StructDef sdef = nres.getStruct(tref.getName());
 
-            List<Expression> pm = new ArrayList<Expression>();
-            pm.add(l);
-            pm.add(r);
-            pm.add(new ExprBinary(context, ExprBinary.BINOP_SUB, bnd, ExprConstInt.one));
+            if (sdef.immutable()) {
+                String funName = createEqualsFun((TypeStructRef) t, context);
 
-            return new ExprFunCall(context, funName, pm);
+                List<Expression> pm = new ArrayList<Expression>();
+                pm.add(l);
+                pm.add(r);
+                pm.add(new ExprBinary(context, ExprBinary.BINOP_SUB, bnd, ExprConstInt.one));
+
+                return new ExprFunCall(context, funName, pm);
+            } else {
+                return new ExprBinary(context, ExprBinary.BINOP_EQ, l, r);
+            }
         } else {
             if (t.isArray()) {
                 // bit x = true;

@@ -1171,7 +1171,9 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             Expression old = en.getExpr();
             if (tsr != null) {
                 Type told = tsr.getTypeDeep(en.getName(), nres);
-                told = doType(vr.replace(told));
+                if (told != null) {
+                    told = doType(vr.replace(told));
+                }
                 tdstate.beforeRecursion(told, expNew);
             } else {
                 tdstate.beforeRecursion(NotYetComputedType.singleton, expNew);

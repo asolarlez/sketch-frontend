@@ -1,0 +1,6 @@
+pragma options "--fe-fpencoding AS_FIXPOINT --bnd-unroll-amnt 35 --bnd-cbits 7";
+
+int compare_float_float(float x, float y) { return (x < y) ? -1 : ((x == y) ? 0 : 1); }
+harness void mn() {
+  assert compare_float_float((float)3.1415, (float)3.1415) == 0;
+}

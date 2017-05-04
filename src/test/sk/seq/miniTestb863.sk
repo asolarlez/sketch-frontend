@@ -1,0 +1,65 @@
+
+
+include "math.skh";
+pragma options "--fe-fpencoding TO_BACKEND";
+
+
+adt Point{
+    float x;
+    float y;
+}
+
+generator Point op.-(Point a, Point b){
+    return new Point(x = a.x - b.x, y = a.y-b.y);
+}
+
+struct Car{
+    Point p;
+    float v;
+    float carAng;
+    float angV; // carAngle changes at rate v*angV;
+    float accel; //acce
+    int nsensors;
+}
+
+Car car(float x, float y, float ang){
+    return new Car(p = new Point(x=x, y=y), carAng = ang);
+}
+
+
+generator float ang(Point p){
+    float dx = p.x;
+    float dy = p.y;
+    float oang =  dy != 0.0 ? arctan(dx / dy) : (dx > 0.0 ? Pi() / 2.0 : -Pi()/2.0) ;
+    assert oang >= Pi()/4.0;
+    assert oang <= Pi()/4.0;
+    assert dy >= 0.0;
+    if(dy < 0.0){ oang = oang + Pi(); }
+    assert -Pi() <= oang && oang <= Pi(); 
+    return oang;
+}
+
+
+float relativeAngle(Car c, Car other){
+    /*
+     *     ^
+     *   X |        /
+     *     |       /  carAng           .(other.x, other.y)
+     *     |      .(c.x,c.y)
+     *     |
+     *     ------------> Y
+     */
+    
+       
+    float oang = ang(other.p .- c.p );
+    
+    
+    return oang - c.carAng;
+}
+
+
+harness 
+void testRelativeAngle(){
+    assert relativeAngle(car(0.0, 0.0, 0.0), car(1.0, 1.0, 0.0) ) == Pi()/4.0;
+    assert relativeAngle(car(0.0, 0.0, Pi()/2.0), car(1.0, 1.0, 0.0) ) == -Pi()/4.0;
+}

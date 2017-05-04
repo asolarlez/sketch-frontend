@@ -1,6 +1,6 @@
 //@Description Toy benchmarks to show complex recursive generators.
 
-generator int rec(int x, int y, int z){ /* automatically rewritten */
+generator int rec(int x, int y, int z){ 
    int t = ??;
    if(t == 0){
      return x;

@@ -11,13 +11,34 @@ bit[16] reverseSketch(bit[16] in) implements reverse {
 
     bit[16]  t = in;    
     int s = 1;
-    generator void tmp(){
+    generator void tt1(){
+        bit[16] tmp1 = (t << s);
+        bit[16] tmp2 = (t >> s);
+        bit[16] __sa0 = {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
+        t = ((tmp1) & __sa0) | ((tmp2) & (~(__sa0)));        
+        s = s*??;
+    }
+    generator void tt2(){
+        bit[16] tmp1 = (t << s);
+        bit[16] tmp2 = (t >> s);
+        bit[16] __sa0 = {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1};
+        t = ((tmp1) & __sa0) | ((tmp2) & (~(__sa0)));   
+        s = s*??;
+    }
+    generator void tt3(){
+        bit[16] tmp1 = (t << s);
+        bit[16] tmp2 = (t >> s);
+        bit[16] __sa0 = {0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1};
+        t = ((tmp1) & __sa0) | ((tmp2) & (~(__sa0)));
+        s = s*??;
+    }
+    generator void tt4(){
         bit[16] tmp1 = (t << s);
         bit[16] tmp2 = (t >> s);
         t = tmp1 {|} tmp2;
-        s = s*??;
+        s = s*2;
     }
-    rep(??, tmp);
+    tt1(); tt2(); tt3(); tt4();
     return t;
 }
 

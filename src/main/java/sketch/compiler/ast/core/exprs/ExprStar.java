@@ -330,6 +330,9 @@ public class ExprStar extends Expression
 	 * @param type the type to set
 	 */
 	public void setType(Type type) {
+        if (type == null) {
+            return;
+        }
 		this.type = type;
 
 		Type tt = type;

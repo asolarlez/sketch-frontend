@@ -1,0 +1,28 @@
+
+struct info{
+    int i;
+}
+
+adt T{
+    A{ int x; int y;}
+    B{ info inf; }
+}
+
+
+
+harness void main(int x){
+    T t;
+    if(x > 5){
+        t = new A(x=x, y = x+??);
+    }else{
+        t = new B(inf=new info(i=x));
+    }
+    switch(t){
+    case A: assert t.y > 10;
+    case B: {
+        t.inf.i = t.inf.i + 1;
+        assert t.inf.i < ??;
+    }
+    }
+    
+}
