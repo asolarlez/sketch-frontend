@@ -1,5 +1,7 @@
 package math;
 
+pragma options "--fe-fpencoding TO_BACKEND";
+
 float sin(float v);
 float cos(float v);
 float tan(float v);
