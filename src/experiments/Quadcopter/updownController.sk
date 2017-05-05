@@ -4,7 +4,7 @@ include "CopterModel.skh";
 
 pragma options "--debug-fake-solver";
 
-void control(copter c){
+void controlG(copter c){
     repeat(3){
         if(c.cmass.y > ??){
             double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
@@ -16,6 +16,31 @@ void control(copter c){
     }    
 }
 
+void control(copter c, int step){
+    
+        if(step < 10){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+        if(step < 20){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+        if(step < 51){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+        
+}
 
 
 harness void main(){
@@ -25,9 +50,9 @@ harness void main(){
     c.F[0] = 0.51; //newtons;
     c.F[1] = 0.52; //newtons;
     double dt = 0.05; //seconds;
-    for(int i=0; i<100; ++i){
+    for(int i=0; i<50; ++i){
         print(c);
-        control(c);
+        control(c, i);
         simulate(c, dt);        
     }
     print(c);
