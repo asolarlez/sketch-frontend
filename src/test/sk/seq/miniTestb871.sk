@@ -1,0 +1,31 @@
+
+pragma options "--debug-show-dag";
+
+struct T{
+    int x;
+    int y;
+    int z;
+    Foo f;
+}
+
+adt Foo{
+    Car{int x; int y; }
+    Dog{int z; int u; }
+    Tv{ T t; Foo f;}
+}
+
+
+harness void main(int x){
+    Foo f = new Car(x=4);
+    Foo g = new Car(x=??, y=??);
+    T t = new T(x=??, y=??, z=??, f = f);
+    T u = new T(x=??, y=7, z=2, f=g);
+    
+    assert f == g;
+    assert f === g;
+    assert !(t==u);
+    assert t!=u;
+    assert t === u;
+    
+    
+}

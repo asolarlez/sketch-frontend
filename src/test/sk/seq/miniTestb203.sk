@@ -1,4 +1,4 @@
-generator int ufun(int idx); /* automatically rewritten */
+int ufun(int idx); 
  
 generator int spec(int idx, int N){ /* automatically rewritten */
 	if(idx >= 0 && idx <N-3){

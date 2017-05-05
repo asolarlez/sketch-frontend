@@ -1,4 +1,4 @@
-pragma options "--bnd-inbits 3 --be:showDAG";
+pragma options "--bnd-inbits 3";
 
 int[N] test16(int N, int[N] in){
   int[N] out;

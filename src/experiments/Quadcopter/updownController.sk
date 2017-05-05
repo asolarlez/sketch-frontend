@@ -1,0 +1,64 @@
+
+
+include "CopterModel.skh";
+
+pragma options "--debug-fake-solver";
+
+void controlG(copter c){
+    repeat(3){
+        if(c.cmass.y > ??){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+    }    
+}
+
+void control(copter c, int step){
+    
+        if(step < 10){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+        if(step < 20){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+        if(step < 51){
+            double F = (c.cmass.y-??)*?? + (c.velocity.y-??)*??;
+            double bias = (c.ang-??)*?? + (c.angvelocity-??)*??;
+            c.F[0] = F*bias;
+            c.F[1] = F*(1.0-bias);
+            return;
+        }
+        
+}
+
+
+harness void main(){
+    double mass = 0.10 /* Kg */;
+    double len = 0.2 /*20cm*/;
+    copter c = Copter(20.0, 25.0, len, mass, 1.0/12.0*mass*len*len);
+    c.F[0] = 0.51; //newtons;
+    c.F[1] = 0.52; //newtons;
+    double dt = 0.05; //seconds;
+    for(int i=0; i<50; ++i){
+        print(c);
+        control(c, i);
+        simulate(c, dt);        
+    }
+    print(c);
+    assert c.cmass.y > 0.0 && c.cmass.y < 0.1; //y is very close to the floor.
+    assert c.cmass.x > 30.0 && cmass.x < 30.1; // small x displacement.
+    assert c.velocity.y > -0.01 && c.velocity.y < 0.01; // y.velocity close to 0 
+}
+
+

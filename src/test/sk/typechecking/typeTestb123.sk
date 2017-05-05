@@ -2,7 +2,7 @@
 
 T foo<T>( T x ){
     T apply(fun f){
-        return f(x);
+        return f(x); // TypeError
     }
     int id(int y){
         return y;

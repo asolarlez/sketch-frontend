@@ -1,11 +1,25 @@
+include "math.skh";
 
 adt Point{
     float x;
     float y;
 }
 
+
+Point point(double x, double y){
+    return new Point(x=x, y=y);
+}
+
 generator Point op.-(Point a, Point b){
     return new Point(x = a.x - b.x, y = a.y-b.y);
+}
+
+generator Point op.+(Point a, Point b){
+    return new Point(x = a.x + b.x, y = a.y + b.y);
+}
+
+generator Point op.*(Point a, double b){
+    return new Point(x=a.x*b, y=a.y*b);
 }
 
 generator float norm(Point p){    
