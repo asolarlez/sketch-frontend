@@ -1,13 +1,13 @@
 
-include "Geometry.skh";
+#include "../PointCars/Geometry.skh"
 
 
 /*
 We model a 2d copter
 
               ^ (normal)               /
-     ^        |        ^              /
-     |        |(cmass) |             /  angvelocity is how fast this angle changes.
+     ^        |               ^              /
+     |        |(cmass)    |             /  angvelocity is how fast this angle changes.
      I--------x--------I            /---------
                       
                       
@@ -77,6 +77,6 @@ Point rotate(Point p, double ang){
 @Native("{ cout<<msg<<\" \"<<val<<endl;  } ")
 void dprint([int n], char[n] msg, double val ){}
 
-@Native("{ cout<<c->cmass->x<<\" \"<<c->cmass->y<<\"   \"<<c->ang<<endl;  } ")
+@Native("{ cout<<c->cmass->x<<\" \"<<c->cmass->y<<\"   \"<<c->ang << \"   \" << c->velocity->y <<endl;  } ")
 void print(copter c){}
 

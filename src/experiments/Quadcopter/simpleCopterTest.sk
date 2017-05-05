@@ -1,5 +1,5 @@
 
-include "CopterModel.skh";
+#include "CopterModel.skh"
 
 pragma options "--debug-fake-solver";
 
