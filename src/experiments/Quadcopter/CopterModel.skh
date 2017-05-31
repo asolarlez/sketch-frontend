@@ -6,8 +6,8 @@
 We model a 2d copter
 
               ^ (normal)               /
-     ^        |               ^              /
-     |        |(cmass)    |             /  angvelocity is how fast this angle changes.
+     ^        |        ^              /
+     |        |(cmass) |             /  angvelocity is how fast this angle changes.
      I--------x--------I            /---------
                       
                       
