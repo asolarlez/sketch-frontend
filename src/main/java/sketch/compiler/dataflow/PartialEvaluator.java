@@ -1836,14 +1836,14 @@ nvarContext,
         {
             String nm = stmt.getName(i);
             Type vt = (Type)stmt.getType(i).accept(this);
-            try {
+            if (vt instanceof TypeStructRef) {
                 StructDef sdef = null;
                 String pkg = null;
                 sdef = nres.getStruct(((TypeStructRef) vt).getName());
-                pkg = sdef.getPkg();
-                vt = vt.addDefaultPkg(pkg, nres);
-            } catch (RuntimeException err) {
-                // ignore
+                if (sdef != null) {
+                    pkg = sdef.getPkg();
+                    vt = vt.addDefaultPkg(pkg, nres);
+                }
             }
             symtab.registerVar(stmt.getName(i), vt, stmt, SymbolTable.KIND_LOCAL);
             state.varDeclare(nm, vt);

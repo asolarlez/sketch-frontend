@@ -84,6 +84,9 @@ public class ReplaceFloatsWithFixpoint extends ReplaceFloatsWithBits {
         if (tnew.equals(TypePrimitive.inttype) && isFloat(told)) {
             return new ExprBinary(expr, "/", ExprConstInt.createConstant(scale));
         }
+        if (isFloat(told) && isFloat(tnew)) {
+            return expr;
+        }
         if (expr == exp.getExpr() && tnew == exp.getType())
             return exp;
         else

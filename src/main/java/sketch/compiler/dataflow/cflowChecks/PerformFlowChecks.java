@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -90,6 +91,7 @@ public class PerformFlowChecks extends PartialEvaluator {
             {
                 String nm = stmt.getName(i);
                 Type vt = (Type)stmt.getType(i).accept(this);
+            symtab.registerVar(stmt.getName(i), vt, stmt, SymbolTable.KIND_LOCAL);
                 state.varDeclare(nm, vt);
                 Expression ninit = null;
                 if( stmt.getInit(i) != null ){
@@ -125,11 +127,12 @@ public class PerformFlowChecks extends PartialEvaluator {
     @Override
     public Object visitParameter(Parameter param){
         state.outVarDeclare(param.getName() , param.getType());
+        Type ntype = (Type) param.getType().accept(this);
+        symtab.registerVar(param.getName(), ntype, param, SymbolTable.KIND_FUNC_PARAM);
         if(param.isParameterInput()){
             state.setVarValue(param.getName(), Cfctype.allinit);
         }
-        if(isReplacer){
-            Type ntype = (Type)param.getType().accept(this);
+        if (isReplacer) {
             return new Parameter(param, param.getSrcTupleDepth(), ntype,
                     transName(param.getName()),
                     param.getPtype());

@@ -1,7 +1,15 @@
 package sketch.compiler.passes.preprocessing;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.Stack;
 
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
@@ -120,6 +128,9 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 			String functionName = this.functionsToVisit.pop();
 			String pkgName = this.getPkgName(functionName);
 			Function function = nres.getFun(functionName);
+            if (function == null) {
+                continue;
+            }
             nres.setPackage(nameToPackage.get(pkgName));
 			// If the function has been visited
 			if (this.visitedFunctions.contains(functionName)) {
@@ -275,6 +286,12 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
 		
 		// Get the function that we are calling
 		Function callee = this.nres.getFun(functionName);
+
+        if (callee == null) {
+            // Visit the function call since it is probably a call to a
+            // formal parameter that does not need any processing
+            return super.visitExprFunCall(exprFunctionCall);
+        }
 		// Get its formal parameters
 		Iterator<Parameter> calleFormalParameters = callee.getParams().iterator();
 		
