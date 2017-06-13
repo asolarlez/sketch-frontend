@@ -493,8 +493,8 @@ generator bit literal(bit asst) {
 		else {
 			int v1 = {| (min_comp(locvars[var1]) | max_comp(locvars[var1])) |} ;
 			int v2 = {| (min_comp(locvars[var2]) | max_comp(locvars[var2])) |} ;
-			int left = {| (v1 | v2 | (v1+v2) | (v1-v2) | (v1<=v2 ? v1 : v2) | (v1>=v2 ? v1 : v2)) |};
-			atom = {| (left (== | >= | <=) 0) |};
+			int lleft = {| (v1 | v2 | (v1+v2) | (v1-v2) | (v1<=v2 ? v1 : v2) | (v1>=v2 ? v1 : v2)) |};
+			atom = {| (lleft (== | >= | <=) 0) |};
 		}
 		/*else if (lit_choice == 2) 
 			atom = disjoint(locvars[var1], locvars[var2]);
@@ -571,16 +571,6 @@ bit bst_inv(int v) {
 	else return treeness(locvars[v]) && bst_comp(locvars[v]);
 }
 
-bit disj_inv(int v1, int v2, bit asst) {
-	assert v1>0 && v1<LOCVARSIZE;
-	assert v2>0 && v2<LOCVARSIZE;
-	
-	if (asst)
-		assertPost(treeness(locvars[v1]) && treeness(locvars[v2]));
-	bit atom = asst;
-	if (treeness(locvars[v1]) && treeness(locvars[v2])) atom = disjoint(locvars[v1], locvars[v2]);
-	return atom;
-}
 
 bit min_preserve_inv(int v, int val) {
 	assert v>0 && v<LOCVARSIZE;

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
@@ -566,7 +567,12 @@ public class InnerFunReplacer extends BidirectionalPass {
         for (int i = 0; i < svd.getNumVars(); i++) {
 
             if (driver.getSymbolTable().hasVar(svd.getName(i))) {
-                throw new ExceptionAtNode("Shadowing of variables is not allowed.", svd);
+                FEContext cx = driver.getSymbolTable().varCx(svd.getName(i));
+                String prev = "";
+                if (cx != null) {
+                    prev = " previously declared in " + cx;
+                }
+                throw new ExceptionAtNode("Shadowing of variables is not allowed (" + svd.getName(i) + prev + ").", svd);
             }
 
             Type ot = svd.getType(i);
