@@ -13,9 +13,9 @@ HashNode newNode(int val){ /* automatically rewritten */
 
 int HTSIZE = 10;
 
-generator int hashB(int x); /* automatically rewritten */
+int hashB(int x); 
 
-generator int hash(int x){ /* automatically rewritten */
+int hash(int x){
 
 	return hashB(x);	
 }
