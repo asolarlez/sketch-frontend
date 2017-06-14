@@ -931,55 +931,6 @@ assignMT(computed_deriv, fuzzAssign12(subscriptMTul(computed_deriv, new MultiTyp
 return computed_deriv;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-MultiType f_x_0;
-assignMT(f_x_0, fuzzAssign13(evaluate_poly(fuzzInit8(poly), fuzzInit9(x_0))));
-if((fuzzCompOperator1(abs(fuzzInit10(f_x_0)), epsilon, LTE_COMP))){
-MultiType root;
-assignMT(root, fuzzAssign14(x_0));
-}
-else{
-MultiType x_guess;
-assignMT(x_guess, fuzzAssign15(x_0));
-MultiType no_iterations;
-assignMT(no_iterations, fuzzAssign16(new MultiType(val=1,flag=INTEGER)));
-}
-MultiType deriv_of_poly;
-assignMT(deriv_of_poly, fuzzAssign17(compute_deriv(fuzzInit11(poly))));
-while((fuzzCompOperator2(abs(fuzzInit12(evaluate_poly(fuzzInit13(poly), fuzzInit14(x_guess)))), epsilon, GT_COMP))){
-MultiType f_xguess;
-assignMT(f_xguess, fuzzAssign18(evaluate_poly(fuzzInit15(poly), fuzzInit16(x_guess))));
-if((fuzzCompOperator3(abs(fuzzInit17(f_xguess)), epsilon, LTE_COMP))){
-MultiType root;
-assignMT(root, fuzzAssign19(x_guess));
-}
-else{
-MultiType no_iterations;
-assignMT(no_iterations, fuzzAssign20(fuzzOperator4((no_iterations), (new MultiType(val=1,flag=INTEGER)), ADD_OP)));
-MultiType fprime_xguess;
-assignMT(fprime_xguess, fuzzAssign21(evaluate_poly(fuzzInit18(deriv_of_poly), fuzzInit19(x_guess))));
-MultiType next_xguess;
-assignMT(next_xguess, fuzzAssign22(fuzzOperator5((x_guess), (fuzzOperator6((f_xguess), (fprime_xguess), DIV_OP)), SUB_OP)));
-MultiType f_next_xguess;
-assignMT(f_next_xguess, fuzzAssign23(evaluate_poly(fuzzInit20(poly), fuzzInit21(next_xguess))));
-if((fuzzCompOperator4(abs(fuzzInit22(f_next_xguess)), epsilon, LTE_COMP))){
-MultiType root;
-assignMT(root, fuzzAssign24(next_xguess));
-}
-else{
-MultiType x_guess;
-assignMT(x_guess, fuzzAssign25(next_xguess));
-}
-}
-}
-MultiType root;
-assignMT(root, fuzzAssign26(root));
-MultiType no_iterations;
-assignMT(no_iterations, fuzzAssign27(no_iterations));
-MultiType result_computeroot;
-assignMT(result_computeroot, fuzzAssign28(new MultiType(lst=new MTList(len=2, listValues={root,no_iterations}), flag=LIST)));
-return result_computeroot;
-}
 
 
 MultiType compute_deriv_teacher(MultiType poly){

@@ -539,29 +539,7 @@ else x = 0;
 }
 
 
-MultiType evaluate_poly(MultiType poly,MultiType x){
-if((fuzzCompOperator0(str(fuzzInit0(subscriptMTi(poly, new MultiType(val=0,flag=INTEGER)))), new MultiType(val=0,flag=INTEGER), EQ_COMP))){
-MultiType f;
-assignMT(f, fuzzAssign0(new MultiType(val=0,flag=STRING)));
-MultiType func;
-assignMT(func, fuzzAssign1(new MultiType(val=0,flag=STRING)));
-}
-else{
-MultiType f;
-assignMT(f, fuzzAssign2(str(fuzzInit1(subscriptMTi(poly, new MultiType(val=0,flag=INTEGER))))));
-MultiType func;
-assignMT(func, fuzzAssign3(str(fuzzInit2(subscriptMTi(poly, new MultiType(val=0,flag=INTEGER))))));
-}
-MultiType e;
-assignMT(e, fuzzAssign4(new MultiType(val=0,flag=INTEGER)));
-MultiType res;
-assignMT(res, fuzzAssign5(new MultiType(val=0,flag=INTEGER)));
-while((fuzzCompOperator1(e, len(fuzzInit3(poly)), LT_COMP))){
-assignMT(res, fuzzOperator0(res, fuzzOperator1((subscriptMTi(poly, e)), (fuzzOperator2((x), (e), POW_OP)), MUL_OP), ADD_OP));
-assignMT(e, fuzzOperator3(e, new MultiType(val=1,flag=INTEGER), ADD_OP));
-}
-return res;
-}
+
 
 MultiType compute_deriv(MultiType poly){
 bit addBaseCase0;
@@ -578,17 +556,6 @@ assignMT(i, fuzzOperator6(i, new MultiType(val=1,flag=INTEGER), ADD_OP));
 return derivative;
 }
 
-MultiType compute_root(MultiType poly,MultiType x_0,MultiType epsilon){
-MultiType c;
-assignMT(c, fuzzAssign9(new MultiType(val=1,flag=INTEGER)));
-while((fuzzCompOperator3(abs(fuzzInit5(evaluate_poly(fuzzInit6(poly), fuzzInit7(x_0)))), epsilon, GT_COMP))){
-assignMT(c, fuzzOperator7(c, new MultiType(val=1,flag=INTEGER), ADD_OP));
-assignMT(x_0, fuzzOperator8(x_0, fuzzOperator9((evaluate_poly(fuzzInit8(poly), fuzzInit9(x_0))), (evaluate_poly(fuzzInit10(compute_deriv(fuzzInit11(poly))), fuzzInit12(x_0))), DIV_OP), SUB_OP));
-}
-MultiType a;
-assignMT(a, fuzzAssign10(new MultiType(lst=new MTList(len=2, listValues={x_0,c}), flag=LIST)));
-return a;
-}
 
 
 MultiType compute_deriv_teacher(MultiType poly){
