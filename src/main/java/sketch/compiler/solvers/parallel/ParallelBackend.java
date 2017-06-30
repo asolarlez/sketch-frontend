@@ -79,7 +79,7 @@ public class ParallelBackend extends SATBackend {
                 SATSolutionStatistics worker_stat = null;
                 try {
                     worker_stat =
-                            incrementalSolve(oracle, minimize, timeoutMins, fileIdx);
+                            incrementalSolve(oracle, minimize, timeoutMins, fileIdx, cpu);
                 } catch (SketchSolverException e) {
                     e.setBackendTempPath(options.getTmpSketchFilename());
                 }
