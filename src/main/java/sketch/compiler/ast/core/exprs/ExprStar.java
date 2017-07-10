@@ -372,6 +372,10 @@ public class ExprStar extends Expression
         return this.rangehigh;
     }
 
+	public void makeSpecial() {
+		isSpecial = true;
+	}
+
     public void makeSpecial(List<ExprStar> parentDepths) {
         isSpecial = true;
         this.parentHoles = parentDepths;

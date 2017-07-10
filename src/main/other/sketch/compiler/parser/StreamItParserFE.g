@@ -1191,6 +1191,8 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             }
     |	t3:NDANGELIC
 			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }
+	| 	t4:NDVAL2SP
+			{x = new ExprStar(getContext(t4)); ((ExprStar)x).makeSpecial(); }
     |  (local_variable) => x = local_variable
     ;
     
