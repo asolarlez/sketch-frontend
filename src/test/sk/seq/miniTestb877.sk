@@ -1,0 +1,46 @@
+
+void print(int t);
+
+harness void main2(int x){
+    
+    
+    int[5] t;
+    repeat(i:5){
+        t[i] = ??;
+        if(i>0) assert t[i] > t[i-1];
+        print(t[i]);
+    }
+    
+}
+
+
+  generator int add([int n, int k], int[n] A, int idx, int[k] offst){
+    int res = 0;
+    repeat(i: k){ 
+         res += A[idx + offst[i]];
+    }
+    return res;
+  }
+
+  int[n] combine([int n], int[n] A){
+         int[n] B;
+         for(int i=1; i<n-1; ++i){
+              int[3] offsts = {??-1, ??-1, ??-1};
+               B[i] = add(A, i, offsts);
+         }
+         return B;
+  }
+  
+  harness void aTest(int n){
+      assume n < 8;
+      for(int i=0; i<n; ++i){
+          int[i] t = 0;
+          for(int j=0; j<i; ++j){
+              assert t[j] == 0;
+          }
+      }
+  }
+
+  harness void main(){
+       assert combine({2, 4, 5}) == {0, 11, 0};
+  }

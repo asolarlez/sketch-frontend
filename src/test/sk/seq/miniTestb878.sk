@@ -1,0 +1,80 @@
+pragma options "--debug-show-dag";
+
+
+package ADTtest{
+    adt Tree{
+        Leaf{ int value; }
+        Branch{ Tree left; Tree right; }
+    }
+    
+    harness void main(int x){
+        if(x == 5){
+        Tree t1 = new Leaf(value=5);
+        Tree t2 = new Leaf(value=x+??);          
+        assert !(t1 != t2);        
+        
+        Tree b1 = new Branch(left = t1, right= t2);
+        Tree b2 = new Branch(left = t1, right= t2);
+        assert b1 == b2;
+        
+        }
+    }
+}
+
+
+package Immutabletest{
+    @Immutable()
+    struct Tree {
+    }
+    @Immutable()
+    struct Leaf extends Tree{
+        int value;
+    }
+    @Immutable()
+    struct Branch extends Tree{
+        Tree left;
+        Tree right;
+    }
+    
+    harness void main(int x){
+        if(x == 5){
+        Tree t1 = new Leaf(value=5);
+        Tree t2 = new Leaf(value=x+??);          
+        assert !(t1 != t2);        
+        
+        Tree b1 = new Branch(left = t1, right= t2);
+        Tree b2 = new Branch(left = t1, right= t2);
+        assert b1 == b2;
+        
+        }
+    }
+}
+
+
+
+package RecStruct{
+    struct Tree{
+            int x;
+    }
+    
+    struct Leaf extends Tree{
+        int value;
+    }
+    struct Branch extends Tree{
+        Tree left;
+        Tree right;
+    }
+    
+    harness void main(int x){
+        if(x == 5){
+        Tree t1 = new Leaf(value=5);
+        Tree t2 = new Leaf(value=x+??);          
+        assert (t1 != t2);        
+        
+        Tree b1 = new Branch(left = t1, right= t2);
+        Tree b2 = new Branch(left = t1, right= t2);
+        assert !(b1 == b2);
+        
+        }
+    }
+}
