@@ -136,6 +136,9 @@ Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java
 
 \begin{itemize}
 \item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function (see \secref{functions}) .
+
+\item The iteration variable of a cannonical \C{for} loop is final within the body of the loop. A cannonical \C{for} loop is a loop of the form \C{for(int i=a; i<b; ++i)}, where the iteration variable is not modified inside the body of the loop. 
+
 \item Arrays cannot be final. 
 \item Global variables can only be final if they are of scalar type (not references to records).
 \end{itemize}
@@ -517,7 +520,7 @@ The argument \C{var} passed to switch must be a variable whose type is an ADT, a
 \begin{lstlisting}
 int sum(Tree t){
    int v=0;
-   switch(t){
+   switch(t){ // There is an implicit assertion that t is not null.
       case Leaf:{
         /*t is now of type Leaf in this block */
         v = t.value;
@@ -531,7 +534,7 @@ int sum(Tree t){
    return v;
 }
 \end{lstlisting}
-The \C{switch} construct looks a lot like the \C{switch} construct in C or Java, but its semantics are very different. First, the cases correspond to the possible types of \C{t}, as opposed to different values of an integer expression. Second, the argument to switch must be a variable, and the type of this variable will be different in each of the cases. And finally, the cases do not ``fall through'' the way they do in C; only one case can match, and only the block of code associated with the matching case will execute.
+The \C{switch} construct looks a lot like the \C{switch} construct in C or Java, but its semantics are very different. First, the cases correspond to the possible types of \C{t}, as opposed to different values of an integer expression. Second, the argument to switch must be a variable, and the type of this variable will be different in each of the cases. And finally, the cases do not ``fall through'' the way they do in C; only one case can match, and only the block of code associated with the matching case will execute. Note that there is an implicit assertion that t is not null.
 
 The language allows hierarchies of ADTs. For example:
 \begin{lstlisting}
@@ -557,11 +560,42 @@ The following are some additional rules associated with ADTs.
 \item Records representing an ADT can have fields, and those fields will be inherited by all the variant types.
 \item A parent and a variant cannot both have a field with the same name. 
 \item The type extended by a variant class should exist and be defined in the same package, so ADT definitions cannot span multiple packages (see \secref{pkg} for more on packages).
-\item The expression that is passed to switch(e) should always be a variable, and the labels for the cases should be variants of the type of that variable.
+\item The expression that is passed to switch(e) should always be a variable; the labels for the cases should be variants of the type of that variable, and the variable cannot be null.
 \item Switch statements should cover all the cases.
 \item Implicit casting occurs from a subtype to a super type.
-\item Explicit casts can happen only from a supertype to a subtype. An incorrect cast will cause an assertion failure. 
+\item Explicit casts can be used only from a supertype to a subtype. An incorrect cast will cause an assertion failure. 
 \end{itemize}
+
+
+\paragraph{Equality}
+
+Although ADT values look like references, and for the most part behave like references, the one exception is equality (and not-equals) comparison. Two ADT values will be considered to be equal if all their fields are equal. For example, if you have two definitions as in the code below:
+
+\begin{lstlisting}
+Tree t1 = new Leaf(value=5);
+Tree t2 = new Leaf(value=5);
+\end{lstlisting}
+
+The variables \C{t1} and \C{t2} are considered to have the same value, and cannot be distinguished from each other. So the following assertion will pass:
+\begin{lstlisting}
+assert t1 == t2;
+\end{lstlisting}
+So will the assertion
+
+\begin{lstlisting}
+Tree b1 = new Branch(left = t1, right= t2);
+Tree b2 = new Branch(left = t1, right= t2);
+assert b1 == b2;
+\end{lstlisting}
+
+For recursive ADTs, \Sk{} will automatically generate a recursive comparison function to test equality, and will be subject to the inlining bounds given through the command-line flag \C{bnd-inline-amnt}. 
+In the context of ADTs, the constant \C{null} is just a special value that can only be compared against. ADT variables are all initialized to \C{null} if they are not explicitly initialized, so you can use comparisons such as 
+\begin{lstlisting}
+if( t1 == null){
+
+}
+\end{lstlisting}
+to check if a variable has been initialized, but any other operation that you try to do on a \C{null} value (reading a field, explicit casting or switching on it) will lead to an assertion failure.
 
 \subsection{Struct inheritance}
 In some cases, we want to make use of the ability of ADTs to define sub-types and to use switch to distinguish between cases, but we do not want to be restricted by the immutability requirement. In this case, we can use \C{struct} inheritance to achieve that goal. For example, we can write: 
@@ -579,7 +613,7 @@ struct Branch extends Tree{
 }
 \end{lstlisting}
 
-We can use the above Branch, Leaf and Tree types the same way we would have if we had defined them using the \C{adt} syntax. The difference is that now, the \C{Leaf}s and \C{Branch}es will be mutable, so you can change their value after they have been created. There is a cost to this, though, in that the synthesizer will be able to handle immutable ADT values much more efficiently than these mutable structures.
+We can use the above Branch, Leaf and Tree types the same way we would have if we had defined them using the \C{adt} syntax. The difference is that now, the \C{Leaf}s and \C{Branch}es will be mutable, so you can change their value after they have been created. There is a cost to this, though, in that the synthesizer will be able to handle immutable ADT values much more efficiently than these mutable structures. Also keep in mind because these are \C{struct}s, equality behaves just like with other structs.
 
 
 
@@ -1027,7 +1061,25 @@ The \Sk{} language includes an annotation system that is meant to simplify the p
 \end{lstlisting}
 \C{Name} is the name of the annotation and \C{parameter-string} is a string describing the parameters of the annotation. Annotations are currently only supported for function and record definitions. 
 
-The synthesizer currently supports two annotations. The first is \C{@Native}, which allows the user to override the standard code generator and tell the synthesizer exactly what code to synthesize for a particular function. The second one is \C{@NeedsInclude} which is used to tell the code generator that a particular function requires some specific header file to be included.
+
+Annotations are preserved throughout the compiler chain all the way to code generation. They can be particularly useful if you are writing your own custom code generator (see \secref{customcodegen}). In that case, you can just introduce annotations in your code, and your code generator can query the \C{Function} and  \C{StructDef} AST nodes to get their annotations (see the sample code generator provided for how to do this). There are, however, a handful of annotations that have special meaning to the compiler. Theey are listed below.
+
+
+\begin{itemize}
+\item \lstinline!@Native($code$)! overrides code generation for the annotated function (see \secref{nativecode}).
+\item \lstinline!@NeedsInclude($inc$)!  tells the code generator that a particular function requires some specific header file to be included (see \secref{nativecode}).
+\item \lstinline!@Immutable()! declares a given structure as immutable.
+\item \lstinline!@DontAnalyze()! tells the synthesizer that a given harness should not be analyzed. This is useful if you have a harness for which you want to generate code, but which you know to be too big and complex to analyze.
+\item \lstinline!@Gen()! This is used to annotate a special class of functions that have a special meaning for the analysis engine. You should not be using this annotation in your own code.
+\end{itemize}
+
+
+
+
+\subsection{The \C{@Native} annotation}
+\seclabel{nativecode}
+
+Two important annotations are \C{@Native} and \C{@NeedsInclude}. The first is \C{@Native}, which allows the user to override the standard code generator and tell the synthesizer exactly what code to synthesize for a particular function. The second one is \C{@NeedsInclude} which is used to tell the code generator that a particular function requires some specific header file to be included.
 
 For example, the following code shows how the two \C{@Native} annotations can be used to write a set of routines that read form a file.
 

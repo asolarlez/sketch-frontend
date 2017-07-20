@@ -2,9 +2,12 @@ package sketch.compiler.dataflow.preprocessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -24,6 +27,29 @@ public class SimplifyVarNames extends FEReplacer {
 	Map<String, Integer> nmMap = new HashMap<String, Integer>();
 	Map<String, String> newNm = new HashMap<String, String>();
 	
+    public Set<String> fields = null;
+
+    public Object visitStructDef(StructDef ts) {
+
+        fields = new HashSet<String>();
+        StructDef sdf = ts;
+        while (sdf != null) {
+            for (Entry<String, Type> entry : sdf) {
+                fields.add(entry.getKey());
+            }
+            String pn = sdf.getParentName();
+            if (pn != null) {
+                sdf = nres.getStruct(pn);
+            } else {
+                sdf = null;
+            }
+        }
+        Object o = super.visitStructDef(ts);
+
+        fields = null;
+        return o;
+    }
+
     public Object visitProgram(Program prog) {
         nres = new NameResolver(prog);
         for (Package ssOrig : prog.getPackages()) {

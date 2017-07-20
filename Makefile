@@ -34,8 +34,8 @@ maven-install: compile
 
 codegen: # codegen a few files (not very high probability of changing) #HIDDEN
 #	python scripts/run_jinja2.py
-	java antlr.Tool -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItLex.g
-	java antlr.Tool -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItParserFE.g
+	java -cp antlr.jar antlr.Tool -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItLex.g
+	java -cp antlr.jar antlr.Tool -o src/main/java/sketch/compiler/parser src/main/other/sketch/compiler/parser/StreamItParserFE.g
 
 renamer-script: #HIDDEN
 	[ -f sketch-noarch.jar ] || { make assemble-noarch; cp target/sketch-*-noarch.jar sketch-noarch.jar; }

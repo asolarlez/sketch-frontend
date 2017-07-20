@@ -105,37 +105,52 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         }
 
         if (expr.getOp() == ExprBinary.BINOP_EQ) {
-            Type lt = getType(expr.getLeft());
-            if (lt instanceof TypeStructRef && !(expr.getRight() instanceof ExprNullPtr)) {
-                TypeStructRef ltr = (TypeStructRef) lt;
-                StructDef sdef = nres.getStruct(ltr.getName());
-                if (sdef.immutable()) {
-                    Expression left = (Expression) expr.getLeft().doExpr(this);
-                    Expression right = (Expression) expr.getRight().doExpr(this);
-
-                    Type rt = getType(right);
-                    Type parent;
-                    if (lt.promotesTo(rt, nres))
-                        parent = rt;
-                    else if (rt.promotesTo(lt, nres))
-                        parent = lt;
-                    else
-                        throw new ExceptionAtNode("== Types don't match", expr);
-
-                    String funName = createEqualsFun((TypeStructRef) parent, expr);
-
-                    List<Expression> pm = new ArrayList<Expression>();
-                    pm.add(left);
-                    pm.add(right);
-                    pm.add(ExprConstInt.createConstant(depth));
-
-                    return new ExprFunCall(expr, funName, pm);
-                }
+            ExprFunCall efc = eqRewriteHelper(expr);
+            if (efc != null) {
+                return efc;
+            }
+        }
+        if (expr.getOp() == ExprBinary.BINOP_NEQ) {
+            ExprFunCall efc = eqRewriteHelper(new ExprBinary(ExprBinary.BINOP_EQ, expr.getLeft(), expr.getRight()));
+            if (efc != null) {
+                return new ExprUnary(expr, ExprUnary.UNOP_NOT, efc);
             }
         }
 
         return super.visitExprBinary(expr);
     }
+
+    private ExprFunCall eqRewriteHelper(ExprBinary expr) {
+        Type lt = getType(expr.getLeft());
+        if (lt instanceof TypeStructRef && !(expr.getRight() instanceof ExprNullPtr)) {
+            TypeStructRef ltr = (TypeStructRef) lt;
+            StructDef sdef = nres.getStruct(ltr.getName());
+            if (sdef.immutable()) {
+                Expression left = (Expression) expr.getLeft().doExpr(this);
+                Expression right = (Expression) expr.getRight().doExpr(this);
+
+                Type rt = getType(right);
+                Type parent;
+                if (lt.promotesTo(rt, nres))
+                    parent = rt;
+                else if (rt.promotesTo(lt, nres))
+                    parent = lt;
+                else
+                    throw new ExceptionAtNode("== Types don't match", expr);
+
+                String funName = createEqualsFun((TypeStructRef) parent, expr);
+
+                List<Expression> pm = new ArrayList<Expression>();
+                pm.add(left);
+                pm.add(right);
+                pm.add(ExprConstInt.createConstant(depth));
+
+                return new ExprFunCall(expr, funName, pm);
+            }
+        }
+        return null;
+    }
+
 
     private String createEqualsFun(TypeStructRef type, FENode ctx) {
         StructDef struct = nres.getStruct(type.getName());

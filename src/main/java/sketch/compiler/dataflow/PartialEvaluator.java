@@ -1771,6 +1771,7 @@ nvarContext,
         }
     }
 
+    public Set<String> fields = null;
     public Object visitStructDef(StructDef ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();

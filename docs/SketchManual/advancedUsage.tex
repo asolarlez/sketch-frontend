@@ -18,12 +18,11 @@ If the synthesizer tells you that your sketch has no solution, you can also pass
 
 When running in parallel mode, the \Sk{} synthesizer will launch multiple processes and have each process use a combination of stochastic and symbolic search to find a solution to the synthesis problem. Not all problems will benefit from this style of parallelization, but for those that do, the benefits can be significant. 
 
-In general, parallelization will only help speed up the synthesis phase, so if your problem is taking a long time in the checking phase, it will not benefit from parallel solving. 
-
-It is also important to note that parallelization does not work well with the \C{minimize} construct. In particular, using parallelization with \C{minimize} can lead to solutions that are not actually minimal. 
+In general, parallelization will only help speed up the synthesis phase, so if your problem is taking a long time in the checking phase, it will not benefit from parallel solving. Similarly, problems that make extensive use of \C{minimize} may not benefit much from parallel solving.
 
 
 \subsection{Custom Code Generators}
+\seclabel{customcodegen}
 
 For many applications, the user's goal is not to generate C code, but instead to derive code details that will later be used by other applications. In order to simplify this process, \Sk{} makes it easy to create custom code generators that will be invoked by the sketch compiler at code generation time. 
 
@@ -68,6 +67,16 @@ Also, if you are doing advanced development on the system, you will sometimes wa
 the temporary files from being deleted. You can do this by using the \C{--fe-keep-tmp} flag.
 
 \flagdoc{fe-keep-tmp}{Keep intermediate files used by the sketch frontend to communicate with the solver.}
+
+In some cases, especially when debugging sketches that take a long time to solve, you may find it useful to not have to rerun the solver after having made small changes to your sketch. \Sk{} provides a flag \C{--debug-fake-solver}, which tells the system to not invoke the backend solver; instead, if the system can find an existing temporary file with a solution for this sketch, it will just use those results. For example, if you have a sketch \C{slow.sk} which takes a long time to run, you can invoke:
+\begin{lstlisting}
+> sketch --fe-keep-tmp slow.sk           // This runs for a long time but keeps around the temporary files.
+> sketch --debug-fake-solver slow.sk   // This runs very fast because it doesn't actually try 
+                                                    // to solve the sketch, just reuses the results from the last run
+\end{lstlisting}
+You should be careful when using this flag, because if you changed your sketch significantly from one run to the next, the results from the old sketch may not be correct for the new sketch.
+
+\flagdoc{debug-fake-solver}{Instead of invoking the solver, sketch searches for an existing intermediate file from a prior run and uses the results stored in that file.}
 
 
 

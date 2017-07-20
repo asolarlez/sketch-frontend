@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
@@ -23,6 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtEmpty;
 import sketch.compiler.ast.core.stmts.StmtExpr;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
@@ -50,18 +52,33 @@ public class CheckProperFinality extends SymbolTableVisitor {
         fieldFinality.put(fname, f);
     }
 
-    FEReplacer markAsFinal = new FEReplacer() {
+    MarkAsFinal markAsFinal = new MarkAsFinal();
+
+    class MarkAsFinal extends FEReplacer {
+        String structNameContext = null;
+
+        void clearStructName() {
+            structNameContext = null;
+        }
+
+        void setStructName(String structName) {
+            structNameContext = structName;
+        }
+
         public Object visitExprVar(ExprVar ev) {
-            Finality f = symtab.lookupFinality(ev.getName(), ev);
-            if (f == Finality.UNKNOWN || f == Finality.FIRSTWRITE) {
-                if (verbosity > 4) {
-                    System.out.println(ev.getCx() + ": Making final " + ev);
+            if (structNameContext != null) {
+                structFieldFinality(structNameContext, ev.getName(), ev);
+            } else {
+                Finality f = symtab.lookupFinality(ev.getName(), ev);
+                if (f == Finality.UNKNOWN || f == Finality.FIRSTWRITE) {
+                    if (verbosity > 4) {
+                        System.out.println(ev.getCx() + ": Making final " + ev);
+                    }
+                    symtab.setFinality(ev.getName(), Finality.FINAL, ev);
                 }
-                symtab.setFinality(ev.getName(), Finality.FINAL, ev);
-            }
-            if (f == Finality.NOTFINAL) {
-                throw new TypeErrorException("Using non-final variable " + ev +
-                        " for an array size expression", ev);
+                if (f == Finality.NOTFINAL) {
+                    throw new TypeErrorException("Using non-final variable " + ev + " for an array size expression", ev);
+                }
             }
             return ev;
         }
@@ -75,26 +92,34 @@ public class CheckProperFinality extends SymbolTableVisitor {
             ef.getLeft().accept(this);
             Type tb = getType(ef.getLeft());
             String struct = tb.toString();
-            Finality f = getFieldFinality(struct, ef.getName());
+            structFieldFinality(struct, ef.getName(), ef);
+            return ef;
+        }
+
+        void structFieldFinality(String struct, String field, FENode ctxt) {
+            Finality f = getFieldFinality(struct, field);
             if (f == Finality.UNKNOWN) {
                 if (verbosity > 4) {
-                    System.out.println(ef.getCx() + ": Making final " + ef);
+                    System.out.println(ctxt.getCx() + ": Making final " + struct + "." + field);
                 }
-                setFieldFinality(struct, ef.getName(), Finality.FINAL);
+                setFieldFinality(struct, field, Finality.FINAL);
             }
             if (f == Finality.NOTFINAL) {
-                throw new TypeErrorException("Using final field " + ef +
-                        " in the LHS of an assignment.", ef);
+                throw new TypeErrorException("Using final field " + field + " in the LHS of an assignment.", ctxt);
             }
             if (f == Finality.FIRSTWRITE) {
                 assert false : "This is a bug";
             }
 
-            return ef;
         }
+
     };
 
-    FEReplacer markAsNoFinal = new FEReplacer() {
+    FEReplacer markAsNoFinal = new FEReplacer()
+    {
+
+
+
         @Override
         public Object visitExprArrayInit(ExprArrayInit init) {
             return init;
@@ -152,8 +177,24 @@ public class CheckProperFinality extends SymbolTableVisitor {
 
     @Override
     public Object visitTypeArray(TypeArray ta) {
+        if (insideStructDef != null) {
+            markAsFinal.setStructName(insideStructDef);
+        }
         ta.accept(markAsFinal);
+        markAsFinal.clearStructName();
         return ta;
+    }
+
+    String insideStructDef = null;
+    public Object visitStructDef(StructDef sd) {
+
+        insideStructDef = nres.getStructName(sd.getName());
+
+        super.visitStructDef(sd);
+
+        insideStructDef = null;
+
+        return sd;
     }
 
     public Object visitExprUnary(ExprUnary exp) {

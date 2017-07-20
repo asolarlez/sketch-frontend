@@ -336,7 +336,17 @@ public class SimpleCodePrinter extends CodePrinter
 
 	@Override
 	public Object visitStructDef(StructDef ts) {
-	    printLine("struct " + ts.getName() + " {");
+        if (ts.immutable()) {
+            printLine("@Immutable()");
+        }
+
+        String decl = "struct " + ts.getName();
+
+        if (ts.getParentName() != null) {
+            decl += " extends " + ts.getParentName();
+        }
+
+        printLine(decl + " {");
         for (StructFieldEnt ent : ts.getFieldEntriesInOrder()) {
 	        printLine("    " + ent.getType().toString() + " " + ent.getName() + ";");
 	    }

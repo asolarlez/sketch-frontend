@@ -503,6 +503,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
     public Object visitFunction(Function func)
     {
+
+        if (func.hasAnnotation("DontAnalyze")) {
+            return func;
+        }
+
         if(tracing)
             System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
 

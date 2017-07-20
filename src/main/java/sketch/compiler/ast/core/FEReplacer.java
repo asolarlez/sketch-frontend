@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Vector;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -868,24 +866,11 @@ public class FEReplacer implements FEVisitor
         return newtype;
     }
 
-    public Set<String> fields = null;
+
     public Object visitStructDef (StructDef ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
-        fields = new HashSet<String>();
 
-        StructDef sdf = ts;
-        while (sdf != null) {
-            for (Entry<String, Type> entry : sdf) {
-                fields.add(entry.getKey());
-            }
-            String pn = sdf.getParentName();
-            if (pn != null) {
-                sdf = nres.getStruct(pn);
-            } else {
-                sdf = null;
-            }
-        }
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept (this);
             changed |= (type != entry.getValue());

@@ -231,7 +231,7 @@ program	 returns [Program p]
                     return_type ID  (type_params)? LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
-           |    ts=struct_decl { structs.add(ts); }
+           |    (annotation_list TK_struct) => ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
            |    sa = special_assert_statement { specialAsserts.add(sa); }
            |    file=include_stmt { handleInclude (file, namespaces); }
@@ -285,7 +285,7 @@ pkgbody returns [Package pk]
                     return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
-           |    ts=struct_decl { structs.add(ts); }
+           |    (annotation_list TK_struct) => ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
            |    sa = special_assert_statement { specialAsserts.add(sa); }
    )*
@@ -371,7 +371,25 @@ fdecl_statement returns [Statement s] { s=null; Function f = null;}
 	;
 	
 loop_statement returns [Statement s] { s = null; Expression exp; Statement b; Token x=null;}
-	: (t1:TK_loop{x=t1;} | t2:TK_repeat{x=t2;}) LPAREN exp=right_expr RPAREN b=pseudo_block
+	:
+	
+	((TK_loop{x=t1;} | TK_repeat{x=t2;}) LPAREN ID COLON) => 
+	(t1:TK_loop{x=t1;} | t2:TK_repeat{x=t2;}) LPAREN id:ID COLON exp=right_expr RPAREN b=pseudo_block
+	{
+	 FEContext cx = getContext(x); 
+	 s = 
+						new StmtBlock(
+						new StmtVarDecl(cx, TypePrimitive.inttype, id.getText(), ExprConstInt.zero),
+						new StmtLoop(cx, exp, 
+						  new StmtBlock(b, new StmtExpr(						          
+						          new ExprUnary(cx, ExprUnary.UNOP_PREINC, new ExprVar(cx,id.getText())) ))						
+						)
+						); 
+	
+	}
+	
+	
+	| (t1p:TK_loop{x=t1p;} | t2p:TK_repeat{x=t2p;}) LPAREN exp=right_expr RPAREN b=pseudo_block
 	{ s = new StmtLoop(getContext(x), exp, b); }
 	;
 
@@ -1250,7 +1268,8 @@ struct_decl returns [StructDef ts]
 	Annotation an=null;
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
-	:	t:TK_struct id:ID
+	:	(an=annotation{ annotations.append(an.tag, an); })*
+	t:TK_struct id:ID
 		//ADT
 		(TK_extends parent:ID 
 		{
