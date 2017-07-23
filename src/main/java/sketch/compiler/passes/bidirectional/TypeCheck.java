@@ -729,6 +729,12 @@ public class TypeCheck extends BidirectionalPass {
             }
             return o;
         }
+
+        Type t = driver.getType(ta.getLength());
+        if (!t.promotesTo(TypePrimitive.inttype, driver.getNres())) {
+            report(ta.getLength(), "The length must be an integer.");
+        }
+
         return ta;
     }
 

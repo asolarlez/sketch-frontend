@@ -6,9 +6,10 @@ pragma options "--bnd-unroll-amnt 32 --debug-show-dag";
 harness void foo(int i){    
     int[i] x = 0; 
     int  g(){
-    int f(){
+    int f(){ // TypeError no return
         i=7;
     }
+      return f();
     }
     if(i > 2){
         x[1] = 7;
