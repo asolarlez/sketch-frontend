@@ -9,6 +9,6 @@ struct A{
 harness void main(int x){
 	A a = new A(x = 2, y = {??, ??}, n = 2);
 	A b = new A(x =3, nxt =  a);
-	assert (b.nxt.x == 2 && b.nxt.y[3] == 3);
+	assert (b.nxt.x == 2 && b.nxt.y[3] == 3);//TypeError array out of bounds.
 	
 }

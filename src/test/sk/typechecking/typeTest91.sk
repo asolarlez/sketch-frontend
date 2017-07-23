@@ -13,7 +13,7 @@ package YY{
     struct A{}
     struct B extends A{int x;}
     harness void main(){
-        B b = (B)( new B@XX(x =??, y= 6)); //Invalid explicit type casting
+        B b = (B)( new B@XX(x =??, y= 6)); //TypeError Invalid explicit type casting
         assert(b.x==0);
     }
     

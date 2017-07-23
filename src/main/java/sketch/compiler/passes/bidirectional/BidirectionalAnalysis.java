@@ -1331,38 +1331,31 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(decl, "Feature not supported");
     }
 
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(exprNamedParam, "Named parameters not supported");
     }
 
     public Object visitExprType(ExprType exprtyp) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(exprtyp, "Feature not supported");
     }
 
     public Object visitStmtSpmdfork(StmtSpmdfork stmtSpmdfork) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(stmtSpmdfork, "Feature not supported");
     }
 
     public Object visitSpmdBarrier(SpmdBarrier spmdBarrier) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(spmdBarrier, "Feature not supported");
     }
 
     public Object visitSpmdPid(SpmdPid spmdpid) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(spmdpid, "Feature not supported");
     }
 
     public Object visitSpmdNProc(SpmdNProc spmdnproc) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(spmdnproc, "Feature not supported");
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {

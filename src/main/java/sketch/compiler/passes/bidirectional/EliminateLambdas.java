@@ -142,7 +142,11 @@ public class EliminateLambdas extends BidirectionalPass {
                 if (oinit == null) {
                     throw new ExceptionAtNode("Local fun variables must be initialized right away because they are final", stmt);
                 }
-                fleshLambda(stmt.getName(i), (ExprLambda) oinit);
+                if (oinit instanceof ExprLambda) {
+                    fleshLambda(stmt.getName(i), (ExprLambda) oinit);
+                } else {
+                    throw new ExceptionAtNode("Currently, fun variables can only be initialized with a lambda expression.", stmt);
+                }
             } else {
                 newInits.add(oinit);
                 newTypes.add(ot);

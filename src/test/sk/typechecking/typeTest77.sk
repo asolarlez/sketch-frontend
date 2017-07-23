@@ -5,7 +5,7 @@ void twice(fun f) {
 }
 
 harness void main() {
-	int x = 0;
+	int x = 0; // TypeError the error message should also indicate the location of this decl
 	int y = 1;
 	int z = 2;
 
