@@ -67,7 +67,7 @@ generator int indexAny(CSR csr, int idx) {
         csr.colIdx[idx];
 }
 
-generator int anyAvail([int n], CSR csr, int[n] availableExpr) {
+generator int anyAvail([int n], CSR csr, int[n] availableExpr) { 
     int choice = ??;
     if (choice == 0) return ??;
     if (choice == 1) return any(csr) + ??;

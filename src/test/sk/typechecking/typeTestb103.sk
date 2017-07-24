@@ -6,7 +6,7 @@ harness void main(){
     int x = f(3);
     int y = f(2);
     
-  	f = (t) -> t + 5; // Error since f was already defined.
+  	f = (t) -> t + 5; // TypeError since f was already defined.
   	
   	//fun f = (t) -> t + 5;
    

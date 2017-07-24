@@ -1011,7 +1011,7 @@ public class TypeCheck extends BidirectionalPass {
 
                             if (tsrActual.isUnboxed() && !tsr.isUnboxed()) {
                                 report(exp,
-                                        "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                        "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                             }
 
                         }
@@ -1028,16 +1028,16 @@ public class TypeCheck extends BidirectionalPass {
                     if (typeCheck) {
 
                         if (actType == null || !actType.promotesTo(formalType, driver.getNres())) {
-                            report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                            report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                         }
                         if (ftt instanceof TypeStructRef) {
                             TypeStructRef tref = ((TypeStructRef) ftt);
                             if (tref.getName() == null) {
-                                report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                             }
                             if (formal.isParameterReference() && !tref.isUnboxed()) {
                                 if (!tref.equals(att)) {
-                                    report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                    report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                                 }
                             }
                         }
@@ -1239,6 +1239,11 @@ public class TypeCheck extends BidirectionalPass {
         // check that the associated condition is promotable to a boolean
         Type ct = driver.getType(stmt.getCond());
         Type bt = TypePrimitive.bittype;
+
+        if (ct == null) {
+            report(stmt, "assert must be passed a boolean");
+            return stmt;
+        }
 
         if (!ct.promotesTo(bt, driver.getNres()))
             report(stmt, "assert must be passed a boolean");
@@ -1569,6 +1574,7 @@ public class TypeCheck extends BidirectionalPass {
             StructDef ts = driver.getNres().getStruct(nt.getName());
             if (ts == null) {
                 report(expNew, "Trying to instantiate a struct that doesn't exist");
+                return expNew;
             }
             // ADT
             if (!ts.isInstantiable()) {
@@ -1817,6 +1823,9 @@ public class TypeCheck extends BidirectionalPass {
         // " +
         // getType(stmt.getValue()));
         Type rt = driver.getType(stmt.getValue());
+        if (rt instanceof TypeFunction) {
+            report(stmt, "Function values cannot be returned from a function.");
+        }
         if (rt != null && !rt.promotesTo(driver.returnType, driver.getNres()))
             report(stmt, "Return value incompatible with declared function return value: " + driver.returnType + " vs. " + driver.getType(stmt.getValue()));
         hasReturn = true;

@@ -4,12 +4,17 @@ struct str{
     int n; char[n] ch;    
 }
 
+struct Const{
+    int n;
+    int[n] ch;
+}
+
 str cstr([int n] , char[n] ch){
-    return new Const(n=n, ch=ch);
+    return new Const(n=n, ch=ch); //TypeError
 }
 
 
-int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){
+int Pos([int n1, int n2], str s, char[n1] r1, char[n2] r2, int k ){ 
     for(int i=0; i<s.n; ++i){
         if(i+ n1 + n2 < s.n){
             if(s.ch[i::n1]==r1 && s.ch[(i+n1)::n2] == r2){
@@ -42,7 +47,7 @@ generator str genExpr(Const s){
         else{ 
             char[3] r1 = ??;
             char[3] r2 = ??;
-            return SubStr(s, ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??), ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??) ); 
+            return SubStr(s, ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??), ?? ? ?? : Pos(s, r1[0::??], r2[0::??], ??) ); //TypeError
         }
     }
     str out = term();
@@ -52,7 +57,7 @@ generator str genExpr(Const s){
     return out;
 }
 
-str flashToy(Const s){
+str flashToy(Const s){ 
     return genExpr(s);
 }
 
@@ -64,7 +69,7 @@ bit eq(str s1, str s2){
 
 
 harness void main(){    
-    assert eq(cstr("Singh"), flashToy(cstr("Rishabh Singh")) );    
+    assert eq(cstr("Singh"), flashToy(cstr("Rishabh Singh")) );    //TypeError
 }
 
 

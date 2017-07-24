@@ -4,7 +4,7 @@ harness void main() {
 	int t = 3;
 	
 	int test() {
-		fun f = () -> t = t + 5;
+		fun f = () -> t = t + 5; //TypeError does not parse.
 		
 		return f();
 	}

@@ -6,7 +6,7 @@ int apply(fun f, int x) {
 }
 
 harness void main() {
-	bit x = 7;
+	bit x = 7; //TypeError
 
-	assert apply((yup) -> 5 + x, 48) == 12; //TypeError
+	assert apply((yup) -> 5 + x, 48) == 12; 
 }

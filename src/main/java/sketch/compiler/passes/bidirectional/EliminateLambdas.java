@@ -170,7 +170,8 @@ public class EliminateLambdas extends BidirectionalPass {
              * If it is, check that it is not modifying a parameter of a lambda.
              */
             public Object visitExprUnary(ExprUnary exprUnary) {
-
+                int op = exprUnary.getOp();
+                if (op == ExprUnary.UNOP_POSTDEC || op == ExprUnary.UNOP_POSTINC || op == ExprUnary.UNOP_PREINC || op == ExprUnary.UNOP_PREDEC) {
                 // Loop through the formal parameters of the lambda expression
                 for (ExprVar formalParameter : elambda.getParameters()) {
                     // If the unary expression has a formal parameter
@@ -178,10 +179,10 @@ public class EliminateLambdas extends BidirectionalPass {
                         // Thrown exception since we cannot modify a formal
                         // parameter of
                         // a lambda expression
-                        throw new ExceptionAtNode("You cannot have an unary expression of " + "a formal parameter in a lambda", exprUnary);
+                            throw new ExceptionAtNode("You should not have side effects on the formal parameter of a lambda", exprUnary);
                     }
                 }
-
+                }
                 return super.visitExprUnary(exprUnary);
 
             }

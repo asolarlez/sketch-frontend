@@ -120,7 +120,7 @@ public class SymbolTableVisitor extends FEReplacer
         int dif = f.getParams().size() - efcTypes.size();
         if (dif != 0) {
             if (dif < 0) {
-                throw new ExceptionAtNode("Wrong number of parameters", null);
+                throw new ExceptionAtNode("Wrong number of parameters", f);
             }
             boolean alloutputs = true;
             for (int i = 0; i < dif; ++i) {

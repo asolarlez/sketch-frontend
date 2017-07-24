@@ -3,9 +3,9 @@
 fun error() {
 	fun f = () -> 5;
 	
-	return f;
+	return f;  //TypeError
 }
 
 harness void main() {
-	fun g = error();
+	error();
 }

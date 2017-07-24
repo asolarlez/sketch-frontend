@@ -1,0 +1,9 @@
+struct scalar { bit supp; int val; }
+
+bit funa(|scalar| a) { return (a.vak + 0);} //TypeError
+
+
+harness void test1(int n, int i, int j) {
+    assert funa(|scalar|(supp=0,val=0));
+  }
+
