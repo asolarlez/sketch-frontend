@@ -328,8 +328,14 @@ public class InnerFunReplacer extends BidirectionalPass {
                 }
 
                 if (pt instanceof TypeStructRef) {
-                    if (nres.isTemplate(((TypeStructRef) pt).getName())) {
+                    String lname = ((TypeStructRef) pt).getName();
+                    if (nres.isTemplate(lname)) {
                         nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                    } else {
+                        String nm = nres.getStructName(lname);
+                        if (!nm.equals(lname)) {
+                            pt = new TypeStructRef(nm, ((TypeStructRef) pt).isUnboxed());
+                        }
                     }
                 }
 

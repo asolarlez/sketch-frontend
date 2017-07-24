@@ -26,7 +26,7 @@ harness void main(int x){
     A a1 = new A(e=x, f=x);
     A@PRIME a2 = new A@PRIME(a=x+1, b=x+1);
     A@BIS a3 = new A@BIS(c=x+2, d=x+2);
-    int foo(){
+    generator int foo(){
         return a1.e + a3.c - a2.a;
     }
     int rv = call@BIS(foo);
