@@ -11,6 +11,7 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
+import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -204,6 +205,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
     private boolean visitingALen=false;
 
+    public Object visitExprField(ExprField exp) {
+        throw new RuntimeException("COMPILER BUG: There should not be any Expression Fields at this point!!!");
+    }
 
 
     public Object visitTypeArray(TypeArray t) {

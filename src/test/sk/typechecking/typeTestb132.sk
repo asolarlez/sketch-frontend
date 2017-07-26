@@ -21,7 +21,7 @@ harness void main(int x){
     case A: assert ii.t == t && x <= 5;
     case B: {
         t.inf.i = t.inf.i + 1;
-        assert t.inf.i > 5+??;
+        assert t.inf.i < ??(3); //TypeError this assert should be unsat.
         ii.t =  t.inf.t;        
     }
     }

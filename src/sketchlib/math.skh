@@ -11,7 +11,9 @@ float tan(float v);
 @Native("{_out = sqrtf(v);}")
 float sqrt(float v);
 @Native("{_out = fabs(v);}")
-float abs(float v);
+float abs(float v){
+    if(v > 0.0){ return v; }else{ return -v; }
+}
 @Native("{_out = atanf(v);}")
 float arctan(float v);
 @Native("{_out = (int)v;}")
