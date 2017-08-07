@@ -239,7 +239,7 @@ public class NameResolver {
     }
 
     public final StructDef template = StructDef.creator(null, "__TEMPLATE__", null,
-            false, new ArrayList<String>(), new ArrayList<Type>(),
+            false, new ArrayList<String>(), new ArrayList<Type>(), new ArrayList<String>(),
             new HashmapList<String, Annotation>()).create();
     public StructDef getStruct(String name) {
         for (Set<String> sts : tempStructNames) {

@@ -54,7 +54,7 @@ tokens {
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";
 
 	// Complicated types:
-	"struct"; // "template";
+	"struct"; 
 	"ref";
 	"adt";
 
@@ -78,13 +78,10 @@ tokens {
     "generator";
     "harness";
     "model";
+	"fixes";
+    
 
-    // suppress function in output, run tprint() calls
-    // "library";
-    // "printfcn";
-
-    // cuda
-    // "device";
+   
     "global";
     "serial";
 

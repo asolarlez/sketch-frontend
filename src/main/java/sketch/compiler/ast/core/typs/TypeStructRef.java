@@ -18,6 +18,7 @@ package sketch.compiler.ast.core.typs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,6 +42,7 @@ import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 public class TypeStructRef extends Type
 {
     private String name;
+    private List<Type> params;
     private final boolean isUnboxed;
 
     /** Creates a new reference to a structured type. */
@@ -48,6 +50,17 @@ public class TypeStructRef extends Type
         super(typ);
         this.name = name;
         this.isUnboxed = isUnboxed;
+    }
+
+    public TypeStructRef(String name, boolean isUnboxed, List<Type> params) {
+        super(CudaMemoryType.UNDEFINED);
+        this.name = name;
+        this.isUnboxed = isUnboxed;
+        this.params = params;
+    }
+
+    public void addParams(List<Type> tp) {
+        params = tp;
     }
 
     public TypeStructRef addDefaultPkg(String pkg, NameResolver nres) {
@@ -94,11 +107,21 @@ public class TypeStructRef extends Type
 
     public String toString()
  {
+        String rv;
         if (isUnboxed) {
-            return this.getCudaMemType().syntaxNameSpace() + "|" + name + "|";
+            rv = this.getCudaMemType().syntaxNameSpace() + "|" + name + "|";
         } else {
-            return this.getCudaMemType().syntaxNameSpace() + name;
+            rv = this.getCudaMemType().syntaxNameSpace() + name;
         }
+        if (params != null && params.size() > 0) {
+            rv += "<";
+            rv += params.get(0);
+            for (int i = 1; i < params.size(); ++i) {
+                rv += ", " + params.get(i);
+            }
+            rv += ">";
+        }
+        return rv;
     }
     
 

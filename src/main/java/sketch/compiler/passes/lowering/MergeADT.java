@@ -538,6 +538,7 @@ public class MergeADT extends SymbolTableVisitor {
         }
         ts =
                 StructDef.creator(str.getContext(), newName, null, true, names, types,
+                        str.getTypeargs(),
                         annotations).create();
         ts.setActFields(actFields);
         ts.setPkg(str.getPkg());

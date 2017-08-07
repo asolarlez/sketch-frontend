@@ -467,6 +467,11 @@ public class SymbolTableVisitor extends FEReplacer
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
+        List<String> args = ts.getTypeargs();
+        if (args != null && !args.isEmpty()) {
+            nres.pushTempTypes(args);
+        }
+
         StructDef sdl = ts;
         int maxcnt = nstructsInPkg;
         Set<String> s = null;
@@ -504,6 +509,9 @@ public class SymbolTableVisitor extends FEReplacer
             map.put(entry.getKey(), type);
         }
 
+        if (args != null && !args.isEmpty()) {
+            nres.popTempTypes();
+        }
         symtab = oldSymTab;
 
         if (changed) {
