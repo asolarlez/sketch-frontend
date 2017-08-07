@@ -91,7 +91,7 @@ public class SymbolTableVisitor extends FEReplacer
             if (tmap.containsKey(tr.getName())) {
                 return tmap.get(tr.getName());
             }
-            return tr;
+            return super.visitTypeStructRef(tr);
         }
 
         public Type rename(Type t) {

@@ -1133,8 +1133,23 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         return o;
     }
 
-    public Object visitTypeStructRef(TypeStructRef ts) {
-        return ts;
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        List<Type> tp = tsr.getTypeParams();
+        if (tp != null && !tp.isEmpty()) {
+            List<Type> params = new ArrayList<Type>();
+            boolean changed = false;
+            for (Type t : tp) {
+                Type newt = doType(t);
+                params.add(newt);
+                if (newt != t) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                return new TypeStructRef(tsr.getName(), tsr.isUnboxed(), params);
+            }
+        }
+        return tsr;
     }
 
     public Object visitParameter(Parameter par) {

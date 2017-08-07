@@ -63,6 +63,10 @@ public class TypeStructRef extends Type
         params = tp;
     }
 
+    public List<Type> getTypeParams() {
+        return params;
+    }
+
     public TypeStructRef addDefaultPkg(String pkg, NameResolver nres) {
         if (name.indexOf('@') >= 0) {
             return this;
@@ -71,7 +75,7 @@ public class TypeStructRef extends Type
             if (nname == null) {
                 nname = name;
             }
-            return new TypeStructRef(nname, isUnboxed);
+            return new TypeStructRef(nname, isUnboxed, params);
         }
     }
 

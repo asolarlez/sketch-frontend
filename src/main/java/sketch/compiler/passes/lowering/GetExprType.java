@@ -20,9 +20,11 @@ import static sketch.util.Misc.nonnull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.FEReplacer;
@@ -373,11 +375,7 @@ public class GetExprType extends FENullVisitor
                     ": You are trying to do a field access on a " + base + " in expr " +
  exp + " . " + exp, exp);
         }
-        FEReplacer repVars = new FEReplacer() {
-            public Object visitExprVar(ExprVar ev) {
-                return new ExprField(fexp.getLeft(), ev.getName());
-            }
-        };
+
         // ADT
         if (exp.isHole()) {
             return new NotYetComputedType();
@@ -389,6 +387,23 @@ public class GetExprType extends FENullVisitor
             }
             current = nres.getStruct(current.getParentName());
         }
+        Set<String> renaming = null;
+        if (current.getTypeargs() != null && !current.getTypeargs().isEmpty()) {
+            renaming = new HashSet<String>(current.getTypeargs());
+        }
+        final Set<String> renfinal = renaming;
+        FEReplacer repVars = new FEReplacer() {
+            public Object visitExprVar(ExprVar ev) {
+                return new ExprField(fexp.getLeft(), ev.getName());
+            }
+
+            public Object visitTypeStructRef(TypeStructRef tsr) {
+                if (renfinal != null && renfinal.contains(tsr.getName())) {
+                    tsr = new TypeStructRef(tsr.getName(), tsr.isUnboxed(), tsr.getTypeParams());
+                }
+                return super.visitTypeStructRef(tsr);
+            }
+        };
         Type ttt = current.getType(exp.getName());
         if (ttt != null) {
             return (Type) ttt.accept(repVars);

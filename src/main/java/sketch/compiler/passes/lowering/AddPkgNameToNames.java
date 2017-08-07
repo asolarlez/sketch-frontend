@@ -56,7 +56,7 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitTypeStructRef(TypeStructRef tsr) {
         tsr = (TypeStructRef) super.visitTypeStructRef(tsr);
-        return new TypeStructRef(transStruct(tsr.getName()), tsr.isUnboxed());
+        return new TypeStructRef(transStruct(tsr.getName()), tsr.isUnboxed(), tsr.getTypeParams());
     }
 
     @Override
