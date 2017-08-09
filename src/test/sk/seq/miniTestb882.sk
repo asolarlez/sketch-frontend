@@ -3,8 +3,14 @@ T get<T>(fun f){
     return f();
 }
 
+T ident<T>(T in){
+    return in;
+}
+
 harness void main(){
     int f(){ return ??; }
     int x = get(f);
     assert x == 10;
+    int[3] out = ident({1,2,3});
+    assert out[1] == 2;
 }

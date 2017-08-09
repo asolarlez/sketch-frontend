@@ -886,9 +886,9 @@ public class FEReplacer implements FEVisitor
         }
     }
 
-    public Object visitTypeStructRef (TypeStructRef tsr) {
-        List<Type> tp = tsr.getTypeParams();
-        if (tp != null && !tp.isEmpty()) {
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        if (tsr.hasTypeParams()) {
+            List<Type> tp = tsr.getTypeParams();
             List<Type> params = new ArrayList<Type>();
             boolean changed = false;
             for (Type t : tp) {

@@ -95,9 +95,16 @@ public class MergeADT extends SymbolTableVisitor {
         }
 
         String oldName = sd.getFullName();
+        List<Type> tpar = null;
+        if (t.hasTypeParams()) {
+            tpar = new ArrayList<Type>();
+            for (Type tp : t.getTypeParams()) {
+                tpar.add(doType(tp));
+            }
+        }
 
         StructCombinedTracker tracker = structs.get(oldName);
-        TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
+        TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false, tpar);
         return newType;
 
     }
@@ -108,7 +115,15 @@ public class MergeADT extends SymbolTableVisitor {
         StructDef sd = nres.getStruct(oldType);
         oldType = sd.getFullName();
         StructCombinedTracker tracker = structs.get(oldType);
-        TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false);
+        List<Type> typeargs = null;
+        if (exprNew.hasTypeParams()) {
+            typeargs = new ArrayList<Type>();
+            for (Type old : exprNew.getTypeParams()) {
+                typeargs.add(doType(old));
+            }
+        }
+
+        TypeStructRef newType = new TypeStructRef(tracker.getNewName(), false, typeargs);
         List newParams = new ArrayList();
         if (!sd.isInstantiable()) {
             // This is a new ??() case.

@@ -13,14 +13,53 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class EliminateGenerics extends SymbolTableVisitor {
     Map<String, Function> signatures = new HashMap<String, Function>();
     Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
+    Map<String, StructDef> structs = new HashMap<String, StructDef>();
+    Map<String, List<StructDef>> newstructs = new HashMap<String, List<StructDef>>();
+
     final List<String> empty = new ArrayList<String>();
     public EliminateGenerics() {
         super(null);
+    }
+
+    StructDef newStructDef(TypeStructRef tsr) {
+        StructDef sd = nres.getStruct(tsr.getName());
+        final Map<String, Type> ms = GetExprType.replMap(sd, tsr, null);
+
+        TypeRenamer tr = new TypeRenamer();
+        tr.tmap = ms;
+        String newname = sd.getName() + tr.postfix();
+        return ((StructDef) sd.accept(tr)).creator().typeargs(null).name(newname).create();
+    }
+
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        TypeStructRef newref = (TypeStructRef) super.visitTypeStructRef(tsr);
+        if (newref.hasTypeParams()) {
+            String name = newref.toString();
+            if (structs.containsKey(name)) {
+                return new TypeStructRef(structs.get(name).getName(), tsr.isUnboxed(), null);
+            } else {
+                StructDef sd = newStructDef(newref);
+                structs.put(name, sd);
+                String pkgname = nres.curPkg().getName();
+                if (newstructs.containsKey(pkgname)) {
+                    newstructs.get(pkgname).add(sd);
+                } else {
+                    List<StructDef> lsd = new ArrayList<StructDef>();
+                    lsd.add(sd);
+                    newstructs.put(pkgname, lsd);
+                }
+                return new TypeStructRef(sd.getName(), tsr.isUnboxed(), null);
+            }
+        } else {
+            return newref;
+        }
     }
 
     String signature(Function f, TypeRenamer tr) {
@@ -42,7 +81,7 @@ public class EliminateGenerics extends SymbolTableVisitor {
         }
         List<Type> lt = new ArrayList<Type>();        
         for (Expression actual : efc.getParams()) {
-            lt.add(getType(actual));
+            lt.add(doType(getType(actual)));
         }
         TypeRenamer tr = SymbolTableVisitor.getRenaming(f, lt, nres, null);
         String sig = signature(f, tr);
@@ -93,6 +132,11 @@ public class EliminateGenerics extends SymbolTableVisitor {
             List<Function> nl = pk.getFuncs();
             if (lf != null) {
                 nl.addAll(lf);
+            }
+            List<StructDef> lsd = newstructs.get(pk.getName());
+            List<StructDef> nd = pk.getStructs();
+            if (lsd != null) {
+                nd.addAll(lsd);
             }
         }
         symtab = oldSymTab;
