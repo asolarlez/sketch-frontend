@@ -20,12 +20,11 @@ import static sketch.util.Misc.nonnull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -387,19 +386,16 @@ public class GetExprType extends FENullVisitor
             }
             current = nres.getStruct(current.getParentName());
         }
-        Set<String> renaming = null;
-        if (current.getTypeargs() != null && !current.getTypeargs().isEmpty()) {
-            renaming = new HashSet<String>(current.getTypeargs());
-        }
-        final Set<String> renfinal = renaming;
+
+        final Map<String, Type> renfinal = replMap(current, (TypeStructRef) base, exp);
         FEReplacer repVars = new FEReplacer() {
             public Object visitExprVar(ExprVar ev) {
                 return new ExprField(fexp.getLeft(), ev.getName());
             }
 
             public Object visitTypeStructRef(TypeStructRef tsr) {
-                if (renfinal != null && renfinal.contains(tsr.getName())) {
-                    tsr = new TypeStructRef(tsr.getName(), tsr.isUnboxed(), tsr.getTypeParams());
+                if (renfinal != null && renfinal.containsKey(tsr.getName())) {
+                    return renfinal.get(tsr.getName());
                 }
                 return super.visitTypeStructRef(tsr);
             }
@@ -412,6 +408,21 @@ public class GetExprType extends FENullVisitor
         }
     }
 
+    public static Map<String, Type> replMap(StructDef current, TypeStructRef base, FENode ctx) {
+        Map<String, Type> renaming = null;
+        if (current.getTypeargs() != null && !current.getTypeargs().isEmpty()) {
+            renaming = new HashMap<String, Type>();
+            List<String> formals = current.getTypeargs();
+            List<Type> actuals = base.getTypeParams();
+            if (formals.size() != actuals.size()) {
+                throw new ExceptionAtNode("Inconsistent types", ctx);
+            }
+            for (int i = 0; i < formals.size(); ++i) {
+                renaming.put(formals.get(i), actuals.get(i));
+            }
+        }
+        return renaming;
+    }
 
     public Object visitExprFunCall(ExprFunCall exp)
     {

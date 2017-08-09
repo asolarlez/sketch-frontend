@@ -367,6 +367,10 @@ annotations);
         return typeargs;
     }
 
+    public boolean hasTypeargs() {
+        return typeargs != null && !typeargs.isEmpty();
+    }
+
     /** Return true iff F is a field of this struct. */
     public boolean hasField (String f) {
         return getFieldTypMap().containsKey(f);

@@ -1,0 +1,43 @@
+
+
+
+struct List<Q>{
+    int n;
+    Q[n] val; 
+}
+
+List<int> glob;
+
+List<T> newList<T>(int n, T[n] v){
+    return new List<T>(n = n, val=v );
+}
+
+
+T get<T>(List<T> lst, int i){
+    return lst.val[i];
+}
+
+void add<T>(List<T> lst, int i, T val){
+    lst.val[i] = val;
+}
+
+harness void main(int n, int m){
+    
+    List<int> intlist = newList(n, (int)0);
+    List<List<int>> listlist = newList(m, intlist);
+    for(int i=0; i<n; ++i){
+        add(intlist, i, i);
+    }
+    for(int j=0; j<m; ++j){
+        add(listlist, j, intlist);
+    }
+    
+    for(int j=0; j<m; ++j){
+        List<int> l = get(listlist, j);
+        for(int i=0; i<n; ++i){
+            int v = get(l, i);
+            assert v == i;
+        }
+    }
+    
+}

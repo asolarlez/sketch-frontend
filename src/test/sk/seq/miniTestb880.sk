@@ -1,0 +1,36 @@
+include "generators.skh"; 
+pragma options "--bnd-unroll-amnt 16 --bnd-inbits 4 --bnd-inline-amnt 4";
+
+harness void testmin(int x, int y) fixes min{
+    min(x-10,y-10);
+}
+
+int min(int x, int y) {
+    int t;
+    minrepeat{
+        if(exprBool({x,y}, {})){
+            t = expr({x,y}, {});
+        }
+    }
+    assert t <= x;
+    assert t <= y;
+    assert t == x || t == y;
+    return t;
+}
+
+
+
+harness void foo(int x, int y){
+    int[x] A;
+    int[y] B;
+    for(int i=0; i<min(x,y); ++i){
+        A[i] = i;
+        B[i] = i;
+    }
+    int t = 0;
+    for(int i=0; i<min(x,y); ++i){
+       t += A[i] + B[i];
+    }
+    int m = min(x,y);
+    assert t == ((??-5)*m*m + (??-5)*m + (??-5))/(??-5);
+}

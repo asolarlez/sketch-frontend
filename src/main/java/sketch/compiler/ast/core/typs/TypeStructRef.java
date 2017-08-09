@@ -18,8 +18,11 @@ package sketch.compiler.ast.core.typs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import sketch.compiler.ast.core.FEContext;
@@ -65,6 +68,10 @@ public class TypeStructRef extends Type
 
     public List<Type> getTypeParams() {
         return params;
+    }
+
+    public boolean hasTypeParams() {
+        return params != null && !params.isEmpty();
     }
 
     public TypeStructRef addDefaultPkg(String pkg, NameResolver nres) {
@@ -204,10 +211,38 @@ public class TypeStructRef extends Type
         return Collections.singletonList((Type) this);
     }
 
+
     public Map<String, Type> unify(Type t, Set<String> names) {
         if (names.contains(this.toString())) {
+            // If my full name is in names, then I can just rename myself to t
+            // and be equal to t.
             return Collections.singletonMap(this.toString(), t);
         } else {
+            if (t instanceof TypeStructRef) {
+                TypeStructRef other = (TypeStructRef) t;
+                List<Type> othertp = other.getTypeParams();
+                if (othertp != null && this.params != null && othertp.size() == params.size() && params.size() > 0) {
+                    Iterator<Type> otherit = othertp.iterator();
+                    Map<String, Type> tmap = new HashMap<String, Type>();
+                    for (Type thistp : params) {
+                        Type otp = otherit.next();
+
+                        Map<String, Type> lmap = thistp.unify(otp, names);
+                        for (Entry<String, Type> entr : lmap.entrySet()) {
+                            // if (tmap.containsKey(entr.getKey())) {
+                            // tmap.put(entr.getKey(),
+                            // tmap.get(entr.getKey()).leastCommonPromotion(entr.getValue(),
+                            // nres));
+                            // } else {
+                                tmap.put(entr.getKey(), entr.getValue());
+                            // }
+                        }
+                    }
+                    return tmap;
+
+                }
+
+            }
             return Collections.EMPTY_MAP;
         }
     }

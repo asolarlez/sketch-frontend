@@ -1,0 +1,10 @@
+
+T get<T>(fun f){
+    return f();
+}
+
+harness void main(){
+    int f(){ return ??; }
+    int x = get(f);
+    assert x == 10;
+}

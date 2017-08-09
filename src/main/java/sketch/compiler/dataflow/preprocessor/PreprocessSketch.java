@@ -73,7 +73,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             star.accept(this);
             ExprStar newStar = (ExprStar) exprRV;
             if (newStar != star) {
-                exprRV  = new ExprNew(nexp, nexp.getTypeToConstruct(), nexp.getParams(),
+                exprRV = new ExprNew(nexp, nexp.getTypeToConstruct(), nexp.getParams(), 
                         true, newStar);
             } else {
                 exprRV = nexp;
@@ -82,7 +82,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             TypeStructRef sr = (TypeStructRef) exp.getTypeToConstruct();
             StructDef sd = nres.getStruct(sr.getName());
             if (!sd.getPkg().equals(currentTopPkg)) {
-                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed()), nexp.getParams(), nexp.isHole());
+                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed()), nexp.getParams(), 
+                        nexp.isHole());
                 exprRV = nexp;
             }
 

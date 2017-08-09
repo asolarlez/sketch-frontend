@@ -1,11 +1,15 @@
 package sketch.compiler.dataflow.preprocessor;
 
+import static sketch.util.fcns.ZipWithIndex.zipwithindex;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import static sketch.util.DebugOut.printNote;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -26,10 +30,6 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.ZipIdxEnt;
-
-import static sketch.util.DebugOut.printNote;
-
-import static sketch.util.fcns.ZipWithIndex.zipwithindex;
 /**
  * This visitor distinguishes between int stars and bit stars, and labels each star with its
  * appropriate type.

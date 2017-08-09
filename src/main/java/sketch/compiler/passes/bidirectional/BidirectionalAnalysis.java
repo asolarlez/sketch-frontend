@@ -47,6 +47,7 @@ import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -1175,7 +1176,21 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         }
 
         Map<String, Expression> repl = new HashMap<String, Expression>();
-        VarReplacer vr = new VarReplacer(repl);
+        VarReplacer vr;
+        if (tsr != null && tsr.hasTypeargs()) {
+            final Map<String, Type> renfinal = GetExprType.replMap(tsr, (TypeStructRef) nt, expNew);
+            vr = new VarReplacer(repl) {
+                public Object visitTypeStructRef(TypeStructRef tsr) {
+                    if (renfinal != null && renfinal.containsKey(tsr.getName())) {
+                        return renfinal.get(tsr.getName());
+                    }
+                    return super.visitTypeStructRef(tsr);
+                }
+            };
+        } else {
+            vr = new VarReplacer(repl);
+        }
+
         for (ExprNamedParam en : expNew.getParams()) {
             repl.put(en.getName(), en.getExpr());
         }

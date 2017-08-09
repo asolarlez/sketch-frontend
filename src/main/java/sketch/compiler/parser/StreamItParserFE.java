@@ -931,7 +931,7 @@ inputState.guessing--;
 		
 		try {      // for error handling
 			{
-			_loop310:
+			_loop311:
 			do {
 				if ((LA(1)==AT)) {
 					an=annotation();
@@ -940,7 +940,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop310;
+					break _loop311;
 				}
 				
 			} while (true);
@@ -960,7 +960,7 @@ inputState.guessing--;
 					typeargs.add(typearg.getText());
 				}
 				{
-				_loop313:
+				_loop314:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -971,7 +971,7 @@ inputState.guessing--;
 						}
 					}
 					else {
-						break _loop313;
+						break _loop314;
 					}
 					
 				} while (true);
@@ -1016,7 +1016,7 @@ inputState.guessing--;
 			}
 			match(LCURLY);
 			{
-			_loop316:
+			_loop317:
 			do {
 				switch ( LA(1)) {
 				case TK_boolean:
@@ -1049,7 +1049,7 @@ inputState.guessing--;
 				}
 				default:
 				{
-					break _loop316;
+					break _loop317;
 				}
 				}
 			} while (true);
@@ -1105,7 +1105,7 @@ inputState.guessing--;
 					typeargs.add(typearg.getText());
 				}
 				{
-				_loop302:
+				_loop303:
 				do {
 					if ((LA(1)==COMMA)) {
 						match(COMMA);
@@ -1116,7 +1116,7 @@ inputState.guessing--;
 						}
 					}
 					else {
-						break _loop302;
+						break _loop303;
 					}
 					
 				} while (true);
@@ -1136,7 +1136,7 @@ inputState.guessing--;
 			}
 			match(LCURLY);
 			{
-			_loop304:
+			_loop305:
 			do {
 				switch ( LA(1)) {
 				case TK_adt:
@@ -1171,7 +1171,7 @@ inputState.guessing--;
 						}
 					}
 				else {
-					break _loop304;
+					break _loop305;
 				}
 				}
 			} while (true);
@@ -1785,7 +1785,7 @@ inputState.guessing--;
 				{
 					tp=type_params_use();
 					if ( inputState.guessing==0 ) {
-						((TypeStructRef)t).addParams(tp);
+						if(!(t instanceof TypeStructRef)){ throw new RuntimeException("ERROR!!!"); } ((TypeStructRef)t).addParams(tp);
 					}
 					break;
 				}
@@ -6008,7 +6008,7 @@ inputState.guessing--;
 				
 			}
 			{
-			_loop290:
+			_loop291:
 			do {
 				if ((LA(1)==COMMA)) {
 					match(COMMA);
@@ -6018,7 +6018,7 @@ inputState.guessing--;
 					}
 				}
 				else {
-					break _loop290;
+					break _loop291;
 				}
 				
 			} while (true);
@@ -6110,7 +6110,7 @@ inputState.guessing--;
 		Token  id = null;
 		Token  prefix2 = null;
 		Token  id2 = null;
-		x = null; Type t=null; List l; boolean hole = false;
+		x = null; TypeStructRef t=null; List l; boolean hole = false; List<Type> tp = null;
 		
 		try {      // for error handling
 			switch ( LA(1)) {
@@ -6124,7 +6124,7 @@ inputState.guessing--;
 					match(ID);
 					match(AT);
 				}
-				else if ((LA(1)==NDVAL2||LA(1)==ID) && (LA(2)==LPAREN)) {
+				else if ((LA(1)==NDVAL2||LA(1)==ID) && (LA(2)==LPAREN||LA(2)==LESS_THAN)) {
 				}
 				else {
 					throw new NoViableAltException(LT(1), getFilename());
@@ -6156,9 +6156,26 @@ inputState.guessing--;
 				}
 				}
 				}
+				{
+				switch ( LA(1)) {
+				case LESS_THAN:
+				{
+					tp=type_params_use();
+					break;
+				}
+				case LPAREN:
+				{
+					break;
+				}
+				default:
+				{
+					throw new NoViableAltException(LT(1), getFilename());
+				}
+				}
+				}
 				l=constr_params();
 				if ( inputState.guessing==0 ) {
-					x = new ExprNew( getContext(n), t, l,hole);
+					if(tp!= null){ t.addParams(tp); }  x = new ExprNew( getContext(n), t, l, hole);
 				}
 				break;
 			}
@@ -6186,7 +6203,7 @@ inputState.guessing--;
 				match(BITWISE_OR);
 				l=constr_params();
 				if ( inputState.guessing==0 ) {
-					x = new ExprNew( getContext(id2), t, l, hole);
+					if(tp!= null){ t.addParams(tp); } x = new ExprNew( getContext(id2), t, l, hole);
 				}
 				break;
 			}
@@ -6484,7 +6501,7 @@ inputState.guessing--;
 			match(ID);
 			match(LCURLY);
 			{
-			_loop307:
+			_loop308:
 			do {
 				switch ( LA(1)) {
 				case TK_boolean:
@@ -6517,7 +6534,7 @@ inputState.guessing--;
 				}
 				default:
 				{
-					break _loop307;
+					break _loop308;
 				}
 				}
 			} while (true);
@@ -6831,7 +6848,7 @@ inputState.guessing--;
 	}
 	public static final BitSet _tokenSet_29 = new BitSet(mk_tokenSet_29());
 	private static final long[] mk_tokenSet_30() {
-		long[] data = { 0L, 4681514353056L, 16L, 0L, 0L, 0L};
+		long[] data = { 0L, 4681514353072L, 16L, 0L, 0L, 0L};
 		return data;
 	}
 	public static final BitSet _tokenSet_30 = new BitSet(mk_tokenSet_30());

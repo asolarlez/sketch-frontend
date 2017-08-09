@@ -1580,6 +1580,23 @@ public class TypeCheck extends BidirectionalPass {
             if (!ts.isInstantiable()) {
                 report(expNew, "Struct representing an Algebraic Data Type cannot be instantiated");
             }
+            FEReplacer renamer = null;
+            if (expNew.hasTypeParams()) {
+                List<Type> actuals = expNew.getTypeParams();
+                List<String> formals = ts.getTypeargs();
+                final Map<String, Type> rmap = new HashMap<String, Type>();
+                for (int i = 0; i < actuals.size(); ++i) {
+                    rmap.put(formals.get(i), actuals.get(i));
+                }
+                renamer = new FEReplacer() {
+                    public Object visitTypeStructRef(TypeStructRef tsr) {
+                        if (rmap.containsKey(tsr.toString())) {
+                            return rmap.get(tsr.toString());
+                        }
+                        return super.visitTypeStructRef(tsr);
+                    }
+                };
+            }
 
             for (ExprNamedParam en : expNew.getParams()) {
                 Expression rhs = en.getExpr();
@@ -1603,6 +1620,9 @@ public class TypeCheck extends BidirectionalPass {
                 Type lhsType = current.getType(en.getName());
                 if (rhsType == null || lhsType == null) {
                     return expNew;
+                }
+                if (renamer != null) {
+                    lhsType = (Type) lhsType.accept(renamer);
                 }
                 lhsType = lhsType.addDefaultPkg(ts.getPkg(), driver.getNres());
                 matchTypes(expNew, lhsType, rhsType);

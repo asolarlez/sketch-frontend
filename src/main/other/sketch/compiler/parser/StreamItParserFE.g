@@ -1152,13 +1152,14 @@ tminic_value_expr returns [Expression x] { x = null; }
 	;
 
 
-constructor_expr returns [Expression x] { x = null; Type t=null; List l; boolean hole = false;}
+constructor_expr returns [Expression x] { x = null; TypeStructRef t=null; List l; boolean hole = false; List<Type> tp = null;}
 	: n:TK_new
 	(prefix:ID AT)? (id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); } | NDVAL2{hole = true;})
-	l=constr_params {  x = new ExprNew( getContext(n), t, l,hole);     }
+	( tp = type_params_use )?
+	l=constr_params { if(tp!= null){ t.addParams(tp); }  x = new ExprNew( getContext(n), t, l, hole);     }
 	| BITWISE_OR 
     (prefix2:ID AT)? id2:ID { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); }
-      BITWISE_OR l=constr_params {  x = new ExprNew( getContext(id2), t, l, hole);     }
+      BITWISE_OR l=constr_params { if(tp!= null){ t.addParams(tp); } x = new ExprNew( getContext(id2), t, l, hole);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }
