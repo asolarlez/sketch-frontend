@@ -122,8 +122,16 @@ public class EliminateGenerics extends SymbolTableVisitor {
                     nl.add(fun);
                 }
             }
+
+            List<StructDef> nsdl = new ArrayList<StructDef>();
+            for (StructDef sd : pk.getStructs()) {
+                if (!sd.hasTypeargs()) {
+                    nsdl.add(sd);
+                }
+            }
+
             Package npkg =
-                    new Package(pk, pk.getName(), pk.getStructs(), pk.getVars(), nl,
+                    new Package(pk, pk.getName(), nsdl, pk.getVars(), nl,
                             pk.getSpAsserts());
             newStreams.add((Package) npkg.accept(this));
         }

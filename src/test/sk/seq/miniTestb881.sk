@@ -1,4 +1,4 @@
-pragma options "--bnd-unroll-amnt 32";
+pragma options "--bnd-unroll-amnt 16";
 
 
 struct List<Q>{
@@ -22,7 +22,7 @@ void add<T>(List<T> lst, int i, T val){
 }
 
 harness void main(int n, int m){
-    
+    assume n<16 && m < 16;
     List<int> intlist = newList(n, (int)0);
     List<List<int>> listlist = newList(m, intlist);
     for(int i=0; i<n; ++i){

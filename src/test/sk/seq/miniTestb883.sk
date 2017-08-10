@@ -1,0 +1,41 @@
+pragma options "--bnd-unroll-amnt 32";
+
+
+
+package A{
+    struct I<T>{
+        T v;
+    }
+    
+    I<T> store<T>(T v){
+        return new I<T>(v=v);
+    }
+    T read<T>(I<T> x){
+        return x.v;
+    }
+    
+    harness void main(int i){
+        
+        assert i == read(store(i));
+    }        
+}
+
+package B{
+    struct I<X>{
+        X t;
+    }
+    
+    I<T> store<T>(T v){
+        return new I<T>(t=v);
+    }
+    T read<T>(I<T> x){
+        return x.t;
+    }
+    
+    harness void main(int i){
+        
+        assert i == read@A(store@A(i));
+        assert i == read@B(store@B(i));
+        assert i == read@A(read@B(store@B(store@A(i))));
+    }        
+}
