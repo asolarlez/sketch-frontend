@@ -507,6 +507,7 @@ public class MergeADT extends SymbolTableVisitor {
 
             List<VarReplacer> vrs = new ArrayList<VarReplacer>();
 
+            nres.pushTempTypes(childStruct.getTypeargs());
 
             for (StructFieldEnt var : childStruct.getFieldEntriesInOrder()) {
                 String newVarname = name.split("@")[0] + "_" + var.getName();
@@ -528,6 +529,7 @@ public class MergeADT extends SymbolTableVisitor {
             for (String child : nres.getStructChildren(name)) {
                 list.add(child);
             }
+            nres.popTempTypes();
 
         }
         int actFields = names.size();

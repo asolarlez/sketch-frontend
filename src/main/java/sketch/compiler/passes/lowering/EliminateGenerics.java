@@ -35,7 +35,11 @@ public class EliminateGenerics extends SymbolTableVisitor {
         TypeRenamer tr = new TypeRenamer();
         tr.tmap = ms;
         String newname = sd.getName() + tr.postfix();
-        return ((StructDef) sd.accept(tr)).creator().typeargs(null).name(newname).create();
+        sd = ((StructDef) sd.accept(tr)).creator().typeargs(null).name(newname).create();
+        structs.put(tsr.toString(), sd);
+        sd = ((StructDef) sd.accept(this));
+        structs.put(tsr.toString(), sd);
+        return sd;
     }
 
     public Object visitTypeStructRef(TypeStructRef tsr) {
@@ -46,7 +50,6 @@ public class EliminateGenerics extends SymbolTableVisitor {
                 return new TypeStructRef(structs.get(name).getName(), tsr.isUnboxed(), null);
             } else {
                 StructDef sd = newStructDef(newref);
-                structs.put(name, sd);
                 String pkgname = nres.curPkg().getName();
                 if (newstructs.containsKey(pkgname)) {
                     newstructs.get(pkgname).add(sd);

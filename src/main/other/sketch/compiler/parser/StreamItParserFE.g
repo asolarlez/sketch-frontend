@@ -1266,9 +1266,13 @@ adt_decl returns [List<StructDef> adtList]
 		MORE_THAN		
 		)?
 		LCURLY
-	(innerList=adt_decl { innerStruct = innerList.get(0); innerStruct.setParentName(id.getText());
-	adtList.addAll(innerList);}
-	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); adtList.add(innerStruct);}
+	(innerList=adt_decl { innerStruct = innerList.get(0); 
+						  innerStruct.setParentName(id.getText());
+						  innerStruct.setTypeargs(typeargs);
+						  adtList.addAll(innerList);}
+	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); 
+										innerStruct.setTypeargs(typeargs);
+										adtList.add(innerStruct);}
 	| p=param_decl SEMI {names.add(p.getName()); types.add(p.getType());}
 	| an=annotation {annotations.append(an.tag, an);}
 	)*

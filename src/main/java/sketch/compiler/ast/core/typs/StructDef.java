@@ -58,7 +58,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     private final String name;
     private String pkg;
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
-    private final List<String> typeargs;
+    private List<String> typeargs;
     // For sake of ADT
     private String parentName;
     private int actFieldsSize;
@@ -74,6 +74,10 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
     public boolean hasAnnotation(String tag) {
         return annotations.containsKey(tag);
+    }
+
+    public void setTypeargs(List<String> typeargs) {
+        this.typeargs = typeargs;
     }
 
     public Vector<Annotation> getAnnotation(String tag) {

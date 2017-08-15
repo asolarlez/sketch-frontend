@@ -1259,7 +1259,8 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
         // visit each case body
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
-        String name = ((TypeStructRef) t).getName();
+        TypeStructRef tsr = ((TypeStructRef) t);
+        String name = tsr.getName();
         StructDef ts = nres.getStruct(name);
         String pkg;
         if (ts == null) {
@@ -1272,7 +1273,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
-                symtab.registerVar(var.getName(), (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+                symtab.registerVar(var.getName(), (new TypeStructRef(caseExpr, false, tsr.getTypeParams())).addDefaultPkg(pkg, nres));
 
                 Statement body = procStatement(stmt.getBody(caseExpr));
                 newStmt.addCaseBlock(caseExpr, body);

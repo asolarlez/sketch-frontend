@@ -1,0 +1,90 @@
+
+adt Tree<T>{
+    Node{ T val; Tree<T> left; Tree<T> right; }
+    Nil{}
+}
+
+
+Tree<T> add<T>(Tree<T> t, T val, fun lt, fun eq){
+    Tree<T> nil = new Nil<T>();
+    switch(t){
+    case Nil:
+        return new Node<T>(val=val, left=nil, right=nil);
+    case Node:{
+        if(eq(t.val, val)){
+            return t;
+        }
+        if(lt(t.val, val)){
+            return new Node<T>(val=t.val, left=t.left, right = add(t.right, val, lt, eq));
+        }else{
+            return new Node<T>(val=t.val, left=add(t.left, val, lt, eq), right = t.right);
+        }
+      }
+    }
+}
+
+T get<T>(Tree<T> t, T val, fun lt, fun eq, T deflt){
+    switch(t){
+    case Nil:
+        return deflt;
+    case Node:{
+        if(eq(t.val, val)){
+            return t.val;
+        }
+        if(lt(t.val, val)){
+            return get(t.right, val, lt, eq, deflt);
+        }else{
+            return get(t.left, val, lt, eq, deflt);
+        }
+      }
+    }
+}
+
+
+
+harness void main(int x, int y, int z, int oth){
+    generator bit lt(int a, int b){ return a < b; }
+    generator bit eq(int a, int b){ return a == b; }
+    Tree<int> t = new Nil<int>();
+    t = add(t, x, lt, eq);
+    t = add(t, y, lt, eq);
+    t = add(t, z, lt, eq);
+    assert get(t, x, lt, eq, -1) == x;
+    assert get(t, y, lt, eq, -1) == y;
+    assert get(t, z, lt, eq, -1) == z;
+    if(get(t, oth, lt, eq, -1) == oth){
+        assert oth == x || oth == y || oth == z;
+    }
+}
+
+adt opt{
+    pair{int x; int y;}
+    none{}
+}
+
+
+harness void main2(int x, int y, int z, int oth){
+    
+    generator bit lt(opt a, opt b){ 
+        switch(a){
+        case pair:{
+            switch(b){
+            case pair: return a.x < b.x || (a.x == b.x && a.y < b.y);
+            case none: return false;
+            }        
+        }
+        case none:
+            return false;
+        }
+    }
+    generator bit eq(opt a, opt b){ 
+        return a == b;        
+    }
+    Tree<opt> t = new Nil<pair>();
+    t = add(t, new pair(x=x, y=x), lt, eq);
+   t = add(t, new pair(x=y, y=y), lt, eq);
+    t = add(t, new pair(x=x, y=z), lt, eq);
+    assert get(t, new pair(x=x, y=x), lt, eq, new none()) == new pair(x=x, y=x);
+    assert get(t, new pair(x=y, y=y), lt, eq, new pair(x=-1, y=-1)) == new pair(x=y, y=y);
+    
+}

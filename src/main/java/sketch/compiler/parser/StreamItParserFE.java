@@ -1143,8 +1143,10 @@ inputState.guessing--;
 				{
 					innerList=adt_decl();
 					if ( inputState.guessing==0 ) {
-						innerStruct = innerList.get(0); innerStruct.setParentName(id.getText());
-							adtList.addAll(innerList);
+						innerStruct = innerList.get(0); 
+												  innerStruct.setParentName(id.getText());
+												  innerStruct.setTypeargs(typeargs);
+												  adtList.addAll(innerList);
 					}
 					break;
 				}
@@ -1160,7 +1162,9 @@ inputState.guessing--;
 					if ((LA(1)==ID) && (LA(2)==LCURLY)) {
 						innerStruct=structInsideADT_decl();
 						if ( inputState.guessing==0 ) {
-							innerStruct.setParentName(id.getText()); adtList.add(innerStruct);
+							innerStruct.setParentName(id.getText()); 
+																	innerStruct.setTypeargs(typeargs);
+																	adtList.add(innerStruct);
 						}
 					}
 					else if ((_tokenSet_11.member(LA(1))) && (_tokenSet_12.member(LA(2)))) {

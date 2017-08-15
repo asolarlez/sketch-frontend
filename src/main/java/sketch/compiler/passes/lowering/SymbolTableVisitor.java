@@ -373,6 +373,9 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
     public Object visitStmtSwitch(StmtSwitch stmt) {
+
+        TypeStructRef vtype = (TypeStructRef) getType(stmt.getExpr());
+
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
         ExprVar var = (ExprVar) stmt.getExpr().accept(this);
@@ -391,7 +394,7 @@ public class SymbolTableVisitor extends FEReplacer
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
                 symtab.registerVar(var.getName(),
-                        (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+                        (new TypeStructRef(caseExpr, false, vtype.getTypeParams())).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);
