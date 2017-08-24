@@ -55,6 +55,13 @@ public class TypeStructRef extends Type
         this.isUnboxed = isUnboxed;
     }
 
+    public TypeStructRef(CudaMemoryType typ, String name, boolean isUnboxed, List<Type> params) {
+        super(typ);
+        this.name = name;
+        this.isUnboxed = isUnboxed;
+        this.params = params;
+    }
+
     public TypeStructRef(String name, boolean isUnboxed, List<Type> params) {
         super(CudaMemoryType.UNDEFINED);
         this.name = name;
@@ -138,7 +145,7 @@ public class TypeStructRef extends Type
 
     @Override
     public Type withMemType(CudaMemoryType memtyp) {
-        return new TypeStructRef(memtyp, name, isUnboxed);
+        return new TypeStructRef(memtyp, name, isUnboxed, params);
     }
 
     @Override

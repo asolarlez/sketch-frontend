@@ -108,6 +108,8 @@ public class CleanupFinalCode extends MetaStage {
 
         prog = (Program) prog.accept(new AssembleInitializers());
 
+        prog = (Program) prog.accept(new FlattenStmtBlocks());
+
         return prog;
     }
 }

@@ -279,6 +279,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
 
         genEqualsBody(ctx, new ExprVar(ctx, left), new ExprVar(ctx, right), new ExprVar(ctx, bnd), structName, struct.getPkg(), stmts, type);
         fc.body(new StmtBlock(stmts));
+        fc.annotation("IsEquals", "");
         newFuns.add(fc.create());
         return fname;
     }
@@ -441,7 +442,10 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         for (StructFieldEnt e : struct.getFieldEntriesInOrder()) {
             Expression l = new ExprField(left, e.getName());
             Expression r = new ExprField(right, e.getName());
-            Type type = (Type) e.getType().accept(trep);
+            Type type = e.getType();
+            if (rmap != null) {
+                type = (Type) type.accept(trep);
+            }
             Expression fieldEq =
                     checkFieldEqual(context, l, r, type, caseBody, pkgName, bnd, left);
 

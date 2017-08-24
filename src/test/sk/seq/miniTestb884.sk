@@ -1,4 +1,4 @@
-pragma options "--debug-show-dag";
+
 adt List<T>{
     cons{ T val; List<T> next; }
     nil{}

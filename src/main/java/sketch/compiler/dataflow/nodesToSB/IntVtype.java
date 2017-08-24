@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -251,8 +252,29 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() == v2.getIntVal() );
 		}else{
-            return BOTTOM(opStr(v1, v2, "=="), true);
+            IntAbsValue iav1 = (IntAbsValue) v1;
+            IntAbsValue iav2 = (IntAbsValue) v2;
+            if (iav1.hasValue() && iav2.hasValue()) {
+                Map<String, Map<String, abstractValue>> cases1 = iav1.getADTcases();
+                Map<String, Map<String, abstractValue>> cases2 = iav2.getADTcases();
+                if (cases1.size() == 1 && cases2.size() == 1) {
+                    Entry<String, Map<String, abstractValue>> e1 = cases1.entrySet().iterator().next();
+                    Entry<String, Map<String, abstractValue>> e2 = cases2.entrySet().iterator().next();
+                    if (!e1.getKey().equals(e2.getKey())) {
+                        return CONST(false);
+                    }
+                    abstractValue rv = CONST(true);
+                    Map<String, abstractValue> e2map = e2.getValue();
+                    for (Entry<String, abstractValue> fields1 : e1.getValue().entrySet()) {
+                        if (e2map.containsKey(fields1.getKey())) {
+                            rv = and(rv, eq(e2map.get(fields1.getKey()), fields1.getValue()));
+                        }
+                    }
+                    return rv;
+                }
+            }
 		}
+        return BOTTOM(opStr(v1, v2, "=="), true);
 	}
 
     public abstractValue tupleacc(abstractValue arr, abstractValue idx) {
@@ -374,6 +396,12 @@ public class IntVtype extends abstractValueType {
 		if(v1.isBottom() ){
 			return v1;
 		}
+
+        IntAbsValue iav = (IntAbsValue) v1;
+        if (iav.type == IntAbsValue.ADTNODE) {
+            return v1;
+        }
+
         return BOTTOM(type.toString());
 	}
 

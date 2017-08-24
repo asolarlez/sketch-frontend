@@ -518,7 +518,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
 
         
-        prog.debugDump("********************************************* Before remove lambda expression");
+        // prog.debugDump("********************************************* Before
+        // remove lambda expression");
         if (false) {
 
             prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));

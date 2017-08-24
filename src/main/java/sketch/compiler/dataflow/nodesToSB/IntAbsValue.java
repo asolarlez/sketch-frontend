@@ -12,7 +12,7 @@ public class IntAbsValue extends abstractValue {
 	public static final int BOTTOM = 0;
 	public static final int INT = 1;
 	public static final int LIST = 2;
-    private static final int ADTNODE = 3;
+    public static final int ADTNODE = 3;
 
 	protected int type;
 	protected Object obj;
