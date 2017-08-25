@@ -1,0 +1,12 @@
+
+package A{
+    int f(int x);
+}
+
+package B{
+    int f(int x);
+    
+    harness void main(int x){
+        assert f@B(x) == f@A(x); // TypeError This should fail because the two fs are different functions.
+    }
+}
