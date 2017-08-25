@@ -6007,6 +6007,11 @@ inputState.guessing--;
 				}
 				if ( inputState.guessing==0 ) {
 					if(n1 != null){
+						if (n1 instanceof ExprConstFloat && n2 != null && n2 instanceof ExprConstFloat) {
+							double val1 = ((ExprConstFloat) n1).getVal();
+							double val2 = ((ExprConstFloat) n2).getVal();
+							x = new ExprStar(getContext(t2), val1, val2);
+						} else {
 						Integer in1 = n1.getIValue();
 						  if(n2 == null){            	  	
 						  	x = new ExprStar(getContext(t2),in1);
@@ -6014,9 +6019,11 @@ inputState.guessing--;
 						  	Integer in2 = n2.getIValue();
 						  	x = new ExprStar(getContext(t2),in1, in2);
 						  } 
+						}
 						}else{
 						  x = new ExprStar(getContext(t2)); 
 						}
+						
 					
 				}
 				break;

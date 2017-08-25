@@ -1178,6 +1178,11 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             { x = new ExprStar(getContext(t1)); }
     |   t2:NDVAL2 (LPAREN n1=addExpr (COMMA n2=addExpr)? RPAREN)?
             {  if(n1 != null){
+            	if (n1 instanceof ExprConstFloat && n2 != null && n2 instanceof ExprConstFloat) {
+            		double val1 = ((ExprConstFloat) n1).getVal();
+            		double val2 = ((ExprConstFloat) n2).getVal();
+            		x = new ExprStar(getContext(t2), val1, val2);
+            	} else {
             	Integer in1 = n1.getIValue();
             	  if(n2 == null){            	  	
             	  	x = new ExprStar(getContext(t2),in1);
@@ -1185,9 +1190,11 @@ constantExpr returns [Expression x] { x = null; Expression n1=null, n2=null;}
             	  	Integer in2 = n2.getIValue();
             	  	x = new ExprStar(getContext(t2),in1, in2);
             	  } 
+            	}
             	}else{
             	  x = new ExprStar(getContext(t2)); 
             	}
+            	
             }
     |	t3:NDANGELIC
 			{x = new ExprStar(getContext(t3), Kind.ANGELIC); }

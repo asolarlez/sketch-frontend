@@ -105,6 +105,10 @@ public class NtsbVtype extends IntVtype {
 					if (star.special()) {
 						rval += " *>";
 					} else {
+						if (star.hasRange()) {
+							rval += " " + star.fLowerBound() + " "
+									+ star.fUpperBound();
+						}
 						rval += " $> ";
 					}
 				} else {

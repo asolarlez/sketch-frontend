@@ -42,6 +42,8 @@ public class ExprStar extends Expression
 	private int size;
     private int rangelow;
     private int rangehigh;
+	private double frangelow;
+	private double frangehigh;
     private boolean hasrange = false;
 
 	public Expression vectorSize;
@@ -77,6 +79,8 @@ public class ExprStar extends Expression
         vectorSize = old.vectorSize;
         rangelow = old.rangelow;
         rangehigh = old.rangehigh;
+		frangelow = old.frangelow;
+		frangehigh = old.frangehigh;
         hasrange = old.hasrange;
         this.starName = old.starName;
         this.kind = old.kind;
@@ -96,6 +100,8 @@ public class ExprStar extends Expression
         vectorSize = old.vectorSize;
         rangelow = old.rangelow;
         rangehigh = old.rangehigh;
+		frangelow = old.frangelow;
+		frangehigh = old.frangehigh;
         hasrange = old.hasrange;
         this.starName = old.starName;
         this.kind = old.kind;
@@ -205,6 +211,17 @@ public class ExprStar extends Expression
         hasrange = true;
         this.starName = HOLE_BASE + (NEXT_UID++);
     }
+
+	public ExprStar(FEContext context, double rstart, double rend) {
+		super(context);
+		isFixed = true;
+		isGlobal = false;
+		this.size = 1;
+		frangelow = rstart;
+		frangehigh = rend;
+		hasrange = true;
+		this.starName = HOLE_BASE + (NEXT_UID++);
+	}
 
     @Deprecated
     public ExprStar(FEContext ctx, Type typ, int domainsize) {
@@ -371,6 +388,14 @@ public class ExprStar extends Expression
     public int upperBound() {
         return this.rangehigh;
     }
+
+	public double fLowerBound() {
+		return this.frangelow;
+	}
+
+	public double fUpperBound() {
+		return this.frangehigh;
+	}
 
 	public void makeSpecial() {
 		isSpecial = true;
