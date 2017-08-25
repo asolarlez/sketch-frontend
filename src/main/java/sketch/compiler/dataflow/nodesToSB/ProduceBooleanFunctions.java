@@ -72,6 +72,12 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             recordFixes(current);
         }
 
+        public void registerUninterp(Function current) {
+            assert !functionHoles.containsKey(current.getName());
+            functionHoles.put(current.getFullName(), new HashSet<String>());
+            functionCalls.put(current.getFullName(), new HashSet<String>());
+        }
+
         public Set<String> getFixes(String name) {
             if (fixes.containsKey(name)) {
                 return fixes.get(name);
@@ -84,7 +90,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
 
         public void regCall(ExprFunCall efc) {
-            functionCalls.get(current.getFullName()).add(efc.getName());
+            functionCalls.get(current.getFullName()).add(nres.getFunName(efc.getName()));
         }
 
         public void regHole(ExprStar hole) {
@@ -772,6 +778,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 if (f.getSpecification() != null) {
                     mainfuns.add(f.getName());
                     mainfuns.add(f.getSpecification());
+                }
+                if (f.isUninterp()) {
+                    fhtrack.registerUninterp(f);
                 }
             }
         }

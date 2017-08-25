@@ -254,7 +254,7 @@ public class IntVtype extends abstractValueType {
 		}else{
             IntAbsValue iav1 = (IntAbsValue) v1;
             IntAbsValue iav2 = (IntAbsValue) v2;
-            if (iav1.hasValue() && iav2.hasValue()) {
+            if (iav1.hasASTVal() && iav2.hasASTVal()) {
                 Map<String, Map<String, abstractValue>> cases1 = iav1.getADTcases();
                 Map<String, Map<String, abstractValue>> cases2 = iav2.getADTcases();
                 if (cases1.size() == 1 && cases2.size() == 1) {

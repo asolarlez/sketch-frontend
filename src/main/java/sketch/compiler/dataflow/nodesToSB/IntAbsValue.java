@@ -133,6 +133,10 @@ public class IntAbsValue extends abstractValue {
         return v;
     }
 
+    public boolean hasASTVal() {
+        return type == ADTNODE && knownCases != null;
+    }
+
 	public boolean hasValue() {
         if (type == BOTTOM) {
             return false;

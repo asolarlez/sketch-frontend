@@ -232,7 +232,7 @@ public class ArrFunction{
 		Statement body=new StmtBlock(stmts);
 
         return Function.creator(body, getFullName(), FcnType.Static).returnType(arrType).params(
-                params).body(body).create();
+                params).body(body).pkg("ANONYMOUS").create();
 	}
 
 	/**

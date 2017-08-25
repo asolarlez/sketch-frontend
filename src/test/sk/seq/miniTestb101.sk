@@ -1,4 +1,4 @@
-int infun(int i, int j); /* Uninterpreted function.*/ /* automatically rewritten */
+int infun(int i, int j); /* Uninterpreted function.*/ 
 
 int test(int i, int j){
   if( i > 8){

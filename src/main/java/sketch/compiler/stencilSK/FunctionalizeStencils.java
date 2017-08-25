@@ -3,9 +3,17 @@ package sketch.compiler.stencilSK;
 import java.util.*;
 import java.util.Map.Entry;
 
-import sketch.compiler.ast.core.*;
+import sketch.compiler.ast.core.FEContext;
+import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.FieldDecl;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Function.FcnType;
+import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
+import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -373,7 +381,7 @@ public class FunctionalizeStencils extends FEReplacer {
 			
             Function fun =
                     f.creator().returnType(TypePrimitive.voidtype).params(driverParams).body(
-                            new StmtBlock(lst)).type(FcnType.Generator).create();
+                            new StmtBlock(lst)).pkg("ANONYMOUS").type(FcnType.Generator).create();
 			functions.add(fun);
 		}
 		return prog;
@@ -596,7 +604,7 @@ public class FunctionalizeStencils extends FEReplacer {
 
                         Function ufun =
                                 Function.creator(func, param.getName(), FcnType.Uninterp).returnType(
-                                        ptype).params(fparams).create();
+                                        ptype).params(fparams).pkg("ANONYMOUS").create();
 
 						inVars.put(param.getName(), ufun);
 						/////////////////
