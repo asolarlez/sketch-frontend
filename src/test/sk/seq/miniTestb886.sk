@@ -137,6 +137,8 @@ generator AST c(int i){ return new Const(n=i, id=ID++); }
 void print(AST n){}
 
 void foo(){
+    set = new Nil<AST>(); 
+    
     AST a1 = c(5);
     AST a2 = c(6);
     AST p = plus(a1, a2);
@@ -144,12 +146,20 @@ void foo(){
     if(((Const)a1).n + ((Const)a2).n == 11){
         print(null);
     }
+    
+    AST t1 = mm(c(5));
+    AST t2 = mm(c(5));
+    if(((Const)t1).n == ((Const)t2).n){
+        print(t1);
+    }
+    set = new Nil<AST>();
 }
 
 harness void main(){
     
-    set = new Nil<AST>(); //TypeError
     
+    
+    set = new Nil<AST>(); 
     AST n1 = mm(plus(mm(plus(mm(c(5)), mm(c(7)))), c(8)));
     AST n2 = mm(plus(mm(plus(mm(c(5)), mm(c(7)))), c(2)));
     
