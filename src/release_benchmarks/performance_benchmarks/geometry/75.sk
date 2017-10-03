@@ -1,0 +1,42 @@
+pragma options "--bnd-unroll-amnt 4 --bnd-arr1d-size 2 --bnd-arr-size 2 --bnd-int-range -1  --bnd-mbits 5";
+
+#define USEPRIOR    
+#define HAVETHISREFLECTIONALREADY 0
+#define XCOEFFICIENTS 
+#define YCOEFFICIENTS 
+#define PROVIDEDXCOEFFICIENTS 0
+#define PROVIDEDYCOEFFICIENTS 0
+#define XVALIDATION ( x == 1 || x == 2 || x == 4 || x == 5 || x == 6 || x == 8 || x == 9 || x == 10 || x == 12 || x == 13 )
+#define YVALIDATION ( x == 1 || x == 2 || x == 4 || x == 5 )
+#define COEFFICIENTVALIDATOR1 ( c == 1 || c == 3 || c == 4 || c == 5 || c == 7 || c == 8 || c == 9 || c == 11 || c == 12 || c == -12 || c == -11 || c == -9 || c == -8 || c == -7 || c == -5 || c == -4 || c == -3 || c == -1 )
+#define COEFFICIENTVALIDATOR2 ( c == 1 || c == 3 || c == 4 || c == -4 || c == -3 || c == -1 )
+#define MAXIMUMLOOPITERATIONS 4
+#define MAXIMUMXCOORDINATE 14
+#define MAXIMUMYCOORDINATE 6
+#define HASCIRCLES 1
+#define HASRECTANGLES 0
+#define HASLINES 1
+#define HASSOLID 1
+#define HASDASHED 0
+#define HASARROW 1
+#define HASNOARROW 0
+#define NODIAGONALS 1
+
+#define COSTUPPERBOUND 15
+
+#include "common.skh"
+bit renderSpecification(SHAPEVARIABLES) {
+  assume shapeIdentity == CIRCLE || shapeIdentity == LINE || shapeIdentity == RECTANGLE;
+  if (!HASCIRCLES) assume shapeIdentity != CIRCLE;
+  if (!HASRECTANGLES) assume shapeIdentity != RECTANGLE;
+  if (!HASLINES) assume shapeIdentity != LINE;
+  else {
+    if (!HASSOLID) assume dashed;
+    if (!HASDASHED) assume !dashed;
+    if (!HASARROW) assume !arrow;
+    if (!HASNOARROW) assume arrow;
+  }
+  return _l(10,5,12,5,0,1) || _c(9,1) || _l(9,4,9,2,0,1) || _l(6,5,8,5,0,1) || _c(5,1) || _c(1,1) || _l(2,5,4,5,0,1) || _c(1,5) || _c(13,1) || _c(5,5) || _c(9,5) || _l(5,4,5,2,0,1) || _c(13,5) || _l(13,4,13,2,0,1) || _l(1,4,1,2,0,1);
+}
+
+

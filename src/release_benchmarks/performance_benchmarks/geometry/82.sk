@@ -1,0 +1,41 @@
+pragma options "--bnd-unroll-amnt 4 --bnd-arr1d-size 2 --bnd-arr-size 2 --bnd-int-range -1  --bnd-mbits 5";
+
+#define USEPRIOR    
+#define HAVETHISREFLECTIONALREADY 0
+#define XCOEFFICIENTS 
+#define YCOEFFICIENTS 
+#define PROVIDEDXCOEFFICIENTS 0
+#define PROVIDEDYCOEFFICIENTS 0
+#define XVALIDATION ( x == 1 || x == 10 || x == 13 || x == 7 )
+#define YVALIDATION ( x == 1 || x == 10 || x == 4 || x == 7 )
+#define COEFFICIENTVALIDATOR1 ( c == 3 || c == 6 || c == 9 || c == 12 || c == -12 || c == -9 || c == -6 || c == -3 )
+#define COEFFICIENTVALIDATOR2 ( c == 3 || c == 6 || c == 9 || c == -9 || c == -6 || c == -3 )
+#define MAXIMUMLOOPITERATIONS 4
+#define MAXIMUMXCOORDINATE 14
+#define MAXIMUMYCOORDINATE 11
+#define HASCIRCLES 1
+#define HASRECTANGLES 0
+#define HASLINES 0
+#define HASSOLID 0
+#define HASDASHED 0
+#define HASARROW 0
+#define HASNOARROW 0
+#define NODIAGONALS 1
+
+#define COSTUPPERBOUND 13
+
+#include "common.skh"
+bit renderSpecification(SHAPEVARIABLES) {
+  assume shapeIdentity == CIRCLE || shapeIdentity == LINE || shapeIdentity == RECTANGLE;
+  if (!HASCIRCLES) assume shapeIdentity != CIRCLE;
+  if (!HASRECTANGLES) assume shapeIdentity != RECTANGLE;
+  if (!HASLINES) assume shapeIdentity != LINE;
+  else {
+    if (!HASSOLID) assume dashed;
+    if (!HASDASHED) assume !dashed;
+    if (!HASARROW) assume !arrow;
+    if (!HASNOARROW) assume arrow;
+  }
+  return _c(10,4) || _c(1,10) || _c(1,4) || _c(7,7) || _c(7,1) || _c(10,7) || _c(1,1) || _c(1,7) || _c(7,4) || _c(13,7) || _c(7,10) || _c(10,10) || _c(13,10);
+}
+
