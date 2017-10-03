@@ -7,7 +7,7 @@
     <name>SKETCH compiler frontend</name>
     <description>SKETCH compiler frontend, responsible for AST lowering
         and optimization</description>
-    <version>1.7.55555</version>
+    <version>1.7.5</version>
     <url>http://sketch1.csail.mit.edu</url>
 
     <properties>
