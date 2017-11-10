@@ -35,6 +35,7 @@ import sketch.util.datastructures.HashmapList;
 import sketch.util.datastructures.ImmutableTypedHashMap;
 import sketch.util.datastructures.ObjPairBase;
 import sketch.util.datastructures.TypedHashMap;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * A hetereogeneous structure type. This type has a name for itself, and an ordered list
@@ -274,11 +275,13 @@ annotations);
         this.parentName = parentName;
         this.isInstantiable = isInstantiable;
         this.fieldTypMap = map.immutable();
-        assert fieldOrder.size() == fieldTypMap.size();
         this.annotations = annotations;
         this.typeargs = typeargs;
         if (this.hasAnnotation("Immutable"))
             this.immutable = true;
+        if (fieldOrder.size() != fieldTypMap.size()) {
+            throw new ExceptionAtNode("You seem to have multiple fields with the same name", this);
+        }
     }
 
 
