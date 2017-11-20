@@ -186,7 +186,7 @@ class ReplaceDynamicComparisons extends FEReplacer {
 					newVar, newExp), new StmtAssign(exp, newVar, new ExprUnary(
 					exp, ExprUnary.UNOP_NOT, newExp)));
 			addStatement(s);
-			addStatement(new StmtAssert(exp, newVar, false));
+			addStatement(new StmtAssert(exp, newVar, 2));
 			// Add this above assert before the statement containing the actual
 			// expression.
 			return newBool;
@@ -201,7 +201,7 @@ public class PreprocessForLoop extends SymbolTableVisitor {
 	TempVarGen varGen;
 
 	double it_incr = 0.1;
-	int MAX_NUM_MODES = 5;
+	int MAX_NUM_MODES = 1;
 
 	public PreprocessForLoop(TempVarGen varGen, SketchOptions options) {
 		super(null);
@@ -308,7 +308,11 @@ public class PreprocessForLoop extends SymbolTableVisitor {
 						Expression cond = new ExprBinary(stmt,
 								ExprBinary.BINOP_GT, switchVar,
 								ExprConstFloat.ZERO);
-						StmtAssert as = new StmtAssert(stmt, cond, "First switch variable should be greater than 0", false);
+						StmtAssert as = new StmtAssert(
+								stmt,
+								cond,
+								"First switch variable should be greater than 0",
+								2);
 						addStatement(as);
 					} else {
 						// This switch var should be greater than prev switch
@@ -320,7 +324,7 @@ public class PreprocessForLoop extends SymbolTableVisitor {
 								switchVars.get(i - 1));
 						StmtAssert as = new StmtAssert(stmt, cond, "Switch "
 								+ i + " should be greater that switch "
-								+ (i - 1), false);
+								+ (i - 1), 2);
 						addStatement(as);
 					}
 					// Final switch should be less than numiterations
@@ -330,7 +334,7 @@ public class PreprocessForLoop extends SymbolTableVisitor {
 								new ExprConstFloat(maxFloatItVar));
 						StmtAssert as = new StmtAssert(stmt, cond, "Switch "
 								+ i + " should be less than " + maxFloatItVar,
-								false);
+								2);
 						addStatement(as);
 					}
 				}

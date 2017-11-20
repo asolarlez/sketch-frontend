@@ -64,6 +64,10 @@ abstract public class Expression extends FENode
     	return null;
     }
 
+	public Float getFValue() {
+		return null;
+	}
+
     /** Returns true iff this expression is a constant. */
     public boolean isConstant () {
     	return false;

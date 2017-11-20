@@ -120,6 +120,39 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Don't optimize using specification")
     public boolean unoptimized = false;
 
+	@CliParameter(help = "Enable transformation of for loops based on modal changes")
+	public boolean forLoopTransform = false;
+
+	@CliParameter(help = "Set the numerical solver interaction mode")
+	public String numSolverMode = "ONLY_SMOOTHING";
+
+	@CliParameter(help = "Use snopt for the numerical solver")
+	public boolean useSnopt = false;
+
+	@CliParameter(help = "Use eager iteraction between the SAT solver and the numerical solver")
+	public boolean useEager = false;
+
+	@CliParameter(help = "Relax boolean holes with floats in range [0,1]")
+	public boolean relaxBoolHoles = false;
+
+	@CliParameter(help = "Number of times numerical solver should be run for each iteration")
+	public int numTries = 1;
+
+	@CliParameter(help = "Disable sat suggestions")
+	public boolean disableSatSug = false;
+
+	@CliParameter(help = "Disable unsat suggestions")
+	public boolean disableUnsatSug = false;
+
+	@CliParameter(help = "Conflict cutoff")
+	public int conflictCutoff = 1;
+
+	@CliParameter(help = "Number of restarts allowed with soft conflicts")
+	public int maxRestarts = 10;
+
+	@CliParameter(help = "Cost option for relaxing boolean holes")
+	public int costOption = 1;
+
     public enum ReorderEncoding {
         exponential, quadratic
     }

@@ -111,6 +111,10 @@ public class ExprConstFloat extends ExprConstant
      */
     public double getVal() { return val; }
 
+	public Float getFValue() {
+		return new Float(val);
+	}
+
     /** Accept a front-end visitor. */
     public Object accept(FEVisitor v)
     {

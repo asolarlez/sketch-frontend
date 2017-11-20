@@ -269,6 +269,24 @@ public class ExprBinary extends Expression
         return null;
     }
 
+	public Float getFValue() {
+		Float ivI = getLeft().getFValue();
+		Float rvI = getRight().getFValue();
+		if (ivI != null && rvI != null) {
+			float lv = ivI.floatValue();
+			float rv = rvI.floatValue();
+			switch (op) {
+			case ExprBinary.BINOP_ADD:
+				return new Float(lv + rv);
+			case ExprBinary.BINOP_SUB:
+				return new Float(lv - rv);
+			case ExprBinary.BINOP_DIV:
+				return new Float(lv / rv);
+			}
+		}
+		return null;
+	}
+
     public String getOpString(){
         String theOp;
         switch (op)
