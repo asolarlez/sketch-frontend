@@ -13,7 +13,7 @@ public class EliminateHugeArrays extends FEReplacer {
         Expression len = t.getLength();
         if (len != null) {
             Integer lv = len.getIValue();
-            if (lv != null && lv > 64) {
+			if (lv != null && lv > 1000) {
                 len = null;
             }
         }
