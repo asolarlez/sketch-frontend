@@ -329,6 +329,9 @@ annotations);
 
     public void setImmutable() {
         immutable = true;
+        if (!annotations.containsKey("Immutable")) {
+            annotations.append("Immutable", new Annotation(this.getContext(), "Immutable", ""));
+        }
     }
     /**
      * Returns the number of fields.
