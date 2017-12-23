@@ -1,0 +1,250 @@
+
+
+#define SHAPEVARIABLES int shapeIdentity, int cx, int cy, int lx1, int ly1, int lx2, int ly2, bit dashed, bit arrow, int rx1, int ry1, int rx2, int ry2
+#define SHAPEARGUMENTS shapeIdentity,cx,cy,lx1,ly1,lx2,ly2,dashed,arrow,rx1,ry1,rx2,ry2
+#define CIRCLE 0
+#define LINE 1
+#define RECTANGLE 2
+#define LOOP 3
+#define REFLECT 4
+
+void dummyStartLoop() {}
+void dummyEndLoop() {}
+void dummyStartReflection(int x,int y) {}
+void dummyEndReflection() {}
+void dummyStartBoundary() {}
+void dummyEndBoundary() {}
+
+int [n + 1] push([int n], int [n] environment, int j) {
+  int [n + 1] ep = environment;
+  ep[n] = j;
+  return ep;
+}
+
+int validateY(int x) {
+  assert x >= 0 && x <= MAXIMUMYCOORDINATE;
+  assert YVALIDATION ;
+  return x;
+}
+int validateX(int x) {
+  assert x >= 0 && x <= MAXIMUMXCOORDINATE;
+  assert XVALIDATION ;
+  return x;
+}
+
+#define _c(x,y) (shapeIdentity == CIRCLE && cx == x && cy == y)
+#define _l(x1,y1,x2,y2,d,a) (shapeIdentity == LINE && x1 == lx1 && y1 == ly1 && x2 == lx2 && y2 == ly2 && d == dashed && a == arrow)
+#define _r(x1,y1,x2,y2) (shapeIdentity == RECTANGLE && x1 == rx1 && y1 == ry1 && x2 == rx2 && y2 == ry2)
+
+generator int number() { return {| 0 (+|-) ?? |}; }
+
+generator int x_expression([int n,int m], int[n] environment, int[m] coefficients, ref int cost) {
+  cost = 0;
+  if (??) return ??;
+  return {| coefficients[0] | coefficients[1] XCOEFFICIENTS |} * {| environment[0] | environment[1] |} + number();
+}
+generator int y_expression([int n,int m], int[n] environment, int[m] coefficients, ref int cost) {
+  cost = 0;
+  if (??) return ??;
+  return {| coefficients[0] | coefficients[1] YCOEFFICIENTS |} * {| environment[0] | environment[1] |} + number();
+}
+
+generator int bound_expression([int n], int[n] environment, ref int cost) {
+  cost = 0;
+  if (??) {
+    int b = ??;
+    assert b > 1;
+    if (b == 2) cost += 1;
+    return b;
+  }
+  return ?? * {| environment[0] | environment[1] |} + ??;
+}
+
+// blocks are sequences of commands; can also introduce local variables.
+generator bit block([int n,int m1,int m2], SHAPEVARIABLES , int[n] environment,int [m1] coefficients1, int [m2] coefficients2,  int d, ref int cost, bit can_loop){
+  assert d > 0;
+  
+  cost = 0;
+  bit hit = 0;
+  int identity = 0;
+  bit newHit;
+  int newCost,newIdentity;
+
+  repeat(??) {
+    newHit = primitive(SHAPEARGUMENTS, environment, coefficients1, coefficients2, d, newCost, newIdentity);
+    assert newIdentity >= identity;
+    identity = newIdentity;
+    cost += newCost;
+    hit = hit || newHit;
+  }
+  
+  if (??) {
+    dummyStartLoop();
+    hit = hit || iterator(SHAPEARGUMENTS, environment, coefficients1, coefficients2, d, newCost, newIdentity, can_loop);
+    dummyEndLoop();
+    cost += newCost;
+  }
+  
+  if (??) {
+    hit = hit || reflection(SHAPEARGUMENTS, environment, coefficients1, coefficients2,  d, newCost, newIdentity, can_loop);
+    cost += newCost;
+  }
+  return hit;
+}
+
+generator bit iterator([int n,int m1,int m2], SHAPEVARIABLES , int[n] environment, int [m1] coefficients1, int [m2] coefficients2, int d, ref int cost, ref int identity, bit can_loop) {
+  assert can_loop;
+  assert d > 0;
+  bit hit = 0;
+  identity = LOOP;
+    
+  int loop_bound_cost = 0,loop_body_cost,boundary_cost = 0;
+  int loop_bound = bound_expression(environment, loop_bound_cost);
+  for (int j = 0; j < loop_bound; j++) {
+    assert j < MAXIMUMLOOPITERATIONS;
+    if (j > 0 && ({| environment[0] | 1 |} > 0) && ??){
+      dummyStartBoundary();
+      hit = hit || block(SHAPEARGUMENTS,push(environment,j),coefficients1,coefficients2,d - 1, boundary_cost, 0);
+      dummyEndBoundary();
+    }
+    
+    hit = hit || block(SHAPEARGUMENTS,push(environment,j),coefficients1,coefficients2,d - 1, loop_body_cost, 1);
+  }
+  assert loop_body_cost != 0;
+  cost = loop_body_cost + loop_bound_cost + boundary_cost + 1;
+  return hit;
+}
+
+generator bit primitive([int n,int m1,int m2], SHAPEVARIABLES , int[n] environment, int [m1] coefficients1, int [m2] coefficients2, int d, ref int cost, ref int identity) {
+  assert d > 0;
+  
+  bit hit = 0;
+  cost = 1;
+  int xc,yc;
+  int x = validateX(x_expression(environment, coefficients1, xc));
+  int y = validateY(y_expression(environment, coefficients2, yc));
+  cost += (xc + yc);
+  if (??) { // draw a circle
+    assert HASCIRCLES;
+    identity = CIRCLE;
+    hit = _c(x,y);
+  } else {  // draw a line or rectangle
+    int x2 = validateX(x_expression(environment, coefficients1, xc));
+    int y2 = validateY(y_expression(environment, coefficients2, yc));
+    cost += (xc + yc);
+    if (??) {
+      assert HASLINES;
+      bit da = ??;
+      if (!HASSOLID) da = 1; // we don't have anything that is solid so it must be forced to be --
+      if (!HASDASHED) da = 0;// ditto
+      bit ar = ??;
+      if (!HASARROW) ar = 0;
+      if (!HASNOARROW) ar = 1;
+      hit = _l(x,y,x2,y2,da,ar);
+
+      if (NODIAGONALS) assert x == x2 || y == y2;
+      identity = LINE;
+    } else {
+      assert HASRECTANGLES;
+      identity = RECTANGLE;
+      hit = _r(x,y,x2,y2);
+    }
+  }
+  return hit;
+}
+
+generator bit reflection([int n,int m1,int m2], SHAPEVARIABLES , int[n] environment, int [m1] coefficients1, int [m2] coefficients2, int d, ref int cost, ref int identity, bit can_loop) {
+  assert d > 0;
+  bit hit = 0;
+  
+  identity = REFLECT;
+  int yr = ??; // y axis of reflection, multiplied by 2
+  int xr = ??;
+  assert yr == 0 || xr == 0;
+  assert !(yr == 0 && xr == 0);
+  int reflection_cost;
+
+  dummyStartReflection(xr,yr);
+	
+  // loop wrapper around the generator to make it only be called once
+  for (int reflectionIndex = 0; reflectionIndex < 2; reflectionIndex++) {
+    if (reflectionIndex == 1) {
+      // Reflected case
+
+      // reflection of a point is easy
+      cy = yr == 0 ? cy : yr - (cy - 0);
+      cx = xr == 0 ? cx : xr - (cx - 0);
+
+      int rectangleHeight = ry2 - ry1;
+      int rectangleWidth = rx2 - rx1;
+      ry1 = yr == 0 ? ry1 : yr - (ry1 - 0) - rectangleHeight;
+      ry2 = yr == 0 ? ry2 : yr - (ry2 - 0) + rectangleHeight;
+      rx1 = xr == 0 ? rx1 : xr - (rx1 - 0) - rectangleWidth;
+      rx2 = xr == 0 ? rx2 : xr - (rx2 - 0) + rectangleWidth;
+
+      if (arrow) { // arrow implies that there is no canonical orientation
+	ly1 = yr == 0 ? ly1 : yr - (ly1 - 0);
+	ly2 = yr == 0 ? ly2 : yr - (ly2 - 0);
+	lx1 = xr  == 0? lx1 : xr - (lx1 - 0);
+	lx2 = xr == 0 ? lx2 : xr - (lx2 - 0);
+      } else { // reflect while preserving canonical orientation
+	int _ly1 = ly1;
+	int _ly2 = ly2;
+	int _lx1 = lx1;
+	int _lx2 = lx2;
+	  
+	if (lx2 == lx1) { // vertical line: canonical determined by y
+	  ly1 = yr == 0 ? ly1 : yr - (_ly2 - 0);
+	  ly2 = yr == 0 ? ly2 : yr - (_ly1 - 0);
+	} else { // arbitrary line: canonical determined by x
+	  ly1 = yr == 0 ? _ly2 : yr - (ly1 - 0);
+	  ly2 = yr == 0 ? _ly1 : yr - (ly2 - 0);
+	}
+	lx1 = xr == 0 ? lx1 : xr - (_lx2 - 0);
+	lx2 = xr == 0 ? lx2 : xr - (_lx1 - 0);
+      }
+    }
+    hit = hit || block(SHAPEARGUMENTS,environment,coefficients1,coefficients2,d - 1, reflection_cost, can_loop);
+  }
+
+  dummyEndReflection();
+
+  cost = reflection_cost + (HAVETHISREFLECTIONALREADY ? 0 : 1);
+  return hit;
+}
+
+
+bit render(SHAPEVARIABLES) implements renderSpecification{
+  assume shapeIdentity == CIRCLE || shapeIdentity == LINE || shapeIdentity == RECTANGLE;
+  if (!HASCIRCLES) assume shapeIdentity != CIRCLE;
+  if (!HASRECTANGLES) assume shapeIdentity != RECTANGLE;
+  if (!HASLINES) assume shapeIdentity != LINE;
+  else {
+    if (!HASSOLID) assume dashed;
+    if (!HASDASHED) assume !dashed;
+    if (!HASARROW) assume !arrow;
+    if (!HASNOARROW) assume arrow;
+  }
+  int cost;
+  int [2] coefficients1 = { {| 0 (+|-) ?? |}, {| 0 (+|-) ?? |} };
+  int [2] coefficients2 = { {| 0 (+|-) ?? |}, {| 0 (+|-) ?? |} };
+  int numberOfCoefficients1 = {| 0 | 1 | 2 |};
+  int numberOfCoefficients2 = {| 0 | 1 | 2 |};
+  int coefficientIndex = 0;
+  repeat(2){
+    int c = coefficients1[coefficientIndex];
+    assert COEFFICIENTVALIDATOR1 ;
+    c = coefficients2[coefficientIndex];
+    assert COEFFICIENTVALIDATOR2 ;
+    coefficientIndex += 1;
+  }
+  bit inScene = block(SHAPEARGUMENTS,{},coefficients1[0::numberOfCoefficients1],coefficients2[0::numberOfCoefficients2],3,cost,1);
+#ifdef USEPRIOR
+  assert cost <= COSTUPPERBOUND;
+  int totalCost = 3*cost +
+    (numberOfCoefficients1 + PROVIDEDXCOEFFICIENTS > 1 ? numberOfCoefficients1 - 1 : 0) +
+    (numberOfCoefficients2 + PROVIDEDYCOEFFICIENTS > 1 ? numberOfCoefficients2 - 1 : 0);
+  minimize(totalCost);
+#endif
+  return inScene;
+}

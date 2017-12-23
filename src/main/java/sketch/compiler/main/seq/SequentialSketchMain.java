@@ -509,7 +509,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         prog = (Program) prog.accept(new SpmdbarrierCall());
 
         prog = (Program) prog.accept(new PidReplacer());
-        
+
 		prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
 		prog = (Program) prog.accept(new ExpressionCastingReplacer());
@@ -518,7 +518,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
 
         
-//		prog.debugDump("********************************************* Before remove lambda expression");
+        // prog.debugDump("********************************************* Before
+        // remove lambda expression");
         if (false) {
 
             prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
@@ -561,7 +562,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             }
         }
 
+
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen, options.bndOpts.eqDepth));
+
         prog = (Program) prog.accept(new MinimizeFcnCall());
 
         // prog = (getBeforeSemanticCheckStage()).run(prog);

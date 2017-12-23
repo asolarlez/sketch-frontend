@@ -211,7 +211,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
         // return TypePrimitive.inttype ;
-        return t;
+        return super.visitTypeStructRef(t);
     }
 
     final Set<String> calledFunctions = new HashSet<String>();

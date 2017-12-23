@@ -91,7 +91,7 @@ public class SymbolTableVisitor extends FEReplacer
             if (tmap.containsKey(tr.getName())) {
                 return tmap.get(tr.getName());
             }
-            return tr;
+            return super.visitTypeStructRef(tr);
         }
 
         public Type rename(Type t) {
@@ -373,6 +373,9 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
     public Object visitStmtSwitch(StmtSwitch stmt) {
+
+        TypeStructRef vtype = (TypeStructRef) getType(stmt.getExpr());
+
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
         ExprVar var = (ExprVar) stmt.getExpr().accept(this);
@@ -391,7 +394,7 @@ public class SymbolTableVisitor extends FEReplacer
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
                 symtab.registerVar(var.getName(),
-                        (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+                        (new TypeStructRef(caseExpr, false, vtype.getTypeParams())).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);
@@ -467,6 +470,11 @@ public class SymbolTableVisitor extends FEReplacer
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
+        List<String> args = ts.getTypeargs();
+        if (args != null && !args.isEmpty()) {
+            nres.pushTempTypes(args);
+        }
+
         StructDef sdl = ts;
         int maxcnt = nstructsInPkg;
         Set<String> s = null;
@@ -504,12 +512,13 @@ public class SymbolTableVisitor extends FEReplacer
             map.put(entry.getKey(), type);
         }
 
+        if (args != null && !args.isEmpty()) {
+            nres.popTempTypes();
+        }
         symtab = oldSymTab;
 
         if (changed) {
             StructDef new_struct = ts.creator().fields(map).create();
-            if (ts.immutable())
-                new_struct.setImmutable();
             return new_struct;
         } else {
             return ts;

@@ -878,15 +878,28 @@ public class FEReplacer implements FEVisitor
         }
         if (changed) {
             StructDef new_struct = ts.creator().fields(map).create();
-            if (ts.immutable())
-                new_struct.setImmutable();
             return new_struct;
         } else {
             return ts;
         }
     }
 
-    public Object visitTypeStructRef (TypeStructRef tsr) {
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        if (tsr.hasTypeParams()) {
+            List<Type> tp = tsr.getTypeParams();
+            List<Type> params = new ArrayList<Type>();
+            boolean changed = false;
+            for (Type t : tp) {
+                Type newt = (Type) t.accept(this);
+                params.add(newt);
+                if (newt != t) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                return new TypeStructRef(tsr.getName(), tsr.isUnboxed(), params);
+            }
+        }
         return tsr;
     }
 

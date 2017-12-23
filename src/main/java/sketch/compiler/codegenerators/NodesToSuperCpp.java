@@ -459,9 +459,13 @@ public class NodesToSuperCpp extends NodesToJava {
                 return doPlus(exp);
         }
         if (exp.getOp() == ExprBinary.BINOP_EQ) {
-            if (getType(exp.getLeft()) instanceof TypeArray ||
-                    getType(exp.getRight()) instanceof TypeArray)
+            Type tleft = getType(exp.getLeft());
+            Type tright = getType(exp.getRight());
+            if (tleft instanceof TypeArray || tright instanceof TypeArray)
                 return doArrCompare(exp);
+            if (tleft.equals(TypePrimitive.floattype) || tleft.equals(TypePrimitive.doubletype)) {
+                return "(fabs(" + exp.getLeft().accept(this) + "-(" + exp.getRight().accept(this) + ")) < 0.0001)";
+            }
         }
 
         if (exp.getOp() == ExprBinary.BINOP_BAND || exp.getOp() == ExprBinary.BINOP_BOR ||

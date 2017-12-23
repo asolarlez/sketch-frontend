@@ -419,13 +419,35 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
     ;
 
 
+type_params_use returns [List<Type> t]{ t = new ArrayList<Type>();  Type p; Type temp;}
+:
+(LESS_THAN 
+(ID AT)? ID
+LESS_THAN
+p=data_type
+RSHIFT
+) => 
+LESS_THAN 
+(prefix:ID AT)? id:ID 
+LESS_THAN
+p=data_type
+RSHIFT { 
+List<Type> plist = new ArrayList<Type>();
+plist.add(p); 
+t.add(new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false, plist)); }
+|
+LESS_THAN p=data_type {t.add(p);} 
+          (COMMA p=data_type {t.add(p);} )*  
+MORE_THAN
+;
 
-
-data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
+data_type returns [Type t] { t = null; List<Type> tp; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
 	:	 (TK_global {isglobal = true; })? 
                 (t=primitive_type 
                 | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); }
                 | BITWISE_OR (prefix2:ID AT)? id2:ID BITWISE_OR { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); })
+		
+		( tp = type_params_use { if(!(t instanceof TypeStructRef)){ throw new RuntimeException("ERROR!!!"); } ((TypeStructRef)t).addParams(tp); } )?
 		(	l:LSQUARE
 			(	
                 ( { maxlen = 0; }
@@ -527,6 +549,7 @@ function_decl returns [Function f] {
     boolean isStencil = false;
     boolean isModel = false;
     List<String> tp=null;
+    List<String> fixes = new ArrayList<String>();
 }
 	:
 	amap=annotation_list
@@ -543,11 +566,12 @@ function_decl returns [Function f] {
 	(tp=type_params)?
 	l=param_decl_list
 	(TK_implements impl:ID)?
+	(TK_fixes  ( name:ID{ fixes.add(name.getText());  } ) )?
 	( s=block
 	{
             assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
             Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
-                rt).params(l).body(s).annotations(amap).typeParams(tp);
+                rt).params(l).body(s).annotations(amap).typeParams(tp).fixes(fixes);
 
             // function type
             if (isGenerator) {
@@ -1128,13 +1152,14 @@ tminic_value_expr returns [Expression x] { x = null; }
 	;
 
 
-constructor_expr returns [Expression x] { x = null; Type t=null; List l; boolean hole = false;}
+constructor_expr returns [Expression x] { x = null; TypeStructRef t=null; List l; boolean hole = false; List<Type> tp = null;}
 	: n:TK_new
 	(prefix:ID AT)? (id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); } | NDVAL2{hole = true;})
-	l=constr_params {  x = new ExprNew( getContext(n), t, l,hole);     }
+	( tp = type_params_use )?
+	l=constr_params { if(tp!= null){ t.addParams(tp); }  x = new ExprNew( getContext(n), t, l, hole);     }
 	| BITWISE_OR 
     (prefix2:ID AT)? id2:ID { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); }
-      BITWISE_OR l=constr_params {  x = new ExprNew( getContext(id2), t, l, hole);     }
+      BITWISE_OR l=constr_params { if(tp!= null){ t.addParams(tp); } x = new ExprNew( getContext(id2), t, l, hole);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }
@@ -1229,18 +1254,30 @@ adt_decl returns [List<StructDef> adtList]
 { adtList = new ArrayList<StructDef>(); List<StructDef> innerList; 
   StructDef str = null; Parameter p; List names = new ArrayList();
   Annotation an = null; StructDef innerStruct;
+  List<String> typeargs = new ArrayList<String>();
   HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
   List types = new ArrayList(); }
 
-	:  t:TK_adt id:ID LCURLY
-	(innerList=adt_decl { innerStruct = innerList.get(0); innerStruct.setParentName(id.getText());
-	adtList.addAll(innerList);}
-	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); adtList.add(innerStruct);}
+	:  t:TK_adt id:ID 
+	(
+		LESS_THAN
+		  typearg : ID {typeargs.add(typearg.getText());}
+		  (COMMA moretypearg : ID { typeargs.add(moretypearg.getText()); })*
+		MORE_THAN		
+		)?
+		LCURLY
+	(innerList=adt_decl { innerStruct = innerList.get(0); 
+						  innerStruct.setParentName(id.getText());
+						  innerStruct.setTypeargs(typeargs);
+						  adtList.addAll(innerList);}
+	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); 
+										innerStruct.setTypeargs(typeargs);
+										adtList.add(innerStruct);}
 	| p=param_decl SEMI {names.add(p.getName()); types.add(p.getType());}
 	| an=annotation {annotations.append(an.tag, an);}
 	)*
 	RCURLY
-	{str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, annotations).create();
+	{str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, typeargs, annotations).create();
      str.setImmutable();
 	 adtList.add(0, str);
 	}
@@ -1248,6 +1285,7 @@ adt_decl returns [List<StructDef> adtList]
 structInsideADT_decl returns [StructDef ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	Annotation an=null;
+	List<String> typeargs = new ArrayList<String>();
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	id:ID
@@ -1260,16 +1298,23 @@ structInsideADT_decl returns [StructDef ts]
 		)*
 		RCURLY
 		{ 
-			ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, annotations).create();
+			ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, typeargs, annotations).create();
 			}
 	;
 struct_decl returns [StructDef ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	Annotation an=null;
+	List<String> typeargs = new ArrayList<String>();
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	(an=annotation{ annotations.append(an.tag, an); })*
 	t:TK_struct id:ID
+		(
+		LESS_THAN
+		  typearg : ID {typeargs.add(typearg.getText());}
+		  (COMMA moretypearg : ID { typeargs.add(moretypearg.getText()); })*
+		MORE_THAN		
+		)?
 		//ADT
 		(TK_extends parent:ID 
 		{
@@ -1285,8 +1330,8 @@ struct_decl returns [StructDef ts]
 		RCURLY
 		{ 
 			if(parent != null) {
-				ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, annotations).create();
+				ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, typeargs, annotations).create();
 			}else{
-				ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, annotations).create();
+				ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, typeargs, annotations).create();
 			} }
 	;

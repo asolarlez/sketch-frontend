@@ -3,6 +3,7 @@ package sketch.compiler.passes.printers;
 import java.io.OutputStream;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -341,6 +342,16 @@ public class SimpleCodePrinter extends CodePrinter
         }
 
         String decl = "struct " + ts.getName();
+
+        List<String> targs = ts.getTypeargs();
+        if (targs != null && targs.size() > 0) {
+            decl += "<";
+            decl += targs.get(0);
+            for (int i = 1; i < targs.size(); ++i) {
+                decl += ", " + targs.get(i);
+            }
+            decl += ">";
+        }
 
         if (ts.getParentName() != null) {
             decl += " extends " + ts.getParentName();

@@ -8,22 +8,11 @@
 
 package sketch.compiler.parser;
 
-import java.io.Reader;
-import java.io.IOException;
-
-import xtc.util.Pair;
-
-import xtc.parser.ParserBase;
-import xtc.parser.Column;
-import xtc.parser.Result;
-import xtc.parser.SemanticValue;
-import xtc.parser.ParseError;
-
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ArrayList;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
@@ -31,13 +20,13 @@ import sketch.compiler.ast.core.exprs.*;
 import sketch.compiler.ast.core.exprs.regens.ExprAlt;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceBinary;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect;
-import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
-import sketch.compiler.ast.core.exprs.regens.ExprParen;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.Select;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectChain;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectField;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.SelectOrr;
 import sketch.compiler.ast.core.exprs.regens.ExprChoiceSelect.Selector;
+import sketch.compiler.ast.core.exprs.regens.ExprChoiceUnary;
+import sketch.compiler.ast.core.exprs.regens.ExprParen;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import xtc.parser.Column;
 import xtc.parser.ParseError;
@@ -440,7 +429,7 @@ public final class Regen extends ParserBase {
               yyIndex = yyResult.index + 1;
 
               TypeStructRef t = new TypeStructRef(structName, false);
-              yyValue = new ExprNew((FENode) null, t, l, false);
+                            yyValue = new ExprNew((FENode) null, t, l, false);
 
               return new SemanticValue(yyValue, yyIndex, yyError);
             } else {
@@ -473,7 +462,7 @@ public final class Regen extends ParserBase {
             if (')' == yyC) {
               yyIndex = yyResult.index + 1;
 
-              yyValue = new ExprNew((FENode) null, null, l, true);
+                            yyValue = new ExprNew((FENode) null, null, l, true);
 
               return new SemanticValue(yyValue, yyIndex, yyError);
             } else {

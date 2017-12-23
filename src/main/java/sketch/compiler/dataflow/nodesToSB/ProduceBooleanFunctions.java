@@ -2,6 +2,7 @@ package sketch.compiler.dataflow.nodesToSB;
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.Function;
@@ -13,6 +14,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprStar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -55,6 +57,70 @@ import sketch.util.exceptions.ExceptionAtNode;
 public class ProduceBooleanFunctions extends PartialEvaluator {
     boolean tracing = false;
     int maxArrSize;
+
+    class FunctionHoleTracker {
+        Function current;
+        Map<String, Set<String>> functionHoles = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> functionCalls = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> fixes = new HashMap<String, Set<String>>();
+
+        public void enterFunction(Function current) {
+            this.current = current;
+            assert !functionHoles.containsKey(current.getName());
+            functionHoles.put(current.getFullName(), new HashSet<String>());
+            functionCalls.put(current.getFullName(), new HashSet<String>());
+            recordFixes(current);
+        }
+
+        public void registerUninterp(Function current) {
+            assert !functionHoles.containsKey(current.getName());
+            functionHoles.put(current.getFullName(), new HashSet<String>());
+            functionCalls.put(current.getFullName(), new HashSet<String>());
+        }
+
+        public Set<String> getFixes(String name) {
+            if (fixes.containsKey(name)) {
+                return fixes.get(name);
+            }
+            return null;
+        }
+
+        public void recordFixes(Function f) {
+            fixes.put(f.getFullName(), new HashSet<String>(f.getFixes()));
+        }
+
+        public void regCall(ExprFunCall efc) {
+            functionCalls.get(current.getFullName()).add(nres.getFunName(efc.getName()));
+        }
+
+        public void regHole(ExprStar hole) {
+            functionHoles.get(current.getFullName()).add(hole.getSname());
+        }
+
+        public Set<String> holesForFun(String fun) {
+            return functionHoles.get(fun);
+        }
+
+        public void computeFixpoint() {
+            boolean changed = false;
+            do {
+                changed = false;
+                for (Entry<String, Set<String>> fhole : functionHoles.entrySet()) {
+                    Set<String> holes = fhole.getValue();
+                    String fun = fhole.getKey();
+                    Set<String> callees = functionCalls.get(fun);
+                    for (String callee : callees) {
+                        int sz = holes.size();
+                        holes.addAll(functionHoles.get(callee));
+                        changed = changed || (sz != holes.size());
+                    }
+                }
+            } while (changed);
+        }
+
+    }
+
+    FunctionHoleTracker fhtrack = new FunctionHoleTracker();
 
     class SpecSketch {
         public final String spec;
@@ -135,7 +201,25 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
         }
 
+        /**
+         * Positive means o1 goes after o2.
+         */
         public int compare(SpecSketch o1, SpecSketch o2) {
+
+            Set<String> fixes1 = fhtrack.getFixes(o1.sketch);
+            Set<String> fixes2 = fhtrack.getFixes(o2.sketch);
+
+            if (fixes1 != null) {
+                if (fixes2 == null) {
+                    return -1; // o1 has fixes, o2 does not, so o1 goes first.
+                }
+            }
+            if (fixes2 != null) {
+                if (fixes1 == null) {
+                    return 1; // o2 has fixes, o1 does not, so o2 goes first.
+                }
+            }
+
             int s1 = 0;
             int s2 = 0;
             if (funSizes.containsKey(o1)) {
@@ -207,6 +291,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
     public Object visitExprField(ExprField exp) {
         throw new RuntimeException("COMPILER BUG: There should not be any Expression Fields at this point!!!");
+    }
+
+    public Object visitExprStar(ExprStar star) {
+        fhtrack.regHole(star);
+        return super.visitExprStar(star);
     }
 
 
@@ -507,10 +596,13 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
     public Object visitFunction(Function func)
     {
+        fhtrack.enterFunction(func);
 
         if (func.hasAnnotation("DontAnalyze")) {
             return func;
         }
+
+
 
         if(tracing)
             System.out.println("Analyzing " + func.getName() + " " + new java.util.Date());
@@ -628,8 +720,42 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
     }
 
     Set<String> mainfuns = new HashSet<String>();
+
     public Object visitProgram(Program p) {
         PrintStream out = ((NtsbVtype) this.vtype).out;
+        printDeclarationsAndRegisterMainfuns(p, out);
+
+        Object o = super.visitProgram(p);
+        for (Package pkg : p.getPackages()) {
+            for (StmtSpAssert sa : pkg.getSpAsserts()) {
+                ((NtsbVtype) this.vtype).out.println("replace " + printSpAssert(sa) + ";");
+            }
+        }
+
+        fhtrack.computeFixpoint();
+        SpecSketchComparator cp = new SpecSketchComparator();
+        cp.estimate(assertions);
+        Collections.sort(assertions, cp);
+
+
+        for (SpecSketch s : assertions) {
+            ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
+            String sname = nres.getFunName(s.sketch);
+            Set<String> fixes = fhtrack.getFixes(sname);
+            if (fixes != null && fixes.size() > 0) {
+                for(String tofix : fixes){
+                    Set<String> holes = fhtrack.holesForFun(tofix);
+                    for (String hole : holes) {
+                        ((NtsbVtype) this.vtype).out.println("fixhole " + hole + ";");
+                    }
+                }
+            }
+        }
+
+        return o;
+    }
+
+    private void printDeclarationsAndRegisterMainfuns(Program p, PrintStream out) {
         out.println("typedef{");
         nres = new NameResolver(p);
         for (Package pkg : p.getPackages()) {
@@ -652,6 +778,9 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 if (f.getSpecification() != null) {
                     mainfuns.add(f.getName());
                     mainfuns.add(f.getSpecification());
+                }
+                if (f.isUninterp()) {
+                    fhtrack.registerUninterp(f);
                 }
             }
         }
@@ -701,24 +830,6 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
         }
         out.println("}");
-
-        Object o = super.visitProgram(p);
-        for (Package pkg : p.getPackages()) {
-            for (StmtSpAssert sa : pkg.getSpAsserts()) {
-                ((NtsbVtype) this.vtype).out.println("replace " + printSpAssert(sa) + ";");
-            }
-        }
-
-
-        SpecSketchComparator cp = new SpecSketchComparator();
-        cp.estimate(assertions);
-        Collections.sort(assertions, cp);
-
-        for (SpecSketch s : assertions) {
-            ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
-        }
-
-        return o;
     }
 
     private String printSpAssert(StmtSpAssert sa) {
@@ -750,6 +861,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return res;
     }
     public Object visitExprFunCall(ExprFunCall exp) {
+        fhtrack.regCall(exp);
         String name = exp.getName();
         // Local function?
         Function fun = nres.getFun(name);

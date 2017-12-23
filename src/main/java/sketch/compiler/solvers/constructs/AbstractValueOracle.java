@@ -2,8 +2,10 @@ package sketch.compiler.solvers.constructs;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.List;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.Type;
 
@@ -14,6 +16,14 @@ public abstract class AbstractValueOracle {
 	public AbstractValueOracle(HoleNameTracker holeNamer) {
 		this.holeNamer = holeNamer;
 	}
+
+    public boolean hasFunctions() {
+        return false;
+    }
+
+    public List<Function> getFunctions() {
+        return null;
+    }
 
 	public AbstractValueOracle() {
 		super();
