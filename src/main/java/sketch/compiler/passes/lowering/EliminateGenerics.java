@@ -84,9 +84,10 @@ public class EliminateGenerics extends SymbolTableVisitor {
         }
         List<Type> lt = new ArrayList<Type>();        
         for (Expression actual : efc.getParams()) {
-            lt.add(doType(getType(actual)));
+            lt.add(getType(actual));
         }
         TypeRenamer tr = SymbolTableVisitor.getRenaming(f, lt, nres, null);
+        tr.transformTypes(this);
         String sig = signature(f, tr);
         if(signatures.containsKey(sig)){
             String newName =signatures.get(sig).getFullName(); 

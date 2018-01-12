@@ -84,7 +84,8 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             TypeStructRef sr = (TypeStructRef) exp.getTypeToConstruct();
             StructDef sd = nres.getStruct(sr.getName());
             if (!sd.getPkg().equals(currentTopPkg)) {
-                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed()), nexp.getParams(), 
+                List<Type> tpm = nexp.getTypeParams();
+                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed(), tpm), nexp.getParams(), 
                         nexp.isHole());
                 exprRV = nexp;
             }

@@ -101,6 +101,12 @@ public class SymbolTableVisitor extends FEReplacer
             return (Type) t.accept(this);
         }
 
+        public void transformTypes(FEReplacer fer) {
+            for (Entry<String, Type> e : tmap.entrySet()) {
+                e.setValue((Type) e.getValue().accept(fer));
+            }
+        }
+
         public String toString() {
             return tmap.toString();
         }
