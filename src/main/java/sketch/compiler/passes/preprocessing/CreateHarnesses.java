@@ -130,7 +130,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
                     }
                 }
             }
-            return new ExprFunCall(exp, exp.getName(), newParams);
+            return new ExprFunCall(exp, exp.getName(), newParams, doCallTypeParams(exp));
         }
     }
 
@@ -331,7 +331,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
 
                         wrapF.params(wrapParams);
                         ExprFunCall newLhs =
-                                new ExprFunCall(assert_expr, lhs.getName(), newParams);
+                                new ExprFunCall(assert_expr, lhs.getName(), newParams, null);
                         wrapF.body(new StmtBlock(new StmtReturn(assert_expr, newLhs)));
 
                         Function wrapperFun = wrapF.create();
@@ -339,7 +339,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
                         newFuns.add(wrapperFun);
 
                         ExprFunCall wrapFunCall =
-                                new ExprFunCall(assert_expr, wrapName, wrapperParams);
+                                new ExprFunCall(assert_expr, wrapName, wrapperParams, null);
                         separateHarness = true;
                         if (optimize) {
                         System.out.println(wrapFunCall.toString());
@@ -370,7 +370,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
                                     newFuns);
                     List<Expression> pm = new ArrayList<Expression>();
                     pm.add(new ExprVar(sa, inputParams.get(i)));
-                    body.add(0, new StmtIfThen(sa, new ExprFunCall(sa, fname, pm),
+                    body.add(0, new StmtIfThen(sa, new ExprFunCall(sa, fname, pm, null),
                             new StmtEmpty(sa), new StmtReturn(sa, null)));
 
                 } else if (inputTypes.get(i).isArray()) {
@@ -390,7 +390,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
                         pm.add(new ExprArrayRange(sa, new ExprVar(sa, inputParams.get(i)), idx_var));
                         Statement forBody =
                                 new StmtBlock(new StmtIfThen(sa, new ExprFunCall(sa,
-                                        fname, pm), new StmtEmpty(sa), new StmtReturn(sa,
+                                        fname, pm, null), new StmtEmpty(sa), new StmtReturn(sa,
                                         null)));
                         StmtFor forSt = new StmtFor(sa, init, cond, incr, forBody, true);
                         body.add(0, forSt);
@@ -605,7 +605,7 @@ public class CreateHarnesses extends SymbolTableVisitor {
 
                     cur =
                             new ExprBinary(ctx, ExprBinary.BINOP_AND, new ExprFunCall(
-                                    ctx, name, pm), cur);
+                                    ctx, name, pm, null), cur);
                 }
             }
             swt.addCaseBlock(c.split("@")[0], new StmtReturn(ctx, cur));

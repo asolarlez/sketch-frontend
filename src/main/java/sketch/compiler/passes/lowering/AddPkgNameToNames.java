@@ -68,7 +68,7 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitExprFunCall(ExprFunCall efc) {
         efc = (ExprFunCall) super.visitExprFunCall(efc);
-        return new ExprFunCall(efc, transFun(efc.getName()), efc.getParams());
+        return new ExprFunCall(efc, transFun(efc.getName()), efc.getParams(), doCallTypeParams(efc));
     }
 
     public Object visitProgram(Program prog) {

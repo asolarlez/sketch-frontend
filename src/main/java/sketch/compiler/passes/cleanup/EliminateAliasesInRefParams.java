@@ -100,7 +100,7 @@ public class EliminateAliasesInRefParams extends FEReplacer {
         if (!hasChanged)
             addStatement(new StmtExpr(efc));
         else
-            addStatement(new StmtExpr(new ExprFunCall(efc, efc.getName(), newParams)));
+            addStatement(new StmtExpr(new ExprFunCall(efc, efc.getName(), newParams, efc.getTypeParams())));
         addStatements(after);
         after.clear();
         return null;

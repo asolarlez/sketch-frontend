@@ -686,7 +686,7 @@ public final class Regen extends ParserBase {
           if (')' == yyC) {
             yyIndex = yyResult.index + 1;
 
-            yyValue = new ExprFunCall((FENode) null, funcName, l);
+                        yyValue = new ExprFunCall((FENode) null, funcName, l, null);
 
             return new SemanticValue(yyValue, yyIndex, yyError);
           } else {

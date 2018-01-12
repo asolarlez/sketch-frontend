@@ -226,7 +226,7 @@ public class EliminateRegens extends SymbolTableVisitor {
                     fcconstruct(efc, plist, lidx+1, nl, exprs);
                 }
             }else{
-                exprs.add(new ExprFunCall(efc, efc.getName(), actuals));                
+                exprs.add(new ExprFunCall(efc, efc.getName(), actuals, doCallTypeParams(efc)));
             }
         }
         

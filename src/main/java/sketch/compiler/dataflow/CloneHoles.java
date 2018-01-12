@@ -1,7 +1,6 @@
 package sketch.compiler.dataflow;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import sketch.compiler.ast.core.FEReplacer;
@@ -33,12 +32,11 @@ public class CloneHoles extends FEReplacer {
 
     public Object visitExprFunCall(ExprFunCall exp) {
         List<Expression> newParams = new ArrayList<Expression>();
-        for (Iterator iter = exp.getParams().iterator(); iter.hasNext();) {
-            Expression param = (Expression) iter.next();
+        for (Expression param : exp.getParams()) {
             Expression newParam = doExpression(param);
             newParams.add(newParam);
         }
-        ExprFunCall rv = new ExprFunCall(exp, exp.getName(), newParams);
+        ExprFunCall rv = new ExprFunCall(exp, exp.getName(), newParams, exp.getTypeParams());
         rv.resetCallid();
         return rv;
     }

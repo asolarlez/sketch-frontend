@@ -511,11 +511,22 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
 
         List<Type> actualTypes = new ArrayList<Type>();
-        for (Expression ap : exp.getParams()) {
-            actualTypes.add(getType(ap));
-        }
+        TypeRenamer tren;
+        if (exp.getTypeParams() != null) {
+            tren = new TypeRenamer(doCallTypeParams(exp));
+            if (tren.tmap != exp.getTypeParams()) {
+                hasChanged = true;
+            }
+        } else {
+            for (Expression ap : exp.getParams()) {
+                actualTypes.add(getType(ap));
+            }
 
-        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, tdstate.getExpected());
+            tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, tdstate.getExpected());
+            if (!tren.tmap.isEmpty()) {
+                hasChanged = true;
+            }
+        }
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
         if (actSz > formSz) {
@@ -589,7 +600,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
         if (!hasChanged)
             return exp;
-        return new ExprFunCall(exp, exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams, tren.tmap);
     }
 
     public Object visitExprParen(ExprParen exp) {

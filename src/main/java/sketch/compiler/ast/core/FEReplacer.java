@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -339,6 +341,27 @@ public class FEReplacer implements FEVisitor
         return new ExprADTHole(exp, newParams);
     }
 
+    protected Map<String, Type> doCallTypeParams(ExprFunCall exp) {
+        boolean hasChanged = false;
+        Map<String, Type> newTP = null;
+        Map<String, Type> oldTP = exp.getTypeParams();
+        if (oldTP != null) {
+            newTP = new HashMap<String, Type>();
+            for (Entry<String, Type> tparam : exp.getTypeParams().entrySet()) {
+                Type newT = (Type) tparam.getValue().accept(this);
+                if (newT != tparam.getValue()) {
+                    hasChanged = true;
+                }
+                newTP.put(tparam.getKey(), newT);
+            }
+        }
+        if (hasChanged) {
+            return newTP;
+        } else {
+            return oldTP;
+        }
+    }
+
     public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;
@@ -348,8 +371,12 @@ public class FEReplacer implements FEVisitor
             newParams.add(newParam);
             if (param != newParam) hasChanged = true;
         }
+        Map<String, Type> newTP = doCallTypeParams(exp);
+        if (newTP != exp.getTypeParams()) {
+            hasChanged = true;
+        }
         if (!hasChanged) return exp;
-        return new ExprFunCall(exp, exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams, newTP);
     }
 
     public Object visitExprParen (ExprParen exp) {

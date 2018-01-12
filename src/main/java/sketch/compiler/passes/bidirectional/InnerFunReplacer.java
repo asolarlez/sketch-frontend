@@ -619,7 +619,7 @@ public class InnerFunReplacer extends BidirectionalPass {
                 }
                 actuals.add(arg);
             }
-            return new ExprFunCall(efc, newName, actuals);
+            return new ExprFunCall(efc, newName, actuals, efc.getTypeParams());
         }
     }
 

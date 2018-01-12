@@ -419,7 +419,7 @@ public class ExpressionCastingReplacer extends SymbolTableVisitor {
         }
 		
 		// Return the new expression function call
-		return new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newParams);		
+        return new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(), newParams, doCallTypeParams(exprFunctionCall));
 
 	}
 

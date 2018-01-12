@@ -183,7 +183,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Function newFun = fun.creator().name(newName).create();
         funcsToAnalyze.add(newFun);
         nres.registerFun(newFun);
-        return super.visitExprFunCall(new ExprFunCall(exp, newName, exp.getParams()));
+        return super.visitExprFunCall(new ExprFunCall(exp, newName, exp.getParams(), exp.getTypeParams()));
     }
 
     public Object processEqualsCall(Function fun, ExprFunCall exp) {
@@ -261,7 +261,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Function fun = nres.getFun(name);
         String funPkg = fun.getPkg();
         if (!funPkg.equals(currentTopPkg) && !name.contains("@")) {
-            exp = new ExprFunCall(exp, fun.getFullName(), exp.getParams());
+            exp = new ExprFunCall(exp, fun.getFullName(), exp.getParams(), exp.getTypeParams());
         }
 
         if(fun.getSpecification()!= null){

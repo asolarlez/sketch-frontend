@@ -422,7 +422,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 			}
 			return new StmtExpr(new ExprFunCall(stmt,"SK_BITASSIGN",Arrays.asList(new Expression[] {
 				newLhs,bitSelector,newRhs
-			})));
+            }), null));
 		}
 
 		if(isArray) {
@@ -434,12 +434,12 @@ public class BitTypeRemover extends SymbolTableVisitor
 		if(len<=0) {
 			bitMask=new ExprFunCall(stmt,"SK_ONES_SE",Arrays.asList(new Expression[] {
 					index,end
-				}));
+            }), null);
 		}
 		else {
 			bitMask=new ExprFunCall(stmt,"SK_ONES_SL",Arrays.asList(new Expression[] {
 				index,new ExprConstInt(index,len)
-			}));
+            }), null);
 		}
 		final String tempName=varGen.nextVar();
 		if(lhsType instanceof TypeArray){
@@ -450,7 +450,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 		return new StmtExpr(new ExprFunCall(stmt,"SK_COPYBITS",Arrays.asList(new Expression[] {
 			newLhs,new ExprVar(index,tempName),
 			new ExprBinary(index,ExprBinary.BINOP_LSHIFT,newRhs,index)
-		})));
+        }), null));
 	}
 
 	private Statement makeForLoop(String var,Expression ubound, Statement body)
@@ -546,7 +546,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 		FENode context = lhs;
 		return new StmtExpr(new ExprFunCall(lhs,"SK_bitArrayCopyInv",Arrays.asList(new Expression[] {
 				lhs,start,end,rhs,new ExprConstInt(context,ws), new ExprConstInt(context,rhws), lhsLen
-			})));
+        }), null));
 	}
 
 	private Statement callSK_bitArrayCopy(Expression lhs, Expression start, int len, Expression rhs, int ws){
@@ -571,7 +571,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 		FENode context = lhs;
 		return new StmtExpr(new ExprFunCall(context,"SK_bitArrayCopy",Arrays.asList(new Expression[] {
 				lhs,start,end,rhs,new ExprConstInt(context,ws)
-			})));
+        }), null));
 	}
 
 
@@ -680,7 +680,7 @@ public class BitTypeRemover extends SymbolTableVisitor
 								final Expression bitMask;
 									bitMask=new ExprFunCall(stmt,"SK_ONES",Arrays.asList(new Expression[] {
 											new ExprConstInt(end-start+1)
-										}));
+                                }), null);
 									newRhs=new ExprBinary(newRhs,ExprBinary.BINOP_BAND ,newRhs,bitMask);
 							}
 

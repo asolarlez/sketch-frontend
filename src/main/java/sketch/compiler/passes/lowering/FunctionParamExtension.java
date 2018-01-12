@@ -716,13 +716,8 @@ public class FunctionParamExtension extends SymbolTableVisitor
         VarReplacer vrep = new VarReplacer(pmap);
 		
 		int psz = 0;
-        List<Type> lt = new ArrayList<Type>();
-        if (!fun.getTypeParams().isEmpty()) {
-            for (Expression actual : exp.getParams()) {
-                lt.add(getType(actual));
-            }
-        }
-        TypeRenamer tr = SymbolTableVisitor.getRenaming(fun, lt, nres, null);
+
+        TypeRenamer tr = new TypeRenamer(exp.getTypeParams());
 
 		for(int i=0;i<params.size();i++){
 			Parameter p = params.get(i);
@@ -794,7 +789,7 @@ public class FunctionParamExtension extends SymbolTableVisitor
             }
 		}
 
-		ExprFunCall newcall=new ExprFunCall(exp,exp.getName(),args);
+        ExprFunCall newcall = new ExprFunCall(exp, exp.getName(), args, doCallTypeParams(exp));
 		addStatement( new StmtExpr(newcall));
 		addStatements(refAssigns);
 

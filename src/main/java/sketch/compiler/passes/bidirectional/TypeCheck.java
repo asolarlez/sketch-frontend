@@ -944,11 +944,16 @@ public class TypeCheck extends BidirectionalPass {
 
             boolean hasChanged = false;
             List<Expression> newParams = new ArrayList<Expression>();
-            List<Type> actualTypes = new ArrayList<Type>();
-            for (Expression ap : exp.getParams()) {
-                actualTypes.add(driver.getType(ap));
+            TypeRenamer tren;
+            if (exp.getTypeParams() != null) {
+                tren = new TypeRenamer(exp.getTypeParams());
+            } else {
+                List<Type> actualTypes = new ArrayList<Type>();
+                for (Expression ap : exp.getParams()) {
+                    actualTypes.add(driver.getType(ap));
+                }
+                tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres(), tdstate().getExpected());
             }
-            TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres(), tdstate().getExpected());
             int actSz = exp.getParams().size();
             int formSz = f.getParams().size();
             if (actSz > formSz) {

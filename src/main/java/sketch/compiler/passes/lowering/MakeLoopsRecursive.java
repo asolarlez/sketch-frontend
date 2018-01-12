@@ -190,7 +190,7 @@ public class MakeLoopsRecursive extends SymbolTableVisitor {
                         firstCall.add(e);
                     }
                 }
-                ExprFunCall sfc = new ExprFunCall(stmt, funName, actuals);
+                ExprFunCall sfc = new ExprFunCall(stmt, funName, actuals, null);
                 Statement call = new StmtExpr(sfc);
                 body.add(new StmtIfThen(stmt, new ExprBinary(new ExprVar(stmt, itname),
  "<", new ExprConstInt(
@@ -213,7 +213,7 @@ public class MakeLoopsRecursive extends SymbolTableVisitor {
                 newFuncs.add(f);
                 StmtBlock rv =
                         new StmtBlock(stmt.getInit(), new StmtExpr(new ExprFunCall(stmt,
-                                funName, firstCall)));
+                                funName, firstCall, null)));
                 return rv;
             } else {
                 return super.visitStmtFor(stmt);

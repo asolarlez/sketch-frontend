@@ -927,9 +927,13 @@ public class DisambiguateCallsAndTypeCheck extends SymbolTableVisitor {
             }
 
         }
+        Map<String, Type> newTP = doCallTypeParams(exp);
+        if (newTP != exp.getTypeParams()) {
+            hasChanged = true;
+        }
         if (!hasChanged)
             return exp;
-        return new ExprFunCall(exp, exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams, newTP);
     }
 
     public Object visitExprUnary(ExprUnary expr) {
