@@ -15,7 +15,7 @@ float abs(float v){
     if(v > 0.0){ return v; }else{ return -v; }
 }
 
-@Native("{_out = log(v);}")
+@Native("{_out = std::log(v);}")
 float log(float v);
 
 
