@@ -339,10 +339,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
      * protected Expression interpretActualParam(Expression e){ return maxArrSize; }
      */
 
-    public void doParams(List<Parameter> params, List<String> addInitStmts) {
+    public Map<String, abstractValue> doParams(List<Parameter> params, List<String> addInitStmts) {
         PrintStream out = ((NtsbVtype)this.vtype).out;
         boolean first = true;
         out.print("(");
+        Map<String, abstractValue> toinit = new HashMap<String, abstractValue>();
         for(Iterator<Parameter> iter = params.iterator(); iter.hasNext(); ){
             Parameter param = iter.next();
             Type ptype = (Type) param.getType().accept(this);
@@ -364,7 +365,6 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             }
             IntAbsValue inval = (IntAbsValue) state.varValue(lhs);
             String invalName = inval.toString();
-
             if( ptype instanceof TypeArray ){
                 TypeArray ta = (TypeArray) ptype;
                 if (inval.isVect()) {
@@ -385,10 +385,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                         opsizes.add(1);
                         // Armando: This statement below is experimental.
                         if (!param.isParameterInput()) {
-                            state.setVarValue(
-                                    lhs,
-                                    (abstractValue) ta.getBase().defaultValue().accept(
-                                            this));
+                            toinit.put(lhs, (abstractValue) ta.getBase().defaultValue().accept(this));
                         }
                     }else{
                         out.print(invalName + " ");
@@ -441,7 +438,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             out.print(finalOpname);
         }
         out.print(")");
-
+        return toinit;
     }
 
     static String filterPound(String s) {
@@ -632,10 +629,14 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
         Level lvl = state.beginFunction(func.getName());
         List<String> initStmts = new ArrayList<String>();
-        doParams(func.getParams(), initStmts);
+        Map<String, abstractValue> toinit = doParams(func.getParams(), initStmts);
 
         PrintStream out = ((NtsbVtype) this.vtype).out;
         out.println("{");
+        for (Entry<String, abstractValue> toi : toinit.entrySet()) {
+            state.setVarValue(toi.getKey(), toi.getValue());
+        }
+
         if (func.isWrapper()) {
             String wname = func.getName();
             int ix = 0;
