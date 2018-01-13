@@ -398,7 +398,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                     }
                     tren = SymbolTableVisitor.getRenaming(func, actualTypes, nres(), tdstate().getExpected());
                 } else {
-                    tren = new TypeRenamer(efc.getTypeParams());
+                    tren = new TypeRenamer(new HashMap<String, Type>(efc.getTypeParams()));
                 }
                 rparam = new RefreshParams();
 
