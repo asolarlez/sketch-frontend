@@ -37,7 +37,7 @@ public class ReplaceSketchesWithSpecs extends FEReplacer {
                 Expression newParam = doExpression(param);
                 newParams.add(newParam);            
             }            
-            return new ExprFunCall(exp, fun.getSpecification(), newParams);
+            return new ExprFunCall(exp, fun.getSpecification(), newParams, null);
         }else{
             return super.visitExprFunCall(exp);
         }

@@ -83,7 +83,7 @@ public class ExtractComplexFunParams extends SymbolTableVisitor {
             ++i;
         }
 
-        ExprFunCall newcall = new ExprFunCall(exp, exp.getName(), args);
+        ExprFunCall newcall = new ExprFunCall(exp, exp.getName(), args, doCallTypeParams(exp));
         addStatement(new StmtExpr(newcall));
         addStatements(refAssigns);
         return null;

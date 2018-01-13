@@ -186,11 +186,8 @@ public class RemoveFunctionParameters extends BidirectionalPass {
         TypeRenamer tren = null;
         RefreshParams rparam = null;
         if (!orig.getTypeParams().isEmpty()) {
-            List<Type> actualTypes = new ArrayList<Type>();
-            for (Expression ap : efc.getParams()) {
-                actualTypes.add(driver.getType(ap));
-            }
-            tren = SymbolTableVisitor.getRenaming(orig, actualTypes, nres(), tdstate().getExpected());
+
+            tren = new TypeRenamer(efc.getTypeParams());
 
             rparam = new RefreshParams();
 
@@ -209,7 +206,7 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                 params.add(actual);
             }
         }
-        return new ExprFunCall(efc, nfn, params);
+        return new ExprFunCall(efc, nfn, params, efc.getTypeParams());
     }
 
     /**
@@ -393,12 +390,16 @@ public class RemoveFunctionParameters extends BidirectionalPass {
             TypeRenamer tren = null;
             RefreshParams rparam = null;
             if (!func.getTypeParams().isEmpty()) {
-                List<Type> actualTypes = new ArrayList<Type>();
-                for (Expression ap : efc.getParams()) {
-                    actualTypes.add(driver.getType(ap));
-                }
-                tren = SymbolTableVisitor.getRenaming(func, actualTypes, nres(), tdstate().getExpected());
 
+                if (efc.getTypeParams() == null) {
+                    List<Type> actualTypes = new ArrayList<Type>();
+                    for (Expression ap : efc.getParams()) {
+                        actualTypes.add(driver.getType(ap));
+                    }
+                    tren = SymbolTableVisitor.getRenaming(func, actualTypes, nres(), tdstate().getExpected());
+                } else {
+                    tren = new TypeRenamer(efc.getTypeParams());
+                }
                 rparam = new RefreshParams();
 
                 for (Entry<String, Type> et : tren.tmap.entrySet()) {
@@ -466,10 +467,10 @@ public class RemoveFunctionParameters extends BidirectionalPass {
                     hasChanged = true;
             }
             if (this.rmap.containsKey(efc.getName())) {
-                return new ExprFunCall(efc, this.rmap.get(efc.getName()), newParams);
+                return new ExprFunCall(efc, this.rmap.get(efc.getName()), newParams, efc.getTypeParams());
             } else {
                 if (hasChanged) {
-                    return new ExprFunCall(efc, efc.getName(), newParams);
+                    return new ExprFunCall(efc, efc.getName(), newParams, efc.getTypeParams());
                 } else {
                     return efc;
                 }

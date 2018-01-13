@@ -254,7 +254,7 @@ public class ThreadClosure extends FEReplacer {
                 for (Parameter p : addedParams) {
                     pl.add(new ExprVar(efc, p.getName()));
                 }
-                efc = new ExprFunCall(efc, efc.getName(), pl);
+                efc = new ExprFunCall(efc, efc.getName(), pl, efc.getTypeParams());
             }
         }
         return super.visitExprFunCall(efc);

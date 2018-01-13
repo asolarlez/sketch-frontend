@@ -74,7 +74,7 @@ public class SymbolTableVisitor extends FEReplacer
 
 
     public static class TypeRenamer extends FEReplacer {
-        public Map<String, Type> tmap = new HashMap<String, Type>();
+        public Map<String, Type> tmap;
 
         String postfix() {
             String rv = "";
@@ -84,7 +84,18 @@ public class SymbolTableVisitor extends FEReplacer
             return rv;
         }
 
-        public TypeRenamer() {}
+        public TypeRenamer() {
+            tmap = new HashMap<String, Type>();
+
+        }
+
+        public TypeRenamer(Map<String, Type> tmap) {
+            if (tmap != null) {
+                this.tmap = tmap;
+            } else {
+                this.tmap = new HashMap<String, Type>();
+            }
+        }
 
         @Override
         public Object visitTypeStructRef(TypeStructRef tr) {
@@ -99,6 +110,12 @@ public class SymbolTableVisitor extends FEReplacer
                 return t;
             }
             return (Type) t.accept(this);
+        }
+
+        public void transformTypes(FEReplacer fer) {
+            for (Entry<String, Type> e : tmap.entrySet()) {
+                e.setValue((Type) e.getValue().accept(fer));
+            }
         }
 
         public String toString() {

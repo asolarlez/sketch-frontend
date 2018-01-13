@@ -63,7 +63,7 @@ public class ReinterpretAssumes extends FEReplacer {
             if (renameMap.containsKey(name)) {
                 // This assumes that all the preprocessing is done, so the params won't
                 // have any functions in them.
-                return new ExprFunCall(efc, renameMap.get(name), efc.getParams());
+                return new ExprFunCall(efc, renameMap.get(name), efc.getParams(), efc.getTypeParams());
             } else {
                 ha.hasAssumes = false;
                 Function orig = nres.getFun(name);
@@ -72,7 +72,7 @@ public class ReinterpretAssumes extends FEReplacer {
                     // All functions called by the wrapper will be in the same package as
                     // it.
                     String newName = addNewClone(orig);
-                    return new ExprFunCall(efc, newName, efc.getParams());
+                    return new ExprFunCall(efc, newName, efc.getParams(), efc.getTypeParams());
                 }else{
                     return efc;
                 }                                

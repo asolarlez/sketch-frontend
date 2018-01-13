@@ -724,7 +724,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
 
         //assert !isReplacer : "A replacer should really do something different with function calls.";
-        exprRV = isReplacer ?  new ExprFunCall(exp, name, nparams)  : exp ;
+        exprRV = isReplacer ? new ExprFunCall(exp, name, nparams, doCallTypeParams(exp)) : exp;
         return  vtype.BOTTOM();
     }
 

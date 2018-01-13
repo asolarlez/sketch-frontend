@@ -12,7 +12,6 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeStructRef;
@@ -82,15 +81,13 @@ public class EliminateGenerics extends SymbolTableVisitor {
         if (tps.isEmpty()) {
             return super.visitExprFunCall(efc);
         }
-        List<Type> lt = new ArrayList<Type>();        
-        for (Expression actual : efc.getParams()) {
-            lt.add(doType(getType(actual)));
-        }
-        TypeRenamer tr = SymbolTableVisitor.getRenaming(f, lt, nres, null);
+
+        TypeRenamer tr = new TypeRenamer(doCallTypeParams(efc));
+
         String sig = signature(f, tr);
         if(signatures.containsKey(sig)){
             String newName =signatures.get(sig).getFullName(); 
-            return new ExprFunCall(efc, newName, efc.getParams());
+            return new ExprFunCall(efc, newName, efc.getParams(), null);
         }else{
             String newName = efc.getName() + tr.postfix();
             Function newSig =
@@ -105,7 +102,7 @@ public class EliminateGenerics extends SymbolTableVisitor {
                 lf.add(newSig);
                 newfuns.put(pkgname, lf);
             }
-            return new ExprFunCall(efc, newName, efc.getParams());
+            return new ExprFunCall(efc, newName, efc.getParams(), null);
         }                
         
     }

@@ -310,7 +310,7 @@ public class GlobalsToParams extends FEReplacer {
             fcnArgs.add(new ExprVar(FEContext.artificalFrom("ref-" + localVarName,
                     callParam), localVarName));
         }
-        return new ExprFunCall(callParam, callParam.getName(), fcnArgs);
+        return new ExprFunCall(callParam, callParam.getName(), fcnArgs, doCallTypeParams(callParam));
     }
 
     static String compName(String nm, String pkg) {

@@ -99,7 +99,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             pm.add(right);
             pm.add(ExprConstInt.createConstant(depth));
 
-            return new ExprFunCall(expr, funName, pm);
+            return new ExprFunCall(expr, funName, pm, null);
         }
 
         if (expr.getOp() == ExprBinary.BINOP_EQ) {
@@ -242,7 +242,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
                 pm.add(right);
                 pm.add(ExprConstInt.createConstant(depth));
 
-                return new ExprFunCall(expr, funName, pm);
+                return new ExprFunCall(expr, funName, pm, null);
             }
         }
         return null;
@@ -357,7 +357,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
                 pm.add(r);
                 pm.add(new ExprBinary(context, ExprBinary.BINOP_SUB, bnd, ExprConstInt.one));
 
-                return new ExprFunCall(context, funName, pm);
+                return new ExprFunCall(context, funName, pm, null);
             } else {
                 return new ExprBinary(context, ExprBinary.BINOP_EQ, l, r);
             }

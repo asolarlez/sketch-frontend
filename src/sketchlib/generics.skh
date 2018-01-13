@@ -1,4 +1,7 @@
 
+package generics;
+
+
 
 T[n] map<T>([int n], T[n] in, fun f){
 	T[n] out;

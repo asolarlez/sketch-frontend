@@ -448,11 +448,16 @@ public class GetExprType extends FENullVisitor
             if (!fn.getTypeParams().isEmpty() &&
                     !(fn.getReturnType() instanceof TypePrimitive))
             {
-                List<Type> lt = new ArrayList<Type>();
-                for (Expression ep : exp.getParams()) {
-                    lt.add((Type) ep.accept(this));
+                TypeRenamer tr;
+                if (exp.getTypeParams() != null) {
+                    tr = new TypeRenamer(exp.getTypeParams());
+                } else {
+                    List<Type> lt = new ArrayList<Type>();
+                    for (Expression ep : exp.getParams()) {
+                        lt.add((Type) ep.accept(this));
+                    }
+                    tr = SymbolTableVisitor.getRenaming(fn, lt, nres, null);
                 }
-                TypeRenamer tr = SymbolTableVisitor.getRenaming(fn, lt, nres, null);
                 retType = tr.rename(retType);
             }
 

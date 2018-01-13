@@ -14,6 +14,12 @@ float sqrt(float v);
 float abs(float v){
     if(v > 0.0){ return v; }else{ return -v; }
 }
+
+@Native("{_out = log(v);}")
+float log(float v);
+
+
+
 @Native("{_out = atanf(v);}")
 float arctan(float v);
 @Native("{_out = (int)v;}")

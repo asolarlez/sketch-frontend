@@ -775,9 +775,14 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
             newp.add(e);
         }
 
+        Map<String, Type> newtp = doCallTypeParams(efc);
+        if (newtp != efc.getTypeParams()) {
+            changed = true;
+        }
+
         if (changed) {
             this.addStatements(addStmts);
-            return new ExprFunCall(efc, efc.getName(), newp);
+            return new ExprFunCall(efc, efc.getName(), newp, newtp);
         } else {
             return efc;
         }

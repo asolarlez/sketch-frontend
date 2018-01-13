@@ -1,0 +1,31 @@
+
+package array;
+
+struct SArray<T>{
+    int n;
+    T[n] val;
+}
+
+struct Array<T>{
+    SArray<T> inner;
+    int sz;
+}
+
+void newArray<T>(){
+    return new Array<T>(sz=0, inner= new SArray<T>(n=4));
+}
+
+T last<T>(Array<T> in){
+    assert in.sz > 0 : "Array size must be greater than zero";
+    return in.inner[in.sz-1];
+}
+
+void add<T>(Array<T> in, T val){
+    if(in.sz < in.inner.n){
+        in.inner[in.sz] = val;
+        in.sz++;
+    }else{
+        SArray<T> sa = new SArray(n=in.sz*2, val=in.inner.val);
+        in.inner = sa;
+    }
+}

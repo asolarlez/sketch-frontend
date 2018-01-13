@@ -1,0 +1,25 @@
+
+package stack;
+
+adt Stack<T>{
+   Nil{}
+   Content{T val; Stack<T> prev; }
+}
+
+Stack<T> Empty<T>(){
+    return new Nil<T>();
+}
+
+Stack<T> push<T>(Stack<T> prev, T val){
+    return new Content<T>(val=val, prev=prev);
+}
+
+Stack<T> pop<T>(Stack<T> st){
+    Content<T> c = (Content<T>) st;
+    return c.prev;
+}
+
+T peek<T>(Stack<T> st){
+    Content<T> c = (Content<T>) st;
+    return c.val;
+}
