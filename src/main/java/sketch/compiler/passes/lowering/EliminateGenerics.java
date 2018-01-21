@@ -33,7 +33,7 @@ public class EliminateGenerics extends SymbolTableVisitor {
 
         TypeRenamer tr = new TypeRenamer();
         tr.tmap = ms;
-        String newname = sd.getName() + tr.postfix();
+        String newname = nameExtend(sd.getName(), tr.postfix());
         sd = ((StructDef) sd.accept(tr)).creator().typeargs(null).name(newname).create();
         structs.put(tsr.toString(), sd);
         sd = ((StructDef) sd.accept(this));
@@ -49,7 +49,7 @@ public class EliminateGenerics extends SymbolTableVisitor {
                 return new TypeStructRef(structs.get(name).getName(), tsr.isUnboxed(), null);
             } else {
                 StructDef sd = newStructDef(newref);
-                String pkgname = nres.curPkg().getName();
+                String pkgname = sd.getPkg();
                 if (newstructs.containsKey(pkgname)) {
                     newstructs.get(pkgname).add(sd);
                 } else {
@@ -75,6 +75,24 @@ public class EliminateGenerics extends SymbolTableVisitor {
         return ls.toString();
     }
 
+    public String nameExtend(String name, String postfix) {
+        int idx = name.indexOf('@');
+        if (idx > 0) {
+            return name.substring(0, idx) + postfix + name.substring(idx);
+        } else {
+            return name + postfix;
+        }
+    }
+
+    public String noPkg(String name) {
+        int idx = name.indexOf('@');
+        if (idx > 0) {
+            return name.substring(0, idx);
+        } else {
+            return name;
+        }
+    }
+
     public Object visitExprFunCall(ExprFunCall efc){
         Function f = nres.getFun(efc.getName());
         List<String> tps = f.getTypeParams();
@@ -89,12 +107,14 @@ public class EliminateGenerics extends SymbolTableVisitor {
             String newName =signatures.get(sig).getFullName(); 
             return new ExprFunCall(efc, newName, efc.getParams(), null);
         }else{
-            String newName = efc.getName() + tr.postfix();
+            String newName = nameExtend(efc.getName(), tr.postfix());
             Function newSig =
-                    ((Function) ((Function) f.accept(tr)).creator().name(newName).typeParams(
-                            empty).create().accept(this));
+                    (((Function) f.accept(tr)).creator().name(noPkg(newName)).typeParams(empty).create());
             signatures.put(sig, newSig);
-            String pkgname = nres.curPkg().getName();
+            newSig = (Function) newSig.accept(this);
+            signatures.put(sig, newSig);
+
+            String pkgname = f.getPkg();
             if (newfuns.containsKey(pkgname)) {
                 newfuns.get(pkgname).add(newSig);
             } else {

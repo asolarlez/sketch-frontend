@@ -139,7 +139,7 @@ public class SymbolTableVisitor extends FEReplacer
             if (dif < 0) {
                 throw new ExceptionAtNode("Wrong number of parameters", f);
             }
-            boolean alloutputs = true;
+            boolean alloutputs = false; // NOT CLEAR WHAT THIS IS FOR?
             for (int i = 0; i < dif; ++i) {
                 Parameter p = formals.get(formals.size() - 1 - i);
                 if (!p.isParameterOutput()) {

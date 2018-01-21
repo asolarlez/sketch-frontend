@@ -327,17 +327,7 @@ public class InnerFunReplacer extends BidirectionalPass {
                     return exp;
                 }
 
-                if (pt instanceof TypeStructRef) {
-                    String lname = ((TypeStructRef) pt).getName();
-                    if (nres.isTemplate(lname)) {
-                        nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
-                    } else {
-                        String nm = nres.getStructName(lname);
-                        if (!nm.equals(lname)) {
-                            pt = new TypeStructRef(nm, ((TypeStructRef) pt).isUnboxed());
-                        }
-                    }
-                }
+                pt = normalizeType(pt);
 
                 TreeSet<String> oldDependent = dependent;
                 ParamInfo info = this.nfi.paramsToAdd.get(name);
@@ -358,6 +348,41 @@ public class InnerFunReplacer extends BidirectionalPass {
                 dependent = oldDependent;
             }
             return exp;
+        }
+
+        private Type normalizeType(Type pt) {
+            if (pt instanceof TypeStructRef) {
+                String lname = ((TypeStructRef) pt).getName();
+                if (nres.isTemplate(lname)) {
+                    nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                } else {
+                    TypeStructRef tsr = (TypeStructRef) pt;
+                    if (tsr.hasTypeParams()) {
+                        List<Type> newt = new ArrayList<Type>();
+                        boolean changed = false;
+                        for (Type tp : tsr.getTypeParams()) {
+                            Type normalized = normalizeType(tp);
+                            newt.add(normalized);
+                            if (normalized != tp) {
+                                changed = true;
+                            }
+                        }
+                        if (!changed) {
+                            newt = tsr.getTypeParams();
+                        }
+                        String nm = nres.getStructName(lname);
+                        if (!nm.equals(lname) || changed) {
+                            pt = new TypeStructRef(nm, ((TypeStructRef) pt).isUnboxed(), newt);
+                        }
+                    } else {
+                        String nm = nres.getStructName(lname);
+                        if (!nm.equals(lname)) {
+                            pt = new TypeStructRef(nm, ((TypeStructRef) pt).isUnboxed());
+                        }
+                    }
+                }
+            }
+            return pt;
         }
 
         public Object visitStructDef(StructDef ts) {

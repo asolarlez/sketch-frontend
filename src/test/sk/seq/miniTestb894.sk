@@ -1,0 +1,32 @@
+
+
+
+include "stack.skh";
+
+package B{
+    void foo<T>(Stack<T> stack, T x){
+        int v = 3;
+        void action(int u){
+            stack = push(stack, x);
+            assert peek(stack) == x;   
+            if(u + 5 < v){
+                action(u + 1);
+            }
+        }
+        action(v);
+    }
+    
+    
+}
+
+
+package A{
+
+harness void main(int x){
+    Stack<int> stack = Empty();
+    
+    
+    foo(stack, x);
+}
+
+}
