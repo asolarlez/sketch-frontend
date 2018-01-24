@@ -55,6 +55,9 @@ public class NodesToSuperCpp extends NodesToJava {
     protected Set<String> typeParams = new HashSet<String>();
 
     protected String outputCreator(StructDef struct) {
+
+        StructDef topParent = struct;
+
         List<Pair<String, TypeArray>> fl = new ArrayList<Pair<String, TypeArray>>();
         final TypedHashMap<String, Type> fmap = new TypedHashMap<String, Type>();
         {
@@ -64,6 +67,7 @@ public class NodesToSuperCpp extends NodesToJava {
                 String parent;
                 if ((parent = nres.getStructParentName(current.getName())) != null) {
                     current = nres.getStruct(parent);
+                    topParent = current;
                 } else {
                     current = null;
                 }
@@ -80,9 +84,17 @@ public class NodesToSuperCpp extends NodesToJava {
             }
         };
 
-        String className = escapeCName(struct.getName());
+        String className = classFullName(struct);
 
         String result = "";
+
+        if (struct.hasTypeargs()) {
+
+            List<String> tas = struct.getTypeargs();
+            nres.pushTempTypes(tas);
+            result += regTypeParams(tas);
+        }
+
         int arrayAbove = 0;
         String template = null;
         result += indent + className + "* " + className + "::create(";
@@ -213,12 +225,16 @@ public class NodesToSuperCpp extends NodesToJava {
             }
             result +=
                     indent + "rv->" + NodesToSuperH.typeVars.get(parent) + "= " +
+
+                            classFullName(topParent) + "::" + 
                             struct.getName().toUpperCase() + "_type;\n";
         }
         result += indent + "return rv;\n";
         unIndent();
         result += indent + "}\n";
-
+        if (struct.hasTypeargs()) {
+            nres.popTempTypes();
+        }
         return result;
     }
 
@@ -636,11 +652,29 @@ public class NodesToSuperCpp extends NodesToJava {
         return nvar;
     }
 
+    public String getCppNameWithTArgs(TypeStructRef tsr) {
+        String nm = getCppName(tsr);
+        if (tsr.hasTypeParams()) {
+            nm += "<";
+            boolean first = true;
+            for (Type t : tsr.getTypeParams()) {
+                if (!first) {
+                    nm += ", ";
+                }
+                first = true;
+                nm += typeForDecl(t);
+            }
+            nm += ">";
+        }
+        return nm;
+    }
+
     public String getCppName(TypeStructRef tsr) {
         if (typeParams.contains(tsr.getName())) {
             return tsr.getName();
         }
-        return procName(nres.getStructName(tsr.getName()));
+        String nm = procName(nres.getStructName(tsr.getName()));
+        return nm;
     }
 
     public String getCppFunName(String name) {
@@ -724,10 +758,12 @@ public class NodesToSuperCpp extends NodesToJava {
 
     public Object visitExprNew(ExprNew en) {
 
+        TypeStructRef typeToConstruct = (TypeStructRef) en.getTypeToConstruct();
+
         StructDef struct =
-                nres.getStruct(((TypeStructRef) en.getTypeToConstruct()).getName());
+                nres.getStruct(typeToConstruct.getName());
         String res =
-                this.getCppName((TypeStructRef) en.getTypeToConstruct()) + "::create(";
+                this.getCppNameWithTArgs(typeToConstruct) + "::create(";
         Map<String, Expression> pe = new HashMap<String, Expression>();
 
         for (ExprNamedParam enp : en.getParams()) {
@@ -816,6 +852,23 @@ public class NodesToSuperCpp extends NodesToJava {
         symtab = oldSymTab;
         result += "\n}\n";
         return result;
+    }
+
+    public String classFullName(StructDef struct) {
+        String base = escapeCName(struct.getName());
+        if (struct.hasTypeargs()) {
+            base += "<";
+            boolean first = true;
+            for (String t : struct.getTypeargs()) {
+                if (!first)
+                    base += ", ";
+                base += t;
+                first = false;
+            }
+            base += ">";
+        }
+        return base;
+
     }
 
     public String escapeCName(String s) {
@@ -1420,10 +1473,23 @@ public class NodesToSuperCpp extends NodesToJava {
     @Override
     public String convertType(Type type) {
         if (type instanceof TypeStructRef) {
-            if (typeParams.contains(((TypeStructRef) type).getName())) {
+            TypeStructRef tsr = (TypeStructRef) type;
+            if (typeParams.contains(tsr.getName())) {
                 return ((TypeStructRef) type).getName();
             }
-            return getCppName((TypeStructRef) type) + "*";
+            String rv = getCppName((TypeStructRef) type);
+            boolean first = true;
+            if (tsr.hasTypeParams()) {
+                rv += "<";
+                for (Type tt : tsr.getTypeParams()) {
+                    if (!first) {
+                        rv += ", ";
+                    }
+                    rv += typeForDecl(tt);
+                }
+                rv += "> ";
+            }
+            return rv + "*";
 
         } else if (type instanceof TypePrimitive) {
             switch (((TypePrimitive) type).getType()) {

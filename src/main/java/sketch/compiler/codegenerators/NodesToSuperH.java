@@ -44,11 +44,29 @@ public class NodesToSuperH extends NodesToSuperCpp {
             preIncludes += a.contents() + "\n";
         }
 
+        if (struct.hasTypeargs()) {
+            List<String> tas = struct.getTypeargs();
+            result += regTypeParams(tas);
+            nres.pushTempTypes(tas);
+        }
+
         result += indent + "class " + escapeCName(struct.getName());
         if (nres.getStructParentName(struct.getFullName()) != null) {
+            String parentName = nres.getStructParentName(struct.getFullName()).split("@")[0];
+            if (struct.hasTypeargs()) {
+                // We assume the parent has the same typeargs.
+                boolean first = true;
+                parentName += "<";
+                for (String targ : struct.getTypeargs()) {
+                    if (!first) {
+                        parentName += ", ";
+                    }
+                    parentName += targ;
+                }
+                parentName += ">";
+            }
             result +=
-                    " : public " +
-                            nres.getStructParentName(struct.getFullName()).split("@")[0];
+                    " : public " + parentName;
         }
         result += "{\n  public:\n";
         addIndent();
@@ -178,6 +196,9 @@ public class NodesToSuperH extends NodesToSuperCpp {
 
         unIndent();
         result += indent + "};\n";
+        if (struct.hasTypeargs()) {
+            nres.popTempTypes();
+        }
         symtab = oldSymTab;
         return result;
     }
@@ -194,7 +215,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         for (Package pkg : prog.getPackages()) {
             ret += "namespace " + pkg.getName() + "{\n";
             for (StructDef ts : pkg.getStructs()) {
-                ret += "  class " + ts.getName() + ";\n";
+                ret += structDecl(ts);
             }
             ret += "}\n";
         }
@@ -204,6 +225,16 @@ public class NodesToSuperH extends NodesToSuperCpp {
         return ret;
     }
 
+    public String structDecl(StructDef struct) {
+        String result = "";
+        if (struct.hasTypeargs()) {
+            result += regTypeParams(struct.getTypeargs());
+        }
+
+        result += "class " + escapeCName(struct.getName()) + "; \n";
+        return result;
+    }
+
     public Object visitPackage(Package spec) {
         String result = "";
         nres.setPackage(spec);
@@ -211,7 +242,7 @@ public class NodesToSuperH extends NodesToSuperCpp {
         result += "namespace " + spec.getName() + "{\n";
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
             StructDef struct = (StructDef) iter.next();
-            result += "class " + escapeCName(struct.getName()) + "; \n";
+            result += structDecl(struct);
         }
 
         for (Iterator iter = spec.getStructs().iterator(); iter.hasNext();) {
