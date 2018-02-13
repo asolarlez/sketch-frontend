@@ -556,7 +556,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                         }
                     }
                 } else {
-                    if (exp.getOp() == ExprBinary.BINOP_MUL) {
+                    if (exp.getOp() == ExprBinary.BINOP_MUL || exp.getOp() == ExprBinary.BINOP_AND || exp.getOp() == ExprBinary.BINOP_BAND) {
                         if ((right.hasIntVal() && right.getIntVal() == 0) ||
                                 nright.equals(ExprConstInt.zero))
                         {
