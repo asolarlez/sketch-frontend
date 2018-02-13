@@ -131,7 +131,7 @@ public class StreamItParserFE extends antlr.LLkParser       implements StreamItP
 	    	}
 	    	shortFilename = lfile;	
 		}		
-		lastCx = new FEContext(shortFilename, line, col);	
+		lastCx = new FEContext(shortFilename, line, col, StreamItLex.lastComment);	
 		return lastCx;
 		
 		// int col = t.getColumn();
@@ -282,7 +282,7 @@ public StreamItParserFE(ParserSharedInputState state) {
 					{
 						match(SEMI);
 						if ( inputState.guessing==0 ) {
-							pkgName = currPkg;  pkgCtxt = getContext(id);
+							pkgName = currPkg;  pkgCtxt = getContext(id); StreamItLex.lastComment = null;
 						}
 						break;
 					}
@@ -622,6 +622,7 @@ inputState.guessing--;
 		boolean isModel = false;
 		List<String> tp=null;
 		List<String> fixes = new ArrayList<String>();
+		FEContext funCx = null;
 		
 		
 		try {      // for error handling
@@ -698,6 +699,9 @@ inputState.guessing--;
 			}
 			}
 			l=param_decl_list();
+			if ( inputState.guessing==0 ) {
+				funCx = getContext(id); StreamItLex.lastComment = null;
+			}
 			{
 			switch ( LA(1)) {
 			case TK_implements:
@@ -752,7 +756,7 @@ inputState.guessing--;
 				if ( inputState.guessing==0 ) {
 					
 					assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
-					Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
+					Function.FunctionCreator fc = Function.creator(funCx, id.getText(), Function.FcnType.Static).returnType(
 					rt).params(l).body(s).annotations(amap).typeParams(tp).fixes(fixes);
 					
 					// function type
@@ -804,7 +808,7 @@ inputState.guessing--;
 			{
 				match(SEMI);
 				if ( inputState.guessing==0 ) {
-					f = Function.creator(getContext(id), id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create();
+					f = Function.creator(funCx, id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create();
 				}
 				break;
 			}
@@ -901,7 +905,7 @@ inputState.guessing--;
 			} while (true);
 			}
 			if ( inputState.guessing==0 ) {
-				f = new FieldDecl(ctx, ts, ns, xs);
+				f = new FieldDecl(ctx, ts, ns, xs); StreamItLex.lastComment = null;
 			}
 		}
 		catch (RecognitionException ex) {
@@ -927,7 +931,9 @@ inputState.guessing--;
 			Annotation an=null;
 			List<String> typeargs = new ArrayList<String>();
 			HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
-			List types = new ArrayList();
+			List types = new ArrayList(); 
+			FEContext fec = null;
+			
 		
 		try {      // for error handling
 			{
@@ -949,6 +955,9 @@ inputState.guessing--;
 			match(TK_struct);
 			id = LT(1);
 			match(ID);
+			if ( inputState.guessing==0 ) {
+				fec = getContext(t); StreamItLex.lastComment = null;
+			}
 			{
 			switch ( LA(1)) {
 			case LESS_THAN:
@@ -1058,9 +1067,9 @@ inputState.guessing--;
 			if ( inputState.guessing==0 ) {
 				
 							if(parent != null) {
-								ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, typeargs, annotations).create();
+								ts = StructDef.creator(fec, id.getText(),parent.getText(), true, names, types, typeargs, annotations).create();
 							}else{
-								ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, typeargs, annotations).create();
+								ts = StructDef.creator(fec, id.getText(),null, true, names, types, typeargs, annotations).create();
 							}
 			}
 		}
@@ -1087,13 +1096,18 @@ inputState.guessing--;
 		Annotation an = null; StructDef innerStruct;
 		List<String> typeargs = new ArrayList<String>();
 		HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
-		List types = new ArrayList();
+		List types = new ArrayList(); 
+		FEContext fec = null;
+		
 		
 		try {      // for error handling
 			t = LT(1);
 			match(TK_adt);
 			id = LT(1);
 			match(ID);
+			if ( inputState.guessing==0 ) {
+				fec = getContext(t); StreamItLex.lastComment = null;
+			}
 			{
 			switch ( LA(1)) {
 			case LESS_THAN:
@@ -1182,7 +1196,7 @@ inputState.guessing--;
 			}
 			match(RCURLY);
 			if ( inputState.guessing==0 ) {
-				str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, typeargs, annotations).create();
+				str = StructDef.creator(fec, id.getText(), null, adtList.isEmpty(), names, types, typeargs, annotations).create();
 				str.setImmutable();
 					 adtList.add(0, str);
 					
@@ -6547,6 +6561,7 @@ inputState.guessing--;
 			if ( inputState.guessing==0 ) {
 				
 							ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, typeargs, annotations).create();
+							StreamItLex.lastComment = null;
 							
 			}
 		}

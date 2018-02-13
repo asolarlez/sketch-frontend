@@ -1,24 +1,44 @@
-
+/**
+ * Immutable generic stack datatype.
+ * 
+ */
 package stack;
 
-adt Stack<T>{
-   Nil{}
-   Content{T val; Stack<T> prev; }
+/**
+ * Abstract immutable Stack type. You should only construct this type using the 
+ * \lstinline!Empty! constructor listed below.
+ */
+adt Stack<T>{    
+   Nil{@Private() }
+   Content{@Private()  T val; Stack<T> prev; }
 }
 
+
+/**
+ * Creates an empty stack.
+ */
 Stack<T> Empty<T>(){
     return new Nil<T>();
 }
 
+/**
+ * Pushes an element into the stack and returns the new stack.
+ */
 Stack<T> push<T>(Stack<T> prev, T val){
     return new Content<T>(val=val, prev=prev);
 }
 
+/**
+ * Pops the top of the stack and returns the new stack.
+ */
 Stack<T> pop<T>(Stack<T> st){
     Content<T> c = (Content<T>) st;
     return c.prev;
 }
 
+/**
+ * Returns the value of the top of the stack.
+ */
 T peek<T>(Stack<T> st){
     Content<T> c = (Content<T>) st;
     return c.val;

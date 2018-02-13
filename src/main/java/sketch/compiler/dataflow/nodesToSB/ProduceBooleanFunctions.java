@@ -740,7 +740,16 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
 
         for (SpecSketch s : assertions) {
-            ((NtsbVtype) this.vtype).out.println("assert " + s + ";");
+            Function sk = nres.getFun(s.sketch);
+            String assrt = "assert " + s;
+            if (sk.hasAnnotation("FromFile")) {
+                Vector<Annotation> anot = sk.getAnnotation("FromFile");
+                assrt += " FILE ";
+                for (Annotation an : anot) {
+                    assrt += "\"" + an.contents() + "\"";
+                }
+            }
+            ((NtsbVtype) this.vtype).out.println(assrt + ";");
             String sname = nres.getFunName(s.sketch);
             Set<String> fixes = fhtrack.getFixes(sname);
             if (fixes != null && fixes.size() > 0) {

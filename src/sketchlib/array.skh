@@ -1,25 +1,50 @@
-
+/**
+ * Array library includes both fixed size and variable size arrays. The main reason 
+ * to use these instead of the built in array types 
+ * is if you do not want the array length to be part of the type. 
+ */
 package array;
 
+/**
+ * Static sized array. The main reason to use this object instead of just an array of 
+ * size T[n] is if you do not want the type to include the array size. For example, 
+ * suppose you have a filter function \lstinline!filter<T>(int n, T[n] in, fun pred)!
+ * that takes an array as input and filters out all elements on which predicate \lstinline!pred! 
+ * returns \lstinline!false!.  We do not know how many elements the output is going to have, 
+ * so the return type cannot just be int[q]. Instead, the return type can be 
+ * \lstinline!SArray<T>!. 
+ */
 struct SArray<T>{
     int n;
     T[n] val;
 }
 
+/**
+ * This is a variable size array, similar to a \lstinline!Vector! datatype in other languages.
+ */
 struct Array<T>{
     SArray<T> inner;
     int sz;
 }
 
-void newArray<T>(){
+/**
+ * Create a new empty array of length zero.
+ */
+Array<T> newArray<T>(){
     return new Array<T>(sz=0, inner= new SArray<T>(n=4));
 }
 
+/**
+ * Return the last element of the array \lstinline!in!.
+ */
 T last<T>(Array<T> in){
     assert in.sz > 0 : "Array size must be greater than zero";
     return in.inner[in.sz-1];
 }
 
+/**
+ * Add an element \lstinline!val! at the end of array \lstinline!in!.
+ */
 void add<T>(Array<T> in, T val){
     if(in.sz < in.inner.n){
         in.inner[in.sz] = val;

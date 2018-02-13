@@ -36,6 +36,10 @@ public class Function extends FENode {
         return annotations.getOrEmpty(tag);
     }
 
+    public HashmapList<String, Annotation> getAnnotations() {
+        return annotations;
+    }
+
     public static enum FcnType {
         // Uninterpreted Function
         Uninterp("uninterp"),
@@ -463,9 +467,18 @@ public class Function extends FENode {
     public String printParams(){
         String s = "";
         boolean notf = false;
+        boolean hasSeenOptional = false;
         for(Parameter p : params){
+            if (!p.isImplicit() && hasSeenOptional) {
+                hasSeenOptional = false;
+                s += "]";
+            }
             if(notf){ s +=", "; }
             if(p.isParameterOutput()){ s += "ref "; }
+            if (p.isImplicit() && !hasSeenOptional) {
+                hasSeenOptional = true;
+                s += "[";
+            }
             s += p.getType() + " " + p.getName();
             notf = true;
         }

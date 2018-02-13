@@ -29,6 +29,7 @@ public class FEContext
     private String fileName;
     private int lineNumber, columnNumber;
     private String file;
+    private String lastComment;
 
     /** Create a new context object with no location information. */
     public FEContext()
@@ -81,11 +82,36 @@ public class FEContext
         }
     }
 
+    public FEContext(String fileName, int line, int col, String lastComment) {
+        this.fileName = fileName;
+        lineNumber = line;
+        columnNumber = col;
+        this.lastComment = lastComment;
+
+        String lfile = fileName;
+        if (lfile == null) {
+            lfile = "<unknown>";
+        }
+        if (line >= 0) {
+            file = lfile + ":" + line;
+        } else {
+            file = lfile;
+        }
+    }
+
     /** Get the name of the file this node appears in, or null if it is
      * unavailable. */
     public String getFileName()
     {
         return fileName;
+    }
+
+    public boolean hasComment() {
+        return lastComment != null;
+    }
+
+    public String getComment() {
+        return lastComment;
     }
 
     /** Get the line number this node begins on, or -1 if it is

@@ -145,7 +145,7 @@ options {
 	    	}
 	    	shortFilename = lfile;	
 		}		
-		lastCx = new FEContext(shortFilename, line, col);	
+		lastCx = new FEContext(shortFilename, line, col, StreamItLex.lastComment);	
 		return lastCx;
 		
 		// int col = t.getColumn();
@@ -236,7 +236,7 @@ program	 returns [Program p]
            |    sa = special_assert_statement { specialAsserts.add(sa); }
            |    file=include_stmt { handleInclude (file, namespaces); }
            |    TK_package id:ID { currPkg = (id.getText()); curPkgCx = getContext(id);}
-                            (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id);} | pk = pkgbody {namespaces.add(pk);  } ) 
+                            (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id); StreamItLex.lastComment = null;} | pk = pkgbody {namespaces.add(pk);  } ) 
            |    pragma_stmt
         )*
 		EOF
@@ -326,7 +326,7 @@ field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 			COMMA id2:ID (ASSIGN x=expr_or_lambda)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
-		{ f = new FieldDecl(ctx, ts, ns, xs); }
+		{ f = new FieldDecl(ctx, ts, ns, xs); StreamItLex.lastComment = null;  }
 	;
 
 
@@ -550,6 +550,7 @@ function_decl returns [Function f] {
     boolean isModel = false;
     List<String> tp=null;
     List<String> fixes = new ArrayList<String>();
+    FEContext funCx = null;
 }
 	:
 	amap=annotation_list
@@ -564,13 +565,13 @@ function_decl returns [Function f] {
 	rt=return_type
 	id:ID
 	(tp=type_params)?
-	l=param_decl_list
+	l=param_decl_list { funCx = getContext(id); StreamItLex.lastComment = null;}
 	(TK_implements impl:ID)?
 	(TK_fixes  ( name:ID{ fixes.add(name.getText());  } ) )?
 	( s=block
 	{
             assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
-            Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
+            Function.FunctionCreator fc = Function.creator(funCx, id.getText(), Function.FcnType.Static).returnType(
                 rt).params(l).body(s).annotations(amap).typeParams(tp).fixes(fixes);
 
             // function type
@@ -615,7 +616,7 @@ function_decl returns [Function f] {
 
             f = fc.create();
 	}
-	| SEMI  { f = Function.creator(getContext(id), id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
+	| SEMI  { f = Function.creator(funCx, id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
 	;
 
 return_type returns [Type t] { t=null; }
@@ -1256,9 +1257,11 @@ adt_decl returns [List<StructDef> adtList]
   Annotation an = null; StructDef innerStruct;
   List<String> typeargs = new ArrayList<String>();
   HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
-  List types = new ArrayList(); }
+  List types = new ArrayList(); 
+  FEContext fec = null;
+  }
 
-	:  t:TK_adt id:ID 
+	:  t:TK_adt id:ID { fec = getContext(t); StreamItLex.lastComment = null;  }
 	(
 		LESS_THAN
 		  typearg : ID {typeargs.add(typearg.getText());}
@@ -1277,7 +1280,7 @@ adt_decl returns [List<StructDef> adtList]
 	| an=annotation {annotations.append(an.tag, an);}
 	)*
 	RCURLY
-	{str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, typeargs, annotations).create();
+	{str = StructDef.creator(fec, id.getText(), null, adtList.isEmpty(), names, types, typeargs, annotations).create();
      str.setImmutable();
 	 adtList.add(0, str);
 	}
@@ -1299,6 +1302,7 @@ structInsideADT_decl returns [StructDef ts]
 		RCURLY
 		{ 
 			ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, typeargs, annotations).create();
+			StreamItLex.lastComment = null;
 			}
 	;
 struct_decl returns [StructDef ts]
@@ -1306,9 +1310,11 @@ struct_decl returns [StructDef ts]
 	Annotation an=null;
 	List<String> typeargs = new ArrayList<String>();
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
-	List types = new ArrayList(); }
+	List types = new ArrayList(); 
+	FEContext fec = null;
+	}
 	:	(an=annotation{ annotations.append(an.tag, an); })*
-	t:TK_struct id:ID
+	t:TK_struct id:ID { fec = getContext(t); StreamItLex.lastComment = null; }
 		(
 		LESS_THAN
 		  typearg : ID {typeargs.add(typearg.getText());}
@@ -1330,8 +1336,8 @@ struct_decl returns [StructDef ts]
 		RCURLY
 		{ 
 			if(parent != null) {
-				ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, typeargs, annotations).create();
+				ts = StructDef.creator(fec, id.getText(),parent.getText(), true, names, types, typeargs, annotations).create();
 			}else{
-				ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, typeargs, annotations).create();
+				ts = StructDef.creator(fec, id.getText(),null, true, names, types, typeargs, annotations).create();
 			} }
 	;

@@ -100,7 +100,7 @@ public class MainMethodCreateNospec extends FEReplacer {
                 mainFcn.getName() + "__WrapperNospec").body(
                 new StmtBlock(artificalFrom, stmts)).printType(
                         mainFcn.getInfo().printType)
-                .pkg(mainFcn.getPkg()).fixes(mainFcn.getFixes()).create();
+                .pkg(mainFcn.getPkg()).fixes(mainFcn.getFixes()).annotations(mainFcn.getAnnotations()).create();
     }
 
     @Override

@@ -44,6 +44,9 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Changes the default temp directory from $HOME/.sketch/tmp to a different value.")
     public String tempdir = null;
 
+    @CliParameter(metavar = "FILE.tex", help = "Outputs documentation to FILE.tex. Sketch compiler will not actually be invoked if you pass this flag.")
+    public String outputDocs = null;
+
     @CliParameter(help = "Use this flag if you want the compiler to produce C code.")
     public boolean outputCode;
 

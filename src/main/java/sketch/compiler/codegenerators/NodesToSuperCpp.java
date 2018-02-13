@@ -87,12 +87,12 @@ public class NodesToSuperCpp extends NodesToJava {
         String className = classFullName(struct);
 
         String result = "";
-
+        String preamble = "";
         if (struct.hasTypeargs()) {
 
             List<String> tas = struct.getTypeargs();
             nres.pushTempTypes(tas);
-            result += regTypeParams(tas);
+            preamble += regTypeParams(tas);
         }
 
         int arrayAbove = 0;
@@ -143,7 +143,9 @@ public class NodesToSuperCpp extends NodesToJava {
             }
         }
         if (template != null) {
-            result = template + ">\n" + result;
+            result = preamble + template + ">\n" + result;
+        } else {
+            result = preamble + result;
         }
         result += "){\n";
         addIndent();
@@ -1107,7 +1109,8 @@ public class NodesToSuperCpp extends NodesToJava {
         result += "switch(";
         String var = (String) stmt.getExpr().accept(this);
         result += var;
-        String name = ((TypeStructRef) getType(stmt.getExpr())).getName();
+        TypeStructRef originalType = ((TypeStructRef) getType(stmt.getExpr()));
+        String name = originalType.getName();
         StructDef sd = nres.getStruct(name);
         name = sd.getFullName();
         while (sd.getParentName() != null) {
@@ -1119,8 +1122,9 @@ public class NodesToSuperCpp extends NodesToJava {
         for (String c : stmt.getCaseConditions()) {
             // brakects around cases and constants with type.
             if (!("default".equals(c))) {
+                TypeStructRef newType = new TypeStructRef(c, false, originalType.getTypeParams());
                 result +=
-                        indent + "case " + sd.getPkg() + "::" + name + "::" +
+                        indent + "case " + this.getCppNameWithTArgs(newType) + "::" +
                                 c.toUpperCase() + "_type" +
                                 ":\n" +
                                 indent + indent;
@@ -1129,13 +1133,15 @@ public class NodesToSuperCpp extends NodesToJava {
                     newVar = "_" + newVar;
                 }
                 result += "{\n" + indent + indent;
+
+
+                String tfd = typeForDecl(newType);
                 result +=
-                        sd.getPkg() + "::" + c + "* " + newVar + " = (" + sd.getPkg() +
-                                "::" + c + "*)  " + var + ";\n";// semicolon
+                        tfd + " " + newVar + " = (" + tfd + ")  " + var + ";\n";// semicolon
                 VarReplacer vr = new VarReplacer(var, newVar);
                 SymbolTable oldSymTab = symtab;
                 symtab = new SymbolTable(oldSymTab);
-                symtab.registerVar(newVar, new TypeStructRef(c, false));
+                symtab.registerVar(newVar, newType);
                 Statement bodyStatement = (Statement) stmt.getBody(c).accept(vr);
                 if (!bodyStatement.isBlock()) {
                     bodyStatement = new StmtBlock(bodyStatement);

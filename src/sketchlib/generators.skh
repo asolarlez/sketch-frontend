@@ -1,3 +1,7 @@
+/**
+ * Generator functions for arithmetic operations.
+ */
+
 package generators;
 
 int PLUS=0;
@@ -9,7 +13,7 @@ int MOD=4;
 
 /**
  * 
- * Linear expression generator with coefficients between -2 and (2^cbits - 2) 
+ * Linear expression generator with coefficients between $-2$ and $(2^{cbits} - 2)$ 
  * 
  */
 generator int linexp([int N], int[N] vals){
@@ -25,7 +29,7 @@ generator int linexp([int N], int[N] vals){
 
 /**
  * 
- * Linear expression generator with coefficients between 0 and (2^cbits) 
+ * Linear expression generator with coefficients between $0$ and $(2^{cbits})$ 
  * 
  */
 generator int plinexp([int N], int[N] vals){

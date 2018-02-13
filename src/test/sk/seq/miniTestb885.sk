@@ -80,7 +80,7 @@ harness void main2(int x, int y, int z, int oth){
     generator bit eq(opt a, opt b){ 
         return a == b;        
     }
-    Tree<opt> t = new Nil<pair>();
+    Tree<opt> t = new Nil<opt>();
     t = add(t, new pair(x=x, y=x), lt, eq);
    t = add(t, new pair(x=y, y=y), lt, eq);
     t = add(t, new pair(x=x, y=z), lt, eq);

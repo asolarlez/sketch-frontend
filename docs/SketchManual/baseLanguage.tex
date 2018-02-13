@@ -1070,6 +1070,7 @@ Annotations are preserved throughout the compiler chain all the way to code gene
 \item \lstinline!@NeedsInclude($inc$)!  tells the code generator that a particular function requires some specific header file to be included (see \secref{nativecode}).
 \item \lstinline!@Immutable()! declares a given structure as immutable.
 \item \lstinline!@DontAnalyze()! tells the synthesizer that a given harness should not be analyzed. This is useful if you have a harness for which you want to generate code, but which you know to be too big and complex to analyze.
+\item \lstinline!@Private()! indicates that a function should not be used outside the package where it is defined.
 \item \lstinline!@Gen()! This is used to annotate a special class of functions that have a special meaning for the analysis engine. You should not be using this annotation in your own code.
 \end{itemize}
 

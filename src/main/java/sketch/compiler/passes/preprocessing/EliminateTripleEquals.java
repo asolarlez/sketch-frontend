@@ -253,12 +253,25 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         converted = true;
         StructDef struct = nres.getStruct(type.getName());
         String structName = struct.getFullName();
+        String structFullName = structName;
+        if (type.hasTypeParams()) {
+            structFullName += "<";
+            boolean fst = true;
+            for (Type t : type.getTypeParams()) {
+                if (!fst) {
+                    structFullName += ",";
+                }
+                fst = false;
+                structFullName += t.toString();
+            }
+            structFullName += ">";
+        }
 
-        if (equalsFuns.containsKey(structName)) {
-            return equalsFuns.get(structName);
+        if (equalsFuns.containsKey(structFullName)) {
+            return equalsFuns.get(structFullName);
         }
         String fname = varGen.nextVar("equals" + "_" + struct.getName());
-        equalsFuns.put(structName, fname);
+        equalsFuns.put(structFullName, fname);
         Function.FunctionCreator fc =
                 Function.creator(ctx, fname, Function.FcnType.Static);
 
