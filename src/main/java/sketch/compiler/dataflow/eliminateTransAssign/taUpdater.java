@@ -3,6 +3,21 @@ package sketch.compiler.dataflow.eliminateTransAssign;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 
+ * This class is used to send commands to the transAssignAbsValue. 
+ * Each code below corresponds to a command:
+ * 
+ * CLEAR: Sets 'varIamEqualTo' to null. If a variable had recorded that it was equal to 
+ * some other var 'x', CLEAR tells it that it is no longer equal to 'x', either because 
+ * it got modified, or because it went out of scope.
+ * 
+ * 
+ * REMOVE: tells a transAssignAbsValue that arg should no longer be in the 'varsEqToMe' list, 
+ * either because 'arg' changed, or because it went out of scope. 
+ * 
+ */
+
 import sketch.compiler.dataflow.abstractValue;
 
 public class taUpdater extends abstractValue {

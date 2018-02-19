@@ -51,6 +51,10 @@ public class Cfctype extends abstractValueType {
         return allinit;
     }
 
+    public abstractValue RCONST(double v) {
+        return allinit;
+    }
+
     public abstractValue CONST(int v){
         return allinit;
     }

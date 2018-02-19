@@ -1,0 +1,53 @@
+include "math.skh";
+
+adt Tree<T>{
+    Node{ T val; Tree<T> left; Tree<T> right; }
+    Nil{}
+}
+
+generator
+Tree<T> leaf<T>(T val){ return new Node<T>(val=val); }
+
+generator T getVal<T>(Tree<T> t){
+    return ((Node<T>)t).val;
+}
+
+void foo(){
+}
+
+void moo(){
+}
+
+harness int main(int x){
+    double t = (double) x;
+    
+    double t2 = t + (2.0 + 5.0);
+    
+    Tree<double> tt = leaf(t2); 
+    
+    Tree<double> right = leaf(2.0);
+    
+    Node<double> nn = new Node<double>(left=tt ,right=tt);
+    
+    
+    if(getVal(nn.left) > getVal(nn.right)){
+        foo();
+    }
+    
+    if(getVal(nn.left) >= getVal(nn.right)){
+        moo();
+    }
+    
+    if(getVal(tt) > getVal(right)){
+        return 1;
+    }
+    
+    if(getVal(nn.left) == getVal(nn.right)){
+        return 2;
+    }
+    
+    
+    
+    return 0;
+    
+}

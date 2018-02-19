@@ -13,10 +13,33 @@ public class IntAbsValue extends abstractValue {
 	public static final int INT = 1;
 	public static final int LIST = 2;
     public static final int ADTNODE = 3;
+    public static final int SYMBOLIC = 4;
+    public static final int REAL = 5;
+
+    private static int idcounter = 0;
 
 	protected int type;
 	protected Object obj;
     protected boolean knownGeqZero;
+
+    public static abstractValue symbolic(String s, boolean b) {
+        IntAbsValue iab = new IntAbsValue();
+        iab.type = SYMBOLIC;
+        iab.obj = s + ":" + idcounter;
+        iab.knownGeqZero = b;
+        idcounter++;
+        return iab;
+
+    }
+
+    public static abstractValue symbolic(String s) {
+        IntAbsValue iab = new IntAbsValue();
+        iab.type = SYMBOLIC;
+        iab.obj = s + ":" + idcounter;
+        idcounter++;
+        return iab;
+
+    }
 
     protected Map<String, Map<String, abstractValue>> knownCases = null;
 	
@@ -42,6 +65,16 @@ public class IntAbsValue extends abstractValue {
 		case BOTTOM:{ 
 			return (v2.type == BOTTOM );
 		}
+        case SYMBOLIC: {
+            if (v2.type != SYMBOLIC)
+                return false;
+            return v2.obj.equals(obj);
+        }
+        case REAL: {
+            if (v2.type != SYMBOLIC)
+                return false;
+            return v2.obj.equals(obj);
+        }
 		}
 		return false;
 	}
@@ -125,6 +158,12 @@ public class IntAbsValue extends abstractValue {
         this.knownGeqZero = obj >= 0;
 	}
 	
+    public IntAbsValue(double obj) {
+        this.obj = obj;
+        this.type = REAL;
+        this.knownGeqZero = obj >= 0.0;
+    }
+
     public static IntAbsValue ADTnode(Map<String, Map<String, abstractValue>> cases)
     {
         IntAbsValue v = new IntAbsValue();
@@ -144,6 +183,9 @@ public class IntAbsValue extends abstractValue {
         if (type == ADTNODE && knownCases == null) {
             return false;
         }
+        if (type == SYMBOLIC) {
+            return false;
+        }
         return true;
 	}
 
@@ -155,6 +197,11 @@ public class IntAbsValue extends abstractValue {
 		assert type == INT : "Incorrect value type. Asking for int from " + this;
 		return ((Integer)this.obj).intValue();
 	}
+
+    public double getRealVal() {
+        assert type == REAL : "Incorrect value type. Asking for int from " + this;
+        return ((Double) this.obj).doubleValue();
+    }
 
 	@SuppressWarnings("unchecked")
 	public List<abstractValue> getVectValue() {
@@ -169,6 +216,10 @@ public class IntAbsValue extends abstractValue {
 	public boolean hasIntVal() {
 		return type == INT;
 	}
+
+    public boolean hasRealVal() {
+        return type == REAL;
+    }
 
     @Override
     public boolean knownGeqZero() {
@@ -226,6 +277,12 @@ public class IntAbsValue extends abstractValue {
 				return "BOTTOM"+ (isVolatile ? "_v" : "");
 			}
 		}
+        case SYMBOLIC: {
+            return "{" + obj + "}";
+        }
+        case REAL: {
+            return obj.toString();
+        }
 		}
 		return "NULL";
 	}

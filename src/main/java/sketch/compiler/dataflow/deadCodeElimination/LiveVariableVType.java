@@ -38,6 +38,7 @@ public class LiveVariableVType extends abstractValueType {
         return lv;
     }
 
+
     @Override
 	public abstractValue ARR(List<abstractValue> vals) {
 		LVSet lv = new LVSet();
@@ -100,6 +101,10 @@ public class LiveVariableVType extends abstractValueType {
 		return BOTTOM();
 	}
 
+    @Override
+    public abstractValue RCONST(double v) {
+        return BOTTOM();
+    }
 	@Override
 	public abstractValue CONST(int v) {
 		return BOTTOM();

@@ -22,6 +22,14 @@ public abstract class  abstractValue{
 	abstract public int getIntVal();
     public boolean knownGeqZero() { return false; }
 	abstract public boolean hasIntVal();
+
+    public boolean hasRealVal() {
+        return false;
+    }
+
+    public double getRealVal() {
+        return 0.0;
+    }
 	abstract public void update(abstractValue v);
 	abstract public abstractValue clone();
 

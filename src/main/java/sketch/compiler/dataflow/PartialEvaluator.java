@@ -241,7 +241,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitExprConstFloat(ExprConstFloat exp) {
         exprRV = exp;
-        return vtype.BOTTOM(exp.toString());
+        return vtype.RCONST(exp.getVal());
     }
 
     public Object visitExprConstInt(ExprConstInt exp) {
@@ -342,7 +342,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
             if (retVal != null && retVal.hasIntVal()) {
                 exprRV = new ExprConstInt(retVal.getIntVal());
             } else {
-                exprRV = new ExprField(exp, left, right, exp.isHole());
+                if (retVal != null && retVal.hasRealVal()) {
+                    exprRV = new ExprConstFloat(retVal.getRealVal());
+                } else {
+                    exprRV = new ExprField(exp, left, right, exp.isHole());
+                }
             }
         }
         return retVal;
@@ -538,6 +542,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 exprRV = new ExprConstInt(rv.getIntVal());
                 return rv;
             }else{
+                if (rv.hasRealVal()) {
+                    exprRV = new ExprConstFloat(rv.getRealVal());
+                    return rv;
+                }
                 if (exp.getOp() == ExprBinary.BINOP_ADD) {
                     if ((right.hasIntVal() && right.getIntVal() == 0) ||
                             nright.equals(ExprConstInt.zero))
@@ -1920,8 +1928,7 @@ nvarContext,
                     // ignore
                 }
                 String tname = tref.getName();
-                String pname = sdef.getParentName();
-                if (pname != null) {
+                if (sdef.immutable()) {
                     Map<String, abstractValue> fields =
                             new HashMap<String, abstractValue>();
                     for (ExprNamedParam p : expNew.getParams()) {

@@ -46,6 +46,7 @@ public abstract class abstractValueType{
      */
     abstract public abstractValue ADTnode(Map<String, Map<String, abstractValue>> cases);
 
+    abstract public abstractValue RCONST(double v);
     abstract public abstractValue CONST(int v);
 	abstract public abstractValue ARR(List<abstractValue> vals);
 

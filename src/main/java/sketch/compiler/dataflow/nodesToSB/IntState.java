@@ -32,7 +32,7 @@ public class IntState extends varState {
 				// init( newLHSvalue() );
 			}
 		} else
- if (t instanceof TypeStructRef) {
+        if (t instanceof TypeStructRef) {
 			init( newLHSvalue() );	
 		}else{
 			assert false :"This shouldn't happen";

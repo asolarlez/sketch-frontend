@@ -61,6 +61,11 @@ public class TAvalueType extends abstractValueType {
 		return bottom;
 	}
 
+    @Override
+    public abstractValue RCONST(double v) {
+        return bottom;
+    }
+
 	@Override
 	public abstractValue STAR(FENode star) {
 		return bottom;

@@ -131,9 +131,21 @@ public class NtsbVtype extends IntVtype {
         return null;
     }
 
+    public abstractValue SYMBOLIC(String s, boolean b) {
+        return BOTTOM(s, b);
+    }
+
+    public abstractValue SYMBOLIC(String s) {
+        return BOTTOM(s);
+    }
+
     @Override
     public abstractValue BOTTOM(String label, boolean knownGeqZero) {
         return new NtsbValue(label, knownGeqZero);
+    }
+
+    public abstractValue RCONST(double v) {
+        return BOTTOM("" + v);
     }
 
     public abstractValue CONST(int v){

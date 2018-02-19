@@ -9,7 +9,35 @@ import java.util.Set;
 import sketch.compiler.dataflow.MethodState;
 import sketch.compiler.dataflow.abstractValue;
 
-
+/**
+ * Keeps track of transitive assignments. There is one of this objects
+ * associated with every variable. The two key fields are varsEqToMe and
+ * varIamEqualTo.
+ * 
+ * Given a sequence like: x = f(in); y = x; z = y;
+ * 
+ * varIamEqualTo corresponds to the variable that you could replace me with. For
+ * example, z could be replaced with x, and so could y.
+ * 
+ * varsEqToMe is just the inverse of that relationship, so for x, varsEqToMe
+ * would be y and z.
+ * 
+ * When there is a transitive assignment, such as z=y above, varIamEqualTo would
+ * be the RHS, unless the RHS is equal to someone else, in which case, it's just
+ * the someone else. lhs.varIamEqualTo = rhs.varIamEaualTo if rhs.varIamEqualTo
+ * != null else rhs.
+ * 
+ * When the value of a var changes, all the varsEqToMe have to be notified that
+ * they are no longer equal to me.
+ * 
+ * Similarly, when a var goes out of scope, all the varsEqToMe have to be
+ * notified. (this is done by TAvarState.outOfScope()). (and I also have to
+ * remove myself from the varsEqToMe of this.varIamEqualTo).
+ * 
+ * 
+ * @author asola
+ *
+ */
 public class transAssignAbsValue extends abstractValue {
     String varIamEqualTo=null;
     Set<String> varsEqToMe;
