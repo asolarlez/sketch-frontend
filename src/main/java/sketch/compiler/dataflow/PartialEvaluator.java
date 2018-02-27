@@ -546,7 +546,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     exprRV = new ExprConstFloat(rv.getRealVal());
                     return rv;
                 }
-                if (exp.getOp() == ExprBinary.BINOP_ADD) {
+                if (exp.getOp() == ExprBinary.BINOP_ADD || exp.getOp() == ExprBinary.BINOP_OR || exp.getOp() == ExprBinary.BINOP_BOR) {
                     if ((right.hasIntVal() && right.getIntVal() == 0) ||
                             nright.equals(ExprConstInt.zero))
                     {
