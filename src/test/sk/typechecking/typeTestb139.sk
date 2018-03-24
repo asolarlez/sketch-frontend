@@ -1,0 +1,18 @@
+
+include "list.skh";
+pragma options "-p preproc";
+
+harness void main(){
+    List<int> l = add(empty(), 5);
+    foo(l);
+}
+
+T read<T>(List<T> in){ if(in != empty()) { return head(in); } }
+List<T> gen<T>(){ return empty();  }
+void foo(List<int> lst){
+    int x = read(lst); // From the context it is clear that T=int;
+    int y = read(gen()); //In this case too, the context is enough
+                         //to determine that T = int for both calls
+    read(gen()); // However, this would lead to a TypeError
+                // because the type of T is ambiguous.
+}

@@ -62,6 +62,7 @@ public class GenerateDocs extends FEReplacer {
 
     public Object visitPackage(Package p) {
         out.println("\\subsection{Package " + p.getName() + "}");
+        out.println("\\seclabel{lib:" + p.getName() + "}");
         if (p.getCx().hasComment()) {
             printCleanComment(p.getCx().getComment());
         }

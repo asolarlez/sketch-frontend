@@ -1122,7 +1122,14 @@ public class NodesToSuperCpp extends NodesToJava {
         for (String c : stmt.getCaseConditions()) {
             // brakects around cases and constants with type.
             if (!("default".equals(c))) {
-                TypeStructRef newType = new TypeStructRef(c, false, originalType.getTypeParams());
+
+                String fullname = c;
+                if (!c.contains("@")) {
+                    fullname = c + "@" + sd.getPkg();
+                }
+
+                TypeStructRef newType = new TypeStructRef(fullname, false, originalType.getTypeParams());
+
                 result +=
                         indent + "case " + this.getCppNameWithTArgs(newType) + "::" +
                                 c.toUpperCase() + "_type" +

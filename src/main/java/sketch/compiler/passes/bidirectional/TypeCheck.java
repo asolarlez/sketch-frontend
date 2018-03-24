@@ -751,6 +751,13 @@ public class TypeCheck extends BidirectionalPass {
         if (sd == null) {
             report(curcx, "The structure " + tr.getName() + " is undefined or ambiguous");
         }
+        if(tr.hasTypeParams()){
+            for(Type t : tr.getTypeParams()){
+                if(t.isArray()){
+                    report(curcx, "Arrays are not allowed as type parameters of Structs " + tr);
+                }
+            }
+        }
         return tr;
     }
 
@@ -954,6 +961,13 @@ public class TypeCheck extends BidirectionalPass {
                 }
                 tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres(), tdstate().getExpected());
             }
+
+            for (Type t : tren.tmap.values()) {
+                if (t.equals(TypePrimitive.bottomtype)) {
+                    throw new ExceptionAtNode("The type parameters in this call could not be fully disambiguated. ", exp);
+                }
+            }
+
             int actSz = exp.getParams().size();
             int formSz = f.getParams().size();
             if (actSz > formSz) {

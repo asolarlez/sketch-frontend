@@ -25,7 +25,7 @@ harness int main(int x){
     
     Tree<double> tt = leaf(t2); 
     
-    Tree<double> right = leaf(2.0);
+    Tree<double> right = leaf((double)2.0);
     
     Node<double> nn = new Node<double>(left=tt ,right=tt);
     

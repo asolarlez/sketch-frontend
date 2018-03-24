@@ -1,0 +1,9 @@
+
+struct s {
+  int x;
+  int x;
+}
+
+harness void main () {
+  assert true;
+}

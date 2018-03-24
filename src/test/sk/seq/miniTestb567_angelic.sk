@@ -119,7 +119,7 @@ generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
 	
 	return result[len-1];
 }
-
+@Native("{}")
 harness void partition(int p, int P, int N){
 	assume P>0;
 	assume N>0;

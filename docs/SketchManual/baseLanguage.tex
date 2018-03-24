@@ -1,20 +1,36 @@
 \section{Core language}
-The core sketch language is a simple imperative language that borrows most of its syntax from Java and C. 
+The core sketch language is a simple imperative language that borrows most of its syntax from Java and C.
 
 \subsection{Primitive Types}\seclabel{primitives}
 The sketch language contains five primitive types, \C{bit}, \C{int}, \C{char}, \C{double} and \C{float}. There is a subtyping relation between three of them:
-\C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever a character or integer is required. 
-\C{float} and \C{double} are completely interchangeable, but there is no subtyping relationship between them and the other types, so for example, you cannot use $1$ in place of $1.0$, or $0$ in place of $0.0$. 
+\C{bit $~~~~~~\sqsubseteq~~~~~~$ char $~~~~~~\sqsubseteq~~~~~~$ int}, so bit variables can be used wherever a character or integer is required.
+\C{float} and \C{double} are completely interchangeable, but there is no subtyping relationship between them and the other types, so for example, you cannot use $1$ in place of $1.0$, or $0$ in place of $0.0$.
 
-There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. In the case of characters, you can use the standard C syntax to represent character constants. 
+There are two \C{bit} constants, \C{0}, and \C{1}. Bits are also used to represent Booleans; the constants \C{false} and \C{true} are syntactic sugar for \C{0} and \C{1} respectively. In the case of characters, you can use the standard C syntax to represent character constants.
 
-\paragraph{Modeling floating point} Floating point values (either \C{float} or \C{double}) are not handled natively by the synthesizer, so they have to be modeled using other mechanisms. The sketch synthesizer currently supports three different encodings for floating point values, which can be controlled by the flag \C{--fe-fpencoding}.
+\paragraph{Modeling floating point}
+Analyzing floating point values is very expensive for the synthesizer,
+so as of version 1.7.5, the solver provides four different representations that the analyzer
+can use to reason about either \C{float} or \C{double}. The flag
+\C{--fe-fpencoding} controls which representation to use.
 
-\flagdoc{fe-fpencoding}{ This flag controls which of three possible encodings are used for floating point values. \C{AS_BIT} encodes floating point values using a single bit; addition and subtraction are replaced with \C{xor}, and multiplication is replaced with \C{and}. Division and comparisons are not supported in this representation, nor are casts to and from integers. \C{AS_FFIELD} will encode floating points using a finite field of integers mod 7. This representation does support division, but not comparisons or casts. Finally, \C{AS_FIXPOINT} represents floats as fixed point values; this representation supports all the operations, but it is the most expensive. }
+\flagdoc{fe-fpencoding}{ This flag controls which of three possible encodings are used for floating point values.
+\C{AS_BIT} encodes floating point values using a single bit; addition and
+subtraction are replaced with \C{xor}, and multiplication is replaced with
+\C{and}. Division and comparisons are not supported in this representation, nor
+are casts to and from integers. \C{AS_FFIELD} will encode floating points using
+a finite field of integers mod 7. This representation does support division, but
+not comparisons or casts. Finally, \C{AS_FIXPOINT} represents floats as fixed
+point values; this representation supports all the operations, but it is expensive.
+Finally, the \C{TO_BACKEND} representation uses the floating point support in
+the backend solver. It is the most expressive representation, and is set by
+default when you include the \C{math.skh} library. Its cost is very problem
+specific; for some problems it can be very efficient, but it can also exhibit
+poor scalability.}
 
 
 \subsection{Structs}
-More interesting types can be constructed from simpler types in two ways: by creating arrays of them (see \secref{array}) and by defining new types of heap allocated records. 
+More interesting types can be constructed from simpler types in two ways: by creating arrays of them (see \secref{array}) and by defining new types of heap allocated records.
 
 To define a new record type, the programmer uses the following syntax (borrowed from C):
 \begin{lstlisting}
@@ -28,7 +44,7 @@ struct $name${
 To allocate a new record in the heap, the programmer uses the keyword \C{new}; the syntax is the same as that for constructing an object in Java using the default constructor, but the programmer can also use named parameters to directly initialize certain fields upon allocation as shown in the following example.
 
 \begin{Example}
-Use of named parameters to initialize the fields of a struct. 	
+Use of named parameters to initialize the fields of a struct.
 \begin{lstlisting}
 struct Point{
   int x;
@@ -79,15 +95,15 @@ Just like in Java, references are typesafe and the heap is assumed to be garbage
 
 \subsection{Temporary Structures}
 
-There are instances where it is desirable to have the convenience of structures but without the cost of allocation and dereferencing, and without the burden of reasoning about aliasing. 
+There are instances where it is desirable to have the convenience of structures but without the cost of allocation and dereferencing, and without the burden of reasoning about aliasing.
 
-The language supports \emph{temporary structures}, which are unboxed, so they do not incur many of the usual costs associated with heap allocated structures. Temporary structures have copy semantics, so the programmer can think of them as primitive values and does not have to worry about aliasing. 
+The language supports \emph{temporary structures}, which are unboxed, so they do not incur many of the usual costs associated with heap allocated structures. Temporary structures have copy semantics, so the programmer can think of them as primitive values and does not have to worry about aliasing.
 
-One can use temporary structures as local variables and parameters by enclosing the type of the structure in vertical bars \C{|type|}. Temporary structures can be created with a constructor \C{|type|($args$)}, where $args$ are named parameters just like with a normal constructor, but the keyword \C{new} is not used since nothing is being allocated in the heap. 
+One can use temporary structures as local variables and parameters by enclosing the type of the structure in vertical bars \C{|type|}. Temporary structures can be created with a constructor \C{|type|($args$)}, where $args$ are named parameters just like with a normal constructor, but the keyword \C{new} is not used since nothing is being allocated in the heap.
 
 Temporary structures have the following properties:
 \begin{itemize}
-\item Assignment: assignment of a temporary structure to another results in a copy. 
+\item Assignment: assignment of a temporary structure to another results in a copy.
 \item Equality comparison: an equality comparison of two temporary structures is equivalent to the conjunction of their field-by-field comparison.
 \end{itemize}
 
@@ -117,29 +133,29 @@ if(??) assert p1 != p2; // equivalent to !(p1==p2)
 \end{Example}
 
 \paragraph{Interaction of temporary and heap allocated structures}
-An assignment from a heap allocated structure to a temporary structure is interpreted as a field-by-field copy. In the above example, an assignment \C{p3 = p2;} would be equivalent to 
+An assignment from a heap allocated structure to a temporary structure is interpreted as a field-by-field copy. In the above example, an assignment \C{p3 = p2;} would be equivalent to
 \begin{lstlisting}
 p3.x = px.x; p3.y = p2.y;
 \end{lstlisting}
-Such an assignment requires that \C{p2} not be \C{null}. Similarly, an assignment from a temporary structure to a heap allocated structure is also interpreted as a field-by-field copy, with a similar assertion that the reference will not be null. Failure to satisfy the assumption will cause an assertion failure. 
+Such an assignment requires that \C{p2} not be \C{null}. Similarly, an assignment from a temporary structure to a heap allocated structure is also interpreted as a field-by-field copy, with a similar assertion that the reference will not be null. Failure to satisfy the assumption will cause an assertion failure.
 
 Similarly, an equality comparison of a heap allocated structure and a temporary structure will be equivalent to a field-by-field comparison.
 
 \paragraph{Restrictions}
-In the current version of the language, temporary structures are only allowed for local variables and function parameters. In particular, the language currently does not allow arrays of temporary structures or temporary structure fields in other structures. These restrictions are likely to be lifted in future versions of the language. Finally, structures with lists inside them are not allowed to be temporary structures.
+In the current version of the language, temporary structures are only allowed for local variables and function parameters. In particular, the language currently does not allow arrays of temporary structures or temporary structure fields in other structures. These restrictions are likely to be lifted in future versions of the language. Finally, structures with arrays inside them are not allowed to be temporary structures.
 
 
 
 
 \subsection{Final Types}\seclabel{final}
-Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below---there are analogous rules for fields of a record. 
+Just like in Java, \Sk{} has a notion of final variables and fields. Unlike Java, however, the language does not have a \C{final} keyword; finality is inferred based on a couple of simple rules. The rules for variables are shown below---there are analogous rules for fields of a record.
 
 \begin{itemize}
 \item Any variable used as an l-value cannot be final; this includes variables used as the left hand side of an assignment, variables used with pre and post increments and decrements (\C{++x} or \C{--y}), and variables passed as reference parameters to another function (see \secref{functions}) .
 
-\item The iteration variable of a cannonical \C{for} loop is final within the body of the loop. A cannonical \C{for} loop is a loop of the form \C{for(int i=a; i<b; ++i)}, where the iteration variable is not modified inside the body of the loop. 
+\item The iteration variable of a cannonical \C{for} loop is final within the body of the loop. A cannonical \C{for} loop is a loop of the form \C{for(int i=a; i<b; ++i)}, where the iteration variable is not modified inside the body of the loop.
 
-\item Arrays cannot be final. 
+\item Arrays cannot be final.
 \item Global variables can only be final if they are of scalar type (not references to records).
 \end{itemize}
 
@@ -171,7 +187,7 @@ Consider the declaration below.
 \begin{lstlisting}
 int[N][M] a;
 \end{lstlisting}
-The type of \C{a} is \C{int[N][M]}. This means that for an \C{x < M}, \C{a[x] } is of type \C{int[N]}, and for any \C{y < N}, \C{a[x][y]} is of type \C{int}.   
+The type of \C{a} is \C{int[N][M]}. This means that for an \C{x < M}, \C{a[x] } is of type \C{int[N]}, and for any \C{y < N}, \C{a[x][y]} is of type \C{int}.
 \end{Example}
 
 \paragraph{Dynamic Length Arrays}
@@ -200,9 +216,9 @@ Consider a function that filters an array to return only those elements that are
 int[N] filter(int N, int[N] in, ref int outsz){
 	outsz = 0;
 	int[N] out;
-	for(int i=0; i<N; ++i){ 
+	for(int i=0; i<N; ++i){
 		if(in[i]%2 == 0){
-			out[outsz++] = in[i];			
+			out[outsz++] = in[i];
 		}
 	}
 	return out;
@@ -219,7 +235,7 @@ The function uses the bulk array access \C{tmp[0::sz]}, which will be defined pr
 \end{Example}
 
 \paragraph{Array fields}
-Records can also have arrays as fields. The expression for the array size can involve any final expression in scope, which in practice means final expressions involving global variables and other final fields. Keep in mind that if a field is final, then it must be initialized by the constructor of the record. 
+Records can also have arrays as fields. The expression for the array size can involve any final expression in scope, which in practice means final expressions involving global variables and other final fields. Keep in mind that if a field is final, then it must be initialized by the constructor of the record.
 
 \begin{Example}
 Using array fileds, we can write a cleaner version of the filter function from before:
@@ -257,42 +273,42 @@ In sketch you can declare a multi-dimensional array as follows.
 \begin{lstlisting}
 T[$sz_0$, $sz_1$, $\ldots$, $sz_n$] A;
 \end{lstlisting}
-You can then access an element \C{A[$i_0$, $i_1$, $\ldots$, $i_n$]}, where $0\leq i_j < sz_n$. 
+You can then access an element \C{A[$i_0$, $i_1$, $\ldots$, $i_n$]}, where $0\leq i_j < sz_n$.
 
 Multi-dimensional arrays are actually just syntactic sugar for nested arrays; so a declaration like the one above would be desugared to the one below.
 \begin{lstlisting}
 T[$sz_n$]$\ldots$[$sz_1$][$sz_0$] A;
 \end{lstlisting}
-And similarly, the access \C{A[$i_0$, $i_1$, $\ldots$, $i_n$]} is desugared to \C{A[$i_0$][$i_1$]$\ldots$[$i_n$]}. The nested array notation and the multi-dimensional array notation are completely interchangeable, so for example, it is fine to pass a nested array to a function expecting a multi-dimensional array, and vice-versa. 
+And similarly, the access \C{A[$i_0$, $i_1$, $\ldots$, $i_n$]} is desugared to \C{A[$i_0$][$i_1$]$\ldots$[$i_n$]}. The nested array notation and the multi-dimensional array notation are completely interchangeable, so for example, it is fine to pass a nested array to a function expecting a multi-dimensional array, and vice-versa.
 
 The main advantage of the multi-dimensional array notation over the nested array notation is that the bounds in the declaration appear in the same order as the indexes in the array access, instead of being reversed as happens with the nested array notation.
 
 
 
 \paragraph{Bulk array access}
-The indexing operation we just saw will read a single element from an array. The \SK\ language also includes support for extracting sub-arrays out of an array. If \C{a} is an array of type \C{T[N]}, we can extract a sub-array of size \C{M} using the following expression: 
+The indexing operation we just saw will read a single element from an array. The \SK\ language also includes support for extracting sub-arrays out of an array. If \C{a} is an array of type \C{T[N]}, we can extract a sub-array of size \C{M} using the following expression:
 \begin{lstlisting}
 a[x::M]
 \end{lstlisting}
 
-If \C{M} is greater than or equal to zero and \C{x + M $~\leq~$ N}, then the expression \C{ a[x::M]} produces an array of type \C{T[M]} containing the elements \C{a[x], ..., a[x+M-1]}. 
+If \C{M} is greater than or equal to zero and \C{x + M $~\leq~$ N}, then the expression \C{ a[x::M]} produces an array of type \C{T[M]} containing the elements \C{a[x], ..., a[x+M-1]}.
 
 Bulk array access of the form \C{a[x::M]} will generate an exception if any index between \C{x} and \C{x+M-1} is out of bounds. Specifically, the system checks that \C{x>=0} and \C{x+M <= N}, where \C{N} is the size of \C{a}. Notice that if \C{M} is zero, then it is legal for \C{x} to equal \C{N}.
 
 \paragraph{Array assignment}
-The language also supports bulk copy from one array to another through array assignment operator. If \C{a} and \C{b} are arrays of type \C{T[N]}, then the elements of  \C{a} can be copied into \C{b} by using the assignment operator: 
+The language also supports bulk copy from one array to another through array assignment operator. If \C{a} and \C{b} are arrays of type \C{T[N]}, then the elements of  \C{a} can be copied into \C{b} by using the assignment operator:
 \begin{lstlisting}
    b = a;
 \end{lstlisting}
 If \C{a:T[N]} and \C{b:T[M]} are of different size, then the assignment will be legal as long as \C{M $\geq$ N}. If \C{M $\neq$ N}, the rhs will be padded with zeros or nulls according to the rules in \secref{padding}.
 
-Bulk array access operations can also serve as lvalues. For example, the assignment 
+Bulk array access operations can also serve as lvalues. For example, the assignment
 \begin{lstlisting}
-b[2::4] = a[5::4] 
+b[2::4] = a[5::4]
 \end{lstlisting}
-is legal---assuming of course that a and b are big enough for the bulk accesses to be legal. The effect of this operation is to write values a[5], a[6], a[7], a[8] into locations b[2], b[3], b[4], b[5]. For such an assignment, the compiler will read all the values in the right hand side before writing anything to the left hand side. This is relevant when reading and writing to the same array. For example, the assignment 
+is legal---assuming of course that a and b are big enough for the bulk accesses to be legal. The effect of this operation is to write values a[5], a[6], a[7], a[8] into locations b[2], b[3], b[4], b[5]. For such an assignment, the compiler will read all the values in the right hand side before writing anything to the left hand side. This is relevant when reading and writing to the same array. For example, the assignment
 \begin{lstlisting}
-a[0::3] = a[1::3] 
+a[0::3] = a[1::3]
 \end{lstlisting}
 will read values  \C{a[1], a[2], a[3]} before writing to locations  \C{a[0], a[1], a[2]}.
 
@@ -372,7 +388,7 @@ While a sketch programmer can create arrays of any arbitrary type, arrays of bit
 \end{tabular}
 \end{center}
 
-Notice that most operators support operands of different sizes; the smaller array is padded to match the size of the bigger array according to the rules of padding from \secref{padding}. 
+Notice that most operators support operands of different sizes; the smaller array is padded to match the size of the bigger array according to the rules of padding from \secref{padding}.
 
 
 
@@ -381,7 +397,7 @@ Notice that most operators support operands of different sizes; the smaller arra
 \seclabel{padding}
 When arrays are assigned or passed as parameters, they can be implicitly typecast through padding. Padding is also supported by bit vector operations, but not for reference parameters. This padding can be thought of as an implicit typecast from small arrays to bigger arrays. The objects used to pad the array depend on the type of the array. Given an array of type \C{T[N]}, the objects used to pad the array will be defined by the function \lstinline!$pad$(T)! defined by the following rules:
 \begin{lstlisting}
-$pad$(int) = 0 
+$pad$(int) = 0
 $pad$(bit) = 0
 $pad$(struct) = null
 $pad$(T[N]) = $\{pad$(T)$,\ldots, pad$(T)$\}$ //N copies of $pad$(T)
@@ -406,7 +422,7 @@ The code above involves the following implicit typecasts: first, the array x of 
 A second form of implicit typecasting happens when a scalar is used in place of an array. In this case, the scalar is automatically typecast into an array of size 1 or zero depending on the context.
 
 \begin{Example}
-Consider the following block of code 
+Consider the following block of code
 \begin{lstlisting}
 struct Car{ ... }
 ...
@@ -443,7 +459,7 @@ assert y[2] == {null, null, null, null};
 \end{lstlisting}
 \end{Example}
 
-To understand the example above, it is worth thinking of an array assignment of the form \C{y=x} where \C{y} is of type \C{T[N]} as a loop of the form 
+To understand the example above, it is worth thinking of an array assignment of the form \C{y=x} where \C{y} is of type \C{T[N]} as a loop of the form
 \begin{lstlisting}
 for(int i=0; i<N; ++i){
    if(i<M)//where M<=N is the size of x
@@ -459,7 +475,7 @@ So in the example above, \C{y[i]} will be of type \C{Car[4]} and \C{x[i]} will b
 The \Sk{} language also offers some limited explicit typecasting. In particular, the language offers only four explicit typecasts:
 \begin{itemize}
 
-\item An array \C{a} of type \C{T[N]} can be explicitly typecast into an array of type \C{T[M]} by using the syntax \C{(T[M])a} (standard typecast notation from C). When an array is typecast to a smaller size, the remaining elements are simply truncated. 
+\item An array \C{a} of type \C{T[N]} can be explicitly typecast into an array of type \C{T[M]} by using the syntax \C{(T[M])a} (standard typecast notation from C). When an array is typecast to a smaller size, the remaining elements are simply truncated.
 
 \item A bit array \C{bit[N]} can be explicitly typecast into an integer. When this happens, the first bit in the array is interpreted as the least significant bit and the last one as the most significant bit. The reverse cast from an integer to a bit array is not supported.
 
@@ -488,7 +504,7 @@ If we knew that \C{N} is smaller than \C{M}, we could have written simply \C{y=x
 
 
 \subsection{Algebraic Data types}\seclabel{adts}
-Sketch also supports algebraic data types, or case classes as they are known in Scala. To illustrate the use of algebraic data types (ADTs), consider the \C{Tree} ADT defined below. 
+Sketch also supports algebraic data types, or case classes as they are known in Scala. To illustrate the use of algebraic data types (ADTs), consider the \C{Tree} ADT defined below.
 \begin{lstlisting}
 adt Tree{
     Leaf{ int value; }
@@ -503,17 +519,17 @@ Tree t2 = new Leaf(value=6);
 Tree t3 = new Leaf(value=7);
 Tree t = new Branch(left=t1, right=new Branch(left=t2, right=t3));
 \end{lstlisting}
-The fact that Leaf and Branch extend \C{Tree} causes \C{Tree} to be abstract, so \C{Tree} itself cannot be instantiated. 
+The fact that Leaf and Branch extend \C{Tree} causes \C{Tree} to be abstract, so \C{Tree} itself cannot be instantiated.
 
 Pattern matching in \Sk{} is done through the \C{switch} construct. The basic syntax is as follows:
 \begin{lstlisting}
 switch(var){
-   case C1: 
+   case C1:
    ...
    case Cn:
 }
 \end{lstlisting}
-The argument \C{var} passed to switch must be a variable whose type is an ADT, and each case must be labeled with a different variant \C{Ci}. Within that case, the variable \C{var} will automatically acquire the type corresponding to the case. This is illustrated by the function below: 
+The argument \C{var} passed to switch must be a variable whose type is an ADT, and each case must be labeled with a different variant \C{Ci}. Within that case, the variable \C{var} will automatically acquire the type corresponding to the case. This is illustrated by the function below:
 
 
 
@@ -529,7 +545,7 @@ int sum(Tree t){
         /*t is now of type Branch is this block */
         v = sum(t.left)+sum(t.right);
       }
-   }        
+   }
    /*Outside the switch, t goes back to being of type Tree*/
    return v;
 }
@@ -549,21 +565,21 @@ adt ASTNode{
         Assign{ int lhs; Expression rhs; }
         IfStmt{ Expression cond; Statement tpart; Statement epart; }
         WhileStmt{Expression cond; Statement body;}
-    }    
+    }
 }
 \end{lstlisting}
-So in this case, one can create instances of \C{Plus}, \C{Times}, \C{IfStmt} and \C{WhileStmt}, but not of \C{ASTNode} or of \C{Expression} and \C{Statement}. When pattern matching, however , one can have cases for \C{Expression} or \C{Statement} and those cases will match on any variant that is a subtype of them. 
+So in this case, one can create instances of \C{Plus}, \C{Times}, \C{IfStmt} and \C{WhileStmt}, but not of \C{ASTNode} or of \C{Expression} and \C{Statement}. When pattern matching, however , one can have cases for \C{Expression} or \C{Statement} and those cases will match on any variant that is a subtype of them.
 
-The following are some additional rules associated with ADTs. 
+The following are some additional rules associated with ADTs.
 \begin{itemize}
-\item All fields of an ADT are immutable. 
+\item All fields of an ADT are immutable.
 \item Records representing an ADT can have fields, and those fields will be inherited by all the variant types.
-\item A parent and a variant cannot both have a field with the same name. 
+\item A parent and a variant cannot both have a field with the same name.
 \item The type extended by a variant class should exist and be defined in the same package, so ADT definitions cannot span multiple packages (see \secref{pkg} for more on packages).
 \item The expression that is passed to switch(e) should always be a variable; the labels for the cases should be variants of the type of that variable, and the variable cannot be null.
 \item Switch statements should cover all the cases.
 \item Implicit casting occurs from a subtype to a super type.
-\item Explicit casts can be used only from a supertype to a subtype. An incorrect cast will cause an assertion failure. 
+\item Explicit casts can be used only from a supertype to a subtype. An incorrect cast will cause an assertion failure.
 \end{itemize}
 
 
@@ -588,8 +604,8 @@ Tree b2 = new Branch(left = t1, right= t2);
 assert b1 == b2;
 \end{lstlisting}
 
-For recursive ADTs, \Sk{} will automatically generate a recursive comparison function to test equality, and will be subject to the inlining bounds given through the command-line flag \C{bnd-inline-amnt}. 
-In the context of ADTs, the constant \C{null} is just a special value that can only be compared against. ADT variables are all initialized to \C{null} if they are not explicitly initialized, so you can use comparisons such as 
+For recursive ADTs, \Sk{} will automatically generate a recursive comparison function to test equality, and will be subject to the inlining bounds given through the command-line flag \C{bnd-inline-amnt}.
+In the context of ADTs, the constant \C{null} is just a special value that can only be compared against. ADT variables are all initialized to \C{null} if they are not explicitly initialized, so you can use comparisons such as
 \begin{lstlisting}
 if( t1 == null){
 
@@ -598,7 +614,7 @@ if( t1 == null){
 to check if a variable has been initialized, but any other operation that you try to do on a \C{null} value (reading a field, explicit casting or switching on it) will lead to an assertion failure.
 
 \subsection{Struct inheritance}
-In some cases, we want to make use of the ability of ADTs to define sub-types and to use switch to distinguish between cases, but we do not want to be restricted by the immutability requirement. In this case, we can use \C{struct} inheritance to achieve that goal. For example, we can write: 
+In some cases, we want to make use of the ability of ADTs to define sub-types and to use switch to distinguish between cases, but we do not want to be restricted by the immutability requirement. In this case, we can use \C{struct} inheritance to achieve that goal. For example, we can write:
 \begin{lstlisting}
 struct Tree{
         int x;
@@ -620,7 +636,7 @@ We can use the above Branch, Leaf and Tree types the same way we would have if w
 \subsection{Control Flow}
 The language supports the following constructs for control flow: \C{if-then}, \C{while}, \C{do-while}, \C{for}. These have the same syntax and semantics as in \C{C/C++} or \C{Java}. The language does not support a C-like \C{switch} statement, since \C{switch} is used for pattern matching instead (see \secref{adts}). The language also does not support \C{continue} and \C{break}, although they can easily be emulated with \C{return} by using closures (see \secref{closures}).
 
-The synthesizer reasons about loops by unrolling them. The degree of unrolling is controlled by a flag \C{--bnd-unroll-amnt}. If the loop iteration bounds are static, however, the loop will be unrolled as many times as necessary to satisfy the static bounds. 
+The synthesizer reasons about loops by unrolling them. The degree of unrolling is controlled by a flag \C{--bnd-unroll-amnt}. If the loop iteration bounds are static, however, the loop will be unrolled as many times as necessary to satisfy the static bounds.
 
 \flagdoc{bnd-unroll-amnt}{This flag controls the degree of unrolling for both loops and \C{repeat} constructs}
 
@@ -639,7 +655,7 @@ If \C{N} is an input variable, the first loop will be unrolled as many times as 
 
 \subsection{Functions}
 \seclabel{functions}
-The sketch language also supports functions. The syntax for declaring a function is the same as in C. 
+The sketch language also supports functions. The syntax for declaring a function is the same as in C.
 
 \begin{lstlisting}
 $ret\_type$ $name$($args$){
@@ -652,7 +668,7 @@ The synthesizer reasons about function calls by inlining them into their calling
 
 \flagdoc{bnd-inline-amnt}{Bounds the amount of inlining for any function call. The value of this parameter corresponds to the maximum number of times any function can appear in the stack.}
 
-\flagdoc{bnd-bound-mode}{ The solver supports two bound modes: \C{CALLSITE} and \C{CALLNAME}. In \C{CALLNAME} mode (the default), the flag \C{bnd-inline-amnt} will bound the number of times any function appears in the stack. In the \C{CALLSITE} mode, the \C{bnd-inline-amnt} flag will bound the number of times a given \emph{call site} appears on the stack, so if the same function is called recursively multiple times, each site is counted independently. 
+\flagdoc{bnd-bound-mode}{ The solver supports two bound modes: \C{CALLSITE} and \C{CALLNAME}. In \C{CALLNAME} mode (the default), the flag \C{bnd-inline-amnt} will bound the number of times any function appears in the stack. In the \C{CALLSITE} mode, the \C{bnd-inline-amnt} flag will bound the number of times a given \emph{call site} appears on the stack, so if the same function is called recursively multiple times, each site is counted independently.
 }
 
 
@@ -664,7 +680,7 @@ Prefixing the formal parameter with \C{ref} makes changes visible outside the fu
 \begin{lstlisting}
 void foo(int in, ref int out){
 	in = in + 1; // changes to in are not visible to the caller
-      out = in + 1; //changes to out are 
+      out = in + 1; //changes to out are
 }
 harness void main(int x){
       int y = x;
@@ -688,7 +704,7 @@ void foo(ref int p1, ref int p2){
 }
 harness void main(int x){
 	int z = x;
-      foo(z, z); 
+      foo(z, z);
       assert z == x+2;
 }
 \end{lstlisting}
@@ -717,7 +733,7 @@ harness void main(int n, double[n] in){
 }
 \end{lstlisting}
 
-The syntax for a function definition that uses implicit parameters is shown below. 
+The syntax for a function definition that uses implicit parameters is shown below.
 \begin{lstlisting}
 $ret\_type$ $name$([$implicit~args$], $args$){
   $body$
@@ -798,7 +814,7 @@ The language imposes several restrictions on the use of the \C{fun} type. First,
 One important point to notice about function parameters is that the signature does not specify what parameters it expects. This gives the language some flexibility, and in some cases allows one to make up for the fact that we don't have generics. However, it also has an important implication. Namely, when a function parameter is called, it is not possible to know which parameters will be reference parameters and which parameters will not, so any variable that is passed to a function that came as a parameter will be considered non-final.
 
 \subsection{Local functions and closures}\seclabel{closures}
-Sketch supports the definition of functions inside other functions. The syntax for doing this is the same as when the function is defined outside a function. The body of the locally defined function can access any variable that is in scope in the context of the function definition. The example below illustrates how local functions can be used together with high-order functions. 
+Sketch supports the definition of functions inside other functions. The syntax for doing this is the same as when the function is defined outside a function. The body of the locally defined function can access any variable that is in scope in the context of the function definition. The example below illustrates how local functions can be used together with high-order functions.
 
 \begin{lstlisting}
 void ForLoop(fun f, int i, int N){
@@ -817,8 +833,8 @@ harness void main(int N, int[N] A){
 	assert A == B;
 }
 \end{lstlisting}
-	
-In the sketch above, \C{ForLoop} takes the closure involving the function \C{copy} and its local environment; the effect of the call to \C{ForLoop} is the same as if the body of copy had been placed in a traditional \C{for} loop. 
+
+In the sketch above, \C{ForLoop} takes the closure involving the function \C{copy} and its local environment; the effect of the call to \C{ForLoop} is the same as if the body of copy had been placed in a traditional \C{for} loop.
 One important aspect of closures in Sketch is that because functions cannot be returned by other functions or written into the heap, a local function can never escape the context in which it was declared. This allows local functions to modify local variables defined in their host function without any messy semantic issues.
 
 Finally, local functions can only be used after they are declared, unlike top level functions for which the order of declaration does not matter. One important implication of this is that you cannot define mutually recursive local functions.
@@ -837,7 +853,7 @@ harness void main(int N, int[N] A){
 }
 int fooTop(int i){
       if(i>0){
-        return mooTop(i-1); // This is ok, for top level functions the 
+        return mooTop(i-1); // This is ok, for top level functions the
       }                     // order of declaration does not matter.
       return i;
 }
@@ -858,10 +874,10 @@ int apply(fun f, int x) {
     return f(x, 5);
 }
 
-harness void main() {  
+harness void main() {
     int result = apply((x, y) -> x + y, 7);
-         
-    assert result == 12; 
+
+    assert result == 12;
 }
 \end{lstlisting}
 
@@ -870,11 +886,11 @@ harness void main() {
 \begin{Example}
 Defining a variable of type \C{fun}.
 \begin{lstlisting}
-harness void main() {     
+harness void main() {
     int t = 3;
     fun foo = (x) -> t * x;
-            
-    assert foo(2) == 6; 
+
+    assert foo(2) == 6;
 }
 \end{lstlisting}
 
@@ -887,11 +903,11 @@ Lambda functions cannot be defined inside \C{struct} nor can they be returned fr
 \begin{Example}
 Using two local variable constructs of different types inside a local function.
 \begin{lstlisting}
-harness void main() {  
-    bit t = 1;    
+harness void main() {
+    bit t = 1;
     int a = 2;
     int b = 3;
-    
+
     int foo() {
         fun g = () -> $\$$(bit) ? 5 : $\$$(int);
         return g();
@@ -914,14 +930,14 @@ int apply(fun f) {
 harness void main(int x) {
   int a = 1;
   int b = 2;
-  
+
   int foo() {
       fun f = () -> $\$$(int);
       return f();
   }
-  
+
   int t = apply(foo) * ??;
-  
+
   assert t == x + x;
 }
 \end{lstlisting}
@@ -930,13 +946,14 @@ harness void main(int x) {
 
 \subsection{Polymorphism}
 
-Starting with version 1.7.1, Sketch has full support for polymorphic functions. A polymorphic function can be declared by including type parameters in its signature:
+Starting with version 1.7.1, Sketch has full support for polymorphic functions
+and generator functions (\secref{generators}). A polymorphic function can be declared by including type parameters in its signature:
 \begin{lstlisting}
 $type$ $name$<$typeParams$>($type$ $pname$, $\ldots$){ $\ldots$ }
 \end{lstlisting}
-
+%
 For example, the following is a well known forall function applied to arrays:
-
+%
 \begin{lstlisting}
 void forall<T>([int n], fun f, ref T[n] x){
     for(int i=0; i<n; ++i){
@@ -947,9 +964,10 @@ void forall<T>([int n], fun f, ref T[n] x){
 
 When calling \C{forall}, \C{T} can be used in place of any data-type, including primitive types, structures, adts, and arrays thereof. The type \C{T}, however, cannot be instantiated to a function type.
 
-In order to use a polymorphic function, you just need to call it as you would any other function. 
+In order to use a polymorphic function, you just need to call it as you would any other function.
 
 \begin{Example}
+Use of a polymorphic function.
 \begin{lstlisting}
 harness void main(){
     int sum=0;
@@ -964,6 +982,99 @@ harness void main(){
 }
 \end{lstlisting}
 \end{Example}
+
+Starting in Sketch 1.7.5, the language also supports polymorphic structures
+and algebraic data types (ADTs). You can declare a polymorphic struct
+by adding \lstinline!<$typeParams$>! after the name of the struct.
+
+For example, the Array library (\secref{lib:array}) defines an  \C{SArray}
+structure as:
+\begin{lstlisting}
+struct SArray<T>{
+    int n;
+    T[n] val;
+}
+\end{lstlisting}
+The structure can be used in the context of a program with different types
+for the type variable \lstinline!T!. For example, in the code below,
+the type is instantiated as \C{int} for \C{ar1}, and as \C{SArray<int>}
+in the case of \C{ar2}. Note that in the example we also define a
+polymorphic function \C{len}, that works for \C{SArray<T>} for any
+valid \C{T}.
+
+\begin{Example}
+Use of a polymorphic structure.
+\begin{lstlisting}
+include "array.skh";
+
+int len<T>(SArray<T> ar){ return ar.n; }
+
+harness void main(){
+    SArray<int> ar1 = new SArray<int>(n=5, val={1,2,3,4,5});
+    SArray<SArray<int>> ar2 = new SArray<SArray<int>>(n=1, val={ar1});
+    assert ar1.val[0] == 1;
+    assert ar2.val[0] == ar1;
+    assert len(ar1) == 5;
+}
+\end{lstlisting}
+\end{Example}
+
+The approach also works for ADTs; for example, consider the List ADT
+in the \C{list} package (\secref{lib:list}).
+\begin{lstlisting}
+adt List<T>{
+    Cons{ T val; List<T> next; }
+    Nil{}
+}
+\end{lstlisting}
+Note that the type parameters are only declared at the top level for the
+overall \C{List<T>} type. When invoking one of the constructors, we must
+provide a type parameter for the constructor. For example, the following
+function is part of the list library:
+\begin{lstlisting}
+List<T> add<T>(List<T> lst, T val){
+    return new Cons<T>(val=val, next=lst);
+}
+\end{lstlisting}
+The function adds an element to the beginning of the list by constructing
+a new \C{Cons<T>} value.
+
+\paragraph{Limitations}
+The current implementation of polymorphism has the following limitations.
+\begin{enumerate}
+\item For structures and algebraic data types, the type parameter is currently
+not allowed to be an array. We expect this limitation to be lifted in
+future releases of the language.
+\item Constructors for structures and ADTs do require the type
+parameters to be passed explicitly. We expect this limitation to be lifted
+in future releases of the language.
+\item In the case of functions, the compiler relies on a very local inference
+algorithm in order to discover the type parameters. This means that the
+function must be used in a context that provides enough information
+about the expected types. This is illustrated by the example below.
+\begin{lstlisting}
+//Consider the two functions below.
+T read<T>(List<T> in){ ... }
+List<T> gen<T>(){ ... }
+void foo(List<int> lst){
+    int x = read(lst); // From the context it is clear that T=int;
+    int y = read(gen()); //In this case too, the context is enough
+                         //to determine that T = int;
+    read(gen()); // However, this would lead to a type error
+                // because the type of T is ambiguous.
+}
+\end{lstlisting}
+\item In some cases, the type inference algorithm may infer types that
+are more specific than what you need because the type inference
+algorithm is not very aggressive in applying typecasts.
+For example, while most integer
+constants have type \C{int}, the constants \C{0} and \C{1} have
+type \C{bit}, so if you have a function such as
+\C{List<T> single<T>(T in); } and you call \C{single(0)}, the compiler will
+infer that \C{T} is \C{bit}, so if you actually wanted a List<int>, then
+you should either cast \C{0} to \C{(int)0} or assign it to a variable of
+type \C{int}.
+\end{enumerate}
 
 
 
@@ -982,15 +1093,15 @@ The \Sk{} language supports packages. A package is identified by the \C{package}
 package PACKAGENAME;
 \end{lstlisting}
 
-All the functions and structures defined in a file must belong to the same package, so the compiler will produce an error if there is more than one package definition in a file. If a file does not have a \C{package} command, then by default its contents will belong to the package \C{ANONIMOUS}. Also, note that unlike Java, package names cannot have periods or other special symbols. 
+All the functions and structures defined in a file must belong to the same package, so the compiler will produce an error if there is more than one package definition in a file. If a file does not have a \C{package} command, then by default its contents will belong to the package \C{ANONIMOUS}. Also, note that unlike Java, package names cannot have periods or other special symbols.
 
-A file can import other packages by using the \C{include} command. The syntax of the command is shown below. The string in quotes corresponds to the name of the file where the package resides. 
+A file can import other packages by using the \C{include} command. The syntax of the command is shown below. The string in quotes corresponds to the name of the file where the package resides.
 
 \begin{lstlisting}
 include "file.sk";
 \end{lstlisting}
 
-The include command should not be confused with the \C{#include} preprocessor directive, which simply inlines the contents of a file and is not really part of the language. 
+The include command should not be confused with the \C{#include} preprocessor directive, which simply inlines the contents of a file and is not really part of the language.
 
 \flagdoc{fe-inc}{
 The command line flag {--fe-inc} can be used to tell the compiler what directories to search when looking for included packages. The flag works much like the \C{-I} flag in gcc, and can be used multiple times to list several different directories.
@@ -1032,7 +1143,7 @@ struct Mouse{
 include "computer.sk";
 include "farm.sk";
 struct Mouse{
-   int t;  
+   int t;
 }
 harness main(){
    Cpu c = new Cpu(); // No ambiguity here.
@@ -1048,7 +1159,7 @@ harness main(){
 \subsection{Global variables}
 The sketch language supports global variables with a few important restrictions.
 \begin{itemize}
-\item First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable. 
+\item First, global variables are always private to the package in which they are defined; they cannot be made public, although you can have functions in a package that read and write to a given global variable.
 \item The second restriction is a consequence of the fact that only scalar global variables can be final; this means that global arrays must have constant dimensions since, in that scope, constants are the only thing that can be final.
 
 \item The initializers for global variables can only involve side-effect-free expressions of constants and final global variables. An expression that allocates a struct (\eg{} \C{new C(a=x)}) is considered a side-effect-free expression as long as the arguments to the constructor (\eg{} \C{x}) are side effect free. Division, array access and function calls are not considered side-effect free since they may fail.
@@ -1059,7 +1170,7 @@ The \Sk{} language includes an annotation system that is meant to simplify the p
 \begin{lstlisting}
 @Name(parameter-string)
 \end{lstlisting}
-\C{Name} is the name of the annotation and \C{parameter-string} is a string describing the parameters of the annotation. Annotations are currently only supported for function and record definitions. 
+\C{Name} is the name of the annotation and \C{parameter-string} is a string describing the parameters of the annotation. Annotations are currently only supported for function and record definitions.
 
 
 Annotations are preserved throughout the compiler chain all the way to code generation. They can be particularly useful if you are writing your own custom code generator (see \secref{customcodegen}). In that case, you can just introduce annotations in your code, and your code generator can query the \C{Function} and  \C{StructDef} AST nodes to get their annotations (see the sample code generator provided for how to do this). There are, however, a handful of annotations that have special meaning to the compiler. Theey are listed below.
@@ -1108,19 +1219,19 @@ FileHandle getFile(){
 
 bit moreValues(FileHandle fh){
     //maxReads should never drop below zero.
-    assert fh.maxReads >= 0; 
+    assert fh.maxReads >= 0;
     return fh.maxReads!=0;
 }
 
 int readInt(FileHandle fh){
     //Reads past the end of the file are not allowed.
     assert fh.maxReads > 0;
-    --fh.maxReads; 
+    --fh.maxReads;
     return getND();
 }
 \end{lstlisting}
 
-The \C{FileHandle} is initialized with the maximum number of values to read. Every time the client calls \C{readInt}, the synthesizer reads checks if the maximum number of reads has been reached and reads another non-deterministic value. This definition of the operations on a file is very good if we are interested in synthesizing or verifying a client that needs to read a file and do something with its contents. However, if we want to generate code to read real files, the class above is not so useful. 
+The \C{FileHandle} is initialized with the maximum number of values to read. Every time the client calls \C{readInt}, the synthesizer reads checks if the maximum number of reads has been reached and reads another non-deterministic value. This definition of the operations on a file is very good if we are interested in synthesizing or verifying a client that needs to read a file and do something with its contents. However, if we want to generate code to read real files, the class above is not so useful.
 
 Using the \C{@Native} annotations, however, we can instruct the synthesizer on how to generate code for the structure and functions above. For example, the code for the \C{struct} would be as follows:
 
@@ -1136,13 +1247,13 @@ struct FileHandle{
     @Native("int readInt(){ int x = last; in>>last; goon = !in.eof() && !in.fail(); return x;}")
 }
 \end{lstlisting}
-The functions annotations are used to introduce additional fields and methods which are invisible to the analysis engine, but which are needed by the generated code. 
+The functions annotations are used to introduce additional fields and methods which are invisible to the analysis engine, but which are needed by the generated code.
 
 With their annotations, the \C{moreValues} and \C{readInt} functions are as follows:
 \begin{lstlisting}
 @Native("{ _out = fh->goon; }")
 bit moreValues(FileHandle fh){
-    assert fh.maxReads >= 0; 
+    assert fh.maxReads >= 0;
     return fh.maxReads!=0;
 }
 
@@ -1150,7 +1261,7 @@ bit moreValues(FileHandle fh){
 @Native("{ _out = fh->readInt(); }")
 int readInt(FileHandle fh){
     assert fh.maxReads > 0;
-    --fh.maxReads; 
+    --fh.maxReads;
     return getND();
 }
 \end{lstlisting}
@@ -1159,17 +1270,17 @@ When analyzing code, the annotations are invisible to the synthesizer, and it wi
 
 \end{Example}
 
-The \C{@Native} annotation allows the programmer to use simple models in place of very complex or low-level functions. It is the responsibility of the programmer to ensure that the model matches the relevant behavior of the code that is being generated. 
+The \C{@Native} annotation allows the programmer to use simple models in place of very complex or low-level functions. It is the responsibility of the programmer to ensure that the model matches the relevant behavior of the code that is being generated.
 
-More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure. 
+More generally, if you want to write custom extensions to the \Sk{} synthesizer, you can use annotations to pass information to your custom extension without affecting any of the existing synthesizer infrastructure.
 
 \subsection{Casting of Expressions}
 Sketch provides casting of expressions in high-order function calls. These expressions are cast as lambda functions. The expressions that can be automatically cast are the ones that do not use formal parameters inside the function. This means that the actual parameters passed to the cast function are ignored when the body of the lambda gets executed.
 
 This feature is very useful in High-Order Generators (see \secref{high-ordergenerators}).
 \begin{lstlisting}
-generator int rec(fun choices){ 
-    if(??){ 
+generator int rec(fun choices){
+    if(??){
         return choices();
     }else{
         return {| rec(choices) (+ | - | *) rec(choices)  |};
@@ -1183,4 +1294,3 @@ harness void sketch( int x, int y, int z ){
    assert rec($\$(int)$) == (x + x) * (y - z);
 }
 \end{lstlisting}
-

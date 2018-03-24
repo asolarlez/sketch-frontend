@@ -65,6 +65,12 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Runs backend in parallel.")
     public boolean parallel = false;
 
+    @CliParameter(help = "Uses a different integer solver that scales better for larger integers.")
+    public boolean nativeints = false;
+
+    @CliParameter(help = "Weakens the checker to only consider sparse arrays. The parameter is the degree of " + "sparsity in the input arrays. This introduces unsoundness, so should be used with care.")
+    public float sparsearray = -1.0f;
+
     @CliParameter(help = "Kills test trials after given number of minutes.")
     public float pTimeout = (float) 1; // 1m -> 2m -> ...
 

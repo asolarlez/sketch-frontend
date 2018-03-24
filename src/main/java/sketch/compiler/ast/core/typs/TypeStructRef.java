@@ -186,6 +186,25 @@ public class TypeStructRef extends Type
         return null;
     }
 
+    public boolean checkEqualTParams(TypeStructRef t1, TypeStructRef t2) {
+        if (t1.hasTypeParams() && t2.hasTypeParams()) {
+            if (t1.getTypeParams().size() != t2.getTypeParams().size()) {
+                return false;
+            }
+            Iterator<Type> t2iter = t2.getTypeParams().iterator();
+            for (Type t1elem : t1.getTypeParams()) {
+                Type t2elem = t2iter.next();
+                if (t1elem instanceof NotYetComputedType || t2elem instanceof NotYetComputedType) {
+                    continue;
+                }
+                if (!t1elem.equals(t2elem)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return t1.hasTypeParams() == t2.hasTypeParams();
+    }
     public boolean promotesTo(Type that, NameResolver nres) {
         if (super.promotesTo(that, nres))
             return true;
@@ -199,13 +218,14 @@ public class TypeStructRef extends Type
             while (nres.getStructParentName(name2) != null) {
                 String name3 = nres.getStructName(name2);
                 if (name1.equals(name3)) {
-                    return true;
+
+                    return checkEqualTParams(this, tsr);
                 }
                 name2 = nres.getStructParentName(name2);
 
             }
             String name3 = nres.getStructName(name2);
-            return name1.equals(name3);
+            return name1.equals(name3) && checkEqualTParams(this, tsr);
         } else {
             if (that instanceof TypeArray) {
                 return this.promotesTo(((TypeArray) that).getBase(), nres);

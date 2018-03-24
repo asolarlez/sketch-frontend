@@ -414,7 +414,7 @@ public class GetExprType extends FENullVisitor
             renaming = new HashMap<String, Type>();
             List<String> formals = current.getTypeargs();
             List<Type> actuals = base.getTypeParams();
-            if (formals.size() != actuals.size()) {
+            if (actuals == null || formals.size() != actuals.size()) {
                 throw new ExceptionAtNode("Inconsistent types", ctx);
             }
             for (int i = 0; i < formals.size(); ++i) {

@@ -39,7 +39,7 @@ Array<T> newArray<T>(){
  */
 T last<T>(Array<T> in){
     assert in.sz > 0 : "Array size must be greater than zero";
-    return in.inner[in.sz-1];
+    return in.inner.val[in.sz-1];
 }
 
 /**
@@ -47,10 +47,10 @@ T last<T>(Array<T> in){
  */
 void add<T>(Array<T> in, T val){
     if(in.sz < in.inner.n){
-        in.inner[in.sz] = val;
+        in.inner.val[in.sz] = val;
         in.sz++;
     }else{
-        SArray<T> sa = new SArray(n=in.sz*2, val=in.inner.val);
+        SArray<T> sa = new SArray<T>(n=in.sz*2, val=in.inner.val);
         in.inner = sa;
     }
 }

@@ -58,6 +58,14 @@ public class CommonSketchMain {
         if (options.solverOpts.randassign) {
             backendOptions.add("-randassign");
         }
+        if (options.solverOpts.nativeints) {
+            backendOptions.add("-nativeints");
+        }
+        if (options.solverOpts.sparsearray > 0.0) {
+            backendOptions.add("-sparsearrays");
+            backendOptions.add(Double.toString(options.solverOpts.sparsearray));
+        }
+
         if (options.debugOpts.cex) {
             backendOptions.add("--print-cex");
         }
