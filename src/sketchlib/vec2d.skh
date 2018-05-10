@@ -1,0 +1,37 @@
+
+package vec2d;
+
+
+adt Point{
+    float x;
+    float y;
+}
+
+
+Point point(double x, double y){
+    return new Point(x=x, y=y);
+}
+
+generator Point op.-(Point a, Point b){
+    return new Point(x = a.x - b.x, y = a.y-b.y);
+}
+
+generator Point op.+(Point a, Point b){
+    return new Point(x = a.x + b.x, y = a.y + b.y);
+}
+
+generator Point op.*(Point a, double b){
+    return new Point(x=a.x*b, y=a.y*b);
+}
+
+generator float norm(Point p){    
+    return sqrt@math(dot(p,p));
+}
+
+generator float dot(Point p, Point q){
+    return p.x*q.x + p.y*q.y;
+}
+
+Point rotate(Point p, double ang){
+    return point(p.x*cos(ang) - p.y*sin(ang), p.x*sin(ang) + p.y*cos(ang));
+}
