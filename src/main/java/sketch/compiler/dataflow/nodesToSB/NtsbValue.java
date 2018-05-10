@@ -131,7 +131,7 @@ public class NtsbValue extends IntAbsValue {
                     if (obj != null) {
                         if (obj instanceof List<?>) {
                             StringBuffer rval = new StringBuffer();
-                            rval.append("[" + name.toUpperCase() + "]{< ");
+                        rval.append("[" + name + "]{< ");
 
                             for (Iterator<abstractValue> it =
                                     ((List<abstractValue>) obj).iterator(); it.hasNext();)

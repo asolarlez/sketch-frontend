@@ -270,6 +270,14 @@ public class NtsbVtype extends IntVtype {
         return rv;
     }
 
+    static public String funTypeName(Function fun) {
+        return "F" + fun.getFullName().replace('@', '_');
+    }
+
+    static public String adtTypeName(StructDef t) {
+        return "T" + t.getFullName().replace('@', '_');
+    }
+
     protected abstractValue rawArracc(abstractValue arr, abstractValue idx){
         NtsbValue nidx = (NtsbValue) idx;
         if (nidx.isAXPB && arr.isVect()) {
@@ -344,7 +352,7 @@ public class NtsbVtype extends IntVtype {
             }
             plist += " ";           
         }
-        String oplist = plist;
+
         formalParams = fun.getParams().iterator();
         boolean hasout = false;
         while (formalParams.hasNext()) {
@@ -368,7 +376,7 @@ public class NtsbVtype extends IntVtype {
             if (fun.isUninterp() && fun.hasAnnotation("Gen")) {
                 outtname = "_GEN_" + fun.getAnnotation("Gen").get(0).contents();
             } else {
-                outtname = fun.getName().toUpperCase() + "_" + pkg.toUpperCase();
+                outtname = funTypeName(fun);
 
             }
 
@@ -431,8 +439,7 @@ public class NtsbVtype extends IntVtype {
             TypeStructRef ts = (TypeStructRef) t;
             StructDef struct = nres.getStruct(ts.getName());
             if (struct.immutable()) {
-                return "*" + struct.getName().toUpperCase() + "_" +
-                        struct.getPkg().toUpperCase();
+                return "*" + adtTypeName(struct);
             }
         }
         if(t.equals(TypePrimitive.bittype)){

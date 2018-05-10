@@ -170,6 +170,11 @@ public class ValueOracle extends AbstractValueOracle {
         if (t.equals(TypePrimitive.chartype)) {
             return ExprConstChar.createFromInt(val.getIValue());
         } else {
+            if (t.equals(TypePrimitive.floattype) || t.equals(TypePrimitive.doubletype)) {
+                if (val instanceof ExprConstInt) {
+                    return new ExprConstFloat((double) val.getIValue());
+                }
+            }
             return (ExprConstant) val;
         }
 

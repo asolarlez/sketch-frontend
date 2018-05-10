@@ -251,37 +251,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         state.useRetTracker();
     }
 
-    private String convertType(Type type) {
-        // This is So Wrong in the greater scheme of things.
-        if (type instanceof TypeArray)
-        {
-            TypeArray array = (TypeArray)type;
-            String base = convertType(array.getBase());
-            abstractValue iv = (abstractValue) array.getLength().accept(this);          
-            return base + "[" + iv + "]";
-        }
- else if (type instanceof TypeStructRef)
-        {
-            return ((TypeStructRef) type).getName();
-        }
-        else if (type instanceof TypePrimitive)
-        {
-            switch (((TypePrimitive)type).getType())
-            {
-                case TypePrimitive.TYPE_BIT:
-                    return "bit";
-                case TypePrimitive.TYPE_INT:
-                    return "int";
-                case TypePrimitive.TYPE_FLOAT:
-                    return "float";
-                case TypePrimitive.TYPE_DOUBLE:
-                    return "double";
-                case TypePrimitive.TYPE_VOID:
-                    return "void";
-            }
-        }
-        return null;
-    }
+
 
     List<Integer> opsizes;
     String finalOpname;
@@ -300,7 +270,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
 
     public Object visitTypeArray(TypeArray t) {
-        String extra = " here base " + t.getBase() + " len " + t.getLength();
+
         Type nbase = (Type)t.getBase().accept(this);
         visitingALen = true;
         abstractValue avlen = null;
@@ -469,8 +439,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             TypeStructRef ts = (TypeStructRef) type;
             StructDef struct = nres.getStruct(ts.getName());
             if (struct.immutable()) {
-                return struct.getName().toUpperCase() + "_" +
-                        struct.getPkg().toUpperCase();
+                return NtsbVtype.adtTypeName(struct);
             }
         }
 
@@ -505,8 +474,8 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             TypeStructRef ts = (TypeStructRef) type;
             StructDef struct = nres.getStruct(ts.getName());
             if (struct.immutable()) {
-                return struct.getName().toUpperCase() + "_" +
-                        struct.getPkg().toUpperCase();
+                NtsbVtype vt = (NtsbVtype) vtype;
+                return vt.adtTypeName(struct);
             }
         }
 
@@ -702,8 +671,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
 
         state.handleReturnTrackers();
         if (hasOutput) {
-            out.print(finalOpname + "= [" + func.getName().toUpperCase() + "_" +
-                    func.getPkg().toUpperCase() + "]{< ");
+            out.print(finalOpname + "= [" + NtsbVtype.funTypeName(func) + "]{< ");
         }
         doOutParams(func.getParams());
 
@@ -765,14 +733,18 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         return o;
     }
 
+
+
     private void printDeclarationsAndRegisterMainfuns(Program p, PrintStream out) {
+        
+
         out.println("typedef{");
         nres = new NameResolver(p);
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             for (StructDef t : pkg.getStructs()) {
                 if (t.immutable()) {
-                    out.print(t.getName().toUpperCase() + "_" + t.getPkg().toUpperCase() +
+                    out.print(NtsbVtype.adtTypeName(t) +
                             " ( ");
                     int actFields = t.getActFields();
                     if (actFields <= 0)
@@ -801,11 +773,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
                 if (fun.isUninterp() && fun.hasAnnotation("Gen")) {
                     out.print("_GEN_" + fun.getAnnotation("Gen").get(0).contents() + "(");
                 } else {
-                    if (fun.getPkg() == null) {
-                        out.print(fun.getName().toUpperCase() + "_ANNONYMOUS" + " ( ");
-                    } else {
-                        out.print(fun.getName().toUpperCase() + "_" + fun.getPkg().toUpperCase() + " ( ");
-                    }
+                    out.print(NtsbVtype.funTypeName(fun) + " ( ");
                 }
                 List<Parameter> params = fun.getParams();
                 for (Iterator<Parameter> iter = params.iterator(); iter.hasNext();) {
