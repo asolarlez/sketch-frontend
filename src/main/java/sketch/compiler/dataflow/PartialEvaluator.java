@@ -1197,11 +1197,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     stmt.getIncr().accept(this);
                 }
                 vcond = (abstractValue) stmt.getCond().accept(this);
-                if (iters > (1 << 13)) {
+				if (iters > (1 << 15)) {
                     // printWarning("Loop seems to repeat more than 2^13 times",
                     // stmt.getCx());
                     throw new ArrayIndexOutOfBoundsException(stmt.getCx() +
-                            "Loop seems to repeat more than 2^13 times");
+							"Loop seems to repeat more than 2^15 times");
                 }
             }
             if (!vcond.isBottom() && vcond.getIntVal() > 0) {
