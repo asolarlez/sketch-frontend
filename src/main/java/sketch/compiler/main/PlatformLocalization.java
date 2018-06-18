@@ -162,10 +162,11 @@ public class PlatformLocalization {
 
         public File[] searchJarpath() {
             File jarpath = get_jarpath();
-            File[] r =
-                    { path(jarpath, "cegis", "src", "SketchSolver", this.name),
-                            path(jarpath, this.name) };
-            return r;
+			return jarpath != null
+					? new File[] { path(jarpath, this.name), path(jarpath, "src", "SketchSolver", this.name),
+							path(jarpath, "..", "sketch-backend", "src", "SketchSolver", this.name),
+							path(jarpath, "..", "sketch-backend", "bindings", this.name) }
+					: new File[] {};
         }
 
         public File[] searchEnvVar(String... envVars) {
