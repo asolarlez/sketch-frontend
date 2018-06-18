@@ -44,6 +44,10 @@ public class LowerToSketch extends MetaStage {
             prog = (Program) prog.accept(new CollectFunCallsToCombine());
         }
 
+		if (options.solverOpts.forLoopTransform) {
+			prog = (Program) prog
+					.accept(new PreprocessForLoop(varGen, options));
+		}
         prog = (Program) prog.accept(new AddArraySizeAssertions());
         // prog.debugDump("aa");
 
@@ -175,7 +179,7 @@ public class LowerToSketch extends MetaStage {
         if (options.feOpts.truncVarArr) {
             prog = (Program) prog.accept(new TruncateVarArray(options, varGen));
         }
-        // prog.debugDump("aa");
+		// prog.debugDump("aa");
 
         return prog;
     }

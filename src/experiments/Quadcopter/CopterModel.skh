@@ -1,0 +1,82 @@
+
+#include "../PointCars/Geometry.skh"
+
+
+/*
+We model a 2d copter
+
+              ^ (normal)               /
+     ^        |        ^              /
+     |        |(cmass) |             /  angvelocity is how fast this angle changes.
+     I--------x--------I            /---------
+                      
+                      
+    F[0]               F[1]
+             
+ cmass is the position of the center of mass.
+ L is the length from one end to the other.
+ F[0] is the magnitude of the force vector 
+ normal is a normal vector perpendicular to the quad.
+ */
+
+struct copter{
+    double mass;
+    double moi; //moment of inertia
+    Point cmass;
+    double L;
+    double[2] F;
+    Point normal;
+    //dynamics
+    Point velocity;
+    double angvelocity;
+    double ang;
+    
+}
+
+copter Copter(float x, float y, float L, float mass, float moi){
+    return new copter(cmass= new Point(x=x,y=y), 
+                        L=L, 
+                        moi=moi,
+                        ang = 0.0,
+                        mass =mass,
+                        F={0.0, 0.0}, 
+                        normal = new Point(y=1.0, x=0.0),
+                        velocity = new Point(x=0.0, y=0.0));
+}
+
+
+/*
+
+
+
+
+ */
+
+void simulate(copter c, float dt){
+    Point accel =  c.normal .* ( (c.F[0] + c.F[1])/c.mass ) .+ point(0.0, -9.8);
+    
+    c.cmass = c.cmass .+ (c.velocity .* dt) .+ (accel .* (dt*dt/2.0));
+    c.velocity = c.velocity .+ (accel .* dt);
+    
+    //                          Torque            / momentOfInertia;
+    double angAccel = (c.F[1] - c.F[0])*(c.L/2.0) / c.moi;    
+    double deltaAng = c.angvelocity*dt +  angAccel*dt*dt/2.0;
+    //dprint("deltaAng = ", deltaAng);
+    c.ang += deltaAng;
+    c.angvelocity += angAccel*dt;
+    c.normal = rotate(c.normal, deltaAng);
+    //dprint("normal.x=", c.normal.x);
+    //dprint("normal.y=", c.normal.y);
+    //dprint("accel.norm=", norm(accel) );
+}
+
+Point rotate(Point p, double ang){
+    return point(p.x*cos(ang) - p.y*sin(ang), p.x*sin(ang) + p.y*cos(ang));
+}
+
+@Native("{ cout<<msg<<\" \"<<val<<endl;  } ")
+void dprint([int n], char[n] msg, double val ){}
+
+@Native("{ cout<<c->cmass->x<<\" \"<<c->cmass->y<<\"   \"<<c->ang << \"   \" << c->velocity->y <<endl;  } ")
+void print(copter c){}
+

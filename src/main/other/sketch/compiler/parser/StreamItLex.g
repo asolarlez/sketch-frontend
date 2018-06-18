@@ -198,6 +198,7 @@ LSHIFT: "<<";
 RSHIFT: ">>";
 NDVAL: "{*}";
 NDVAL2: "??";
+NDVAL2SP: ".??";
 SELECT: "{|}";
 NDANGELIC: "**";
 AT: "@";

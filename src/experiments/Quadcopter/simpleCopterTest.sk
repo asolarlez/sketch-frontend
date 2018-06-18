@@ -1,0 +1,22 @@
+
+#include "CopterModel.skh"
+
+pragma options "--debug-fake-solver";
+
+harness void main(){
+    double mass = 0.10 /* Kg */;
+    double len = 0.2 /*20cm*/;
+    copter c = Copter(20.0, 25.0, len, mass, 1.0/12.0*mass*len*len);
+    c.F[0] = 0.51; //newtons;
+    c.F[1] = 0.52; //newtons;
+    double dt = 0.05; //seconds;
+    for(int i=0; i<50; ++i){
+        print(c);
+        if(i==17){
+            c.F[0] = 0.42; //newtons;
+            c.F[1] = 0.41; //newtons;
+        }
+        simulate(c, dt);        
+    }
+    print(c);
+}

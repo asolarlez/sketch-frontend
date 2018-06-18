@@ -80,7 +80,7 @@ public class NtsbVtype extends IntVtype {
                 }
 
                 String head = "";
-                if (star.special()) {
+				if (star.special() && t.equals(TypePrimitive.inttype)) {
                     head += "SPVAR " + star.upperBound() + " ";
                     head += " $ ";
                     for (ExprStar es : star.parentHoles()) {
@@ -102,7 +102,15 @@ public class NtsbVtype extends IntVtype {
 					rval += " +> ";
 				} else if (t.equals(TypePrimitive.floattype)
 						|| t.equals(TypePrimitive.doubletype)) {
-					rval += " $> ";
+					if (star.special()) {
+						rval += " *>";
+					} else {
+						if (star.hasRange()) {
+							rval += " " + star.fLowerBound() + " "
+									+ star.fUpperBound();
+						}
+						rval += " $> ";
+					}
 				} else {
 					rval += "> ";
 				}

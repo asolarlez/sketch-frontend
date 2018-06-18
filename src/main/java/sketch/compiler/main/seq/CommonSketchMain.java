@@ -135,6 +135,42 @@ public class CommonSketchMain {
             backendOptions.add("-sprandbias");
             backendOptions.add("" + options.solverOpts.spRandBias);
         }
+
+		backendOptions.add("-numericalsolvermode");
+		backendOptions.add(options.solverOpts.numSolverMode);
+
+		if (options.solverOpts.useSnopt) {
+			backendOptions.add("-usesnopt");
+		}
+
+		if (options.solverOpts.useEager) {
+			backendOptions.add("-useeager");
+		}
+
+		if (options.solverOpts.relaxBoolHoles) {
+			backendOptions.add("-relaxboolholes");
+		}
+
+		backendOptions.add("-numtries");
+		backendOptions.add("" + options.solverOpts.numTries);
+
+		if (options.solverOpts.disableSatSug) {
+			backendOptions.add("-disablesatsuggestions");
+		}
+
+		if (options.solverOpts.disableUnsatSug) {
+			backendOptions.add("-disableunsatsuggestions");
+		}
+
+		backendOptions.add("-conflictcutoff");
+		backendOptions.add("" + options.solverOpts.conflictCutoff);
+
+		backendOptions.add("-maxrestarts");
+		backendOptions.add("" + options.solverOpts.maxRestarts);
+
+		backendOptions.add("-costoption");
+		backendOptions.add("" + options.solverOpts.costOption);
+
     }
 
     protected void log(String msg) {

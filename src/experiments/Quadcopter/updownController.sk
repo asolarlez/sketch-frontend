@@ -1,0 +1,63 @@
+
+
+#include "CopterModel.skh"
+
+pragma options "--fe-fpencoding TO_BACKEND";
+
+void controlG(copter c){
+    repeat(3){
+        if(c.cmass.y > ??){
+            double F = (c.cmass.y-??/10.0)*??/10.0 + (c.velocity.y-??/10.0)*??/10.0;
+            double bias = (c.ang-??/10.0)*??/10.0 + (c.angvelocity-??/10.0)*??/10.0;
+            c.F[0] = F+bias;
+            c.F[1] = F;
+            return;
+        }
+    }    
+}
+
+void control(copter c, int step) {
+    
+        generator void Ctrl(){
+            double F = (c.cmass.y-??/10.0)*??/10.0 + (c.velocity.y-??/10.0)*??/10.0;
+            double bias = (c.ang-??/10.0)*??/10.0 + (c.angvelocity-??/10.0)*??/10.0;
+            c.F[0] = F+bias;
+            c.F[1] = F;//*(1.0-bias);
+        }
+	int i=0;
+	if(step < 10){
+ 	    Ctrl(); return;	
+	}	
+        if(step < 20){
+	    Ctrl();
+            return;
+        }
+        if(step < 51){
+	    Ctrl();
+            return;
+        }
+	Ctrl();
+}
+
+
+harness void main(){
+    double mass = 1.0 /* Kg */;
+    double len = 0.2 /*20cm*/;
+    copter c = Copter(20.0, 25.0, len, mass, 1.0/12.0*mass*len*len);
+    c.F[0] = 5.1; //newtons;
+    c.F[1] = 5.2; //newtons;
+    double dt = 0.05; //seconds;
+    for(int i=0; i<61; ++i){
+        print(c);
+        simulate(c, dt);        
+        control(c, i);
+    }
+    print(c);
+    
+    assert c.cmass.y > 0.0 && c.cmass.y < 0.1; //y is very close to the floor.
+    assert c.cmass.x > 19.9 && c.cmass.x < 20.1; // small x displacement.
+    assert c.velocity.y > -0.1 && c.velocity.y < 0.1; // y.velocity close to 0 
+    
+}
+
+

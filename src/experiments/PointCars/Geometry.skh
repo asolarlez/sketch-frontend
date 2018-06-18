@@ -38,10 +38,10 @@ generator float ang(Point p){
     float dx = p.x;
     float dy = p.y;
     float oang =  dy != 0.0 ? arctan(dx / dy) : (dx > 0.0 ? Pi() / 2.0 : -Pi()/2.0) ;
-    assert oang >= Pi()/4.0;
-    assert oang <= Pi()/4.0;
-    assert dy >= 0.0;
-    if(dy < 0.0){ oang = oang + Pi(); }
+    assert oang >= -Pi()/2.0;
+    assert oang <= Pi()/2.0;
+    if(dy < 0.0 && dx >= 0.0){ oang = oang + Pi(); }
+    if(dy < 0.0 && dx < 0.0){ oang = oang - Pi(); }
     assert -Pi() <= oang && oang <= Pi(); 
     return oang;
 }

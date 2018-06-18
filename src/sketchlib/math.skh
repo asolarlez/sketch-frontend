@@ -47,5 +47,9 @@ double _cast_int_double(int v){
     return _cast_int_float(v);
 }
 
+@Native("{_out = expf(v);}")
+float exp(float v);
+
+
 
 generator float Pi(){ return 3.1415926535897932384626433832795; }

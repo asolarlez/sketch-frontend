@@ -3,17 +3,10 @@ pragma options "--fe-fpencoding TO_BACKEND";
 
 
 harness void tester(){
-    float err = parallel();    
-    assert(err <= 10.0); 
+    float t1 = parallel();    
+    assert(t1 <= 0.6); 
 }
-/*
- * 
- *     /
- *    /
- *   /  a
- *  /_)_______
- * 
- */
+
 void car(ref float cxb, ref float cyb, ref float cxf, ref float cyf,
             float ang, float v){
     float YL = cyf - cyb;
@@ -21,16 +14,16 @@ void car(ref float cxb, ref float cyb, ref float cxf, ref float cyf,
     float H = sqrt(YL*YL + XL*XL);
     float coa = (XL/H);
     float sia = (YL/H);
-    float DY = v*(sin(ang)*coa + cos(ang)*sia); // multiply the unit vector of the car with 
-    float DX = v*(cos(ang)*coa - sin(ang)*sia); // the rotation matrix of ang. 
+    float DY = v*(sin(ang)*coa + cos(ang)*sia);
+    float DX = v*(cos(ang)*coa - sin(ang)*sia);
     
     
     
-    cxf += DX; // move the front of the car by D.
+    cxf += DX;
     cyf += DY;
-    float tt = (DX + XL)* coa + (DY + YL)*sia; //projection of (DX+XL, DY+YL) on 
-    float q = tt - // solution to (q*coa - (DX+XL))^2 + (q*sia - (DY+YL))^2 == XL^2 + YL^2
-     0.5*sqrt(4.0*(tt*tt) - 4.0*(DX*DX + 2.0*DX*XL + DY*(DY + 2.0*YL)) ); // 
+    float tt = (DX + XL)* coa + (DY + YL)*sia;
+    float q = (DX*coa) + (XL*coa) + (DY*sia) + (YL*sia) -
+     0.5*sqrt(4.0*(tt*tt) - 4.0*(DX*DX + 2.0*DX*XL + DY*(DY + 2.0*YL)) );
     cxb += q*coa;
     cyb += q*sia;    
 }
@@ -56,23 +49,32 @@ void detectColision(float cxb, float cyb, float cxf, float cyf, float cw, float 
     float px = cxb + (d*YL/H);
     
     assert(!(px > l && py < w) );
+
     
     /* 
      *collision type 2.
      * Corner (l,w) of the front obstacle is inside my car
      *                         \
      *                          +
-     *                           \    
+     *                           \ (qx, qy)   
      *           \     (l,w)_________
      *            +      |
      *             \     |
      *              (px, py)
-     * The dot product between the vector from (px,py) to (l,w) to the two edge
-     * vectors emanating from (px,py) is greater than zero
+     * The dot product between the vector from (px,py) to (l,w) and to the two edge
+     * vectors emanating from (px,py) is greater than zero, 
+     * and also from the vector from q to p.
     */
 
-    assert(!((l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 &&
-            (l-px)*(XL) + (w-py)*(YL) > 0.0));
+
+    float qx = px + XL; 
+    float qy = py + YL;
+    assert(!((l-px)*(cxb-px) + (w-py)*(cyb-py) > 0.0 && // dot between (l,w)-p and cb - p
+            (l-px)*(XL) + (w-py)*(YL) > 0.0 &&         // dot between (l,w)-p and q-p (which is the same as (XL,YL))
+            (l-qx)*(px-qx) + (w-qy)*(py-qy) > 0.0)     // dot between (l,w)-q and p-q
+            );
+      
+    
 }
 
 
@@ -97,11 +99,11 @@ float parallel(){
     float Err = 0.0;
     
     float w = 5.0;
-    float l = 15.0;
+    float l = 10.0;
     float g = 1.0;
     
-    float H = 10.0;
-    float cw = 3.0;
+    float H = 8.0;
+    float cw = 5.0;
     float cxb = 0.0; 
     float cyb = 0.0; 
     float cxf = 0.0; 
@@ -120,18 +122,20 @@ float parallel(){
     int STRAIGHTBACK = 0;
     int INTURN = 10;
     int OUTTURN = 20;
-    float t = 0.0;
-  
-    for(int i=0; i<10; ++i){
-        if (t < ??) {
-    		ang = ang - (??/20.0);
-    	} else {
-            ang = ang + (4.61/20.0);
-    	}
-        car(cxb, cyb, cxf, cyf, ang, -v);
-	    detectColision(cxb, cyb, cxf, cyf, cw, l, w);
-        t += 1.0;
-        
+
+    print(cxb, cyb, cxf, cyf);
+    for(int i=0; i<10; ++i){        
+    		if (i < ??) {
+    			ang = ang - (??/20.0);
+    	        car(cxb, cyb, cxf, cyf, ang, -v);
+    		} else {
+                ang = ang + (??/20.0);
+                car(cxb, cyb, cxf, cyf, ang, -v);
+    		}
+
+        detectColision(cxb, cyb, cxf, cyf, cw, l, w);
+        print(cxb, cyb, cxf, cyf);
+        td = td + v;
     }
     
     
@@ -139,3 +143,6 @@ float parallel(){
     ((cyf- cw/2.0)*(cyf- cw/2.0));
     return Err;
 }
+
+@Native("{ cout<<\"fromPoints(\"<<cxb<<\",\"<<cyb<<\",\"<<cxf<<\",\"<<cyf<<\");\"<<endl; }")
+void print(float cxb, float cyb, float cxf, float cyf){}

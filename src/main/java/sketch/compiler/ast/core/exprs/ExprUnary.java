@@ -66,6 +66,18 @@ public class ExprUnary extends Expression
 
     }
 
+	public Float getFValue() {
+		Float iVal = expr.getFValue();
+		if (iVal != null) {
+			float v = iVal.floatValue();
+			switch (op) {
+			case UNOP_NEG:
+				return new Float(-v);
+			}
+		}
+		return null;
+	}
+
     /** Creates a new ExprUnary applying the specified operator to the
      * specified expression. */
     public ExprUnary(FENode context, int op, Expression expr)
