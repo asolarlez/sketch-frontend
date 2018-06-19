@@ -24,13 +24,7 @@ harness void main(){
     for(int i=0; i<20; ++i){
         px += vx*dT;
         py += vy*dT + g*dT*dT/2.0;
-        vy += g*dT;
-        /*
-        if(py <= 0.0 && vy < 0.0){
-            py = 0.0;
-            vy = -vy;
-        }
-        */
+        vy += g*dT;       
     }
     assert px > 10.0;
     assert px < 11.0;

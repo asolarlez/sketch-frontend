@@ -59,8 +59,8 @@ harness void main(){
     Segment segs;
     
     obs = seg(-10.0, 1.0, 10.0, 1.0);
-    double a = ??(-50,50);
-    double b = ??(-50,50);
+    double a = ??(-50.0,50.0);
+    double b = ??(-50.0,50.0);
     segs = seg(0.0, 5.0, a, b);
     assert nocross(segs, obs);
     double l = len(segs); 
