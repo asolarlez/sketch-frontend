@@ -1,0 +1,52 @@
+
+
+include "math.skh";
+include "vec2d.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+@Native("{cout<<x<<\"  \"<<y<<endl;}")
+void print(double x, double y){}
+
+adt Shape{
+    Circle{ Point ctr; double r; }    
+}
+
+double ptErr(Point p, Shape s){
+    fun sq = (x)->x*x;
+    switch(s){
+    case Circle: return sq(norm(p .- s.ctr)-s.r); 
+    }
+}
+
+
+
+bit TRUE(){ return true; }
+
+harness void main(){
+    double[2][10] pts = {
+            {3.0, 2.0},
+            {2.8090169943749475, 2.5877852522924734},
+            {2.3090169943749475, 2.9510565162951536},
+            {1.6909830056250525, 2.9510565162951536},
+            {1.1909830056250525, 2.5877852522924734},
+            {1.0, 2.0},
+            {1.1909830056250525, 1.412214747707527},
+            {1.6909830056250525, 1.0489434837048464},
+            {2.3090169943749475, 1.0489434837048464},
+            {2.8090169943749475, 1.4122147477075266}
+    };
+    
+    Point ctr = point(??,??);
+    double r = ??;
+    
+    Shape s = new Circle(ctr = ctr, r=r);
+    double err = 0.0;
+    for(int i=0; i<10; ++i){
+        err += ptErr(point(pts[i][0], pts[i][1]), s);        
+    }
+    assert r < 3.0;
+    assert err < 0.05;    
+}
+
+

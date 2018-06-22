@@ -1,6 +1,7 @@
 
-#include "../PointCars/Geometry.skh"
+include "../PointCars/Geometry.skh";
 
+package copter;
 
 /*
 We model a 2d copter
@@ -69,6 +70,15 @@ void simulate(copter c, float dt){
     //dprint("normal.y=", c.normal.y);
     //dprint("accel.norm=", norm(accel) );
 }
+
+void checkok(copter c){
+	repeat(i:2){
+		assert c.F[i] >=0.0;
+		assert c.F[i] < 10.0;
+	}
+	assert c.ang*c.ang < 10.0;
+}
+
 
 Point rotate(Point p, double ang){
     return point(p.x*cos(ang) - p.y*sin(ang), p.x*sin(ang) + p.y*cos(ang));
