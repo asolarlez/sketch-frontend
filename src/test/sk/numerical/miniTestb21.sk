@@ -1,0 +1,35 @@
+
+include "miniTestb20_segs.skh";
+
+
+harness void main(){
+	int N = 5;
+	Segment[N] segs;
+	double x = 0.0;
+	double y = 0.0;
+	double[N] deltas;
+	repeat(i:N){
+		double nx = x + 2.0;
+		double ny = 0.0;
+		segs[i] = seg(x,y,nx,ny, 0.0);
+		x = nx;
+		y = ny;
+		deltas[i] = 0.02;
+	}
+	
+	printSegs(segs);
+	Point oldcm = centerOfMass(segs);
+	for(int t=0; t<50; ++t){
+		Segment[N] newsegs = updatePos(segs, deltas);
+		Point newcm = centerOfMass(newsegs);
+		
+		double ang = angOffset(oldcm, segs, newcm, newsegs);
+		
+		segs = rotate@segpkg(newsegs, newcm, ang);
+		
+		segs = translate(segs, oldcm .- newcm);
+	
+		printSegs(segs);
+	}
+
+}
