@@ -82,15 +82,15 @@ Segment[N] translate([int N], Segment[N] segs, Point offst){
 Segment[N] rotate([int N], Segment[N] segs, Point cmass, double ang){
 	Point mov(Point p){
 		Point r = (p .- cmass);
-		Point m = rotate@vec2d(r, Pi()/2.0);
-		return m .* ang;	
+		Point m = rotate@vec2d(r, ang);
+		return cmass .+ m;	
 	}
 
 	Segment[N] newsegs;
 	for(int i=0; i<N; ++i){
 		Point o1 = mov(segs[i].x);
 		Point o2 = mov(segs[i].y);
-		newsegs[i] = seg(segs[i].x.x+o1.x, segs[i].x.y+o1.y, segs[i].y.x+o2.x, segs[i].y.y+o2.y, segs[i].ang); 
+		newsegs[i] = seg(o1.x, o1.y, o2.x, o2.y, segs[i].ang); 
 	}
 	return newsegs;
 }
@@ -129,6 +129,64 @@ Point centerOfMass([int N], Segment[N] segs){
 
 
 
+double DT = 0.005;
+double K = 400.0;
+
+generator double Dt(){
+	return DT;
+}
+
+Segment[N] forces([int N], Segment[N] segs, Point cmass, ref Point vm, ref double angVel){
+	double torque = 0.0;
+	Point force = point(0.0, 0.0);
+	
+	double momentOfI = 0.0;
+	
+	Point fcompute(Point pos){
+		if(pos.y > 0.0){
+			return point(0.0, -9.8);
+		}else{
+			return point(0.0, -9.8 -K*pos.y);
+		}
+	}
+	
+	
+	
+	void addToForces(Point pos){
+		Point p = fcompute(pos);
+		force = force .+ p;
+		Point r = pos .- cmass;
+		torque += cross(p, r);
+		double rval = norm(r);
+		momentOfI += rval * rval;
+	}
+	
+	for(int i=0; i<N; ++i){
+		addToForces(segs[i].x);
+		addToForces(segs[i].y);		
+	}
+	
+	Point displace = vm .* DT .+ force .* (DT*DT/2.0);
+	vm = vm .+ (force .* DT);
+	
+	double rot = angVel * DT + (torque/momentOfI)*(DT*DT/2.0);
+	angVel = angVel + (torque/momentOfI)*DT;
+	
+	Segment[N] newsegs = rotate@segpkg(segs, cmass, rot);
+		
+	newsegs = translate(newsegs, displace);
+	return newsegs;
+}
+
+
+
+
+
+
+
+
+
+
 
 @Native("{cout<<x<<\"  \";}")
 void print(double x){}
@@ -161,6 +219,35 @@ void printSegs([int N], Segment[N] segs){
 		comma();
 		print(segs[i].y.y);	
 	}
+	right();
+	right();
+	comma();
+	endl();
+} 
+
+
+void printSegsMore([int N], Segment[N] segs, Point cm){
+	left();
+	left();
+	print(segs[0].x.x);
+	for(int i=0; i<N; ++i){
+		comma();
+		print(segs[i].y.x);	
+	}
+	right();
+	comma();
+	left();
+	print(segs[0].x.y);
+	for(int i=0; i<N; ++i){
+		comma();
+		print(segs[i].y.y);	
+	}
+	right();
+	comma();
+	left();
+	print(cm.x);
+	comma();
+	print(cm.y);
 	right();
 	right();
 	comma();

@@ -17,8 +17,9 @@ harness void main(){
 		deltas[i] = 0.02;
 	}
 	
-	printSegs(segs);
+	
 	Point oldcm = centerOfMass(segs);
+	printSegsMore(segs, oldcm);
 	for(int t=0; t<50; ++t){
 		Segment[N] newsegs = updatePos(segs, deltas);
 		Point newcm = centerOfMass(newsegs);
@@ -29,7 +30,7 @@ harness void main(){
 		
 		segs = translate(segs, oldcm .- newcm);
 	
-		printSegs(segs);
+		printSegsMore(segs, oldcm);
 	}
 
 }
