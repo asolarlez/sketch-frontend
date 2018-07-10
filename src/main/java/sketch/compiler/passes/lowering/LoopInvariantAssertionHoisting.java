@@ -238,7 +238,7 @@ public class LoopInvariantAssertionHoisting extends FEReplacer {
         if (e == null) {
             return sa;
         } else {
-            preLoop.add(new StmtAssert(sa, e, sa.getMsg(), sa.isSuper(), sa.isHard));
+            preLoop.add(new StmtAssert(sa, e, sa.getMsg(), sa.isSuper(), sa.isHard, sa.isData));
             return null;
         }
     }

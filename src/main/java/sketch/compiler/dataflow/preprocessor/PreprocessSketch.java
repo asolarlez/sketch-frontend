@@ -157,7 +157,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             return isReplacer ?(
 (vcond.hasIntVal() && vcond.getIntVal() == 1) ? null
                 : new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
-                        stmt.getAssertMax(), stmt.isHard)
+                        stmt.getAssertMax(), stmt.isHard, stmt.isData)
                     )
                     : stmt
                     ;

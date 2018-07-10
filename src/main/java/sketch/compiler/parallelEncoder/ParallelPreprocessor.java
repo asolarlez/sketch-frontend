@@ -39,7 +39,7 @@ public class ParallelPreprocessor extends PreprocessSketch {
         assertCond.accept (this);
         Expression ncond = exprRV;
         return isReplacer ? new StmtAssert(stmt, ncond, stmt.getMsg(), stmt.isSuper(),
-                stmt.getAssertMax(), stmt.isHard)
+                stmt.getAssertMax(), stmt.isHard, stmt.isData)
         		: stmt
         		;
     }

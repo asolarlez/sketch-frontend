@@ -697,7 +697,7 @@ public class FEReplacer implements FEVisitor
         if (newValue == stmt.getCond()) {
             return stmt;
         }
-        return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper(), stmt.isHard);
+        return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper(), stmt.isHard, stmt.isData);
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {
@@ -893,8 +893,6 @@ public class FEReplacer implements FEVisitor
         }
         if (changed) {
             StructDef new_struct = ts.creator().fields(map).create();
-            if (ts.immutable())
-                new_struct.setImmutable();
             return new_struct;
         } else {
             return ts;

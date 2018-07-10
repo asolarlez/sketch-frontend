@@ -950,7 +950,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         if (newValue == stmt.getCond()) {
             return stmt;
         }
-        return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper(), stmt.isHard);
+        return new StmtAssert(stmt, newValue, stmt.getMsg(), stmt.isSuper(), stmt.isHard, stmt.isData);
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt) {

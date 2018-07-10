@@ -49,6 +49,7 @@ tokens {
 	
 	"assume";
 	"hassert";
+	"dassert";
 
 	// Basic types:
 	"boolean"; "float"; "bit"; "int"; "void"; "double"; "fun";"char";

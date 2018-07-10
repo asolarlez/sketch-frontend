@@ -82,6 +82,7 @@ public class StmtAssert extends Statement
     public static final int SUPER = 1;
     public static final int UBER = 2;
     public boolean isHard = false;
+    public boolean isData = false;
     private int superA = NORMAL;
 
     // isMax = 1: normal assertMax
@@ -100,6 +101,8 @@ public class StmtAssert extends Statement
     public String getAssertSymbol() {
         if (isHard)
             return "hassert";
+        if (isData)
+            return "dassert";
         switch (isMax) {
             case 1:
                 return "assert_max";
@@ -119,6 +122,12 @@ public class StmtAssert extends Statement
     public StmtAssert(FENode context, Expression cond, boolean isSuper, boolean isHard) {
         this(context, cond, null, isSuper);
         this.isHard = isHard;
+    }
+
+    public StmtAssert(FENode context, Expression cond, boolean isSuper, boolean isHard, boolean isData) {
+        this(context, cond, null, isSuper);
+        this.isHard = isHard;
+        this.isData = isData;
     }
 
     /** Creates a new assert statement with the specified conditional. */
@@ -171,6 +180,17 @@ public class StmtAssert extends Statement
         this.isHard = isHard;
     }
 
+    public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
+            boolean isHard, boolean isData)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+        this.superA = isSuper;
+        this.isHard = isHard;
+        this.isData = isData;
+    }
+
     public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper) {
         this(context.getCx(), cond, msg, (isSuper ? 1 : 0), 0);
     }
@@ -180,6 +200,14 @@ public class StmtAssert extends Statement
     {
         this(context.getCx(), cond, msg, (isSuper ? 1 : 0), 0);
         this.isHard = isHard;
+    }
+
+    public StmtAssert(FENode context, Expression cond, String msg, boolean isSuper,
+            boolean isHard, boolean isData)
+    {
+        this(context.getCx(), cond, msg, (isSuper ? 1 : 0), 0);
+        this.isHard = isHard;
+        this.isData = isData;
     }
 
     public static StmtAssert createAssertMax(FEContext context, Expression cond,
@@ -231,6 +259,14 @@ public class StmtAssert extends Statement
         this.isHard = isHard;
     }
 
+    public StmtAssert(FENode context, Expression cond, String msg, int isSuper,
+            int isMax, boolean isHard, boolean isData)
+    {
+        this(context.getCx(), cond, msg, isSuper, isMax);
+        this.isHard = isHard;
+        this.isData = isData;
+    }
+
     /**
      *
      */
@@ -263,6 +299,17 @@ public class StmtAssert extends Statement
         this.msg = msg;
         this.superA = isSuper ? 1 : 0;
         this.isHard = isHard;
+    }
+
+    public StmtAssert(FEContext context, Expression cond, String msg, boolean isSuper,
+            boolean isHard, boolean isData)
+    {
+        super(context);
+        this.cond = cond;
+        this.msg = msg;
+        this.superA = isSuper ? 1 : 0;
+        this.isHard = isHard;
+        this.isData = isData;
     }
 
     /** Returns the assertion condition. */

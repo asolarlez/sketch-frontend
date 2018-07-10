@@ -359,6 +359,7 @@ statement returns [Statement s] { s = null; }
 	|	s=assert_statement SEMI
 	|	s=assert_max_statement SEMI
 	|   s=hassert_statement SEMI
+	| 	s=dassert_statement SEMI
 	|(annotation_list (TK_device | TK_serial | TK_harness |
                      TK_generator | TK_library | TK_printfcn | TK_stencil | TK_model)*
                     return_type ID LPAREN) =>s=fdecl_statement  
@@ -694,6 +695,20 @@ hassert_statement returns [StmtAssert s] { s = null; Expression x; }
 		}
 		s = new StmtAssert(cx, x, msg, false, true); }	
 	;
+
+dassert_statement returns [StmtAssert s] { s = null; Expression x; }
+	:	(t1:TK_dassert) x = right_expr (COLON ass:STRING_LITERAL)?{
+		String msg = null;
+		Token t = t1;
+		FEContext cx = getContext(t);
+		if (ass != null) {
+			String ps = ass.getText();
+			ps = ps.substring(1, ps.length()-1);
+			msg = cx + "   " + ps;
+		}
+		s = new StmtAssert(cx, x, msg, false, false, true); }
+	;
+
 	
 assert_max_statement returns [StmtAssert s] { s = null; Expression cond; ExprVar var; }
 :	t:TK_assert_max (defer: BACKSLASH)? cond=right_expr (COLON ass:STRING_LITERAL)? { 
