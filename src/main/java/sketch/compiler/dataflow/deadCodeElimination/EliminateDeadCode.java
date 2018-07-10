@@ -31,6 +31,7 @@ public class EliminateDeadCode extends BackwardDataflow {
     public EliminateDeadCode(TempVarGen varGen, boolean keepAsserts) {
         super(LiveVariableVType.vtype, varGen, true, -1, (new BaseRControl(10)));
 		this.keepAsserts = keepAsserts;
+        state.useRetTracker();
 	}
 
 	public Object visitStmtBlock(StmtBlock sb){
@@ -160,12 +161,20 @@ public class EliminateDeadCode extends BackwardDataflow {
 		return leftav;
 	}
 
+    List<String> outvars = new ArrayList<String>();
+    public Object visitStmtReturn(StmtReturn ret) {
+        for (String outv : outvars) {
+            state.setVarValue(outv, new joinAV(LiveVariableAV.LIVE));
+        }
+        return super.visitStmtReturn(ret);
+    }
+
 	public Object visitFunction(Function func)
 	{
 	    
 	    
 	    Level lvl = state.beginFunction(func.getName());
-	    
+        outvars.clear();
 		List<Parameter> params = func.getParams();
 		List<Parameter> nparams = isReplacer ? new ArrayList<Parameter>() : null;
 		for(Iterator<Parameter> it = params.iterator(); it.hasNext(); ){
@@ -177,6 +186,7 @@ public class EliminateDeadCode extends BackwardDataflow {
                         param.getPtype()));
 			}
 			if(param.isParameterOutput()){
+                outvars.add(param.getName());
 				state.setVarValue(param.getName(), new joinAV(LiveVariableAV.LIVE));
 			}
 		}

@@ -1,8 +1,17 @@
+/**
+ * This package includes standard math functions. These functions only work with 
+ * the floating point encoding \lstinline!--fe-fpencoding TO_BACKEND!, so including
+ * this package automatically sets that flag.
+ * 
+ * While the functions in this package look like uninterpreted functions, the
+ * backend actually understands their semantics. 
+ * \lstinline!@Native! annotations to generate the proper code during code generation. 
+ * 
+ */
 package math;
 
 pragma options "--fe-fpencoding TO_BACKEND";
 @Native("{_out = sinf(v);}")
-
 float sin(float v);
 @Native("{_out = cosf(v);}")
 float cos(float v);
@@ -11,11 +20,36 @@ float tan(float v);
 @Native("{_out = sqrtf(v);}")
 float sqrt(float v);
 @Native("{_out = fabs(v);}")
-float abs(float v);
+float abs(float v){
+    if(v > 0.0){ return v; }else{ return -v; }
+}
+
+@Native("{_out = logf(v);}")
+float log(float v);
+
+
+
 @Native("{_out = atanf(v);}")
 float arctan(float v);
-@Native("{_out = (int)v;}")
+
+/**
+ * Overrides the default cast from floats to ints. This looks like an uninterpreted function, 
+ * but is actually an intrinsic that has special meaning for the backend.
+ */
+@Native("{_out = (float)v;}")
 float _cast_int_float(int v);
+
+/**
+ * Overrides the default cast from doubles to ints.
+ */
+generator
+double _cast_int_double(int v){
+    return _cast_int_float(v);
+}
+
 @Native("{_out = expf(v);}")
 float exp(float v);
+
+
+
 generator float Pi(){ return 3.1415926535897932384626433832795; }

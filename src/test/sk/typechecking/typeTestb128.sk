@@ -1,0 +1,22 @@
+
+
+adt Tree{
+    Leaf{int value; }
+    Branch{ Tree left; Tree right; }
+}
+
+
+Tree foo(){
+    return null;
+}
+
+void printLeaf(Leaf l){}
+void printBranch(Branch b){}
+
+harness void main(){
+    
+    Tree t = foo();
+    Leaf l = (Leaf) t; //TypeError you cannot cast a null value.
+    
+    
+}

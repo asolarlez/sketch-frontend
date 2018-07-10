@@ -12,15 +12,56 @@ import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.Type;
+import sketch.compiler.ast.core.typs.TypeStructRef;
 
 public class EliminateGenerics extends SymbolTableVisitor {
     Map<String, Function> signatures = new HashMap<String, Function>();
     Map<String, List<Function>> newfuns = new HashMap<String, List<Function>>();
+    Map<String, StructDef> structs = new HashMap<String, StructDef>();
+    Map<String, List<StructDef>> newstructs = new HashMap<String, List<StructDef>>();
+
     final List<String> empty = new ArrayList<String>();
     public EliminateGenerics() {
         super(null);
+    }
+
+    StructDef newStructDef(TypeStructRef tsr) {
+        StructDef sd = nres.getStruct(tsr.getName());
+        final Map<String, Type> ms = GetExprType.replMap(sd, tsr, null);
+
+        TypeRenamer tr = new TypeRenamer();
+        tr.tmap = ms;
+        String newname = nameExtend(sd.getName(), tr.postfix());
+        sd = ((StructDef) sd.accept(tr)).creator().typeargs(null).name(newname).create();
+        structs.put(tsr.toString(), sd);
+        sd = ((StructDef) sd.accept(this));
+        structs.put(tsr.toString(), sd);
+        return sd;
+    }
+
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        TypeStructRef newref = (TypeStructRef) super.visitTypeStructRef(tsr);
+        if (newref.hasTypeParams()) {
+            String name = newref.toString();
+            if (structs.containsKey(name)) {
+                return new TypeStructRef(structs.get(name).getName(), tsr.isUnboxed(), null);
+            } else {
+                StructDef sd = newStructDef(newref);
+                String pkgname = sd.getPkg();
+                if (newstructs.containsKey(pkgname)) {
+                    newstructs.get(pkgname).add(sd);
+                } else {
+                    List<StructDef> lsd = new ArrayList<StructDef>();
+                    lsd.add(sd);
+                    newstructs.put(pkgname, lsd);
+                }
+                return new TypeStructRef(sd.getName(), tsr.isUnboxed(), null);
+            }
+        } else {
+            return newref;
+        }
     }
 
     String signature(Function f, TypeRenamer tr) {
@@ -34,28 +75,46 @@ public class EliminateGenerics extends SymbolTableVisitor {
         return ls.toString();
     }
 
+    public String nameExtend(String name, String postfix) {
+        int idx = name.indexOf('@');
+        if (idx > 0) {
+            return name.substring(0, idx) + postfix + name.substring(idx);
+        } else {
+            return name + postfix;
+        }
+    }
+
+    public String noPkg(String name) {
+        int idx = name.indexOf('@');
+        if (idx > 0) {
+            return name.substring(0, idx);
+        } else {
+            return name;
+        }
+    }
+
     public Object visitExprFunCall(ExprFunCall efc){
         Function f = nres.getFun(efc.getName());
         List<String> tps = f.getTypeParams();
         if (tps.isEmpty()) {
             return super.visitExprFunCall(efc);
         }
-        List<Type> lt = new ArrayList<Type>();        
-        for (Expression actual : efc.getParams()) {
-            lt.add(getType(actual));
-        }
-        TypeRenamer tr = SymbolTableVisitor.getRenaming(f, lt, nres, null);
+
+        TypeRenamer tr = new TypeRenamer(doCallTypeParams(efc));
+
         String sig = signature(f, tr);
         if(signatures.containsKey(sig)){
             String newName =signatures.get(sig).getFullName(); 
-            return new ExprFunCall(efc, newName, efc.getParams());
+            return new ExprFunCall(efc, newName, efc.getParams(), null);
         }else{
-            String newName = efc.getName() + tr.postfix();
+            String newName = nameExtend(efc.getName(), tr.postfix());
             Function newSig =
-                    ((Function) ((Function) f.accept(tr)).creator().name(newName).typeParams(
-                            empty).create().accept(this));
+                    (((Function) f.accept(tr)).creator().name(noPkg(newName)).typeParams(empty).create());
             signatures.put(sig, newSig);
-            String pkgname = nres.curPkg().getName();
+            newSig = (Function) newSig.accept(this);
+            signatures.put(sig, newSig);
+
+            String pkgname = f.getPkg();
             if (newfuns.containsKey(pkgname)) {
                 newfuns.get(pkgname).add(newSig);
             } else {
@@ -63,7 +122,7 @@ public class EliminateGenerics extends SymbolTableVisitor {
                 lf.add(newSig);
                 newfuns.put(pkgname, lf);
             }
-            return new ExprFunCall(efc, newName, efc.getParams());
+            return new ExprFunCall(efc, newName, efc.getParams(), null);
         }                
         
     }
@@ -83,8 +142,16 @@ public class EliminateGenerics extends SymbolTableVisitor {
                     nl.add(fun);
                 }
             }
+
+            List<StructDef> nsdl = new ArrayList<StructDef>();
+            for (StructDef sd : pk.getStructs()) {
+                if (!sd.hasTypeargs()) {
+                    nsdl.add(sd);
+                }
+            }
+
             Package npkg =
-                    new Package(pk, pk.getName(), pk.getStructs(), pk.getVars(), nl,
+                    new Package(pk, pk.getName(), nsdl, pk.getVars(), nl,
                             pk.getSpAsserts());
             newStreams.add((Package) npkg.accept(this));
         }
@@ -93,6 +160,11 @@ public class EliminateGenerics extends SymbolTableVisitor {
             List<Function> nl = pk.getFuncs();
             if (lf != null) {
                 nl.addAll(lf);
+            }
+            List<StructDef> lsd = newstructs.get(pk.getName());
+            List<StructDef> nd = pk.getStructs();
+            if (lsd != null) {
+                nd.addAll(lsd);
             }
         }
         symtab = oldSymTab;

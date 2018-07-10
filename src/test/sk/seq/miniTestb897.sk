@@ -1,0 +1,32 @@
+
+pragma options "--bnd-unroll-amnt 16";
+
+generator bit SM<T>(T p, fun next, fun getState, fun more){
+    int state = ??;
+    while(more(p)){
+        minimize(state);
+        minrepeat{
+            if(getState(p) == ?? && state==??){
+                state = ??;
+            }    
+        }
+        p = next(p);
+    }
+    minrepeat{
+        if(state==??){
+            return 1;
+        }        
+    }
+    return 0;
+}
+
+
+@FromFile("miniTestb897.data")
+harness void main([int n], int[n] p, bit rv){    
+    generator int nxt(int i){ return i+1; }
+    generator int state(int i){ return p[i]; }   
+    generator bit more(int i){ return i<n; }
+    int start = 0;
+    assert SM(start, nxt, state, more)==rv;
+    
+}

@@ -32,10 +32,9 @@ public class LowerToSketch extends MetaStage {
 
         // ADT
         prog = (Program) prog.accept(new MergeADT());
-        // prog.debugDump("afterMergeADT");
+
         prog = (Program) prog.accept(new EliminateGenerics());
 
-        // prog.debugDump("after Generics");
 
         if (false) {
             prog = (Program) prog.accept(new CombineFunctionCalls(varGen));
@@ -56,11 +55,14 @@ public class LowerToSketch extends MetaStage {
         // System.out.println("before efs:");
         // prog.accept(prt);
 
+
         if (options.feOpts.elimFinalStructs) {
             prog =
                     (Program) prog.accept(new EliminateFinalStructs(varGen,
                             options.bndOpts.arr1dSize));
         }
+
+
 
         prog = (Program) prog.accept(new ReplaceSketchesWithSpecs());
 
@@ -114,6 +116,7 @@ public class LowerToSketch extends MetaStage {
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         // pass to eliminate immutable structs
         // prog.debugDump("Before EIS");
+
         prog = (Program) prog.accept(new EliminateImmutableStructs());
 
         // prog.debugDump("After EIS");

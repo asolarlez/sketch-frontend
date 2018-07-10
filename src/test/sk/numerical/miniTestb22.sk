@@ -1,0 +1,89 @@
+
+include "miniTestb20_segs.skh";
+
+
+harness void main(){
+	int N = 5;
+	Segment[N] segs;
+	double x = 0.0;
+	double y = 0.0;
+	double[N] deltas;
+	repeat(i:N){
+		double nx = x + 2.0;
+		double ny = 0.0;
+		segs[i] = seg(x,y,nx,ny, 0.0);
+		x = nx;
+		y = ny;
+		deltas[i] = 0.01;
+	}
+	
+	printSegs(segs);
+	
+	Point vm = point(0.0, 0.0);
+	double angVel = 0.0;
+	
+	for(int t=0; t<50; ++t){
+		Point oldcm = centerOfMass(segs);
+		
+		Segment[N] newsegs = updatePos(segs, deltas);
+		
+		Point newcm = centerOfMass(newsegs);
+		
+		double ang = angOffset(oldcm, segs, newcm, newsegs);
+		
+		segs = rotate@segpkg(newsegs, newcm, ang);
+		
+		segs = translate(segs, oldcm .- newcm);
+		
+		segs = forces(segs, oldcm, vm, angVel);
+		
+		printSegs(segs);
+	}
+}
+
+double DT = 0.005;
+double K = 400.0;
+
+Segment[N] forces([int N], Segment[N] segs, Point cmass, ref Point vm, ref double angVel){
+	double torque = 0.0;
+	Point force = point(0.0, 0.0);
+	
+	double momentOfI = 0.0;
+	
+	Point fcompute(Point pos){
+		if(pos.y > 0.0){
+			return point(0.0, -9.8);
+		}else{
+			return point(0.0, -9.8 -K*pos.y);
+		}
+	}
+	
+	
+	
+	void addToForces(Point pos){
+		Point p = fcompute(pos);
+		force = force .+ p;
+		Point r = pos .- cmass;
+		torque += cross(p, r);
+		double rval = norm(r);
+		momentOfI += rval * rval;
+	}
+	
+	for(int i=0; i<N; ++i){
+		addToForces(segs[i].x);
+		addToForces(segs[i].y);		
+	}
+	
+	Point displace = vm .* DT .+ force .* (DT*DT/2.0);
+	vm = vm .+ (force .* DT);
+	
+	double rot = angVel * DT + (torque/momentOfI)*(DT*DT/2.0);
+	angVel = angVel + (torque/momentOfI)*DT;
+	
+	Segment[N] newsegs = rotate@segpkg(segs, cmass, rot);
+		
+	newsegs = translate(newsegs, displace);
+	return newsegs;
+}
+
+

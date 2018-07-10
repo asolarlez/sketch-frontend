@@ -1,0 +1,170 @@
+adt Tree<T>{
+    Node{ T val; Tree<T> left; Tree<T> right; }
+    Nil{}
+}
+
+
+generator Tree<T> add<T>(Tree<T> t, T val, fun lt, fun eq){
+    Tree<T> nil = new Nil<T>();
+    switch(t){
+    case Nil:
+        return new Node<T>(val=val, left=nil, right=nil);
+    case Node:{
+        if(eq(t.val, val)){
+            return t;
+        }
+        if(lt(t.val, val)){
+            return new Node<T>(val=t.val, left=t.left, right = add(t.right, val, lt, eq));
+        }else{
+            return new Node<T>(val=t.val, left=add(t.left, val, lt, eq), right = t.right);
+        }
+      }
+    }
+}
+
+generator T get<T>(Tree<T> t, T val, fun lt, fun eq, T deflt){
+    switch(t){
+    case Nil:
+        return deflt;
+    case Node:{
+        if(eq(t.val, val)){
+            return t.val;
+        }
+        if(lt(t.val, val)){
+            return get(t.right, val, lt, eq, deflt);
+        }else{
+            return get(t.left, val, lt, eq, deflt);
+        }
+      }
+    }
+}
+
+
+generator bit equals(AST a, AST b){
+    switch(a){
+    case Plus:
+        switch(b){
+        case Plus:
+            return a.left.id == b.left.id && a.right.id == b.right.id;
+        default:
+            return false;
+        }
+    case Minus:
+        switch(b){
+        case Minus:
+            return a.left.id == b.left.id && a.right.id == b.right.id;
+        default:
+            return false;
+        }
+    case Const:
+        switch(b){
+        case Const:
+            return a.n == b.n;
+        default:
+            return false;
+        }
+    case None:
+        return false;
+    }
+}
+
+
+generator bit lt(AST a, AST b){
+    switch(a){
+    case Plus:
+        switch(b){
+        case Plus:
+            return a.left.id < b.left.id || (a.left.id == b.left.id && a.right.id < b.right.id);
+        default:
+            return true;
+        }
+    case Minus:
+        switch(b){
+        case Plus:
+            return false;
+        case Minus:
+            return a.left.id < b.left.id || (a.left.id == b.left.id && a.right.id < b.right.id);
+        default:
+            return true;
+        }
+    case Const:
+        switch(b){
+        case Const:
+            return a.n < b.n;
+        default:
+            return false;
+        }
+    case None:
+        return false;
+    }
+}
+
+generator Tree<AST> tadd(Tree<AST> t, AST val){
+    return add(t, val, lt, equals);
+}
+
+generator AST tget(Tree<AST> t, AST val){
+    return get(t, val, lt, equals, new None());
+}
+
+
+Tree<AST> set;
+
+generator AST mm(AST n){
+    AST t = tget(set, n);
+    if(t == new None()){
+        set = tadd(set, n);
+        return n;
+    }else{
+        return t;
+    }
+}
+
+adt AST{
+    int id;
+    Plus{ AST left; AST right; }
+    Minus{ AST left; AST right; }
+    Const{ int n; }
+    None{}
+}
+
+int ID=0;
+
+generator AST plus(AST l, AST r){ return new Plus(left=l, right=r, id=ID++);}
+generator AST minus(AST l, AST r){ return new Minus(left=l, right=r, id=ID++); }
+generator AST c(int i){ return new Const(n=i, id=ID++); }
+
+void print(AST n){}
+
+void foo(){
+    set = new Nil<AST>(); 
+    
+    AST a1 = c(5);
+    AST a2 = c(6);
+    AST p = plus(a1, a2);
+    
+    if(((Const)a1).n + ((Const)a2).n == 11){
+        print(null);
+    }
+    
+    AST t1 = mm(c(5));
+    AST t2 = mm(c(5));
+    if(((Const)t1).n == ((Const)t2).n){
+        print(t1);
+    }
+    set = new Nil<AST>();
+}
+
+harness void main(){
+    
+    
+    
+    set = new Nil<AST>(); 
+    AST n1 = mm(plus(mm(plus(mm(c(5)), mm(c(7)))), c(8)));
+    AST n2 = mm(plus(mm(plus(mm(c(5)), mm(c(7)))), c(2)));
+    
+    print(n1);
+    print(n2);
+    
+    foo();
+}

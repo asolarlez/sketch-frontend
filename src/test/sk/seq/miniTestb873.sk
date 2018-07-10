@@ -1,0 +1,73 @@
+int select (int index); // uninterpreted function representing array read
+
+struct Array
+{
+  int index;
+  int value;
+  Array next;
+}
+
+int arrayRead (Array a, int index) {
+  if (a.index == index) { return a.value; }
+  else if (a.next != null) { return arrayRead(a.next, index); }
+  else return select(index);
+}
+
+Array arrayWrite (Array a, int index, int value) {
+  Array r = new Array();
+  r.index = index;
+  r.value = value;
+  r.next = a;
+  return r;
+}
+
+bit invariant (int min, int max, int j, Array output, Array input)
+{
+  bit r = true;
+  for (int i = min; i < j; ++i)
+    r = r && arrayRead(output, i) == arrayRead(input, i);
+  
+  return r && j <= max;
+}
+
+bit foo(int x){
+    return x > 0;
+}
+
+void test(int n){
+    for(int i=0; i<n; ++i){
+        if(??){
+        assert foo(??+i);
+        assert foo(??+i*2);
+        }
+    }
+}
+
+harness void sketch (int min, int max)
+{
+  test(5);
+  Array input = new Array();
+  Array output = new Array();
+
+  if (min < max)
+  {
+    assert invariant(min, max, min, output, input);
+    // the following works 
+    /*
+    bit r = true;
+    int j = min;
+    for (int i = min; i < j; ++i)
+      r = r && arrayRead(output, i) == arrayRead(input, i);
+
+    assert r && j <= max;
+    */
+  }
+
+  /*
+  for (int i = min; i < max; ++i)
+    output = arrayWrite(output, i, arrayRead(i));
+
+  for (int i = min; i < max; ++i)
+  assert arrayRead(arrayWrite(a, 1, 10), 1) == 10;
+  */
+}

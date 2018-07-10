@@ -10,6 +10,7 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.StmtWhile;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.promela.stmts.StmtFork;
 import sketch.compiler.dataflow.DataflowWithFixpoint;
@@ -241,6 +242,17 @@ public class BackwardDataflow extends DataflowWithFixpoint {
     		state.popLevel(lvl);
     	}
     	if(nbody == null && ninit == null && nincr == null) return null;
+
+        if (ninit == null) {
+            Statement body;
+            if (nbody == null) {
+                body = nincr;
+            } else {
+                body = new StmtBlock(nbody, nincr);
+            }
+            return new StmtWhile(stmt, ncond, body);
+        }
+
         return new StmtFor(stmt, ninit, ncond, nincr, nbody, stmt.isCanonical());
     }
 

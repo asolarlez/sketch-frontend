@@ -234,7 +234,7 @@ public class EliminateStructs extends SymbolTableVisitor {
             newName = newName.replace(fun.getName(), tmp);
 		}
 
-		return new ExprFunCall(fc,newName, newplist);
+        return new ExprFunCall(fc, newName, newplist, null);
 	}
 
 

@@ -15,8 +15,6 @@
  */
 
 package sketch.compiler.ast.core.stmts;
-import java.util.Random;
-
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
@@ -351,13 +349,13 @@ public class StmtAssert extends Statement
         this.msg = msg;
     }
 
-    private Random _my_rand = new Random();
+    private int _my_rand = 0;
     /**
      * @return the msg
      */
     public String getMsg() {
         if (msg == null || msg.isEmpty())
-            return "Assert at " + getCx() + " (" + _my_rand.nextLong() + ")";
+            return "Assert at " + getCx() + " (" + (_my_rand++) + ")";
         return msg;
     }
 }

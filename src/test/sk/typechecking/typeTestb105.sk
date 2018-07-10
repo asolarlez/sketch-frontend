@@ -1,8 +1,8 @@
 // Cannot define a function in struct.
 
-struct Node{
+struct Node{ //TypeError
 	int val;
-	fun f;
+	fun f; 
 	int next;	
 }
 

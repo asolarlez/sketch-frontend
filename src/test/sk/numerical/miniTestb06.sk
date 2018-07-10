@@ -1,0 +1,42 @@
+
+
+include "math.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+
+@Native("{cout<<x<<','<<y<<endl;}")
+void print(double x, double y){}
+
+harness void main(){
+    double ang = ??;
+    assert ang > 0.0;
+    assert ang < Pi();
+    double v = ??;
+    double vx = cos(ang)*v;
+    double vy = sin(ang)*v;
+    double dT = 0.1;
+    
+    double px = 0.0;
+    double py = 0.0;
+    double g = -9.8; //m/s;
+    print(px,py);
+    for(int i=0; i<30; ++i){
+        px += vx*dT;
+        py += vy*dT + g*dT*dT/2.0;
+        vy += g*dT;
+        
+        if(py <= 0.0 && vy < 0.0){
+            py = 0.0;
+            vy = -vy;
+        }
+        print(px,py);
+    }
+    assert px > 10.0;
+    assert px < 11.0;
+    assert py > 2.0;
+    assert py < 2.2;
+    assert vy > 0.0;
+}
+
+

@@ -24,6 +24,7 @@ import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.stmts.StmtSpAssert;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.dataflow.nodesToSB.NtsbVtype;
 
 /**
  * This class replaces immutable structs with tuples. Converts constructors to tuple
@@ -165,7 +166,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
             }
         return new ExprTupleAccess(ef, basePtr, index);
         } else
-            return ef;
+            return super.visitExprField(ef);
 
     }
 
@@ -199,7 +200,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
         }
 
         // this.addStatement (struct.makeAllocationGuard (expNew));
-        return new ExprTuple(expNew, exprs, str.getName() + "_" + str.getPkg());
+        return new ExprTuple(expNew, exprs, NtsbVtype.adtTypeName(str));
         
     }
 
@@ -211,7 +212,7 @@ public class EliminateImmutableStructs extends SymbolTableVisitor {
     @Override
     public Object visitTypeStructRef(TypeStructRef t) {
         // return TypePrimitive.inttype ;
-        return t;
+        return super.visitTypeStructRef(t);
     }
 
     final Set<String> calledFunctions = new HashSet<String>();

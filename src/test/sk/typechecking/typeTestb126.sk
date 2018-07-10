@@ -1,0 +1,19 @@
+package simple_test;
+
+Object simple_test_simple_test(Object self) { 
+    return self;
+}
+
+harness bit test() {
+  Object self = Object_Object(new Object(__cid=Object())); //TypeError
+  bit ok = true;
+  Object ht1 = simple_hash_simple_hash(new Object(__cid=simple_hash()));
+  Object s = String_String_char_int_int(new Object(__cid=String()), new Array_char(length=0+1, A=""), 0, 0);
+  int j = 4;
+  Object i2 = Integer_Integer_int(new Object(__cid=Integer()), 0);
+  for (int i = 0; i < 2; i++) {
+    if (ht1.__cid == simple_hash()) { put_int_int@simple_hash(ht1, i, j); }
+    else { 0; };
+  }
+  return ok;
+}

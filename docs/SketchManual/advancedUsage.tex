@@ -2,11 +2,11 @@
 
 
 \subsection{Interpreting Synthesizer Output}
-You can use the flag \C{-V n} to set the verbosity level of the synthesizer. You can use this to diagnose problems with your sketch, and to understand why a particular problem takes a long time to synthesize. 
+You can use the flag \C{-V n} to set the verbosity level of the synthesizer. You can use this to diagnose problems with your sketch, and to understand why a particular problem takes a long time to synthesize.
 
-The first thing you need to understand about \Sk{} is that it works by first guessing a solution to the synthesis problem and then checking it. If the check fails, the system generates a counterexample and then searches for a new solution that works for that counterexample and repeats the process. When you run with \C{-V 5}, you can see each of these inductive synthesis and checking steps as they happen in real time. The synthesizer will output \C{BEGIN CHECK} and \C{END CHECK} before and after the checking phase respectively, and it will output \C{BEGIN FIND} and \C{END FIND} before and after the inductive synthesis phase. Therefore, if the synthesizer seems to be stuck when solving a problem, you can use this output to tell whether it is having trouble with the synthesis or with the checking phase. This is very important, because there are different strategies you can use to speed up the synthesis or the checking phases of the solver. 
+The first thing you need to understand about \Sk{} is that it works by first guessing a solution to the synthesis problem and then checking it. If the check fails, the system generates a counterexample and then searches for a new solution that works for that counterexample and repeats the process. When you run with \C{-V 5}, you can see each of these inductive synthesis and checking steps as they happen in real time. The synthesizer will output \C{BEG CHECK} and \C{END CHECK} before and after the checking phase respectively, and it will output \C{BEG FIND} and \C{END FIND} before and after the inductive synthesis phase. Therefore, if the synthesizer seems to be stuck when solving a problem, you can use this output to tell whether it is having trouble with the synthesis or with the checking phase. This is very important, because there are different strategies you can use to speed up the synthesis or the checking phases of the solver.
 
-If the synthesizer tells you that your sketch has no solution, you can also pass the flag \C{--debug-cex} to ask the synthesizer to show you the counterexamples it is generating as it tries different solutions. Often, these counterexamples can help you pinpoint corner cases that you failed to consider in your sketch. 
+If the synthesizer tells you that your sketch has no solution, you can also pass the flag \C{--debug-cex} to ask the synthesizer to show you the counterexamples it is generating as it tries different solutions. Often, these counterexamples can help you pinpoint corner cases that you failed to consider in your sketch.
 
 \flagdocb{V}{The verbosity flag takes as argument a verbosity level that can range from 0 (minimal output) to 15 (a lot of debug output everything)}
 
@@ -16,18 +16,214 @@ If the synthesizer tells you that your sketch has no solution, you can also pass
 \subsection{Parallel Solving}
 \seclabel{parallel}
 
-When running in parallel mode, the \Sk{} synthesizer will launch multiple processes and have each process use a combination of stochastic and symbolic search to find a solution to the synthesis problem. Not all problems will benefit from this style of parallelization, but for those that do, the benefits can be significant. 
+When running in parallel mode, the \Sk{} synthesizer will launch multiple processes and have each process use a combination of stochastic and symbolic search to find a solution to the synthesis problem. Not all problems will benefit from this style of parallelization, but for those that do, the benefits can be significant.
 
-In general, parallelization will only help speed up the synthesis phase, so if your problem is taking a long time in the checking phase, it will not benefit from parallel solving. 
+In general, parallelization will only help speed up the synthesis phase, so if your problem is taking a long time in the checking phase, it will not benefit from parallel solving. Similarly, problems that make extensive use of \C{minimize} may not benefit much from parallel solving.
 
-It is also important to note that parallelization does not work well with the \C{minimize} construct. In particular, using parallelization with \C{minimize} can lead to solutions that are not actually minimal. 
+
+\subsection{Performance diagnostics}
+Below we list of a few common issues that cause sketch to either take too long to
+synthesize or to run out of memory, as well as strategies to check whether
+your sketch suffers from any of those problems.
+
+\paragraph{Too much inlining/unrolling}
+All loops are unrolled by an amount controlled by the \C{--bnd-unroll-amnt} flag, and all
+recursive functions are inlined as explained earlier. When there
+are multiple nested loops or functions that make multiple recursive calls even
+a small amount of inlining or unrolling can lead to very large representations.
+If you run with verbosity > 12, in the backend output you will see a series
+of lines of the form:
+\begin{lstlisting}
+CREATING $funName$
+size = $N$
+after ba size = $N$
+\end{lstlisting}
+Each of these corresponds to a function, with $N$ indicating the number
+of operations performed by the function. If you see a function with a very large $N$,
+on the order of (hundreds of thousands), it generally means that within that
+function, there is either a generator that is too large (see below),
+or you have too many loops that are being unrolled too much inside that function.
+
+After the backend reads all the functions, it will start inlining.
+You will see in the output a series of lines of the form:
+\begin{lstlisting}
+Inlining functions in the sketch.
+inlined $n1$ new size =$s1$
+inlined $n2$ new size =$s2$
+...
+\end{lstlisting}
+This is the synthesizer telling you how many functions it is inlining and
+how much its internal representation is growing as it inlines. Again,
+if the numbers start growing too large (above 200K), it means that there is
+too much inlining. This can usually be fixed by reducing the degree of inlining
+with \C{--bnd-inline-amnt}, or by using parallelism.
+
+
+\paragraph{Recursive generators are too large or have too much recursion}
+Unlike recursive functions, which are inlined in the backend, recursive
+generators are inlined in the frontend, so if the problem is too much inlining,
+it can also manifest itself with very large functions, just like the case of
+too much loop unrolling mentioned above. A big difference, though, is that
+large generators also introduce a large number of holes.
+In the synthesizer output you can find a pair of lines that reads as follows:
+\begin{lstlisting}
+control_ints = $N1$       control_bits = $N2$
+inputSize = $N_{in}$   ctrlSize = $N_{ctrl}$
+\end{lstlisting}
+The two most important numbers are $N_{in}$ and $N_{ctrl}$, which determine
+the total number of bits in the inputs and unknowns respectively. If $N_{ctrl}$
+grows beyond a few thousand, you are probably using generators that are
+too big. Follow the tips on \secref{generators} on how to write more efficient
+generator functions. Also, the parallel solver can be very effective when your problem
+is having generators with too many choices.
+
+\paragraph{The range of some intermediate values is growing too large}
+By default, Sketch uses an internal representation that grows linearly
+with the maximum range of any integers anywhere in the computation.
+In some cases, this can lead to the problem becoming too large to fit in
+memory and become impossible to solve. In the solver output, you will
+see within each synthesis phase a statistic that says:
+\begin{lstlisting}
+* TIME TO ADD INPUT :  $XX$ ms
+\end{lstlisting}
+If this number starts growing beyond a few hundred milliseconds, or if you see
+the memory consumption growing significantly after every round of the solution
+algorithm, this usually indicates that you have intermediate values that
+are growing too large. In this case, there are two flags that you can use.
+One is \C{--bnd-int-range}. This flag imposes a bound on the largest integers
+that you expect to see for any input during a computation (for inputs that
+fall within the range prescribed by \C{--bnd-inbits}).
+\begin{lstlisting}
+harness void main(int x){
+  x = x * ??;
+  if(x < 10){
+    if(??){
+      x = x * x;
+    }
+    if(??){
+      x = x * x * x;
+    }
+    if(??){
+      x = x * x * x;
+    }
+  }
+  assert x < 100;
+}
+\end{lstlisting}
+
+
+For example, consider the simple program above; with 5-bit inputs and
+integer holes, the sketch above will almost surely run out of memory.
+That is because even though initially the value of \C{x} ranges from 0 to 32,
+in the symbolic representation, \C{x} could reach a value of \C{2^180}.
+However, we can see from the sketch, that on any correct run of the resolved
+sketch, x cannot be greater than 100. We can tell this to the
+synthesizer by passing \C{--bnd-int-range 100} (it is usually a good
+idea to give it some additional margin, so you could do \C{--bnd-int-range 110}).
+With this flag, the sketch above resolves in less than a second.
+
+In some cases, though, the maximum size of your integers is too large,
+so even with the \C{--bnd-int-range} flag, it still runs out of memory.
+In those cases, you can use a flag \C{--slv-nativeints}. This switches to a completely
+different solver that scales better to large numbers, but can be slower than
+the default solver. If the range of integers that are possible for values in
+your program given inputs within the input range is greater than about 500,
+then you will probably see a speedup from using this flag.
+
+\flagdoc{bnd-int-range}{Maximum absolute value of integers modeled by the system.
+If this is not passed, the maximum value is dictated by \C{MAX_INT}, but you
+are likely to see major scalability problems long before your values reach that size.}
+
+\flagdoc{slv-nativeints}{Replaces the standard solver with one that is more
+memory efficient, especially for problems involving larger integer values.}
+
+
+
+\paragraph{The problem is too hard to verify}
+The sketch synthesizer iterates between synthesis and checking phases.
+When running with high verbosity, the synthesizer prints \C{BEG CHECK}
+and \C{END CHECK} at the beginning and the end of the checking phase.
+It is common to have situations where the synthesizer can easily find
+a correct solution, but finds it hard to prove it correct, even for
+the input bound provided. There are a few things that can
+be done to remedy this.
+First, there is a flag \C{--slv-lightverif}, which tells the solver to
+make only a best effort in trying to check the solution. If the solver
+fails to find a counterexample in the allotted time, it assumes that the
+program is correct.
+
+Another option is to run with a smaller input range,
+either fewer bits
+of input (\C{--bnd-inbits}) or smaller maximum size of arrays
+for sketches that have array inputs (\C{--bnd-arr-size}). In some cases,
+though, smaller sizes may not be enough to force the synthesizer to provide
+a correct answer. One option in such cases is to provide one test harness
+that checks for all small inputs, and then a separate harness that checks for
+against some explicitly chosen large inputs, rather than trying to check against
+all large inputs. For example, consider the code below.
+
+\begin{lstlisting}
+int foo(int x){
+  x = x + ??;
+  while({| x (> | >=) 1000 |} ){
+    x = {| x (- | + ) 1000 |};
+  }
+  return x;
+}
+harness void main(int x){
+  assert ((x + 5) % 1000) == foo(x);
+}
+\end{lstlisting}
+
+In order to exercise the case inside the while loop, you would need
+\C{--bnd-inbits} of at least 10, on the other hand, you can provide a smaller
+bitwidth for the input, and then provide an explicit harness that tests this for
+a few carefully selected larger numbers, or even a range of larger numbers.
+For example, if in addition to the main harness above, I provide the
+\C{largeVal} harness below and I set \C{--bnd-inbits 5},
+\C{main} will check against values in the range $[0,31]$, and
+\C{largeVal} will check against values in the range $[1090,1121]$.
+\begin{lstlisting}
+harness void largeVal(int x){
+  main(1090 + x);
+}
+\end{lstlisting}
+Note that if I had only hard-coded a few values in
+\C{largeVal}, I could have missed the crucial value of $1095$, which is essential
+to ensuring that \C{foo} is synthesized to the correct \C{x>=0} instead of
+the incorrect \C{x>0}.
+
+For sketches that contain arrays, often checking against all possible values
+for all entries in the array is overkill. In such cases, you can use the option
+\C{--slv-sparsearray $x$}, which causes the solver to verify only against
+sparse arrays, i.e. arrays that have mostly zeros. $x$ is the degree
+of sparsity. So $x=0.05$ for an array of size $1000$ means that the checker will
+only check against inputs that have at most $50$ non-zero entries.
+This can be especially useful
+if your sketch takes multi-dimensional arrays as inputs.
+
+Finally, the checker within sketch uses a combination of
+random testing and symbolic checking in order to find errors in the
+candidate programs. If you use flags such as \C{--slv-lightverif} which
+reduce the effectiveness of symbolic checking it is advised that you
+increase the amount of random testing. You can do this by
+using the flag \C{--slv-simiters $N$}, where $N$ controls the amount of
+effort to spend on random testing. The default is 3, but values as high as 150
+can be useful for some benchmarks. You will also note that as it performs
+random testing, it will also periodically use insights it learns through
+random testing to attempt to simplify the verification problem, so higher
+values of $N$ can lead to further simplification, which can sometimes eliminate the
+need to use \C{--slv-lightverif}.
+
+
 
 
 \subsection{Custom Code Generators}
+\seclabel{customcodegen}
 
-For many applications, the user's goal is not to generate C code, but instead to derive code details that will later be used by other applications. In order to simplify this process, \Sk{} makes it easy to create custom code generators that will be invoked by the sketch compiler at code generation time. 
+For many applications, the user's goal is not to generate C code, but instead to derive code details that will later be used by other applications. In order to simplify this process, \Sk{} makes it easy to create custom code generators that will be invoked by the sketch compiler at code generation time.
 
-Custom code generators must implement the \C{FEVisitor} interface defined in the \C{sketch.compiler.ast.core} package and must have a default constructor that the compiler can use to instantiate them. In order to ask the compiler to use a custom code generator, you must label your custom code generator with the \C{@CodeGenerator} annotation. You must then package your code generator together with any additional classes it uses into a single jar file, and you must tell \Sk{} to use this jar file by using the flag \C{--fe-custom-codegen}. 
+Custom code generators must implement the \C{FEVisitor} interface defined in the \C{sketch.compiler.ast.core} package and must have a default constructor that the compiler can use to instantiate them. In order to ask the compiler to use a custom code generator, you must label your custom code generator with the \C{@CodeGenerator} annotation. You must then package your code generator together with any additional classes it uses into a single jar file, and you must tell \Sk{} to use this jar file by using the flag \C{--fe-custom-codegen}.
 
 \flagdoc{fe-custom-codegen}{Flag takes as an argument the name of a jar file and forces \Sk{} to use the first code generator it finds in that file.}
 
@@ -54,35 +250,45 @@ Generating code with customcodegen.SCP
 
 \subsection{Temporary Files and Frontend Backend Communication}
 
-The sketch frontend communicates with the solver through temporary files. 
-By default, these files are named after the sketch you are solving and 
-are placed in your temporary directory and deleted right afterwards. One 
-unfortunate consequence of this is that if you run two instances of sketch at the same 
+The sketch frontend communicates with the solver through temporary files.
+By default, these files are named after the sketch you are solving and
+are placed in your temporary directory and deleted right afterwards. One
+unfortunate consequence of this is that if you run two instances of sketch at the same
 time on the same sketch (or on two sketch files with the same name), the temporary file
-can get corrupted, leading to a compiler crash. In order to avoid this problem, you can use the flag 
-\C{--fe-output} to direct the frontend to put the temporary files in a different directory. 
+can get corrupted, leading to a compiler crash. In order to avoid this problem, you can use the flag
+\C{--fe-output} to direct the frontend to put the temporary files in a different directory.
 
 \flagdoc{fe-output}{Temporary output directory used to communicate with backend solver.}
 
-Also, if you are doing advanced development on the system, you will sometimes want to keep 
+Also, if you are doing advanced development on the system, you will sometimes want to keep
 the temporary files from being deleted. You can do this by using the \C{--fe-keep-tmp} flag.
 
 \flagdoc{fe-keep-tmp}{Keep intermediate files used by the sketch frontend to communicate with the solver.}
 
+In some cases, especially when debugging sketches that take a long time to solve, you may find it useful to not have to rerun the solver after having made small changes to your sketch. \Sk{} provides a flag \C{--debug-fake-solver}, which tells the system to not invoke the backend solver; instead, if the system can find an existing temporary file with a solution for this sketch, it will just use those results. For example, if you have a sketch \C{slow.sk} which takes a long time to run, you can invoke:
+\begin{lstlisting}
+> sketch --fe-keep-tmp slow.sk           // This runs for a long time but keeps around the temporary files.
+> sketch --debug-fake-solver slow.sk   // This runs very fast because it doesn't actually try
+                                                    // to solve the sketch, just reuses the results from the last run
+\end{lstlisting}
+You should be careful when using this flag, because if you changed your sketch significantly from one run to the next, the results from the old sketch may not be correct for the new sketch.
+
+\flagdoc{debug-fake-solver}{Instead of invoking the solver, sketch searches for an existing intermediate file from a prior run and uses the results stored in that file.}
+
 
 
 \subsection{Extracting the intermediate representation}
-If you have your own SMT solver with support for quantifiers and you want to compare your performance with Sketch, you can ask the solver for the intermediate representation of the synthesis problem after it is done optimizing and desugaring the high-level language features. 
+If you have your own SMT solver with support for quantifiers and you want to compare your performance with Sketch, you can ask the solver for the intermediate representation of the synthesis problem after it is done optimizing and desugaring the high-level language features.
 
 \flagdoc{debug-output-dag}{This flag outputs the intermediate representation in an easy to parse (although not necessarily easy to read) format suitable for mechanical conversion into other solver formats. The flag takes as a parameter the file name to which to write the output.}
 
-The file will show all the nodes in the intermediate representation in topological order. There listing in \figref{irformat} shows all the different types of nodes and the format in which they are written. 
+The file will show all the nodes in the intermediate representation in topological order. There listing in \figref{irformat} shows all the different types of nodes and the format in which they are written.
 \begin{figure}
 \begin{lstlisting}
 id = ARR_R	TYPE	index	inputarr
 id = ARR_W	TYPE	index	old-array	new-value
 id = ARR_CREATE TYPE	size	v0 v1 ....
-id = BINOP	TYPE	left	right	
+id = BINOP	TYPE	left	right
         // where BINOP can be AND, OR, XOR, PLUS, TIMES, DIV, MOD, LT, EQ
 id = UNOP	TYPE	parent	// where UNOP can be NOT or NEG
 id = SRC	TYPE	NAME	bits
@@ -97,4 +303,3 @@ id = ASSERT	val	"msg"
 \end{lstlisting}
 \caption{Format for intermediate representation.}\figlabel{irformat}
 \end{figure}
-

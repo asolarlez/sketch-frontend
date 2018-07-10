@@ -15,14 +15,17 @@
  */
 
 package sketch.compiler.ast.core.exprs;
+import static sketch.util.Misc.nonnull;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
-import static sketch.util.Misc.nonnull;
+import sketch.compiler.ast.core.typs.Type;
 
 /**
  * A call to a particular named function.  This contains the name of
@@ -41,6 +44,7 @@ public class ExprFunCall extends Expression
     private int clusterId; // Used to identify the cluster to combine funCalls.
     private int callid;
     private final List<Expression> params;
+    private final Map<String, Type> tparams;
 
     public void resetCallid(){
     	this.callid = NEXT_UID++;
@@ -52,7 +56,7 @@ public class ExprFunCall extends Expression
     
     /** Creates a new function call with the specified name and
      * parameter list. */
-    public ExprFunCall(FENode context, String name, List<Expression> params)
+    public ExprFunCall(FENode context, String name, List<Expression> params, Map<String, Type> tparams)
     {
         super(context);
         this.name = nonnull(name, "Cannot construct a function call without a name!");
@@ -63,6 +67,14 @@ public class ExprFunCall extends Expression
         }else{
         	this.callid = NEXT_UID++;
         }
+        this.tparams = tparams;
+    }
+
+    /**
+     * Creates a new function call with the specified name and parameter list.
+     */
+    public ExprFunCall(FENode context, String name, List<Expression> params) {
+        this(context, name, params, null);
     }
 
 
@@ -76,20 +88,21 @@ public class ExprFunCall extends Expression
         this.name = nonnull(name, "Cannot construct a function call without a name!");
         this.params = Collections.unmodifiableList(params);
         this.callid = NEXT_UID++;
+        tparams = null;
     }
 
     /** Creates a new function call with the specified name and
      * specified single parameter. */
     public ExprFunCall(FENode context, String name, Expression param)
     {
-    	this (context, name, Collections.singletonList (param));
+        this(context, name, Collections.singletonList(param), null);
     }
 
     /**
      * Creates a new function call with the specified name and two specified parameters.
      */
     public ExprFunCall(FENode context, String name, Expression... params) {
-        this(context, name, Arrays.asList(params));
+        this(context, name, Arrays.asList(params), null);
     }
 
     /**
@@ -110,6 +123,14 @@ public class ExprFunCall extends Expression
     public List<Expression> getParams()
     {
         return params;
+    }
+
+    /**
+     * 
+     * @return Returns type parameters to the function. They could be null.
+     */
+    public Map<String, Type> getTypeParams() {
+        return tparams;
     }
 
     /** Accept a front-end visitor. */
@@ -137,8 +158,15 @@ public class ExprFunCall extends Expression
         return this.clusterId;
     }
     
+    String printTParams() {
+        if (tparams == null) {
+            return "";
+        }
+        return "//" + tparams.toString();
+    }
+
     public String toString()
     {
-        return name + "(" + printParams() + ")";
+        return name + "(" + printParams() + ")" + printTParams();
     }
 }

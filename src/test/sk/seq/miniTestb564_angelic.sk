@@ -21,6 +21,7 @@ model int[N] foo(int N, int[N] in, int p, int q) {
 	return o;
 }
 
+@Native("{}")
 harness void main(int N, int[N] a) {
 	int p = ??;
 	int q = ??;

@@ -14,7 +14,9 @@ import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
+import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
@@ -150,12 +152,36 @@ public class EliminateStarStatic extends SymbolTableVisitor {
         }
     }
 
+    public Object visitProgram(Program p) {
+
+        if (oracle.hasFunctions()) {
+            List<Package> pkgs = p.getPackages();
+            Package pkg = pkgs.get(0);
+            for (Function f : oracle.getFunctions()) {
+                f.setPkg(pkg.getName());
+                pkg.getFuncs().add(f);
+            }
+        }
+
+        return super.visitProgram(p);
+    }
+
+    int icnt = 0;
+
     @Override
     public Object visitExprFunCall(final ExprFunCall efc) {
         Function f = nres.getFun(efc.getName());
 
         if (f.hasAnnotation("Gen")) {
-            final Expression exp = oracle.generatorHole(efc.getName());
+            Expression texp = oracle.generatorHole(efc.getName());
+            if (texp == null) {
+                String fullName = nres.getFunName(efc.getName());
+                texp = oracle.generatorHole(fullName.replace("@", "_"));
+            }
+            if (texp == null) {
+                return super.visitExprFunCall(efc);
+            }
+            final Expression exp = texp;
             Map<String, Expression> repl = new HashMap<String, Expression>();
             int i = 0;
             Iterator<Parameter> pit = f.getParams().iterator();
@@ -170,6 +196,13 @@ public class EliminateStarStatic extends SymbolTableVisitor {
                 ++i;
 
             }
+            /*
+             * if(exp instanceof ExprFunCall){ ExprVar ev = new ExprVar(efc,
+             * "__OUT" + icnt); ++icnt;
+             * 
+             * addStatement(new StmtVarDecl(efc, TypePrimitive.floattype,
+             * ev.getName(), null)); addStatement() }
+             */
             VarReplacer vr = new VarReplacer(repl);
 
             final NameResolver lnres = nres;

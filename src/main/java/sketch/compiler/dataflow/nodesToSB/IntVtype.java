@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -48,6 +49,14 @@ public class IntVtype extends abstractValueType {
 		return new IntAbsValue(vals);
 	}
 
+    public abstractValue SYMBOLIC(String s, boolean b) {
+        return IntAbsValue.symbolic(s, b);
+    }
+
+    public abstractValue SYMBOLIC(String s) {
+        return IntAbsValue.symbolic(s);
+    }
+
 	public abstractValue BOTTOM(){
 		return new IntAbsValue();
 	}
@@ -58,6 +67,10 @@ public class IntVtype extends abstractValueType {
 
     public abstractValue BOTTOM(String label, boolean knownGeqZero) {
         return new IntAbsValue(label, knownGeqZero);
+    }
+
+    public abstractValue RCONST(double v) {
+        return new IntAbsValue(v);
     }
 
 	public abstractValue CONST(int v){
@@ -99,7 +112,10 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() + v2.getIntVal() );
 		}else{
-            return BOTTOM(opStr(v1, v2, "+"), v1.knownGeqZero() && v2.knownGeqZero());
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return RCONST(v1.getRealVal() + v2.getRealVal());
+            }
+            return SYMBOLIC(opStr(v1, v2, "+"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -107,7 +123,10 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() - v2.getIntVal() );
 		}else{
-			return BOTTOM( opStr(v1, v2, "-") );
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return RCONST(v1.getRealVal() - v2.getRealVal());
+            }
+            return SYMBOLIC(opStr(v1, v2, "-"));
 		}
 	}
 
@@ -115,7 +134,10 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() * v2.getIntVal() );
 		}else{
-            return BOTTOM(opStr(v1, v2, "*"), v1.knownGeqZero() && v2.knownGeqZero());
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return RCONST(v1.getRealVal() * v2.getRealVal());
+            }
+            return SYMBOLIC(opStr(v1, v2, "*"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -123,7 +145,10 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() / v2.getIntVal() );
 		}else{
-            return BOTTOM(opStr(v1, v2, "/"), v1.knownGeqZero() && v2.knownGeqZero());
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return RCONST(v1.getRealVal() / v2.getRealVal());
+            }
+            return SYMBOLIC(opStr(v1, v2, "/"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -131,7 +156,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() % v2.getIntVal() );
 		}else{
-            return BOTTOM(opStr(v1, v2, "%"), true);
+            return SYMBOLIC(opStr(v1, v2, "%"), true);
 		}
 	}
 
@@ -151,11 +176,11 @@ public class IntVtype extends abstractValueType {
 
 
 	public abstractValue shr(abstractValue v1, abstractValue v2){
-        return BOTTOM(v1 + ">>" + v2, v1.knownGeqZero());
+        return SYMBOLIC(v1 + ">>" + v2, v1.knownGeqZero());
 	}
 
 	public abstractValue shl(abstractValue v1, abstractValue v2){
-        return BOTTOM(v1 + "<<" + v2, v1.knownGeqZero());
+        return SYMBOLIC(v1 + "<<" + v2, v1.knownGeqZero());
 	}
 
 
@@ -179,7 +204,7 @@ public class IntVtype extends abstractValueType {
 					return v1;
 				}
 			}
-            return BOTTOM(opStr(v1, v2, "&"), v1.knownGeqZero() && v2.knownGeqZero());
+            return SYMBOLIC(opStr(v1, v2, "&"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -203,7 +228,7 @@ public class IntVtype extends abstractValueType {
 					return v1;
 				}
 			}
-            return BOTTOM(opStr(v1, v2, "|"), v1.knownGeqZero() && v2.knownGeqZero());
+            return SYMBOLIC(opStr(v1, v2, "|"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -211,7 +236,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( boolToInt(intToBool(v1.getIntVal()) ^ intToBool(v2.getIntVal())) );
 		}else{
-            return BOTTOM(opStr(v1, v2, "^"), v1.knownGeqZero() && v2.knownGeqZero());
+            return SYMBOLIC(opStr(v1, v2, "^"), v1.knownGeqZero() && v2.knownGeqZero());
 		}
 	}
 
@@ -219,6 +244,21 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() > v2.getIntVal() );
 		}else{
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return CONST(v1.getRealVal() > v2.getRealVal());
+            }
+
+            if (v1 instanceof IntAbsValue && v2 instanceof IntAbsValue) {
+                IntAbsValue iav1 = (IntAbsValue) v1;
+                IntAbsValue iav2 = (IntAbsValue) v2;
+
+                if (iav1.type == IntAbsValue.SYMBOLIC && iav2.type == IntAbsValue.SYMBOLIC) {
+                    if (iav1.equals(iav2)) {
+                        return CONST(false);
+                    }
+                }
+            }
+
             return BOTTOM(opStr(v1, v2, ">"), true);
 		}
 	}
@@ -227,6 +267,21 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() < v2.getIntVal() );
 		}else{
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return CONST(v1.getRealVal() < v2.getRealVal());
+            }
+
+            if (v1 instanceof IntAbsValue && v2 instanceof IntAbsValue) {
+                IntAbsValue iav1 = (IntAbsValue) v1;
+                IntAbsValue iav2 = (IntAbsValue) v2;
+
+                if (iav1.type == IntAbsValue.SYMBOLIC && iav2.type == IntAbsValue.SYMBOLIC) {
+                    if (iav1.equals(iav2)) {
+                        return CONST(false);
+                    }
+                }
+            }
+
             return BOTTOM(opStr(v1, v2, "<"), true);
 		}
 	}
@@ -235,6 +290,21 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() >= v2.getIntVal() );
 		}else{
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return CONST(v1.getRealVal() >= v2.getRealVal());
+            }
+
+            if (v1 instanceof IntAbsValue && v2 instanceof IntAbsValue) {
+                IntAbsValue iav1 = (IntAbsValue) v1;
+                IntAbsValue iav2 = (IntAbsValue) v2;
+
+                if (iav1.type == IntAbsValue.SYMBOLIC && iav2.type == IntAbsValue.SYMBOLIC) {
+                    if (iav1.equals(iav2)) {
+                        return CONST(true);
+                    }
+                }
+            }
+
             return BOTTOM(opStr(v1, v2, ">="), true);
 		}
 	}
@@ -243,6 +313,21 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() <= v2.getIntVal() );
 		}else{
+            if (v1.hasRealVal() && v2.hasRealVal()) {
+                return CONST(v1.getRealVal() <= v2.getRealVal());
+            }
+
+            if (v1 instanceof IntAbsValue && v2 instanceof IntAbsValue) {
+                IntAbsValue iav1 = (IntAbsValue) v1;
+                IntAbsValue iav2 = (IntAbsValue) v2;
+
+                if (iav1.type == IntAbsValue.SYMBOLIC && iav2.type == IntAbsValue.SYMBOLIC) {
+                    if (iav1.equals(iav2)) {
+                        return CONST(true);
+                    }
+                }
+            }
+
             return BOTTOM(opStr(v1, v2, "<="), true);
 		}
 	}
@@ -250,13 +335,41 @@ public class IntVtype extends abstractValueType {
 	public abstractValue eq(abstractValue v1, abstractValue v2) {
 		if( v1.hasIntVal() && v2.hasIntVal() ){
 			return CONST( v1.getIntVal() == v2.getIntVal() );
-		}else{
-            return BOTTOM(opStr(v1, v2, "=="), true);
+        } else {
+            IntAbsValue iav1 = (IntAbsValue) v1;
+            IntAbsValue iav2 = (IntAbsValue) v2;
+
+            if (iav1.type == IntAbsValue.SYMBOLIC && iav2.type == IntAbsValue.SYMBOLIC) {
+                if (iav1.equals(iav2)) {
+                    return CONST(true);
+                }
+            }
+
+            if (iav1.hasASTVal() && iav2.hasASTVal()) {
+                Map<String, Map<String, abstractValue>> cases1 = iav1.getADTcases();
+                Map<String, Map<String, abstractValue>> cases2 = iav2.getADTcases();
+                if (cases1.size() == 1 && cases2.size() == 1) {
+                    Entry<String, Map<String, abstractValue>> e1 = cases1.entrySet().iterator().next();
+                    Entry<String, Map<String, abstractValue>> e2 = cases2.entrySet().iterator().next();
+                    if (!e1.getKey().equals(e2.getKey())) {
+                        return CONST(false);
+                    }
+                    abstractValue rv = CONST(true);
+                    Map<String, abstractValue> e2map = e2.getValue();
+                    for (Entry<String, abstractValue> fields1 : e1.getValue().entrySet()) {
+                        if (e2map.containsKey(fields1.getKey())) {
+                            rv = and(rv, eq(e2map.get(fields1.getKey()), fields1.getValue()));
+                        }
+                    }
+                    return rv;
+                }
+            }
 		}
+        return BOTTOM(opStr(v1, v2, "=="), true);
 	}
 
     public abstractValue tupleacc(abstractValue arr, abstractValue idx) {
-        return BOTTOM("((" + arr + ").[" + idx + "])");
+        return SYMBOLIC("((" + arr + ").[" + idx + "])");
     }
 	public abstractValue arracc(abstractValue arr, abstractValue idx) {
 		assert false; return null;
@@ -374,6 +487,12 @@ public class IntVtype extends abstractValueType {
 		if(v1.isBottom() ){
 			return v1;
 		}
+
+        IntAbsValue iav = (IntAbsValue) v1;
+        if (iav.type == IntAbsValue.ADTNODE) {
+            return v1;
+        }
+
         return BOTTOM(type.toString());
 	}
 
@@ -381,7 +500,7 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() ){
 			return CONST( 1-v1.getIntVal()  );
 		}else{
-			return BOTTOM( "( ! " + v1 + ")" );
+            return SYMBOLIC("( ! " + v1 + ")");
 		}
 	}
 
@@ -389,7 +508,10 @@ public class IntVtype extends abstractValueType {
 		if( v1.hasIntVal() ){
 			return CONST( -v1.getIntVal()  );
 		}else{
-			return BOTTOM( "( -" + v1 + ")" );
+            if (v1.hasRealVal()) {
+                return RCONST(-v1.getRealVal());
+            }
+            return SYMBOLIC("( -" + v1 + ")");
 		}
 	}
 
@@ -412,7 +534,7 @@ public class IntVtype extends abstractValueType {
 				return vfalse;
 			}
 		}else{
-            return BOTTOM("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
+            return SYMBOLIC("(" + cond + "? (" + vtrue + ") : (" + vfalse + ") )",
                     vtrue.knownGeqZero() && vfalse.knownGeqZero());
 		}
 	}

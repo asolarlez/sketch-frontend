@@ -1,5 +1,19 @@
 
+/**
+ * 
+ * This package includes commonly used generic functions.
+ * All the functions in this package are generators, so they get inlined into their calling context.
+ */
 
+package generics;
+
+
+/** 
+ * Standard map function applies a function to every element in an array and produces a new array.
+ * The function parameter \lstinline!f! is assumed to be of type \lstinline!T->T!.
+ * 
+ */
+generator
 T[n] map<T>([int n], T[n] in, fun f){
 	T[n] out;
 	for(int i=0; i<n; ++i){
@@ -7,16 +21,31 @@ T[n] map<T>([int n], T[n] in, fun f){
 	}
 } 
 
+/**
+ * Returns the length of an array. Useful in the context of array constructors and 
+ * string constants.
+ */
+generator
 int len<T>([int n], T[n] ar){
 	return n;
 } 
 
+/**
+ * Apply a function to every element of an array. 
+ * The function parameter \lstinline!f! is assumed to be of type \lstinline!T->void!.
+ */
+generator
 void foreach<T>([int n], ref T[n] in, fun f){
 	for(int i=0; i<n; ++i){
 		f(in[i]);
 	}
 }
 
+/**
+ * Apply a function to all integers between a and b. 
+ * The function parameter \lstinline!f! is assumed to be of type \lstinline!int->void!.
+ */
+generator
 void forall(int a, int b, fun f){
 	for(int i=a; i<b; ++i){
 		f(i);

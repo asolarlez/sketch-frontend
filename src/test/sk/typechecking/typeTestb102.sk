@@ -8,5 +8,5 @@ harness void main(){
 	int four = 4;
 	int one = 1;
 	
-    assert five((four) -> four + 5, four, one) == 5;
+    assert five((tfour) -> tfour + 5, four, one) == 5; //TypeError
 }

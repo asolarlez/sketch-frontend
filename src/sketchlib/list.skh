@@ -1,0 +1,45 @@
+
+/**
+ * List library includes a list ADT and a set of helper functions to work with it.
+ */
+package list;
+
+
+/**
+ * ADT based list.
+ */
+adt List<T>{
+    Cons{ T val; List<T> next; }
+    Nil{}
+}
+
+
+/**
+ * Returns an empty list.
+ */
+List<T> empty<T>(){
+    return new Nil<T>();
+}
+
+
+/**
+ * Constructor for a list with a single element x.
+ */
+List<T> single<T>(T x){
+    return new Cons<T>(val=x, next=new Nil<T>());
+}
+
+/**
+ * Return the first element on a list; requires the list to be non-empty.
+ */
+T head<T>(List<T> l){
+    return ((Cons<T>)l).val;
+}
+
+/**
+ * Adds an element to the beginning of a list.
+ */
+List<T> add<T>(List<T> lst, T val){
+    return new Cons<T>(val=val, next=lst);
+}
+

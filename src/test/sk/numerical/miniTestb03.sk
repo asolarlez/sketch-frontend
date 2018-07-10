@@ -1,0 +1,21 @@
+
+
+include "math.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+void foo(double x, double y){}
+
+harness void main(){
+    double t = ??;
+    
+    double val = sin(t)+0.9;
+    
+    
+    foo(t, val);
+    assert t > 0.0;
+    assert t < 2.0*Pi();
+    assert val < 0.0;
+    
+    
+}

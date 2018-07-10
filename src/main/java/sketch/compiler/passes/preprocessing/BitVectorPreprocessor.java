@@ -3,13 +3,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
-import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -329,8 +330,12 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
             newParams.add(newParam);
             if (param != newParam) hasChanged = true;
         }
+        Map<String, Type> newTP = doCallTypeParams(exp);
+        if (newTP != exp.getTypeParams()) {
+            hasChanged = true;
+        }
         if (!hasChanged) return exp;
-        return new ExprFunCall(exp, exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams, newTP);
     }
 
 

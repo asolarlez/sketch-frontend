@@ -1,8 +1,8 @@
 
 
-#include "CopterModel.skh"
+include "CopterModel.skh";
 
-pragma options "--fe-fpencoding TO_BACKEND";
+pragma options "--fe-fpencoding TO_BACKEND --be:usesnopt --be:numericalsolver";
 
 void controlG(copter c){
     repeat(3){
@@ -24,20 +24,14 @@ void control(copter c, int step) {
             c.F[0] = F+bias;
             c.F[1] = F;//*(1.0-bias);
         }
-	int i=0;
-	if(step < 10){
- 	    Ctrl(); return;	
+	repeat(n:5){
+		if(step < n*10){
+ 	    	Ctrl(); return;	
+		}	
 	}	
-        if(step < 20){
-	    Ctrl();
-            return;
-        }
-        if(step < 51){
-	    Ctrl();
-            return;
-        }
 	Ctrl();
 }
+
 
 
 harness void main(){
@@ -49,6 +43,7 @@ harness void main(){
     double dt = 0.05; //seconds;
     for(int i=0; i<61; ++i){
         print(c);
+		checkok(c);        
         simulate(c, dt);        
         control(c, i);
     }

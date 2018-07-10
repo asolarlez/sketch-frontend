@@ -16,3 +16,42 @@ void applyScaledFilter(int r, int c, int S, int K, fun body){
         }
     }
 }
+
+generator
+void bounds([int n], int[2][n] coords, ref int rmin, ref int rmax, ref int cmin, ref int cmax){
+    assume n > 0;
+    rmin = coords[0][0]; rmax = coords[0][0]; cmin = coords[0][1]; cmax = coords[0][1]; 
+    repeat(i:n){
+        int[2] coord = coords[i];
+        rmin = min(rmin, coord[0]);
+        rmax = max(rmax, coord[0]);
+        cmin = min(rmin, coord[1]);
+        cmax = max(cmax, coord[1]);
+    }
+}
+
+generator
+void applyStencil([int n],Image im, int[2][n] coords, float[n] coefs, Image out){
+    assume im.r == out.r && im.c == out.c;
+    int r = im.r;
+    int c = im.c;
+    int rmin, rmax, cmin, cmax;
+    bounds(coords, rmin, rmax, cmin, cmax);
+    int lowr = max(0, 0-rmin);
+    int highr = min(r, r-rmax);
+    int lowc = max(0, 0-cmin);
+    int highc = min(c, c-cmax);
+    for(int i=lowr; i<highr; ++i ){
+        for(int j = lowc; j<highc; ++j){            
+            repeat(t:3){
+                float temp = 0.0;
+                repeat(idx : n){
+                   float coef = coefs[idx];
+                   int[2] coord = coords[idx];
+                   temp += ((float) im.im[i+coord[0]][j+coord[1]][t] )*coef;
+                }
+                out.im[i][j][t] = (int)temp;
+            }
+        }
+    }
+}

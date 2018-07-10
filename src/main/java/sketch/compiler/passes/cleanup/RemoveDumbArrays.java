@@ -92,7 +92,11 @@ public class RemoveDumbArrays extends FEReplacer {
     public Object visitFunction(Function f) {
         fda = new FindDumbArrays();
         f.accept(fda);
-        return super.visitFunction(f);
+        if (fda.dumbArr.size() > 0) {
+            f = (Function) super.visitFunction(f);
+        }
+        return f;
+        
     }
 
     public Object visitStmtVarDecl(StmtVarDecl stmt) {

@@ -101,6 +101,12 @@ public class ConstantReplacer extends FEReplacer {
             if (!isFinal(name)) {
                 return false;
             }
+
+            int ival = init.getIValue();
+            if (ival != 0 && ival != 1 && type.equals(TypePrimitive.bittype)) {
+                throw new ExceptionAtNode(init.toString() + " is not a value of type " + type, init);
+            }
+
             constants.put(name, init);
             replacement = init;
 			return true;

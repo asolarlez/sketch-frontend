@@ -1,0 +1,53 @@
+pragma options "--fe-fpencoding TO_BACKEND --debug-show-dag";
+
+include "math.skh";
+
+adt Vector{
+  float x;
+  float y;
+  float z;
+}
+
+generator float gg(){
+    int t = ??(6);
+    return (((float) t)-32.0)/5.0; 
+}
+
+generator Vector sample_vector(){
+  return new Vector(x = gg(), y = gg(), z = gg());
+}
+
+adt Expression{
+  Sphere{ float radiusSquared; Vector center; }
+  Union{ Expression a; Expression b; }
+}
+
+generator Expression sample_expression(int d){
+  assert d > 0;
+
+  if (1) return new Sphere(radiusSquared = gg(), center = sample_vector());
+  if (??) return new Union(a = sample_expression(d - 1), b = sample_expression(d - 1));
+
+  assert 0;
+}
+
+bit contains(Vector p, Expression e){
+  switch(e){
+  case Sphere:{
+    return
+      (e.center.x - p.x)*(e.center.x - p.x) +
+      (e.center.y - p.y)*(e.center.y - p.y) +
+      (e.center.z - p.z)*(e.center.z - p.z) < e.radiusSquared;
+  }
+  case Union:{
+    return contains(p, e.a) || contains(p, e.b);
+  }
+  }
+}
+
+harness void main(){
+  Expression e = sample_expression(1);
+  Vector p = new Vector(x = 1.0,y = 4.0,z = 0.0);
+  assert contains(p, e);
+}
+    

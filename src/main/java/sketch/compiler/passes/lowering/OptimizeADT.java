@@ -41,7 +41,7 @@ public class OptimizeADT extends SymbolTableVisitor {
             TypeStructRef otype = (TypeStructRef) getType(cond);
             String pkg = nres.getStruct(otype.getName()).getPkg();
             TypeStructRef ntype =
-                    (new TypeStructRef(singleCaseName, false)).addDefaultPkg(pkg, nres);
+                    (new TypeStructRef(singleCaseName, false, otype.getTypeParams())).addDefaultPkg(pkg, nres);
 
             if (otype.equals(ntype)) {
                 return body;

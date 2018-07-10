@@ -729,6 +729,12 @@ public class TypeCheck extends BidirectionalPass {
             }
             return o;
         }
+
+        Type t = driver.getType(ta.getLength());
+        if (!t.promotesTo(TypePrimitive.inttype, driver.getNres())) {
+            report(ta.getLength(), "The length must be an integer.");
+        }
+
         return ta;
     }
 
@@ -744,6 +750,13 @@ public class TypeCheck extends BidirectionalPass {
         StructDef sd = driver.getNres().getStruct(tr.getName());
         if (sd == null) {
             report(curcx, "The structure " + tr.getName() + " is undefined or ambiguous");
+        }
+        if(tr.hasTypeParams()){
+            for(Type t : tr.getTypeParams()){
+                if(t.isArray()){
+                    report(curcx, "Arrays are not allowed as type parameters of Structs " + tr);
+                }
+            }
         }
         return tr;
     }
@@ -938,11 +951,23 @@ public class TypeCheck extends BidirectionalPass {
 
             boolean hasChanged = false;
             List<Expression> newParams = new ArrayList<Expression>();
-            List<Type> actualTypes = new ArrayList<Type>();
-            for (Expression ap : exp.getParams()) {
-                actualTypes.add(driver.getType(ap));
+            TypeRenamer tren;
+            if (exp.getTypeParams() != null) {
+                tren = new TypeRenamer(exp.getTypeParams());
+            } else {
+                List<Type> actualTypes = new ArrayList<Type>();
+                for (Expression ap : exp.getParams()) {
+                    actualTypes.add(driver.getType(ap));
+                }
+                tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres(), tdstate().getExpected());
             }
-            TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres(), tdstate().getExpected());
+
+            for (Type t : tren.tmap.values()) {
+                if (t.equals(TypePrimitive.bottomtype)) {
+                    throw new ExceptionAtNode("The type parameters in this call could not be fully disambiguated. ", exp);
+                }
+            }
+
             int actSz = exp.getParams().size();
             int formSz = f.getParams().size();
             if (actSz > formSz) {
@@ -1005,7 +1030,7 @@ public class TypeCheck extends BidirectionalPass {
 
                             if (tsrActual.isUnboxed() && !tsr.isUnboxed()) {
                                 report(exp,
-                                        "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                        "You cannot pass a Temporary Structure to a function expecting a standard structure: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                             }
 
                         }
@@ -1022,16 +1047,16 @@ public class TypeCheck extends BidirectionalPass {
                     if (typeCheck) {
 
                         if (actType == null || !actType.promotesTo(formalType, driver.getNres())) {
-                            report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                            report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                         }
                         if (ftt instanceof TypeStructRef) {
                             TypeStructRef tref = ((TypeStructRef) ftt);
                             if (tref.getName() == null) {
-                                report(exp, "Bad parameter type: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                report(exp, "Bad parameter type: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                             }
                             if (formal.isParameterReference() && !tref.isUnboxed()) {
                                 if (!tref.equals(att)) {
-                                    report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + "\n Actual type=" + actType + "  " + f);
+                                    report(exp, "For ref parameters the types must match exactly: Formal type=" + formal + " Actual type=" + actType + "  " + f);
                                 }
                             }
                         }
@@ -1233,6 +1258,11 @@ public class TypeCheck extends BidirectionalPass {
         // check that the associated condition is promotable to a boolean
         Type ct = driver.getType(stmt.getCond());
         Type bt = TypePrimitive.bittype;
+
+        if (ct == null) {
+            report(stmt, "assert must be passed a boolean");
+            return stmt;
+        }
 
         if (!ct.promotesTo(bt, driver.getNres()))
             report(stmt, "assert must be passed a boolean");
@@ -1563,10 +1593,28 @@ public class TypeCheck extends BidirectionalPass {
             StructDef ts = driver.getNres().getStruct(nt.getName());
             if (ts == null) {
                 report(expNew, "Trying to instantiate a struct that doesn't exist");
+                return expNew;
             }
             // ADT
             if (!ts.isInstantiable()) {
                 report(expNew, "Struct representing an Algebraic Data Type cannot be instantiated");
+            }
+            FEReplacer renamer = null;
+            if (expNew.hasTypeParams()) {
+                List<Type> actuals = expNew.getTypeParams();
+                List<String> formals = ts.getTypeargs();
+                final Map<String, Type> rmap = new HashMap<String, Type>();
+                for (int i = 0; i < actuals.size(); ++i) {
+                    rmap.put(formals.get(i), actuals.get(i));
+                }
+                renamer = new FEReplacer() {
+                    public Object visitTypeStructRef(TypeStructRef tsr) {
+                        if (rmap.containsKey(tsr.toString())) {
+                            return rmap.get(tsr.toString());
+                        }
+                        return super.visitTypeStructRef(tsr);
+                    }
+                };
             }
 
             for (ExprNamedParam en : expNew.getParams()) {
@@ -1591,6 +1639,9 @@ public class TypeCheck extends BidirectionalPass {
                 Type lhsType = current.getType(en.getName());
                 if (rhsType == null || lhsType == null) {
                     return expNew;
+                }
+                if (renamer != null) {
+                    lhsType = (Type) lhsType.accept(renamer);
                 }
                 lhsType = lhsType.addDefaultPkg(ts.getPkg(), driver.getNres());
                 matchTypes(expNew, lhsType, rhsType);
@@ -1811,6 +1862,9 @@ public class TypeCheck extends BidirectionalPass {
         // " +
         // getType(stmt.getValue()));
         Type rt = driver.getType(stmt.getValue());
+        if (rt instanceof TypeFunction) {
+            report(stmt, "Function values cannot be returned from a function.");
+        }
         if (rt != null && !rt.promotesTo(driver.returnType, driver.getNres()))
             report(stmt, "Return value incompatible with declared function return value: " + driver.returnType + " vs. " + driver.getType(stmt.getValue()));
         hasReturn = true;

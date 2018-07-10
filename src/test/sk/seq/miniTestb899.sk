@@ -1,0 +1,11 @@
+
+include "array.skh";
+int len<T>(SArray<T> ar){ return ar.n; }
+
+harness void main(){
+    SArray<int> ar1 = new SArray<int>(n=5, val={1,2,3,4,5});
+    SArray<SArray<int>> ar2 = new SArray<SArray<int>>(n=1, val={ar1});
+    assert ar1.val[0] == 1;
+    assert ar2.val[0] == ar1;
+    assert len(ar1) == 5;
+}

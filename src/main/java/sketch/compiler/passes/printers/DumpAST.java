@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -25,6 +26,7 @@ public class DumpAST extends FEReplacer {
     int id = 0;
     PrintStream out = System.out;
 
+    public Set<String> fields = null;
     public Object visitStructDef(StructDef ts) {
         int lid = id++;
         out.print("(" + lid + "");

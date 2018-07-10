@@ -76,7 +76,7 @@ public class MethodRename extends FEReplacer {
     {
         ExprFunCall efc = (ExprFunCall) super.visitExprFunCall(exp);
         if(oldToNew.containsKey(efc.getName())){
-            return new ExprFunCall(efc, oldToNew.get(efc.getName()), efc.getParams());
+            return new ExprFunCall(efc, oldToNew.get(efc.getName()), efc.getParams(), efc.getTypeParams());
         }else{
             return efc;
         }

@@ -1,0 +1,5 @@
+
+harness void main(){
+    int y = x + 2; //TypeError
+    
+}

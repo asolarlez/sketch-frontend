@@ -1,7 +1,7 @@
 // Assigning a lambda to an int. 
 
 harness void main(int x){
-    int a = (x) -> x + 1;
+    int a = (x) -> x + 1; //TypeError shadowing, type mismatch
     
     assert a(4) == 5;
 }

@@ -3,7 +3,9 @@
 harness void main() {
 	int t = 3;
 		
- 	fun f = (x) -> t + x++;
+	
+	
+ 	fun f = (x) -> t + x++; //TypeError
  	 	
  	assert f(3) == 4;
 }

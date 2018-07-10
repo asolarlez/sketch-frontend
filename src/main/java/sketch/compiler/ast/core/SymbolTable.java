@@ -87,8 +87,16 @@ public class SymbolTable implements Cloneable
         public Finality isFinal = Finality.UNKNOWN;
         public Type type;
         public Object origin;
-
         public int kind;
+
+        FEContext getContext() {
+            if (origin != null) {
+                if (origin instanceof FENode) {
+                    return ((FENode) origin).getCx();
+                }
+            }
+            return null;
+        }
     }
 
     /** Creates a new symbol table with the specified parent (possibly
@@ -191,6 +199,11 @@ public class SymbolTable implements Cloneable
     {
         VarInfo info = lookupVarInfo(name);
         return (info != null);
+    }
+
+    public FEContext varCx(String name) {
+        VarInfo info = lookupVarInfo(name);
+        return info.getContext();
     }
 
     /**

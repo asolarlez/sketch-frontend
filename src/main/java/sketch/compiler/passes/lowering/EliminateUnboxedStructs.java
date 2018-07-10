@@ -32,6 +32,14 @@ import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypeStructRef;
 import sketch.compiler.ast.cuda.typs.CudaMemoryType;
 
+/**
+ * This class eliminates all unboxed structs of the form |Obj| and expands them
+ * into their individual fields.
+ * 
+ * 
+ * 
+ */
+
 public class EliminateUnboxedStructs extends SymbolTableVisitor {
 
     class VarChanger extends FEReplacer {
@@ -128,6 +136,12 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
 
     TempVarGen varGen;
 
+    /** 
+     * 
+     * Within a local context, this keeps track of all the variables that used to be unboxed structs and 
+     * turned into collections of variables. Whenever there is an assignment to the unboxed struct, 
+     * this will be used to turn that assignment into a sequence of assignments into the variables.
+     * */
     // struct variable name => ( field name => the actual field variable)
     Map<String, Map<String, ExprVar>> structs;
 
@@ -452,6 +466,18 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
 
     }
 
+    
+    /**
+     * Helper function used to turn an assignment of the form 
+     * x = y
+     * where x or y are boxed, into an assignment of the form
+     * x_f1 = y_f1
+     * x_f2 = y_f2
+     * ...
+     * where x_fi are the collection of variables that replaced x. 
+     * @param lhsLoc
+     * @param rhsLoc
+     */
     private void expandAssign(LocationInfo lhsLoc, LocationInfo rhsLoc) {
         ExprVar lhs = lhsLoc.var;
         ExprVar rhs = rhsLoc.var;
@@ -585,6 +611,13 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
         return t;
     }
 
+    /**
+     * Constructs an expression array range by adding the indices to v.
+     * 
+     * @param v
+     * @param indices
+     * @return
+     */
     protected Expression constructEar(ExprVar v, List<RangeLen> indices) {
         if (indices.isEmpty()) {
             return v;
@@ -635,6 +668,16 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
         return coretyp;
     }
 
+    /**
+     * In the argument list of a function
+     * @param result
+     * @param decl
+     * @param origType
+     * @param memtyp
+     * @param name
+     * @param typ
+     * @param arrLen
+     */
     // is the var "name" an array? if it is, arrLen will be its length, otherwise null
     private void expandStructDecl(Collection<DeclPair> result, FENode decl,
             Type origType, CudaMemoryType memtyp, String name, Type typ,
@@ -687,6 +730,7 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
         Statement body = f.getBody();
         Statement newbody = body == null ? null : (Statement) body.accept(this);
 
+        structs.clear();
         if (changed || newbody != body) {
             FunctionCreator creator = f.creator();
             if (changed) {
@@ -697,7 +741,6 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
             }
             return creator.create();
         }
-
         return f;
     }
 
@@ -732,9 +775,14 @@ public class EliminateUnboxedStructs extends SymbolTableVisitor {
             newp.add(e);
         }
 
+        Map<String, Type> newtp = doCallTypeParams(efc);
+        if (newtp != efc.getTypeParams()) {
+            changed = true;
+        }
+
         if (changed) {
             this.addStatements(addStmts);
-            return new ExprFunCall(efc, efc.getName(), newp);
+            return new ExprFunCall(efc, efc.getName(), newp, newtp);
         } else {
             return efc;
         }

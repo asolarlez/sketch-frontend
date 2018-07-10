@@ -92,6 +92,7 @@ generator int expr3(int N, int[N] pars, int T, int[T] ops, int len) {
 }
 
 int N = 4;
+@Native("{}")
 harness void main(int[N] a) {
 	assume a[3] > 0;
 	int x = (a[2]*a[3]+a[1]*a[0]+a[0]*a[2])/a[3];

@@ -1,0 +1,10 @@
+struct List
+{
+  int size;
+  int [size] contents;
+}
+
+harness void sketch() {
+  List l1 = new List();
+  l1.size = 1; //TypeError
+}

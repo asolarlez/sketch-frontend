@@ -1,0 +1,31 @@
+
+
+include "math.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+void foo(double x, double y){}
+
+#define MINIMIZE(v) hassert(v > -10.0)
+
+
+
+
+harness void main(){
+	double x = ??;
+	double y = ??;
+	
+	assert y >= -x;
+	assert x <= y;
+		
+	//assert y > 3.0 || y < 2.7;
+	
+	bit circle(double a, double b, double r){
+		return (a-x)*(a-x) + (b-y)*(b-y) > r*r;
+	}
+	
+	assert circle(0.0, 2.0, 1.0);
+	
+	MINIMIZE(y);
+	
+}

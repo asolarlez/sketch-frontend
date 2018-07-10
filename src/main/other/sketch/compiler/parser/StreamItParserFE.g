@@ -145,7 +145,7 @@ options {
 	    	}
 	    	shortFilename = lfile;	
 		}		
-		lastCx = new FEContext(shortFilename, line, col);	
+		lastCx = new FEContext(shortFilename, line, col, StreamItLex.lastComment);	
 		return lastCx;
 		
 		// int col = t.getColumn();
@@ -231,12 +231,12 @@ program	 returns [Program p]
                     return_type ID  (type_params)? LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
-           |    ts=struct_decl { structs.add(ts); }
+           |    (annotation_list TK_struct) => ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
            |    sa = special_assert_statement { specialAsserts.add(sa); }
            |    file=include_stmt { handleInclude (file, namespaces); }
            |    TK_package id:ID { currPkg = (id.getText()); curPkgCx = getContext(id);}
-                            (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id);} | pk = pkgbody {namespaces.add(pk);  } ) 
+                            (SEMI {pkgName = currPkg;  pkgCtxt = getContext(id); StreamItLex.lastComment = null;} | pk = pkgbody {namespaces.add(pk);  } ) 
            |    pragma_stmt
         )*
 		EOF
@@ -285,7 +285,7 @@ pkgbody returns [Package pk]
                     return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); }
            |    (return_type ID (type_params)? LPAREN) => f=function_decl { funcs.add(f); } 
 		   | 	fd=field_decl SEMI { vars.add(fd); }
-           |    ts=struct_decl { structs.add(ts); }
+           |    (annotation_list TK_struct) => ts=struct_decl { structs.add(ts); }
            |    adtList=adt_decl { structs.addAll(adtList); }
            |    sa = special_assert_statement { specialAsserts.add(sa); }
    )*
@@ -326,7 +326,7 @@ field_decl returns [FieldDecl f] { f = null; Type t; Expression x = null;
 			COMMA id2:ID (ASSIGN x=expr_or_lambda)?
 			{ ts.add(t); ns.add(id2.getText()); xs.add(x); }
 		)*
-		{ f = new FieldDecl(ctx, ts, ns, xs); }
+		{ f = new FieldDecl(ctx, ts, ns, xs); StreamItLex.lastComment = null;  }
 	;
 
 
@@ -372,7 +372,25 @@ fdecl_statement returns [Statement s] { s=null; Function f = null;}
 	;
 	
 loop_statement returns [Statement s] { s = null; Expression exp; Statement b; Token x=null;}
-	: (t1:TK_loop{x=t1;} | t2:TK_repeat{x=t2;}) LPAREN exp=right_expr RPAREN b=pseudo_block
+	:
+	
+	((TK_loop{x=t1;} | TK_repeat{x=t2;}) LPAREN ID COLON) => 
+	(t1:TK_loop{x=t1;} | t2:TK_repeat{x=t2;}) LPAREN id:ID COLON exp=right_expr RPAREN b=pseudo_block
+	{
+	 FEContext cx = getContext(x); 
+	 s = 
+						new StmtBlock(
+						new StmtVarDecl(cx, TypePrimitive.inttype, id.getText(), ExprConstInt.zero),
+						new StmtLoop(cx, exp, 
+						  new StmtBlock(b, new StmtExpr(						          
+						          new ExprUnary(cx, ExprUnary.UNOP_PREINC, new ExprVar(cx,id.getText())) ))						
+						)
+						); 
+	
+	}
+	
+	
+	| (t1p:TK_loop{x=t1p;} | t2p:TK_repeat{x=t2p;}) LPAREN exp=right_expr RPAREN b=pseudo_block
 	{ s = new StmtLoop(getContext(x), exp, b); }
 	;
 
@@ -402,13 +420,35 @@ range_exp returns [Expression e] { e = null; Expression from; Expression until; 
     ;
 
 
+type_params_use returns [List<Type> t]{ t = new ArrayList<Type>();  Type p; Type temp;}
+:
+(LESS_THAN 
+(ID AT)? ID
+LESS_THAN
+p=data_type
+RSHIFT
+) => 
+LESS_THAN 
+(prefix:ID AT)? id:ID 
+LESS_THAN
+p=data_type
+RSHIFT { 
+List<Type> plist = new ArrayList<Type>();
+plist.add(p); 
+t.add(new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false, plist)); }
+|
+LESS_THAN p=data_type {t.add(p);} 
+          (COMMA p=data_type {t.add(p);} )*  
+MORE_THAN
+;
 
-
-data_type returns [Type t] { t = null; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
+data_type returns [Type t] { t = null; List<Type> tp; Vector<Expression> params = new Vector<Expression>(); Vector<Integer> maxlens = new Vector<Integer>(); int maxlen = 0; Expression x; boolean isglobal = false; }
 	:	 (TK_global {isglobal = true; })? 
                 (t=primitive_type 
                 | (prefix:ID AT)? id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); }
                 | BITWISE_OR (prefix2:ID AT)? id2:ID BITWISE_OR { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); })
+		
+		( tp = type_params_use { if(!(t instanceof TypeStructRef)){ throw new RuntimeException("ERROR!!!"); } ((TypeStructRef)t).addParams(tp); } )?
 		(	l:LSQUARE
 			(	
                 ( { maxlen = 0; }
@@ -510,6 +550,8 @@ function_decl returns [Function f] {
     boolean isStencil = false;
     boolean isModel = false;
     List<String> tp=null;
+    List<String> fixes = new ArrayList<String>();
+    FEContext funCx = null;
 }
 	:
 	amap=annotation_list
@@ -524,13 +566,14 @@ function_decl returns [Function f] {
 	rt=return_type
 	id:ID
 	(tp=type_params)?
-	l=param_decl_list
+	l=param_decl_list { funCx = getContext(id); StreamItLex.lastComment = null;}
 	(TK_implements impl:ID)?
+	(TK_fixes  ( name:ID{ fixes.add(name.getText());  } ) )?
 	( s=block
 	{
             assert !(isGenerator && isHarness) : "The generator and harness keywords cannot be used together";
-            Function.FunctionCreator fc = Function.creator(getContext(id), id.getText(), Function.FcnType.Static).returnType(
-                rt).params(l).body(s).annotations(amap).typeParams(tp);
+            Function.FunctionCreator fc = Function.creator(funCx, id.getText(), Function.FcnType.Static).returnType(
+                rt).params(l).body(s).annotations(amap).typeParams(tp).fixes(fixes);
 
             // function type
             if (isGenerator) {
@@ -574,7 +617,7 @@ function_decl returns [Function f] {
 
             f = fc.create();
 	}
-	| SEMI  { f = Function.creator(getContext(id), id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
+	| SEMI  { f = Function.creator(funCx, id.getText(), isGenerator? Function.FcnType.UninterpGenerator : Function.FcnType.Uninterp).returnType(rt).params(l).annotations(amap).create(); })
 	;
 
 return_type returns [Type t] { t=null; }
@@ -1125,13 +1168,14 @@ tminic_value_expr returns [Expression x] { x = null; }
 	;
 
 
-constructor_expr returns [Expression x] { x = null; Type t=null; List l; boolean hole = false;}
+constructor_expr returns [Expression x] { x = null; TypeStructRef t=null; List l; boolean hole = false; List<Type> tp = null;}
 	: n:TK_new
 	(prefix:ID AT)? (id:ID { t = new TypeStructRef(prefix != null ? (prefix.getText() + "@" + id.getText() )  : id.getText(), false); } | NDVAL2{hole = true;})
-	l=constr_params {  x = new ExprNew( getContext(n), t, l,hole);     }
+	( tp = type_params_use )?
+	l=constr_params { if(tp!= null){ t.addParams(tp); }  x = new ExprNew( getContext(n), t, l, hole);     }
 	| BITWISE_OR 
     (prefix2:ID AT)? id2:ID { t = new TypeStructRef(prefix2 != null ? (prefix2.getText() + "@" + id2.getText() )  : id2.getText(), true); }
-      BITWISE_OR l=constr_params {  x = new ExprNew( getContext(id2), t, l, hole);     }
+      BITWISE_OR l=constr_params { if(tp!= null){ t.addParams(tp); } x = new ExprNew( getContext(id2), t, l, hole);     }
 	;
 
 var_expr returns [Expression x] { x = null; List rlist; }
@@ -1239,18 +1283,32 @@ adt_decl returns [List<StructDef> adtList]
 { adtList = new ArrayList<StructDef>(); List<StructDef> innerList; 
   StructDef str = null; Parameter p; List names = new ArrayList();
   Annotation an = null; StructDef innerStruct;
+  List<String> typeargs = new ArrayList<String>();
   HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
-  List types = new ArrayList(); }
+  List types = new ArrayList(); 
+  FEContext fec = null;
+  }
 
-	:  t:TK_adt id:ID LCURLY
-	(innerList=adt_decl { innerStruct = innerList.get(0); innerStruct.setParentName(id.getText());
-	adtList.addAll(innerList);}
-	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); adtList.add(innerStruct);}
+	:  t:TK_adt id:ID { fec = getContext(t); StreamItLex.lastComment = null;  }
+	(
+		LESS_THAN
+		  typearg : ID {typeargs.add(typearg.getText());}
+		  (COMMA moretypearg : ID { typeargs.add(moretypearg.getText()); })*
+		MORE_THAN		
+		)?
+		LCURLY
+	(innerList=adt_decl { innerStruct = innerList.get(0); 
+						  innerStruct.setParentName(id.getText());
+						  innerStruct.setTypeargs(typeargs);
+						  adtList.addAll(innerList);}
+	| innerStruct=structInsideADT_decl {innerStruct.setParentName(id.getText()); 
+										innerStruct.setTypeargs(typeargs);
+										adtList.add(innerStruct);}
 	| p=param_decl SEMI {names.add(p.getName()); types.add(p.getType());}
 	| an=annotation {annotations.append(an.tag, an);}
 	)*
 	RCURLY
-	{str = StructDef.creator(getContext(t), id.getText(), null, adtList.isEmpty(), names, types, annotations).create();
+	{str = StructDef.creator(fec, id.getText(), null, adtList.isEmpty(), names, types, typeargs, annotations).create();
      str.setImmutable();
 	 adtList.add(0, str);
 	}
@@ -1258,6 +1316,7 @@ adt_decl returns [List<StructDef> adtList]
 structInsideADT_decl returns [StructDef ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	Annotation an=null;
+	List<String> typeargs = new ArrayList<String>();
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
 	List types = new ArrayList(); }
 	:	id:ID
@@ -1270,15 +1329,26 @@ structInsideADT_decl returns [StructDef ts]
 		)*
 		RCURLY
 		{ 
-			ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, annotations).create();
+			ts = StructDef.creator(getContext(id), id.getText(),null, true, names, types, typeargs, annotations).create();
+			StreamItLex.lastComment = null;
 			}
 	;
 struct_decl returns [StructDef ts]
 { ts = null; Parameter p; List names = new ArrayList();
 	Annotation an=null;
+	List<String> typeargs = new ArrayList<String>();
 	HashmapList<String, Annotation> annotations = new HashmapList<String, Annotation>();
-	List types = new ArrayList(); }
-	:	t:TK_struct id:ID
+	List types = new ArrayList(); 
+	FEContext fec = null;
+	}
+	:	(an=annotation{ annotations.append(an.tag, an); })*
+	t:TK_struct id:ID { fec = getContext(t); StreamItLex.lastComment = null; }
+		(
+		LESS_THAN
+		  typearg : ID {typeargs.add(typearg.getText());}
+		  (COMMA moretypearg : ID { typeargs.add(moretypearg.getText()); })*
+		MORE_THAN		
+		)?
 		//ADT
 		(TK_extends parent:ID 
 		{
@@ -1294,8 +1364,8 @@ struct_decl returns [StructDef ts]
 		RCURLY
 		{ 
 			if(parent != null) {
-				ts = StructDef.creator(getContext(t), id.getText(),parent.getText(), true, names, types, annotations).create();
+				ts = StructDef.creator(fec, id.getText(),parent.getText(), true, names, types, typeargs, annotations).create();
 			}else{
-				ts = StructDef.creator(getContext(t), id.getText(),null, true, names, types, annotations).create();
+				ts = StructDef.creator(fec, id.getText(),null, true, names, types, typeargs, annotations).create();
 			} }
 	;

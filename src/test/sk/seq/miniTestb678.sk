@@ -20,7 +20,7 @@ void AWTEvent_AWTEvent_Object_int (Object source_210, int id_211, ref Object _ou
     _out_212._source_EventObject = new Object(hash=_out_s26_219);
     _out_212._source_EventObject = source_210;
     _out_212._id_AWTEvent = id_211;
-    register_AWTEvent@log(_out_212, obj_AWTEvent_cnt_s799_213, obj_AWTEvent_s800_215);
+    register_AWTEvent@alog(_out_212, obj_AWTEvent_cnt_s799_213, obj_AWTEvent_s800_215);
     return;
   }
   /* END PACKAGE AWTEvent*/
@@ -77,7 +77,7 @@ void EventQueue_EventQueue (ref Object _out_220, ref global Object[10] obj_Event
     EventObject_EventObject_Object(null, _out_s42_227, obj_EventObject_s910_221, obj_EventObject_cnt_s911_222, obj_cnt_s918_223);
     _out_220._nextevent_EventQueue = _out_s42_227;
     _out_220._evt_queue_EventQueue = new Queue_Object();
-    register_EventQueue@log(_out_220, obj_EventQueue_s875_224, obj_EventQueue_cnt_s876_225);
+    register_EventQueue@alog(_out_220, obj_EventQueue_s875_224, obj_EventQueue_cnt_s876_225);
     return;
   }
   /*EventQueue.sk:14*/
@@ -162,7 +162,7 @@ void InvocationEvent_InvocationEvent_Runnable (Object runnable_2f0, ref Object _
     AWTEvent_AWTEvent_Object_int(runnable_2f0, 0, self_s44_2f9, obj_AWTEvent_cnt_s813_2f2, obj_EventObject_s814_2f3, obj_AWTEvent_s815_2f4, obj_EventObject_cnt_s816_2f5, obj_cnt_s913_2f6);
     _out_2f1 = self_s44_2f9;
     _out_2f1._runnable_InvocationEvent = runnable_2f0;
-    register_InvocationEvent@log(_out_2f1, obj_InvocationEvent_s811_2f7, obj_InvocationEvent_cnt_s812_2f8);
+    register_InvocationEvent@alog(_out_2f1, obj_InvocationEvent_s811_2f7, obj_InvocationEvent_cnt_s812_2f8);
     return;
   }
   /*Invocat..nEvent.sk:13*/
@@ -594,7 +594,7 @@ void ActionEvent_ActionEvent_Object_int_String (Object source_1ab, int id_1ac, c
     AWTEvent_AWTEvent_Object_int(source_1ab, id_1ac, self_s50_1b6, obj_AWTEvent_cnt_s919_1b0, obj_EventObject_s581_1b1, obj_AWTEvent_s920_1b2, obj_EventObject_cnt_s582_1b3, obj_cnt_s904_1b4);
     _out_1ae = self_s50_1b6;
     _out_1ae._actioncommand_ActionEvent = actioncommand_1ad;
-    register_ActionEvent@log(_out_1ae, obj_ActionEvent_cnt_s987_1af, obj_ActionEvent_s988_1b5);
+    register_ActionEvent@alog(_out_1ae, obj_ActionEvent_cnt_s987_1af, obj_ActionEvent_s988_1b5);
     return;
   }
   /*ActionEvent.sk:16*/
@@ -606,11 +606,11 @@ void getActionCommand_ActionEvent (Object self_32b, ref char[51] _out_32c, ref g
     int params_s46_331;
     getActionCommand_ActionEvent_ent(params_s46_331);
     params_330 = {params_s46_331,self_32b.hash};
-    check_log@log(params_330, ev_s939_32d, obj_s940_32e, log_cnt_s941_32f);
+    check_log@alog(params_330, ev_s939_32d, obj_s940_32e, log_cnt_s941_32f);
     int params_s48_332;
     getActionCommand_ActionEvent_ext(params_s48_332);
     params_330 = {params_s48_332};
-    check_log@log(params_330, ev_s939_32d, obj_s940_32e, log_cnt_s941_32f);
+    check_log@alog(params_330, ev_s939_32d, obj_s940_32e, log_cnt_s941_32f);
     {
       _out_32c = self_32b._actioncommand_ActionEvent;
       return;
@@ -640,7 +640,7 @@ void sample1_Main (ref global int obj_AbstractButton_cnt_s948_12a, ref global in
     dispatchEvent_EventQueue_EventObject(q_155, evt1_157, obj_AbstractButton_cnt_s948_12a, allInOne_depth_s491_12b, update_AuxObserver1_s735_12c, obj_JFrame_cnt_s770_12e, obj_Window_s926_130, obj_Container_s827_133, obj_Container_cnt_s828_134, obj_JComponent_s829_135, obj_Frame_s824_137, obj_ButtonDemo_cnt_s932_136, obj_JComponent_cnt_s830_139, log_cnt_s737_13a, reflect_depth_s738_13b, ev_s734_13e, handle_AuxObserver1_s492_13f, obj_Frame_cnt_s823_141, obj_Component_s723_142, obj_cnt_s724_144, obj_JButton_s845_145, obj_JButton_cnt_s912_147, obj_JFrame_s769_148, obj_AbstractButton_s949_149, detach_AuxObserver1_s490_14c, obj_Component_cnt_s722_14d, attach_AuxObserver1_s493_14e, obj_s736_14f, obj_Window_cnt_s927_150, obj_ButtonDemo_s933_152);
     Object e0_159;
     Object@type e0_s58_15a;
-    retrieve_JButton@log(0, e0_s58_15a, obj_JButton_s845_145);
+    retrieve_JButton@alog(0, e0_s58_15a, obj_JButton_s845_145);
     Object@type e0_s60_15b;
     ActionEvent_ActionEvent_Object_int_String(e0_s58_15a, 0, {'d','i','s','a','b','l','e','\0'}, e0_s60_15b, obj_ActionEvent_cnt_s627_14a, obj_AWTEvent_cnt_s807_12d, obj_EventObject_s808_140, obj_AWTEvent_s809_12f, obj_EventObject_cnt_s810_143, obj_cnt_s724_144, obj_ActionEvent_s628_132);
     e0_159 = e0_s60_15b;
@@ -653,7 +653,7 @@ void sample1_Main (ref global int obj_AbstractButton_cnt_s948_12a, ref global in
     dispatchEvent_EventQueue_EventObject(q_155, evt2_15c, obj_AbstractButton_cnt_s948_12a, allInOne_depth_s491_12b, update_AuxObserver1_s735_12c, obj_JFrame_cnt_s770_12e, obj_Window_s926_130, obj_Container_s827_133, obj_Container_cnt_s828_134, obj_JComponent_s829_135, obj_Frame_s824_137, obj_ButtonDemo_cnt_s932_136, obj_JComponent_cnt_s830_139, log_cnt_s737_13a, reflect_depth_s738_13b, ev_s734_13e, handle_AuxObserver1_s492_13f, obj_Frame_cnt_s823_141, obj_Component_s723_142, obj_cnt_s724_144, obj_JButton_s845_145, obj_JButton_cnt_s912_147, obj_JFrame_s769_148, obj_AbstractButton_s949_149, detach_AuxObserver1_s490_14c, obj_Component_cnt_s722_14d, attach_AuxObserver1_s493_14e, obj_s736_14f, obj_Window_cnt_s927_150, obj_ButtonDemo_s933_152);
     Object e1_15e;
     Object@type e1_s64_15f;
-    retrieve_JButton@log(2, e1_s64_15f, obj_JButton_s845_145);
+    retrieve_JButton@alog(2, e1_s64_15f, obj_JButton_s845_145);
     Object@type e1_s66_160;
     ActionEvent_ActionEvent_Object_int_String(e1_s64_15f, 0, {'e','n','a','b','l','e','\0'}, e1_s66_160, obj_ActionEvent_cnt_s627_14a, obj_AWTEvent_cnt_s807_12d, obj_EventObject_s808_140, obj_AWTEvent_s809_12f, obj_EventObject_cnt_s810_143, obj_cnt_s724_144, obj_ActionEvent_s628_132);
     e1_15e = e1_s66_160;
@@ -691,7 +691,7 @@ void JFrame_JFrame_String (char[51] name_35f, ref Object _out_360, ref global Ob
     Object@type _out_s80_36d;
     Container_Container(_out_s80_36d, obj_Container_s983_362, obj_Component_cnt_s777_363, obj_Container_cnt_s984_364, obj_Component_s778_367, obj_cnt_s542_36b);
     _out_360._contentpane_JFrame = _out_s80_36d;
-    register_JFrame@log(_out_360, obj_JFrame_s944_361, obj_JFrame_cnt_s945_366);
+    register_JFrame@alog(_out_360, obj_JFrame_s944_361, obj_JFrame_cnt_s945_366);
     return;
   }
   /*JFrame.sk:27*/
@@ -702,12 +702,12 @@ void setContentPane_JFrame_Container (Object self_3a5, Object p_3a6, ref global 
     int params_s70_3ab;
     setContentPane_JFrame_Container_ent(params_s70_3ab);
     params_3aa = {params_s70_3ab,self_3a5.hash,p_3a6.hash};
-    check_log@log(params_3aa, ev_s641_3a7, obj_s642_3a8, log_cnt_s643_3a9);
+    check_log@alog(params_3aa, ev_s641_3a7, obj_s642_3a8, log_cnt_s643_3a9);
     self_3a5._contentpane_JFrame = p_3a6;
     int params_s72_3ac;
     setContentPane_JFrame_Container_ext(params_s72_3ac);
     params_3aa = {params_s72_3ac};
-    check_log@log(params_3aa, ev_s641_3a7, obj_s642_3a8, log_cnt_s643_3a9);
+    check_log@alog(params_3aa, ev_s641_3a7, obj_s642_3a8, log_cnt_s643_3a9);
   }
   /*JFrame.sk:17*/
   
@@ -717,12 +717,12 @@ void setDefaultCloseOperation_JFrame_int (Object self_36f, int operation_370, re
     int params_s74_375;
     setDefaultCloseOperation_JFrame_int_ent(params_s74_375);
     params_374 = {params_s74_375,self_36f.hash};
-    check_log@log(params_374, ev_s795_371, obj_s796_372, log_cnt_s797_373);
+    check_log@alog(params_374, ev_s795_371, obj_s796_372, log_cnt_s797_373);
     self_36f._defaultcloseoperation_JFrame = operation_370;
     int params_s76_376;
     setDefaultCloseOperation_JFrame_int_ext(params_s76_376);
     params_374 = {params_s76_376};
-    check_log@log(params_374, ev_s795_371, obj_s796_372, log_cnt_s797_373);
+    check_log@alog(params_374, ev_s795_371, obj_s796_372, log_cnt_s797_373);
   }
   /* END PACKAGE JFrame*/
 }
@@ -736,7 +736,7 @@ void JComponent_JComponent (ref Object _out_43b, ref global Object[10] obj_Conta
     Object@type self_s86_443;
     Container_Container(self_s86_443, obj_Container_s883_43c, obj_Component_cnt_s884_43d, obj_Container_cnt_s885_43e, obj_Component_s886_440, obj_cnt_s675_441);
     _out_43b = self_s86_443;
-    register_JComponent@log(_out_43b, obj_JComponent_s957_43f, obj_JComponent_cnt_s958_442);
+    register_JComponent@alog(_out_43b, obj_JComponent_s957_43f, obj_JComponent_cnt_s958_442);
     return;
   }
   /*JComponent.sk:13*/
@@ -753,12 +753,12 @@ void setToolTipText_JComponent_String (Object self_3f8, char[51] text_3f9, ref g
     int params_s82_3fe;
     setToolTipText_JComponent_String_ent(params_s82_3fe);
     params_3fd = {params_s82_3fe,self_3f8.hash};
-    check_log@log(params_3fd, ev_s1026_3fa, obj_s1027_3fb, log_cnt_s1028_3fc);
+    check_log@alog(params_3fd, ev_s1026_3fa, obj_s1027_3fb, log_cnt_s1028_3fc);
     self_3f8._tooltiptext_JComponent = text_3f9;
     int params_s84_3ff;
     setToolTipText_JComponent_String_ext(params_s84_3ff);
     params_3fd = {params_s84_3ff};
-    check_log@log(params_3fd, ev_s1026_3fa, obj_s1027_3fb, log_cnt_s1028_3fc);
+    check_log@alog(params_3fd, ev_s1026_3fa, obj_s1027_3fb, log_cnt_s1028_3fc);
   }
   /* END PACKAGE JComponent*/
 }
@@ -772,7 +772,7 @@ void Frame_Frame (ref Object _out_3c5, ref global Object[10] obj_Container_s831_
     Object@type self_s88_3cf;
     Window_Window(self_s88_3cf, obj_Container_s831_3c6, obj_Component_cnt_s839_3c7, obj_Container_cnt_s832_3c9, obj_Component_s840_3ca, obj_Window_s841_3cb, obj_Window_cnt_s842_3cc, obj_cnt_s636_3ce);
     _out_3c5 = self_s88_3cf;
-    register_Frame@log(_out_3c5, obj_Frame_cnt_s837_3c8, obj_Frame_s838_3cd);
+    register_Frame@alog(_out_3c5, obj_Frame_cnt_s837_3c8, obj_Frame_s838_3cd);
     return;
   }
   /* END PACKAGE Frame*/
@@ -787,7 +787,7 @@ void Component_Component (ref Object _out_41a, ref global int obj_Component_cnt_
     int self_s98_41e;
     nonce(self_s98_41e, obj_cnt_s518_41d);
     _out_41a = new Object(hash=self_s98_41e);
-    register_Component@log(_out_41a, obj_Component_cnt_s729_41b, obj_Component_s730_41c);
+    register_Component@alog(_out_41a, obj_Component_cnt_s729_41b, obj_Component_s730_41c);
     return;
   }
   /*Component.sk:18*/
@@ -798,12 +798,12 @@ void setEnabled_Component_boolean (Object self_336, bit b_337, ref global int[5]
     int params_s90_33c;
     setEnabled_Component_boolean_ent(params_s90_33c);
     params_33b = {params_s90_33c,self_336.hash};
-    check_log@log(params_33b, ev_s564_338, obj_s565_339, log_cnt_s566_33a);
+    check_log@alog(params_33b, ev_s564_338, obj_s565_339, log_cnt_s566_33a);
     self_336._enabled_Component = b_337;
     int params_s92_33d;
     setEnabled_Component_boolean_ext(params_s92_33d);
     params_33b = {params_s92_33d};
-    check_log@log(params_33b, ev_s564_338, obj_s565_339, log_cnt_s566_33a);
+    check_log@alog(params_33b, ev_s564_338, obj_s565_339, log_cnt_s566_33a);
   }
   /*Component.sk:33*/
   
@@ -813,12 +813,12 @@ void setVisible_Component_boolean (Object self_3b4, bit b_3b5, ref global int[5]
     int params_s94_3ba;
     setVisible_Component_boolean_ent(params_s94_3ba);
     params_3b9 = {params_s94_3ba,self_3b4.hash};
-    check_log@log(params_3b9, ev_s1023_3b6, obj_s1024_3b7, log_cnt_s1025_3b8);
+    check_log@alog(params_3b9, ev_s1023_3b6, obj_s1024_3b7, log_cnt_s1025_3b8);
     self_3b4._vible_Component = b_3b5;
     int params_s96_3bb;
     setVisible_Component_boolean_ext(params_s96_3bb);
     params_3b9 = {params_s96_3bb};
-    check_log@log(params_3b9, ev_s1023_3b6, obj_s1024_3b7, log_cnt_s1025_3b8);
+    check_log@alog(params_3b9, ev_s1023_3b6, obj_s1024_3b7, log_cnt_s1025_3b8);
   }
   /* END PACKAGE Component*/
 }
@@ -835,7 +835,7 @@ void JButton_JButton_String_Icon (char[51] text_3e3, Object icon_3e4, ref Object
     _out_3e5._text_JButton = text_3e3;
     _out_3e5._icon_JButton = icon_3e4;
     _out_3e5._actioncommand_AbstractButton = text_3e3;
-    register_JButton@log(_out_3e5, obj_JButton_s1021_3ee, obj_JButton_cnt_s1022_3f0);
+    register_JButton@alog(_out_3e5, obj_JButton_s1021_3ee, obj_JButton_cnt_s1022_3f0);
     return;
   }
   /* END PACKAGE JButton*/
@@ -850,7 +850,7 @@ void Window_Window (ref Object _out_40d, ref global Object[10] obj_Container_s84
     Object@type self_s106_415;
     Container_Container(self_s106_415, obj_Container_s848_40e, obj_Component_cnt_s543_40f, obj_Container_cnt_s849_410, obj_Component_s544_411, obj_cnt_s676_414);
     _out_40d = self_s106_415;
-    register_Window@log(_out_40d, obj_Window_s803_412, obj_Window_cnt_s804_413);
+    register_Window@alog(_out_40d, obj_Window_s803_412, obj_Window_cnt_s804_413);
     return;
   }
   /*Window.sk:13*/
@@ -861,11 +861,11 @@ void pack_Window (Object self_3ad, ref global int[5][82] ev_s934_3ae, ref global
     int params_s102_3b2;
     pack_Window_ent(params_s102_3b2);
     params_3b1 = {params_s102_3b2,self_3ad.hash};
-    check_log@log(params_3b1, ev_s934_3ae, obj_s935_3af, log_cnt_s936_3b0);
+    check_log@alog(params_3b1, ev_s934_3ae, obj_s935_3af, log_cnt_s936_3b0);
     int params_s104_3b3;
     pack_Window_ext(params_s104_3b3);
     params_3b1 = {params_s104_3b3};
-    check_log@log(params_3b1, ev_s934_3ae, obj_s935_3af, log_cnt_s936_3b0);
+    check_log@alog(params_3b1, ev_s934_3ae, obj_s935_3af, log_cnt_s936_3b0);
   }
   /* END PACKAGE Window*/
 }
@@ -879,7 +879,7 @@ void Container_Container (ref Object _out_3d0, ref global Object[10] obj_Contain
     Object@type self_s112_3d6;
     Component_Component(self_s112_3d6, obj_Component_cnt_s870_3d2, obj_Component_s871_3d4, obj_cnt_s872_3d5);
     _out_3d0 = self_s112_3d6;
-    register_Container@log(_out_3d0, obj_Container_s725_3d1, obj_Container_cnt_s726_3d3);
+    register_Container@alog(_out_3d0, obj_Container_s725_3d1, obj_Container_cnt_s726_3d3);
     return;
   }
   /*Container.sk:13*/
@@ -891,11 +891,11 @@ void add_Container_Component (Object self_400, Object comp_401, ref Object _out_
     int params_s108_407;
     add_Container_Component_ent(params_s108_407);
     params_406 = {params_s108_407,self_400.hash,comp_401.hash};
-    check_log@log(params_406, ev_s1014_403, obj_s1015_404, log_cnt_s1016_405);
+    check_log@alog(params_406, ev_s1014_403, obj_s1015_404, log_cnt_s1016_405);
     int params_s110_408;
     add_Container_Component_ext(params_s110_408);
     params_406 = {params_s110_408,comp_401.hash};
-    check_log@log(params_406, ev_s1014_403, obj_s1015_404, log_cnt_s1016_405);
+    check_log@alog(params_406, ev_s1014_403, obj_s1015_404, log_cnt_s1016_405);
     {
       _out_402 = comp_401;
       return;
@@ -1013,7 +1013,7 @@ void ButtonDemo_ButtonDemo (ref Object _out_377, ref global int obj_AbstractButt
     Object __tmp___3a2;
     __tmp___3a2 = _out_377;
     __tmp___3a2._obs_AuxObserver1 = new List_Object();
-    register_ButtonDemo@log(_out_377, obj_ButtonDemo_cnt_s1029_389, obj_ButtonDemo_s1030_38b);
+    register_ButtonDemo@alog(_out_377, obj_ButtonDemo_cnt_s1029_389, obj_ButtonDemo_s1030_38b);
     return;
   }
   /*ButtonDemo.sk:38*/
@@ -1024,7 +1024,7 @@ void actionPerformed_ButtonDemo_ActionEvent (Object self_25f, Object e_260, ref 
     int params_s114_26b;
     actionPerformed_ButtonDemo_ActionEvent_ent(params_s114_26b);
     params_26a = {params_s114_26b,self_25f.hash,e_260.hash};
-    check_log@log(params_26a, ev_s782_262, obj_s784_266, log_cnt_s785_268);
+    check_log@alog(params_26a, ev_s782_262, obj_s784_266, log_cnt_s785_268);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(102, self_25f, null, e_260, detach_AuxObserver1_s537_261, ev_s782_262, allInOne_depth_s538_264, handle_AuxObserver1_s539_263, update_AuxObserver1_s783_265, obj_s784_266, attach_AuxObserver1_s540_267, log_cnt_s785_268, reflect_depth_s786_269);
     char[51] _out_s116_26c;
     getActionCommand_ActionEvent(e_260, _out_s116_26c, ev_s782_262, obj_s784_266, log_cnt_s785_268);
@@ -1049,7 +1049,7 @@ void actionPerformed_ButtonDemo_ActionEvent (Object self_25f, Object e_260, ref 
     int params_s120_26e;
     actionPerformed_ButtonDemo_ActionEvent_ext(params_s120_26e);
     params_26a = {params_s120_26e};
-    check_log@log(params_26a, ev_s782_262, obj_s784_266, log_cnt_s785_268);
+    check_log@alog(params_26a, ev_s782_262, obj_s784_266, log_cnt_s785_268);
   }
   /*ButtonDemo.sk:69*/
   
@@ -1059,7 +1059,7 @@ void createAndShowGUI_ButtonDemo (ref global int obj_AbstractButton_cnt_s597_307
     int params_s126_324;
     createAndShowGUI_ButtonDemo_ent(params_s126_324);
     params_323 = {params_s126_324};
-    check_log@log(params_323, ev_s754_315, obj_s755_320, log_cnt_s756_312);
+    check_log@alog(params_323, ev_s754_315, obj_s755_320, log_cnt_s756_312);
     Object frame_325;
     Object@type frame_s128_326;
     JFrame_JFrame_String({'B','u','t','t','o','n','D','e','m','o','\0'}, frame_s128_326, obj_JFrame_s854_31b, obj_Container_s720_30c, obj_Component_cnt_s751_31e, obj_Container_cnt_s721_30d, obj_Frame_cnt_s480_316, obj_JFrame_cnt_s855_30a, obj_Component_s752_317, obj_Window_s485_30b, obj_Frame_s481_310, obj_Window_cnt_s486_321, obj_cnt_s753_318);
@@ -1078,7 +1078,7 @@ void createAndShowGUI_ButtonDemo (ref global int obj_AbstractButton_cnt_s597_307
     int params_s134_32a;
     createAndShowGUI_ButtonDemo_ext(params_s134_32a);
     params_323 = {params_s134_32a};
-    check_log@log(params_323, ev_s754_315, obj_s755_320, log_cnt_s756_312);
+    check_log@alog(params_323, ev_s754_315, obj_s755_320, log_cnt_s756_312);
   }
   /*ButtonDemo.sk:58*/
   
@@ -1089,11 +1089,11 @@ void createImageIcon_ButtonDemo_String (char[51] path_3db, ref Object _out_3dc, 
     int params_s170_3e1;
     createImageIcon_ButtonDemo_String_ent(params_s170_3e1);
     params_3e0 = {params_s170_3e1};
-    check_log@log(params_3e0, ev_s503_3dd, obj_s504_3de, log_cnt_s505_3df);
+    check_log@alog(params_3e0, ev_s503_3dd, obj_s504_3de, log_cnt_s505_3df);
     int params_s172_3e2;
     createImageIcon_ButtonDemo_String_ext(params_s172_3e2);
     params_3e0 = {params_s172_3e2};
-    check_log@log(params_3e0, ev_s503_3dd, obj_s504_3de, log_cnt_s505_3df);
+    check_log@alog(params_3e0, ev_s503_3dd, obj_s504_3de, log_cnt_s505_3df);
     {
       _out_3dc = null;
       return;
@@ -1107,14 +1107,14 @@ void main_ButtonDemo (ref global int[5][82] ev_s995_16f, ref global Object@type 
     int params_s174_17f;
     main_ButtonDemo_ent(params_s174_17f);
     params_17e = {params_s174_17f};
-    check_log@log(params_17e, ev_s995_16f, obj_s996_179, log_cnt_s997_17c);
+    check_log@alog(params_17e, ev_s995_16f, obj_s996_179, log_cnt_s997_17c);
     int _out_s176_180;
     nonce(_out_s176_180, obj_cnt_s654_175);
     invokeLater_SwingUtilities_Runnable(new Object(hash=_out_s176_180), defaultToolkit_s877_170, ev_s995_16f, obj_AWTEvent_cnt_s498_171, obj_EventObject_s878_172, obj_AWTEvent_s499_173, obj_EventObject_cnt_s879_174, obj_cnt_s654_175, obj_EventQueue_s632_176, obj_EventQueue_cnt_s633_177, obj_Toolkit_cnt_s873_178, obj_s996_179, obj_InvocationEvent_s634_17a, obj_Toolkit_s874_17b, log_cnt_s997_17c, obj_InvocationEvent_cnt_s635_17d);
     int params_s178_181;
     main_ButtonDemo_ext(params_s178_181);
     params_17e = {params_s178_181};
-    check_log@log(params_17e, ev_s995_16f, obj_s996_179, log_cnt_s997_17c);
+    check_log@alog(params_17e, ev_s995_16f, obj_s996_179, log_cnt_s997_17c);
   }
   /*ButtonDemo.sk:95*/
   
@@ -1124,13 +1124,13 @@ void run_ButtonDemo_1 (Object self_23f, ref global int obj_AbstractButton_cnt_s8
     int params_s122_25d;
     run_ButtonDemo_1_ent(params_s122_25d);
     params_25c = {params_s122_25d,self_23f.hash};
-    check_log@log(params_25c, ev_s588_24d, obj_s589_258, log_cnt_s590_24b);
+    check_log@alog(params_25c, ev_s588_24d, obj_s589_258, log_cnt_s590_24b);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(106, self_23f, null, null, detach_AuxObserver1_s556_256, ev_s588_24d, allInOne_depth_s557_241, handle_AuxObserver1_s558_24e, update_AuxObserver1_s559_242, obj_s589_258, attach_AuxObserver1_s560_259, log_cnt_s590_24b, reflect_depth_s561_24c);
     createAndShowGUI_ButtonDemo(obj_AbstractButton_cnt_s894_240, allInOne_depth_s557_241, update_AuxObserver1_s559_242, obj_JFrame_cnt_s679_243, obj_Window_s805_244, obj_Container_s659_245, obj_Container_cnt_s660_246, obj_JComponent_s905_247, obj_ButtonDemo_cnt_s1004_248, obj_Frame_s882_249, obj_JComponent_cnt_s906_24a, log_cnt_s590_24b, reflect_depth_s561_24c, handle_AuxObserver1_s558_24e, ev_s588_24d, obj_Frame_cnt_s881_24f, obj_Component_s802_250, obj_cnt_s626_251, obj_JButton_s868_252, obj_JButton_cnt_s869_253, obj_JFrame_s678_254, obj_AbstractButton_s895_255, detach_AuxObserver1_s556_256, obj_Component_cnt_s801_257, attach_AuxObserver1_s560_259, obj_s589_258, obj_Window_cnt_s806_25a, obj_ButtonDemo_s1005_25b);
     int params_s124_25e;
     run_ButtonDemo_1_ext(params_s124_25e);
     params_25c = {params_s124_25e};
-    check_log@log(params_25c, ev_s588_24d, obj_s589_258, log_cnt_s590_24b);
+    check_log@alog(params_25c, ev_s588_24d, obj_s589_258, log_cnt_s590_24b);
   }
   /* END PACKAGE ButtonDemo*/
 }
@@ -1147,7 +1147,7 @@ void AbstractButton_AbstractButton (ref Object _out_423, ref global int obj_Abst
     Object __tmp___42e;
     __tmp___42e = _out_423;
     __tmp___42e._obs_AuxObserver1 = new List_Object();
-    register_AbstractButton@log(_out_423, obj_AbstractButton_cnt_s1019_424, obj_AbstractButton_s1020_425);
+    register_AbstractButton@alog(_out_423, obj_AbstractButton_cnt_s1019_424, obj_AbstractButton_s1020_425);
     return;
   }
   /*AbstractButton.sk:18*/
@@ -1158,12 +1158,12 @@ void addActionListener_AbstractButton_ActionListener (Object self_27a, Object l_
     int params_s196_286;
     addActionListener_AbstractButton_ActionListener_ent(params_s196_286);
     params_285 = {params_s196_286,self_27a.hash,l_27b.hash};
-    check_log@log(params_285, ev_s771_27d, obj_s772_281, log_cnt_s773_283);
+    check_log@alog(params_285, ev_s771_27d, obj_s772_281, log_cnt_s773_283);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(34, self_27a, l_27b, null, detach_AuxObserver1_s494_27c, ev_s771_27d, allInOne_depth_s495_27f, handle_AuxObserver1_s496_27e, update_AuxObserver1_s867_280, obj_s772_281, attach_AuxObserver1_s497_282, log_cnt_s773_283, reflect_depth_s482_284);
     int params_s198_287;
     addActionListener_AbstractButton_ActionListener_ext(params_s198_287);
     params_285 = {params_s198_287};
-    check_log@log(params_285, ev_s771_27d, obj_s772_281, log_cnt_s773_283);
+    check_log@alog(params_285, ev_s771_27d, obj_s772_281, log_cnt_s773_283);
   }
   /*AbstractButton.sk:14*/
   
@@ -1196,13 +1196,13 @@ void setActionCommand_AbstractButton_String (Object self_2c8, char[51] actionCom
     int params_s180_2d4;
     setActionCommand_AbstractButton_String_ent(params_s180_2d4);
     params_2d3 = {params_s180_2d4,self_2c8.hash};
-    check_log@log(params_2d3, ev_s600_2cd, obj_s604_2d0, log_cnt_s606_2d1);
+    check_log@alog(params_2d3, ev_s600_2cd, obj_s604_2d0, log_cnt_s606_2d1);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(42, self_2c8, null, null, detach_AuxObserver1_s599_2ca, ev_s600_2cd, allInOne_depth_s601_2cc, handle_AuxObserver1_s602_2cb, update_AuxObserver1_s603_2ce, obj_s604_2d0, attach_AuxObserver1_s605_2cf, log_cnt_s606_2d1, reflect_depth_s607_2d2);
     self_2c8._actioncommand_AbstractButton = actionCommand_2c9;
     int params_s182_2d5;
     setActionCommand_AbstractButton_String_ext(params_s182_2d5);
     params_2d3 = {params_s182_2d5};
-    check_log@log(params_2d3, ev_s600_2cd, obj_s604_2d0, log_cnt_s606_2d1);
+    check_log@alog(params_2d3, ev_s600_2cd, obj_s604_2d0, log_cnt_s606_2d1);
   }
   /*AbstractButton.sk:43*/
   
@@ -1212,13 +1212,13 @@ void setHorizontalTextPosition_AbstractButton_int (Object self_2a1, int textPosi
     int params_s188_2ad;
     setHorizontalTextPosition_AbstractButton_int_ent(params_s188_2ad);
     params_2ac = {params_s188_2ad,self_2a1.hash};
-    check_log@log(params_2ac, ev_s708_2a6, obj_s712_2a9, log_cnt_s714_2aa);
+    check_log@alog(params_2ac, ev_s708_2a6, obj_s712_2a9, log_cnt_s714_2aa);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(39, self_2a1, null, null, detach_AuxObserver1_s707_2a3, ev_s708_2a6, allInOne_depth_s709_2a5, handle_AuxObserver1_s710_2a4, update_AuxObserver1_s711_2a7, obj_s712_2a9, attach_AuxObserver1_s713_2a8, log_cnt_s714_2aa, reflect_depth_s715_2ab);
     self_2a1._horizontaltextposition_AbstractButton = textPosition_2a2;
     int params_s190_2ae;
     setHorizontalTextPosition_AbstractButton_int_ext(params_s190_2ae);
     params_2ac = {params_s190_2ae};
-    check_log@log(params_2ac, ev_s708_2a6, obj_s712_2a9, log_cnt_s714_2aa);
+    check_log@alog(params_2ac, ev_s708_2a6, obj_s712_2a9, log_cnt_s714_2aa);
   }
   /*AbstractButton.sk:54*/
   
@@ -1228,13 +1228,13 @@ void setMnemonic_AbstractButton_int (Object self_2af, int mnemonic_2b0, ref glob
     int params_s184_2bb;
     setMnemonic_AbstractButton_int_ent(params_s184_2bb);
     params_2ba = {params_s184_2bb,self_2af.hash};
-    check_log@log(params_2ba, ev_s532_2b4, obj_s533_2b7, log_cnt_s534_2b8);
+    check_log@alog(params_2ba, ev_s532_2b4, obj_s533_2b7, log_cnt_s534_2b8);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(40, self_2af, null, null, detach_AuxObserver1_s739_2b1, ev_s532_2b4, allInOne_depth_s740_2b3, handle_AuxObserver1_s741_2b2, update_AuxObserver1_s798_2b5, obj_s533_2b7, attach_AuxObserver1_s742_2b6, log_cnt_s534_2b8, reflect_depth_s743_2b9);
     self_2af._mnemonic_AbstractButton = mnemonic_2b0;
     int params_s186_2bc;
     setMnemonic_AbstractButton_int_ext(params_s186_2bc);
     params_2ba = {params_s186_2bc};
-    check_log@log(params_2ba, ev_s532_2b4, obj_s533_2b7, log_cnt_s534_2b8);
+    check_log@alog(params_2ba, ev_s532_2b4, obj_s533_2b7, log_cnt_s534_2b8);
   }
   /*AbstractButton.sk:81*/
   
@@ -1251,13 +1251,13 @@ void setVerticalTextPosition_AbstractButton_int (Object self_293, int textPositi
     int params_s192_29f;
     setVerticalTextPosition_AbstractButton_int_ent(params_s192_29f);
     params_29e = {params_s192_29f,self_293.hash};
-    check_log@log(params_29e, ev_s690_296, obj_s692_29a, log_cnt_s693_29c);
+    check_log@alog(params_29e, ev_s690_296, obj_s692_29a, log_cnt_s693_29c);
     allInOne_AuxObserver1_int_AuxObserver1_AuxObserver1_ActionEvent(38, self_293, null, null, detach_AuxObserver1_s680_295, ev_s690_296, allInOne_depth_s682_297, handle_AuxObserver1_s681_298, update_AuxObserver1_s691_299, obj_s692_29a, attach_AuxObserver1_s683_29b, log_cnt_s693_29c, reflect_depth_s591_29d);
     self_293._verticaltextposition_AbstractButton = textPosition_294;
     int params_s194_2a0;
     setVerticalTextPosition_AbstractButton_int_ext(params_s194_2a0);
     params_29e = {params_s194_2a0};
-    check_log@log(params_29e, ev_s690_296, obj_s692_29a, log_cnt_s693_29c);
+    check_log@alog(params_29e, ev_s690_296, obj_s692_29a, log_cnt_s693_29c);
   }
   /* END PACKAGE AbstractButton*/
 }
@@ -1275,7 +1275,7 @@ void EventObject_EventObject_Object (Object source_2e1, ref Object _out_2e2, ref
     nonce(_out_s204_2e7, obj_cnt_s677_2e5);
     _out_2e2._source_EventObject = new Object(hash=_out_s204_2e7);
     _out_2e2._source_EventObject = source_2e1;
-    register_EventObject@log(_out_2e2, obj_EventObject_s1008_2e3, obj_EventObject_cnt_s1009_2e4);
+    register_EventObject@alog(_out_2e2, obj_EventObject_s1008_2e3, obj_EventObject_cnt_s1009_2e4);
     return;
   }
   /*EventObject.sk:14*/
@@ -1300,12 +1300,12 @@ void invokeLater_SwingUtilities_Runnable (Object doRun_1cb, ref global Object@ty
     int params_s206_1dc;
     invokeLater_SwingUtilities_Runnable_ent(params_s206_1dc);
     params_1db = {params_s206_1dc,doRun_1cb.hash};
-    check_log@log(params_1db, ev_s774_1cd, obj_s775_1d6, log_cnt_s776_1d9);
+    check_log@alog(params_1db, ev_s774_1cd, obj_s775_1d6, log_cnt_s776_1d9);
     invokeLater_EventQueue_Runnable(doRun_1cb, obj_Toolkit_cnt_s749_1d5, defaultToolkit_s998_1cc, obj_AWTEvent_cnt_s535_1ce, obj_EventObject_s667_1cf, obj_AWTEvent_s536_1d0, obj_EventObject_cnt_s668_1d1, obj_InvocationEvent_s950_1d7, obj_Toolkit_s750_1d8, obj_cnt_s706_1d2, obj_EventQueue_s846_1d3, obj_EventQueue_cnt_s847_1d4, obj_InvocationEvent_cnt_s951_1da);
     int params_s208_1dd;
     invokeLater_SwingUtilities_Runnable_ext(params_s208_1dd);
     params_1db = {params_s208_1dd};
-    check_log@log(params_1db, ev_s774_1cd, obj_s775_1d6, log_cnt_s776_1d9);
+    check_log@alog(params_1db, ev_s774_1cd, obj_s775_1d6, log_cnt_s776_1d9);
   }
   /* END PACKAGE SwingUtilities*/
 }
@@ -1314,7 +1314,7 @@ package ComponentEvent{
   /* END PACKAGE ComponentEvent*/
 }
 /* BEGIN PACKAGE log*/
-package log{
+package alog{
   /*log.sk:520*/
   
 void actionPerformed_ButtonDemo_ActionEvent_ent (ref int _out_123)/*log.sk:520*/
@@ -2299,7 +2299,7 @@ void Toolkit_Toolkit (ref Object _out_1b9, ref global int obj_Toolkit_cnt_s889_1
     Object@type _out_s256_1c2;
     EventQueue_EventQueue(_out_s256_1c2, obj_EventObject_s974_1bb, obj_EventObject_cnt_s975_1bc, obj_cnt_s994_1bd, obj_EventQueue_s1012_1bf, obj_EventQueue_cnt_s1013_1c0);
     _out_1b9._systemeventqueue_Toolkit = _out_s256_1c2;
-    register_Toolkit@log(_out_1b9, obj_Toolkit_cnt_s889_1ba, obj_Toolkit_s890_1be);
+    register_Toolkit@alog(_out_1b9, obj_Toolkit_cnt_s889_1ba, obj_Toolkit_s890_1be);
     return;
   }
   /*Toolkit.sk:14*/
@@ -2491,329 +2491,329 @@ void glblInit_update_AuxObserver1_s1038 (ref int update_AuxObserver1_s1037_50)/*
 
 void sample1 (ref global int obj_AbstractButton_cnt_s759_72, ref global int allInOne_depth_s615_73, ref global int update_AuxObserver1_s760_74, ref global int obj_AWTEvent_cnt_s618_75, ref global int obj_JFrame_cnt_s793_76, ref global Object[10] obj_AWTEvent_s619_77, ref global Object[10] obj_Window_s862_78, ref global Object[10] obj_ActionEvent_s1034_79, ref global int obj_EventQueue_cnt_s700_7a, ref global Object[10] obj_Container_s787_7b, ref global int obj_Container_cnt_s788_7c, ref global Object[10] obj_JComponent_s764_7d, ref global Object[10] obj_Toolkit_s617_7e, ref global int obj_ButtonDemo_cnt_s586_7f, ref global Object[10] obj_Frame_s507_80, ref global int obj_JComponent_cnt_s765_81, ref global int log_cnt_s629_82, ref global int obj_InvocationEvent_cnt_s625_83, ref global int reflect_depth_s658_84, ref global Object@type defaultToolkit_s790_85, ref global int handle_AuxObserver1_s614_86, ref global int[5][82] ev_s483_87, ref global Object[10] obj_EventObject_s791_88, ref global int obj_Frame_cnt_s506_89, ref global Object[10] obj_Component_s761_8a, ref global int obj_EventObject_cnt_s792_8b, ref global int obj_cnt_s698_8c, ref global Object[10] obj_JButton_s780_8d, ref global Object[10] obj_EventQueue_s699_8e, ref global int obj_JButton_cnt_s781_8f, ref global Object[10] obj_JFrame_s794_90, ref global Object[10] obj_AbstractButton_s762_91, ref global int obj_ActionEvent_cnt_s1033_92, ref global int detach_AuxObserver1_s613_93, ref global int obj_Toolkit_cnt_s612_94, ref global int obj_Component_cnt_s763_95, ref global int attach_AuxObserver1_s616_96, ref global int[10] obj_s484_97, ref global int obj_Window_cnt_s863_98, ref global Object[10] obj_InvocationEvent_s624_99, ref global Object[10] obj_ButtonDemo_s587_9a)/*sample_sample1.sk:1*/
 {
-  clear_log@log(ev_s483_87, obj_s484_97, log_cnt_s629_82);
+  clear_log@alog(ev_s483_87, obj_s484_97, log_cnt_s629_82);
   int[5] log_9b;
   log_9b = {0};
   int log_s258_9c;
   main_ButtonDemo_ent(log_s258_9c);
   log_9b = ((int[5]){log_s258_9c});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s260_9d;
   invokeLater_SwingUtilities_Runnable_ent(log_s260_9d);
   log_9b = ((int[5]){log_s260_9d,1});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s262_9e;
   invokeLater_SwingUtilities_Runnable_ext(log_s262_9e);
   log_9b = ((int[5]){log_s262_9e});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s264_9f;
   main_ButtonDemo_ext(log_s264_9f);
   log_9b = ((int[5]){log_s264_9f});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s266_a0;
   run_ButtonDemo_1_ent(log_s266_a0);
   log_9b = ((int[5]){log_s266_a0,1});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s268_a1;
   createAndShowGUI_ButtonDemo_ent(log_s268_a1);
   log_9b = ((int[5]){log_s268_a1});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s270_a2;
   setDefaultCloseOperation_JFrame_int_ent(log_s270_a2);
   log_9b = ((int[5]){log_s270_a2,2});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s272_a3;
   setDefaultCloseOperation_JFrame_int_ext(log_s272_a3);
   log_9b = ((int[5]){log_s272_a3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s274_a4;
   createImageIcon_ButtonDemo_String_ent(log_s274_a4);
   log_9b = ((int[5]){log_s274_a4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s276_a5;
   createImageIcon_ButtonDemo_String_ext(log_s276_a5);
   log_9b = ((int[5]){log_s276_a5,3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s278_a6;
   createImageIcon_ButtonDemo_String_ent(log_s278_a6);
   log_9b = ((int[5]){log_s278_a6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s280_a7;
   createImageIcon_ButtonDemo_String_ext(log_s280_a7);
   log_9b = ((int[5]){log_s280_a7,3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s282_a8;
   createImageIcon_ButtonDemo_String_ent(log_s282_a8);
   log_9b = ((int[5]){log_s282_a8});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s284_a9;
   createImageIcon_ButtonDemo_String_ext(log_s284_a9);
   log_9b = ((int[5]){log_s284_a9,3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s286_aa;
   setVerticalTextPosition_AbstractButton_int_ent(log_s286_aa);
   log_9b = ((int[5]){log_s286_aa,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s288_ab;
   setVerticalTextPosition_AbstractButton_int_ext(log_s288_ab);
   log_9b = ((int[5]){log_s288_ab});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s290_ac;
   setHorizontalTextPosition_AbstractButton_int_ent(log_s290_ac);
   log_9b = ((int[5]){log_s290_ac,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s292_ad;
   setHorizontalTextPosition_AbstractButton_int_ext(log_s292_ad);
   log_9b = ((int[5]){log_s292_ad});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s294_ae;
   setMnemonic_AbstractButton_int_ent(log_s294_ae);
   log_9b = ((int[5]){log_s294_ae,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s296_af;
   setMnemonic_AbstractButton_int_ext(log_s296_af);
   log_9b = ((int[5]){log_s296_af});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s298_b0;
   setActionCommand_AbstractButton_String_ent(log_s298_b0);
   log_9b = ((int[5]){log_s298_b0,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s300_b1;
   setActionCommand_AbstractButton_String_ext(log_s300_b1);
   log_9b = ((int[5]){log_s300_b1});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s302_b2;
   setVerticalTextPosition_AbstractButton_int_ent(log_s302_b2);
   log_9b = ((int[5]){log_s302_b2,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s304_b3;
   setVerticalTextPosition_AbstractButton_int_ext(log_s304_b3);
   log_9b = ((int[5]){log_s304_b3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s306_b4;
   setHorizontalTextPosition_AbstractButton_int_ent(log_s306_b4);
   log_9b = ((int[5]){log_s306_b4,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s308_b5;
   setHorizontalTextPosition_AbstractButton_int_ext(log_s308_b5);
   log_9b = ((int[5]){log_s308_b5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s310_b6;
   setMnemonic_AbstractButton_int_ent(log_s310_b6);
   log_9b = ((int[5]){log_s310_b6,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s312_b7;
   setMnemonic_AbstractButton_int_ext(log_s312_b7);
   log_9b = ((int[5]){log_s312_b7});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s314_b8;
   setMnemonic_AbstractButton_int_ent(log_s314_b8);
   log_9b = ((int[5]){log_s314_b8,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s316_b9;
   setMnemonic_AbstractButton_int_ext(log_s316_b9);
   log_9b = ((int[5]){log_s316_b9});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s318_ba;
   setActionCommand_AbstractButton_String_ent(log_s318_ba);
   log_9b = ((int[5]){log_s318_ba,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s320_bb;
   setActionCommand_AbstractButton_String_ext(log_s320_bb);
   log_9b = ((int[5]){log_s320_bb});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s322_bc;
   setEnabled_Component_boolean_ent(log_s322_bc);
   log_9b = ((int[5]){log_s322_bc,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s324_bd;
   setEnabled_Component_boolean_ext(log_s324_bd);
   log_9b = ((int[5]){log_s324_bd});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s326_be;
   addActionListener_AbstractButton_ActionListener_ent(log_s326_be);
   log_9b = ((int[5]){log_s326_be,4,7});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s328_bf;
   addActionListener_AbstractButton_ActionListener_ext(log_s328_bf);
   log_9b = ((int[5]){log_s328_bf});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s330_c0;
   addActionListener_AbstractButton_ActionListener_ent(log_s330_c0);
   log_9b = ((int[5]){log_s330_c0,6,7});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s332_c1;
   addActionListener_AbstractButton_ActionListener_ext(log_s332_c1);
   log_9b = ((int[5]){log_s332_c1});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s334_c2;
   setToolTipText_JComponent_String_ent(log_s334_c2);
   log_9b = ((int[5]){log_s334_c2,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s336_c3;
   setToolTipText_JComponent_String_ext(log_s336_c3);
   log_9b = ((int[5]){log_s336_c3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s338_c4;
   setToolTipText_JComponent_String_ent(log_s338_c4);
   log_9b = ((int[5]){log_s338_c4,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s340_c5;
   setToolTipText_JComponent_String_ext(log_s340_c5);
   log_9b = ((int[5]){log_s340_c5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s342_c6;
   setToolTipText_JComponent_String_ent(log_s342_c6);
   log_9b = ((int[5]){log_s342_c6,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s344_c7;
   setToolTipText_JComponent_String_ext(log_s344_c7);
   log_9b = ((int[5]){log_s344_c7});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s346_c8;
   add_Container_Component_ent(log_s346_c8);
   log_9b = ((int[5]){log_s346_c8,7,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s348_c9;
   add_Container_Component_ext(log_s348_c9);
   log_9b = ((int[5]){log_s348_c9,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s350_ca;
   add_Container_Component_ent(log_s350_ca);
   log_9b = ((int[5]){log_s350_ca,7,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s352_cb;
   add_Container_Component_ext(log_s352_cb);
   log_9b = ((int[5]){log_s352_cb,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s354_cc;
   add_Container_Component_ent(log_s354_cc);
   log_9b = ((int[5]){log_s354_cc,7,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s356_cd;
   add_Container_Component_ext(log_s356_cd);
   log_9b = ((int[5]){log_s356_cd,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s358_ce;
   setContentPane_JFrame_Container_ent(log_s358_ce);
   log_9b = ((int[5]){log_s358_ce,2,7});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s360_cf;
   setContentPane_JFrame_Container_ext(log_s360_cf);
   log_9b = ((int[5]){log_s360_cf});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s362_d0;
   pack_Window_ent(log_s362_d0);
   log_9b = ((int[5]){log_s362_d0,2});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s364_d1;
   pack_Window_ext(log_s364_d1);
   log_9b = ((int[5]){log_s364_d1});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s366_d2;
   setVisible_Component_boolean_ent(log_s366_d2);
   log_9b = ((int[5]){log_s366_d2,2});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s368_d3;
   setVisible_Component_boolean_ext(log_s368_d3);
   log_9b = ((int[5]){log_s368_d3});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s370_d4;
   createAndShowGUI_ButtonDemo_ext(log_s370_d4);
   log_9b = ((int[5]){log_s370_d4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s372_d5;
   run_ButtonDemo_1_ext(log_s372_d5);
   log_9b = ((int[5]){log_s372_d5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s374_d6;
   actionPerformed_ButtonDemo_ActionEvent_ent(log_s374_d6);
   log_9b = ((int[5]){log_s374_d6,7,8});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s376_d7;
   getActionCommand_ActionEvent_ent(log_s376_d7);
   log_9b = ((int[5]){log_s376_d7,8});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s378_d8;
   getActionCommand_ActionEvent_ext(log_s378_d8);
   log_9b = ((int[5]){log_s378_d8});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s380_d9;
   setEnabled_Component_boolean_ent(log_s380_d9);
   log_9b = ((int[5]){log_s380_d9,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s382_da;
   setEnabled_Component_boolean_ext(log_s382_da);
   log_9b = ((int[5]){log_s382_da});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s384_db;
   setEnabled_Component_boolean_ent(log_s384_db);
   log_9b = ((int[5]){log_s384_db,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s386_dc;
   setEnabled_Component_boolean_ext(log_s386_dc);
   log_9b = ((int[5]){log_s386_dc});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s388_dd;
   setEnabled_Component_boolean_ent(log_s388_dd);
   log_9b = ((int[5]){log_s388_dd,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s390_de;
   setEnabled_Component_boolean_ext(log_s390_de);
   log_9b = ((int[5]){log_s390_de});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s392_df;
   actionPerformed_ButtonDemo_ActionEvent_ext(log_s392_df);
   log_9b = ((int[5]){log_s392_df});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s394_e0;
   actionPerformed_ButtonDemo_ActionEvent_ent(log_s394_e0);
   log_9b = ((int[5]){log_s394_e0,7,9});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s396_e1;
   getActionCommand_ActionEvent_ent(log_s396_e1);
   log_9b = ((int[5]){log_s396_e1,9});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s398_e2;
   getActionCommand_ActionEvent_ext(log_s398_e2);
   log_9b = ((int[5]){log_s398_e2});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s400_e3;
   setEnabled_Component_boolean_ent(log_s400_e3);
   log_9b = ((int[5]){log_s400_e3,5});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s402_e4;
   setEnabled_Component_boolean_ext(log_s402_e4);
   log_9b = ((int[5]){log_s402_e4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s404_e5;
   setEnabled_Component_boolean_ent(log_s404_e5);
   log_9b = ((int[5]){log_s404_e5,4});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s406_e6;
   setEnabled_Component_boolean_ext(log_s406_e6);
   log_9b = ((int[5]){log_s406_e6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s408_e7;
   setEnabled_Component_boolean_ent(log_s408_e7);
   log_9b = ((int[5]){log_s408_e7,6});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s410_e8;
   setEnabled_Component_boolean_ext(log_s410_e8);
   log_9b = ((int[5]){log_s410_e8});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int log_s412_e9;
   actionPerformed_ButtonDemo_ActionEvent_ext(log_s412_e9);
   log_9b = ((int[5]){log_s412_e9});
-  write_log@log(log_9b, ev_s483_87, log_cnt_s629_82);
+  write_log@alog(log_9b, ev_s483_87, log_cnt_s629_82);
   int len_log_ea;
   int len_log_s414_eb;
-  get_log_cnt@log(len_log_s414_eb, log_cnt_s629_82);
+  get_log_cnt@alog(len_log_s414_eb, log_cnt_s629_82);
   len_log_ea = len_log_s414_eb;
-  reset_log_cnt@log(log_cnt_s629_82);
+  reset_log_cnt@alog(log_cnt_s629_82);
   sample1_Main(obj_AbstractButton_cnt_s759_72, allInOne_depth_s615_73, update_AuxObserver1_s760_74, obj_AWTEvent_cnt_s618_75, obj_JFrame_cnt_s793_76, obj_AWTEvent_s619_77, obj_Window_s862_78, obj_EventQueue_cnt_s700_7a, obj_ActionEvent_s1034_79, obj_Container_s787_7b, obj_Container_cnt_s788_7c, obj_JComponent_s764_7d, obj_ButtonDemo_cnt_s586_7f, obj_Frame_s507_80, obj_Toolkit_s617_7e, obj_JComponent_cnt_s765_81, log_cnt_s629_82, reflect_depth_s658_84, obj_InvocationEvent_cnt_s625_83, defaultToolkit_s790_85, ev_s483_87, handle_AuxObserver1_s614_86, obj_EventObject_s791_88, obj_Frame_cnt_s506_89, obj_Component_s761_8a, obj_EventObject_cnt_s792_8b, obj_cnt_s698_8c, obj_JButton_s780_8d, obj_EventQueue_s699_8e, obj_JButton_cnt_s781_8f, obj_JFrame_s794_90, obj_AbstractButton_s762_91, obj_ActionEvent_cnt_s1033_92, obj_Toolkit_cnt_s612_94, detach_AuxObserver1_s613_93, obj_Component_cnt_s763_95, attach_AuxObserver1_s616_96, obj_s484_97, obj_Window_cnt_s863_98, obj_InvocationEvent_s624_99, obj_ButtonDemo_s587_9a);
   int _out_s416_ec;
-  get_log_cnt@log(_out_s416_ec, log_cnt_s629_82);
+  get_log_cnt@alog(_out_s416_ec, log_cnt_s629_82);
   assert (len_log_ea == _out_s416_ec); //Assert at sample_sample1.sk:166 (-1924087444976862662)
 }
 /*sample_sample1.sk:1*/

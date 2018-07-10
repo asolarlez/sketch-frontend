@@ -30,6 +30,10 @@ generator float dot(Point p, Point q){
     return p.x*q.x + p.y*q.y;
 }
 
+Point rotate(Point p, double ang){
+    return point(p.x*cos(ang) - p.y*sin(ang), p.x*sin(ang) + p.y*cos(ang));
+}
+
 generator float ang(Point p){
     float dx = p.x;
     float dy = p.y;

@@ -27,7 +27,7 @@ public class AsyncWilcoxonStrategy extends WilcoxonStrategy implements
     public SATSolutionStatistics callSolver(ValueOracle oracle, boolean hasMinimize,
             float timeoutMins, int fileIdx)
     {
-        return super.incrementalSolve(oracle, hasMinimize, timeoutMins, fileIdx);
+        return super.incrementalSolve(oracle, hasMinimize, timeoutMins, fileIdx, 1);
     }
 
     public void plog(String msg) {

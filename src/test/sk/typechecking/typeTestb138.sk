@@ -1,0 +1,11 @@
+adt Tree<T>{
+    Node{ T val; Tree<T> left; Tree<T> right; }
+    Nil{}
+}
+
+
+
+harness void main2(int x, int y, int z, int oth){
+    Tree<int[x]> t = new Nil(); //TypeError Arrays not allowed in type params for now.
+
+}

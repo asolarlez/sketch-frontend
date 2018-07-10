@@ -8,5 +8,5 @@ harness void localVariable(int x, int y)
   
   int t = $(bit)*??;
   
-  assert (t == x + x);
+  assert (t == x + x); //TypeError unsatisfiable because $(bit) is zero.
 }

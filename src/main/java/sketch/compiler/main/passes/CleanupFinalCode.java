@@ -91,6 +91,7 @@ public class CleanupFinalCode extends MetaStage {
         prog =
                 (Program) prog.accept(new EliminateDeadCode(varGen,
                         !options.feOpts.killAsserts));
+        prog = (Program) prog.accept(new RemoveDumbArrays());
 
         prog = (Program) prog.accept(new SimplifyVarNames());
         // System.out.println("Simplify");
@@ -106,6 +107,8 @@ public class CleanupFinalCode extends MetaStage {
         prog = (Program) prog.accept(new RemoveShallowTempVars());
 
         prog = (Program) prog.accept(new AssembleInitializers());
+
+        prog = (Program) prog.accept(new FlattenStmtBlocks());
 
         return prog;
     }

@@ -74,7 +74,7 @@ public class SymbolTableVisitor extends FEReplacer
 
 
     public static class TypeRenamer extends FEReplacer {
-        public Map<String, Type> tmap = new HashMap<String, Type>();
+        public Map<String, Type> tmap;
 
         String postfix() {
             String rv = "";
@@ -84,14 +84,25 @@ public class SymbolTableVisitor extends FEReplacer
             return rv;
         }
 
-        public TypeRenamer() {}
+        public TypeRenamer() {
+            tmap = new HashMap<String, Type>();
+
+        }
+
+        public TypeRenamer(Map<String, Type> tmap) {
+            if (tmap != null) {
+                this.tmap = tmap;
+            } else {
+                this.tmap = new HashMap<String, Type>();
+            }
+        }
 
         @Override
         public Object visitTypeStructRef(TypeStructRef tr) {
             if (tmap.containsKey(tr.getName())) {
                 return tmap.get(tr.getName());
             }
-            return tr;
+            return super.visitTypeStructRef(tr);
         }
 
         public Type rename(Type t) {
@@ -99,6 +110,12 @@ public class SymbolTableVisitor extends FEReplacer
                 return t;
             }
             return (Type) t.accept(this);
+        }
+
+        public void transformTypes(FEReplacer fer) {
+            for (Entry<String, Type> e : tmap.entrySet()) {
+                e.setValue((Type) e.getValue().accept(fer));
+            }
         }
 
         public String toString() {
@@ -120,9 +137,9 @@ public class SymbolTableVisitor extends FEReplacer
         int dif = f.getParams().size() - efcTypes.size();
         if (dif != 0) {
             if (dif < 0) {
-                throw new ExceptionAtNode("Wrong number of parameters", null);
+                throw new ExceptionAtNode("Wrong number of parameters", f);
             }
-            boolean alloutputs = true;
+            boolean alloutputs = false; // NOT CLEAR WHAT THIS IS FOR?
             for (int i = 0; i < dif; ++i) {
                 Parameter p = formals.get(formals.size() - 1 - i);
                 if (!p.isParameterOutput()) {
@@ -373,6 +390,9 @@ public class SymbolTableVisitor extends FEReplacer
     }
 
     public Object visitStmtSwitch(StmtSwitch stmt) {
+
+        TypeStructRef vtype = (TypeStructRef) getType(stmt.getExpr());
+
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
         ExprVar var = (ExprVar) stmt.getExpr().accept(this);
@@ -391,7 +411,7 @@ public class SymbolTableVisitor extends FEReplacer
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
                 symtab.registerVar(var.getName(),
-                        (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+                        (new TypeStructRef(caseExpr, false, vtype.getTypeParams())).addDefaultPkg(pkg, nres));
 
                 Statement body = (Statement) stmt.getBody(caseExpr).accept(this);
                 newStmt.addCaseBlock(caseExpr, body);
@@ -467,6 +487,11 @@ public class SymbolTableVisitor extends FEReplacer
         SymbolTable oldSymTab = symtab;
         symtab = new SymbolTable(symtab);
 
+        List<String> args = ts.getTypeargs();
+        if (args != null && !args.isEmpty()) {
+            nres.pushTempTypes(args);
+        }
+
         StructDef sdl = ts;
         int maxcnt = nstructsInPkg;
         Set<String> s = null;
@@ -504,12 +529,13 @@ public class SymbolTableVisitor extends FEReplacer
             map.put(entry.getKey(), type);
         }
 
+        if (args != null && !args.isEmpty()) {
+            nres.popTempTypes();
+        }
         symtab = oldSymTab;
 
         if (changed) {
             StructDef new_struct = ts.creator().fields(map).create();
-            if (ts.immutable())
-                new_struct.setImmutable();
             return new_struct;
         } else {
             return ts;

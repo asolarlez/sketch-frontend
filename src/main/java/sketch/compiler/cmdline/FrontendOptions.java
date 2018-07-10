@@ -44,13 +44,16 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Changes the default temp directory from $HOME/.sketch/tmp to a different value.")
     public String tempdir = null;
 
+    @CliParameter(metavar = "FILE.tex", help = "Outputs documentation to FILE.tex. Sketch compiler will not actually be invoked if you pass this flag.")
+    public String outputDocs = null;
+
     @CliParameter(help = "Use this flag if you want the compiler to produce C code.")
     public boolean outputCode;
 
     @CliParameter(help = "Determine which encoding to use for floats/doubles. \n"
             + "With AS_BIT, it will encode floats with a single bit. \n"
             + "With AS_FFIELD, it will encode them using the field of integers mod 7. \n"
-            + "With AS_FIXPOINT, it will encode them using fixedpoint arithmetic. \n")
+            + "With AS_FIXPOINT, it will encode them using fixedpoint arithmetic. \n" + "With TO_BACKEND, it will use the floating point support in the solver.\n")
     public FloatEncoding fpencoding = FloatEncoding.AS_BIT;
 
     @CliParameter(help = "Set the name of the output C files. By default it is the "

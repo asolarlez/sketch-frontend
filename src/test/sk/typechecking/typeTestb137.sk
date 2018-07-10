@@ -1,0 +1,16 @@
+
+adt Tree<T>{
+    Node{ T val; Tree<T> left; Tree<T> right; }
+    Nil{}
+}
+
+adt opt{
+    pair{int x; int y;}
+    none{}
+}
+
+
+harness void main2(int x, int y, int z, int oth){
+    Tree<opt> t = new Nil<pair>(); //TypeError subtyping not allowed when type parameters are different.
+   
+}

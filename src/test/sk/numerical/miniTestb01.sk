@@ -1,0 +1,19 @@
+
+
+include "math.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+void foo(double x, double y){}
+
+harness void main(){
+    double t = ??;
+    
+    double val = (t-5.0)*(t-4.9);
+    
+    foo(t, val);
+    
+    assert val < 0.0;
+    
+    
+}

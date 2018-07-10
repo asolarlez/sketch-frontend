@@ -1,0 +1,64 @@
+
+
+include "math.skh";
+include "vec2d.skh";
+
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+adt Segment{
+    Point x;
+    Point y;
+}
+
+Segment seg(double x1,double y1,double x2,double y2){
+    return new Segment(x=point(x1,y1), y=point(x2,y2));
+}
+
+double len(Segment seg){
+    return norm(seg.y .- seg.x);
+}
+
+
+
+@Native("{cout<<x<<\"  \"<<y<<endl;}")
+void print(double x, double y){}
+
+
+bit TRUE(){ return true; }
+
+harness void main(){
+    int N = 3;
+    int O = 2;
+    Segment[O] obs;
+    Segment[N] segs;
+    
+    obs[0] = seg(0.0, 1.0, 3.0, 1.0);
+    obs[1] = seg(3.0, 1.0, 3.0, 3.0);
+    
+    double px = 0.0;
+    double py = 0.0;
+    double npx;
+    double npy;
+    repeat(i:N){
+        npx = ??;
+        npy = ??;
+        segs[i] = seg(px,py, npx, npy);
+        px = npx;
+        py = npy;
+        assert len(segs[i]) < 2.0;        
+    }    
+    
+    for(int i=0; i<N; ++i){
+        print(segs[i].x.x, segs[i].x.y);
+        print(segs[i].y.x, segs[i].y.y);        
+    }
+    
+    assert npx > 0.0;
+    assert npx < 0.1;
+    
+    assert npy > 5.0;
+    assert npy < 5.1;
+}
+
+

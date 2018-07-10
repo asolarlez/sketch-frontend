@@ -1,0 +1,664 @@
+pragma options "--fe-fpencoding AS_FIXPOINT";
+
+package meta{
+
+// distinct class IDs
+int ArrayList()    { return 7; }
+int Assert()       { return 4; }
+int Integer()      { return 5; }
+int Number()       { return 6; }
+int Object()       { return 1; }
+int String()       { return 8; }
+int simple_hash()  { return 3; }
+int simple_test() { return 2; }
+
+}
+
+
+package simple_hash{
+
+Object simple_hash_simple_hash(Object self) {
+  self.size_simple_hash = 10;
+  self.numElements_simple_hash = 0;
+  return self;
+}
+
+void rehashng(Object self) {
+  Object temp1 = ArrayList_ArrayList(new Object(__cid=ArrayList()));
+  self.size_simple_hash = self.size_simple_hash * 10;
+  for (int i = 0; i < (temp1.__cid == ArrayList() ? size@ArrayList(temp1) : 0); i++) {
+    put_int_int@simple_hash(self, 0, 0);
+  }
+}
+
+void put_int_int(Object self, int i, int j) {
+  self.numElements_simple_hash++;
+  double rehash = (double)self.numElements_simple_hash / (double)self.size_simple_hash;
+  if (rehash > 0.75) rehashng@simple_hash(self);
+}
+
+}
+
+package String{
+
+Object String_String(Object self) {
+    return self;
+}
+
+Object String_String_char_int_int(Object self, Array_char ca, int offset, int count) {
+  self._value_String = ca;
+  self._count_String = count;
+  return self;
+}
+
+char charAt_int(Object self, int index) {
+  if (0 <= index && index < self._count_String) return self._value_String.A[index];
+  return '\0';
+}
+
+int length(Object self) {
+  return self._count_String;
+}
+
+Object toString(Object self) {
+  return self;
+}
+
+void setCharAt_int_char(Object self, int i, char c) {
+  self._value_String.A[i] = c;
+}
+
+int indexOf_String(Object self, Object s) {
+  return indexOf_String_int@String(self, s, 0);
+}
+
+int indexOf_String_int(Object self, Object s, int i) {
+  int tLen = (self.__cid == String() ? length@String(self) : 0);
+  int sLen = (s.__cid == String() ? length@String(s) : 0);
+  int index = i;
+  int mLen = 0;
+  int j;
+  if (i >= tLen || i < 0 || sLen == 0) {
+    return -1;
+  }
+  for (j = i; (j < tLen) && (mLen < sLen) && ((j - index) < sLen); ) {
+    if ((self.__cid == String() ? charAt_int@String(self, j) : '\0') != (s.__cid == String() ? charAt_int@String(s, j - index) : '\0')) {
+      mLen = 0;
+      index++;
+      j = index;
+    }
+    else {
+      mLen++;
+      j++;
+    }
+  }
+  if (mLen != sLen) {
+    index = -1;
+  }
+  return index;
+}
+
+int indexOf_char(Object self, char c) {
+  return indexOf_char_int@String(self, c, 0);
+}
+
+int indexOf_char_int(Object self, char c, int i) {
+  int len = (self.__cid == String() ? length@String(self) : 0);
+  int index = -1;
+  if (i >= len || i < 0) {
+    return index;
+  }
+  for (int j = i; (j < len) && (index == -1); j++) {
+    if ((self.__cid == String() ? charAt_int@String(self, j) : '\0') == c) {
+      index = j;
+    }
+  }
+  return index;
+}
+
+Object concat_String(Object self, Object str) {
+  int otherLen = (str.__cid == String() ? length@String(str) : 0);
+  if (otherLen == 0) {
+    return self;
+  }
+  int thisLen = (self.__cid == String() ? length@String(self) : 0);
+  int totalLen = (self.__cid == String() ? length@String(self) : 0) + otherLen;
+  Array_char ret = new Array_char(length=totalLen);
+  for (int i = 0; i < thisLen; i++) {
+    ret.A[i] = (self.__cid == String() ? charAt_int@String(self, i) : '\0');
+  }
+  for (int i = thisLen; i < totalLen; i++) {
+    ret.A[i] = (str.__cid == String() ? charAt_int@String(str, i - thisLen) : '\0');
+  }
+  return String_String_char_int_int(new Object(__cid=String()), ret, 0, totalLen);
+}
+
+bit equals_Object(Object self, Object obj) {
+  bit isEqual = false;
+  if (obj.__cid == String()) {
+    isEqual = true;
+    Object s = obj;
+    int sLen = (s.__cid == String() ? length@String(s) : 0);
+    int tLen = (self.__cid == String() ? length@String(self) : 0);
+    if (sLen != tLen) isEqual = false;
+    for (int i = 0; (i < sLen) && (isEqual == true); i++) {
+      if (s._value_String.A[i] != self._value_String.A[i]) {
+        isEqual = false;
+      }
+    }
+  }
+  return isEqual;
+}
+
+int hashCode(Object self) {
+  int n = self._count_String,  hash = 0,  temp = 0;
+  if (n == 0) {
+    return 0;
+  }
+  for (int i = 0; i < n; i++) {
+    temp = (self.__cid == String() ? charAt_int@String(self, i) : '\0');
+    for (int j = 0; j < n - 1 - i; j++) {
+      temp = temp * 31;
+    }
+    hash = hash + temp;
+  }
+  return hash;
+}
+
+Object replace_char_char(Object self, char oldChar, char newChar) {
+  if (oldChar != newChar) {
+    int len = self._count_String;
+    int i = -1;
+    int stop = 0;
+    Array_char val = self._value_String;
+    while (++i < len) {
+      if (val.A[i] == oldChar && stop == 0) {
+        stop = i;
+      }
+    }
+    if (stop < len) {
+      Array_char buf = new Array_char(length=len);
+      for (int j = 0; j < stop; j++) {
+        buf.A[j] = val.A[j];
+      }
+      while (stop < len) {
+        char c = val.A[stop];
+        buf.A[stop] = ((c == oldChar) ? newChar : c);
+        stop++;
+      }
+      return String_String_char_int_int(new Object(__cid=String()), buf, 0, len);
+    }
+  }
+  return self;
+}
+
+}
+
+
+package ArrayList{
+
+Array_Object EMPTY_ELEMENTDATA = new Array_Object(length=0, A={});
+Array_Object EMPTY_ELEMENTDATA_g() { return EMPTY_ELEMENTDATA; }
+void EMPTY_ELEMENTDATA_s(Array_Object EMPTY_ELEMENTDATA_s) { EMPTY_ELEMENTDATA = EMPTY_ELEMENTDATA_s; }
+
+int MAX_ARRAY_SIZE = 1000000;
+int MAX_ARRAY_SIZE_g() { return MAX_ARRAY_SIZE; }
+void MAX_ARRAY_SIZE_s(int MAX_ARRAY_SIZE_s) { MAX_ARRAY_SIZE = MAX_ARRAY_SIZE_s; }
+
+Object ArrayList_ArrayList(Object self) {
+  self.elementData_ArrayList = new Array_Object(length=10);
+  self.capacity_ArrayList = 10;
+  self.numElements_ArrayList = 0;
+  self.DEFAULT_CAPACITY_ArrayList = 10;
+  return self;
+}
+
+Object ArrayList_ArrayList_int(Object self, int initialCapacity) {
+  self.elementData_ArrayList = new Array_Object(length=initialCapacity);
+  self.capacity_ArrayList = initialCapacity;
+  self.numElements_ArrayList = 0;
+  return self;
+}
+
+void copyNewElementData_int(Object self, int size) {
+  Array_Object newElementData = new Array_Object(length=size);
+  int i = 0;
+  for (i = 0; i < self.numElements_ArrayList; i++) {
+    newElementData.A[i] = self.elementData_ArrayList.A[i];
+  }
+  self.elementData_ArrayList = newElementData;
+  self.capacity_ArrayList = size;
+}
+
+void checkAdjustSize(Object self) {
+  if (self.numElements_ArrayList + 1 >= self.capacity_ArrayList) {
+    copyNewElementData_int@ArrayList(self, self.capacity_ArrayList + 10);
+  }
+}
+
+void createSpace_int(Object self, int index) {
+  int j = 0;
+  for (j = self.numElements_ArrayList; j > index; j--) {
+    self.elementData_ArrayList.A[j] = self.elementData_ArrayList.A[j - 1];
+  }
+}
+
+void add_int_E(Object self, int index, Object e) {
+  checkAdjustSize@ArrayList(self);
+  createSpace_int@ArrayList(self, index);
+  self.elementData_ArrayList.A[index] = e;
+  self.numElements_ArrayList++;
+}
+
+bit add_E(Object self, Object e) {
+  checkAdjustSize@ArrayList(self);
+  self.elementData_ArrayList.A[self.numElements_ArrayList++] = e;
+  return true;
+}
+
+void clear(Object self) {
+  for (int i = 0; i < self.numElements_ArrayList; i++) {
+    self.elementData_ArrayList.A[i] = null;
+  }
+  self.capacity_ArrayList = 10;
+  self.numElements_ArrayList = 0;
+}
+
+bit contains_Object(Object self, Object o) {
+  return indexOf_Object@ArrayList(self, o) >= 0;
+}
+
+Object get_int(Object self, int index) {
+  if (index < 0 || index >= self.numElements_ArrayList) {
+    return null;
+  }
+  return self.elementData_ArrayList.A[index];
+}
+
+int indexOf_Object(Object self, Object o) {
+  int i = 0;
+  if (o == null) {
+    for (i = 0; i < self.capacity_ArrayList; i++) {
+      if (self.elementData_ArrayList.A[i] == null) {
+        return i;
+      }
+    }
+  }
+  else {
+    for (i = 0; i < self.numElements_ArrayList; i++) {
+      if ((o.__cid == String() ? equals_Object@String(o, self.elementData_ArrayList.A[i]) : o.__cid == Assert() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == simple_test() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == Integer() ? equals_Object@Integer(o, self.elementData_ArrayList.A[i]) : o.__cid == simple_hash() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == ArrayList() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == Number() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == Object() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : 0)) {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
+void removeElement_int(Object self, int index) {
+  int j = 0;
+  for (j = index; j < self.numElements_ArrayList - 1; j++) {
+    self.elementData_ArrayList.A[j] = self.elementData_ArrayList.A[j + 1];
+  }
+  self.elementData_ArrayList.A[self.numElements_ArrayList - 1] = null;
+  self.numElements_ArrayList--;
+}
+
+Object remove_int(Object self, int index) {
+  Object e;
+  if (index < 0 || index >= self.numElements_ArrayList) {
+    return null;
+  }
+  e = self.elementData_ArrayList.A[index];
+  removeElement_int@ArrayList(self, index);
+  return e;
+}
+
+bit remove_Object(Object self, Object o) {
+  int i = 0;
+  if (o == null) {
+    for (i = 0; i < self.capacity_ArrayList; i++) {
+      if (self.elementData_ArrayList.A[i] == null) {
+        removeElement_int@ArrayList(self, i);
+        return true;
+      }
+    }
+  }
+  else {
+    for (i = 0; i < self.numElements_ArrayList; i++) {
+      if ((o.__cid == String() ? equals_Object@String(o, self.elementData_ArrayList.A[i]) : o.__cid == Assert() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == simple_test() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == Integer() ? equals_Object@Integer(o, self.elementData_ArrayList.A[i]) : o.__cid == simple_hash() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == ArrayList() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == Number() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : o.__cid == Object() ? equals_Object@Object(o, self.elementData_ArrayList.A[i]) : 0)) {
+        removeElement_int@ArrayList(self, i);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+Object set_int_E(Object self, int index, Object element) {
+  Object oldElement;
+  if (index < 0 || index >= self.numElements_ArrayList) {
+    return null;
+  }
+  oldElement = self.elementData_ArrayList.A[index];
+  self.elementData_ArrayList.A[index] = element;
+  return oldElement;
+}
+
+int size(Object self) {
+  return self.numElements_ArrayList;
+}
+
+int length(Object self) {
+  return size@ArrayList(self);
+}
+
+bit isEmpty(Object self) {
+  return self.numElements_ArrayList == 0;
+}
+
+Array_Object toArray(Object self) {
+  Array_Object arr = new Array_Object(length=self.numElements_ArrayList);
+  int i = 0;
+  for (i = 0; i < self.numElements_ArrayList; i++) {
+    arr.A[i] = self.elementData_ArrayList.A[i];
+  }
+  return arr;
+}
+
+void ensureCapacity_int(Object self, int minCapacity) {
+  int minExpand;
+  if (self.elementData_ArrayList != EMPTY_ELEMENTDATA) {
+    minExpand = 0;
+  }
+  else {
+    minExpand = self.DEFAULT_CAPACITY_ArrayList;
+  }
+  if (minCapacity > minExpand) {
+    ensureExplicitCapacity_int@ArrayList(self, minCapacity);
+  }
+}
+
+void ensureCapacityInternal_int(Object self, int minCapacity) {
+  if (self.elementData_ArrayList == EMPTY_ELEMENTDATA) {
+    if (self.DEFAULT_CAPACITY_ArrayList > minCapacity) {
+      minCapacity = self.DEFAULT_CAPACITY_ArrayList;
+    }
+  }
+  ensureExplicitCapacity_int@ArrayList(self, minCapacity);
+}
+
+void ensureExplicitCapacity_int(Object self, int minCapacity) {
+  if (minCapacity - self.elementData_ArrayList.length > 0) grow_int@ArrayList(self, minCapacity);
+}
+
+void grow_int(Object self, int minCapacity) {
+  int oldCapacity = self.elementData_ArrayList.length;
+  int newCapacity = oldCapacity + (oldCapacity / 2);
+  if (newCapacity - minCapacity < 0) newCapacity = minCapacity;
+  if (newCapacity - MAX_ARRAY_SIZE > 0) newCapacity = hugeCapacity_int(minCapacity);
+  copyNewElementData_int@ArrayList(self, newCapacity);
+}
+
+int hugeCapacity_int(int minCapacity) {
+  return ((minCapacity > MAX_ARRAY_SIZE) ? 0x7fffffff : MAX_ARRAY_SIZE);
+}
+
+}
+
+
+package Number{
+
+Object Number_Number(Object self) {
+    return self;
+}
+
+int intValue(Object self);
+
+}
+
+package Integer{
+
+int MIN_VALUE = 0x80000000;
+int MIN_VALUE_g() { return MIN_VALUE; }
+void MIN_VALUE_s(int MIN_VALUE_s) { MIN_VALUE = MIN_VALUE_s; }
+
+int MAX_VALUE = 0x7fffffff;
+int MAX_VALUE_g() { return MAX_VALUE; }
+void MAX_VALUE_s(int MAX_VALUE_s) { MAX_VALUE = MAX_VALUE_s; }
+
+Object Integer_Integer(Object self) {
+    return self;
+}
+
+Object Integer_Integer_int(Object self, int value) {
+  self.value_Integer = value;
+  return self;
+}
+
+int intValue(Object self) {
+  return self.value_Integer;
+}
+
+int compareTo_Integer(Object self, Object anotherInteger) {
+  return compare_int_int(self.value_Integer, (anotherInteger.__cid == Integer() ? intValue@Integer(anotherInteger) : 0));
+}
+
+int compare_int_int(int x, int y) {
+  return ((x < y) ? -1 : (((x == y) ? 0 : 1)));
+}
+
+bit equals_Object(Object self, Object anotherInt) {
+  if (anotherInt.__cid == Integer()) {
+    Object x = anotherInt;
+    if (self.value_Integer == (x.__cid == Integer() ? intValue@Integer(x) : 0)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Object toString(Object self) {
+  return toString_int(self.value_Integer);
+}
+
+Object toString_int(int i) {
+  if (i == 0) {
+    return String_String_char_int_int(new Object(__cid=String()), new Array_char(length=1+1, A="0"), 0, 1);
+  }
+  int index = 0,  temp = i,  j;
+  Array_char ret = new Array_char(length=32);
+  Array_char ret2 = new Array_char(length=32);
+  Array_char nums = new Array_char(length=10, A={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'});
+  if (temp < 0) {
+    temp = temp * -1;
+  }
+  while (temp > 0) {
+    ret.A[index++] = nums.A[temp % 10];
+    temp = temp / 10;
+  }
+  if (i < 0) {
+    ret.A[index++] = '-';
+  }
+  int size = index;
+  for (j = 0; j < size; j++) {
+    ret2.A[j] = ret.A[index - 1];
+    index--;
+  }
+  return String_String_char_int_int(new Object(__cid=String()), ret2, 0, size);
+}
+
+int hashCode(Object self) {
+  return self.value_Integer;
+}
+
+}
+
+package Assert{
+
+Object Assert_Assert(Object self) {
+  return self;
+}
+
+void fail_String(Object message) {
+  if (message == null) {
+
+  }
+
+}
+
+void assertEquals_String_Object_Object(Object message, Object expected, Object actual) {
+  assert (expected.__cid == String() ? equals_Object@String(expected, actual) : expected.__cid == Assert() ? equals_Object@Object(expected, actual) : expected.__cid == simple_test() ? equals_Object@Object(expected, actual) : expected.__cid == Integer() ? equals_Object@Integer(expected, actual) : expected.__cid == simple_hash() ? equals_Object@Object(expected, actual) : expected.__cid == ArrayList() ? equals_Object@Object(expected, actual) : expected.__cid == Number() ? equals_Object@Object(expected, actual) : expected.__cid == Object() ? equals_Object@Object(expected, actual) : 0);
+}
+
+bit equalsRegardingNull_Object_Object(Object expected, Object actual) {
+  if (expected == null) {
+    return actual == null;
+  }
+  return isEquals_Object_Object(expected, actual);
+}
+
+bit isEquals_Object_Object(Object expected, Object actual) {
+  return (expected.__cid == String() ? equals_Object@String(expected, actual) : expected.__cid == Assert() ? equals_Object@Object(expected, actual) : expected.__cid == simple_test() ? equals_Object@Object(expected, actual) : expected.__cid == Integer() ? equals_Object@Integer(expected, actual) : expected.__cid == simple_hash() ? equals_Object@Object(expected, actual) : expected.__cid == ArrayList() ? equals_Object@Object(expected, actual) : expected.__cid == Number() ? equals_Object@Object(expected, actual) : expected.__cid == Object() ? equals_Object@Object(expected, actual) : 0);
+}
+
+void assertEquals_Object_Object(Object expected, Object actual) {
+  assertEquals_String_Object_Object(null, expected, actual);
+}
+
+void assertEquals_int_int(int expected, int actual) {
+  assert expected == actual;
+}
+
+void assertNull_String_Object(Object message, Object object) {
+  if (object == null) {
+    return;
+  }
+  failNotNull_String_Object(message, object);
+}
+
+void assertNull_Object(Object object) {
+  assertNull_String_Object(null, object);
+}
+
+void failNotNull_String_Object(Object message, Object actual) {
+  assert false;
+}
+
+void failNotEquals_String_Object_Object(Object message, Object expected, Object actual) {
+  fail_String(format_String_Object_Object(message, expected, actual));
+}
+
+Object format_String_Object_Object(Object message, Object expected, Object actual) {
+  return String_String_char_int_int(new Object(__cid=String()), new Array_char(length=0+1, A=""), 0, 0);
+}
+
+}
+
+package array{
+
+struct Array_bit {
+  int length;
+  bit[length] A;
+}
+
+struct Array_char {
+  int length;
+  char[length] A;
+}
+
+struct Array_int {
+  int length;
+  int[length] A;
+}
+
+struct Array_float {
+  int length;
+  float[length] A;
+}
+
+struct Array_double {
+  int length;
+  double[length] A;
+}
+
+struct Array_Object {
+  int length;
+  Object[length] A;
+}
+
+}
+
+
+package Object{
+
+Object fs;
+Object fs_g() { return fs; }
+void fs_s(Object fs_s) { fs = fs_s; }
+
+Object Object_Object(Object self) {
+    return self;
+}
+
+bit equals_Object_Object(Object a, Object b) {
+  if (a == null) {
+    if (b == null) {
+      return true;
+    }
+    return false;
+  }
+  return (a.__cid == String() ? equals_Object@String(a, b) : a.__cid == Assert() ? equals_Object@Object(a, b) : a.__cid == simple_test() ? equals_Object@Object(a, b) : a.__cid == Integer() ? equals_Object@Integer(a, b) : a.__cid == simple_hash() ? equals_Object@Object(a, b) : a.__cid == ArrayList() ? equals_Object@Object(a, b) : a.__cid == Number() ? equals_Object@Object(a, b) : a.__cid == Object() ? equals_Object@Object(a, b) : 0);
+}
+
+int hashCode_Object(Object o) {
+  return (o != null ? (o.__cid == String() ? hashCode@String(o) : o.__cid == Assert() ? hashCode@Object(o) : o.__cid == simple_test() ? hashCode@Object(o) : o.__cid == Integer() ? hashCode@Integer(o) : o.__cid == simple_hash() ? hashCode@Object(o) : o.__cid == ArrayList() ? hashCode@Object(o) : o.__cid == Number() ? hashCode@Object(o) : o.__cid == Object() ? hashCode@Object(o) : 0) : 0);
+}
+
+Object toString(Object self) {
+  return String_String_char_int_int(new Object(__cid=String()), new Array_char(length=17+1, A="Object toString()"), 0, 17);
+}
+
+bit equals_Object(Object self, Object obj) {
+  return self == obj;
+}
+
+int hashCode(Object self) {
+  return 0;
+}
+
+struct Object {
+  int           __cid;
+  Array_Object  elementData_ArrayList;
+  int           DEFAULT_CAPACITY_ArrayList;
+  int           numElements_ArrayList;
+  int           capacity_ArrayList;
+  int           size_simple_hash;
+  int           numElements_simple_hash;
+  int           value_Integer;
+  Array_char    _value_String;
+  int           _count_String;
+}
+
+}
+
+
+package simple_test{
+
+Object simple_test_simple_test(Object self) { // TypeError
+    return self;
+}
+
+harness bit test() {
+  Object self = Object_Object(new Object(__cid=Object()));
+  bit ok = true;
+  Object ht1 = simple_hash_simple_hash(new Object(__cid=simple_hash()));
+  Object s = String_String_char_int_int(new Object(__cid=String()), new Array_char(length=0+1, A=""), 0, 0);
+  int j = 4;
+  Object i2 = Integer_Integer_int(new Object(__cid=Integer()), 0);
+  for (int i = 0; i < 2; i++) {
+    if (ht1.__cid == simple_hash()) { put_int_int@simple_hash(ht1, i, j); }
+    else { 0; };
+  }
+  return ok;
+}
+
+}

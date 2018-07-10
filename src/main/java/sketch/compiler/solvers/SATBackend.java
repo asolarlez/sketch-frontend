@@ -74,7 +74,7 @@ public class SATBackend {
     protected List<Integer> randdegrees;
 
     @SuppressWarnings("unchecked")
-    public String[] getBackendCommandline(int i, Vector<String> commandLineOptions_,
+    public String[] getBackendCommandline(int i, int cpus, Vector<String> commandLineOptions_,
             String... additional)
     {
         Vector<String> commandLineOptions = (Vector<String>) commandLineOptions_.clone();
@@ -95,6 +95,8 @@ public class SATBackend {
             if (!options.solverOpts.randassign) {
                 commandLineOptions.add("-randassign");
             }
+            commandLineOptions.add("--nprocs");
+            commandLineOptions.add("" + cpus);
         }
 
         // pick degree either from options...randdegrees
@@ -355,12 +357,12 @@ public class SATBackend {
             boolean hasMinimize,
             float timeoutMins)
     {
-        return incrementalSolve(oracle, hasMinimize, timeoutMins, 0);
+        return incrementalSolve(oracle, hasMinimize, timeoutMins, 0, 1);
     }
 
     protected SATSolutionStatistics incrementalSolve(ValueOracle oracle,
             boolean hasMinimize,
-            float timeoutMins, int fileIdx)
+            float timeoutMins, int fileIdx, int cpus)
     {
         Vector<String> backendOptions = options.getBackendOptions();
         log("OFILE = " + options.feOpts.output);
@@ -373,7 +375,7 @@ public class SATBackend {
             int maxBits = options.bndOpts.incremental.value;
             for (bits = 1; bits <= maxBits; ++bits) {
                 log("TRYING SIZE " + bits);
-                String[] commandLine = getBackendCommandline(fileIdx, backendOptions, "--bnd-cbits=" + bits);
+                String[] commandLine = getBackendCommandline(fileIdx, cpus, backendOptions, "--bnd-cbits=" + bits);
                 ret = runSolver(commandLine, bits, timeoutMins);
                 if (ret != null && ret.success) {
                     isSolved = true;
@@ -391,9 +393,9 @@ public class SATBackend {
         else {
             String[] commandLine;
             if (hasMinimize) {
-                commandLine = getBackendCommandline(fileIdx, backendOptions, "--minvarHole");
+                commandLine = getBackendCommandline(fileIdx, cpus, backendOptions, "--minvarHole");
             } else {
-                commandLine = getBackendCommandline(fileIdx, backendOptions);
+                commandLine = getBackendCommandline(fileIdx, cpus, backendOptions);
             }
             ret = runSolver(commandLine, 0, timeoutMins);
         }

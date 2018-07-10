@@ -1,0 +1,29 @@
+
+struct info{
+    int i;
+    T t;
+}
+
+adt T{
+    A{ int x; int y;}
+    B{ info inf; }
+}
+
+
+
+harness void main(int x){
+    T t = new A(x=x, y = x+??);
+    if(x > 5){       
+        t = new B(inf=new info(i=x, t = t));
+    }
+    info ii = new info(i=x+x, t=t);
+    switch(t){
+    case A: assert ii.t == t && x <= 5;
+    case B: {
+        t.inf.i = t.inf.i + 1;
+        assert t.inf.i < ??(3); //TypeError this assert should be unsat.
+        ii.t =  t.inf.t;        
+    }
+    }
+    
+}

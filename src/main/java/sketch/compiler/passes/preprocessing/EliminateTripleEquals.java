@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.FENode;
+import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -20,20 +22,14 @@ import sketch.compiler.ast.core.exprs.ExprNullPtr;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
-import sketch.compiler.ast.core.stmts.Statement;
-import sketch.compiler.ast.core.stmts.StmtAssign;
-import sketch.compiler.ast.core.stmts.StmtBlock;
-import sketch.compiler.ast.core.stmts.StmtFor;
-import sketch.compiler.ast.core.stmts.StmtIfThen;
-import sketch.compiler.ast.core.stmts.StmtReturn;
-import sketch.compiler.ast.core.stmts.StmtSwitch;
-import sketch.compiler.ast.core.stmts.StmtVarDecl;
+import sketch.compiler.ast.core.stmts.*;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.ast.core.typs.TypeStructRef;
+import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.util.exceptions.ExceptionAtNode;
 
@@ -69,6 +65,8 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
         this.depth = depth;
     }
 
+    boolean converted = false;
+
     @Override
     public Object visitPackage(Package pkg) {
         nres.setPackage(pkg);
@@ -101,51 +99,179 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             pm.add(right);
             pm.add(ExprConstInt.createConstant(depth));
 
-            return new ExprFunCall(expr, funName, pm);
+            return new ExprFunCall(expr, funName, pm, null);
         }
 
         if (expr.getOp() == ExprBinary.BINOP_EQ) {
-            Type lt = getType(expr.getLeft());
-            if (lt instanceof TypeStructRef && !(expr.getRight() instanceof ExprNullPtr)) {
-                TypeStructRef ltr = (TypeStructRef) lt;
-                StructDef sdef = nres.getStruct(ltr.getName());
-                if (sdef.immutable()) {
-                    Expression left = (Expression) expr.getLeft().doExpr(this);
-                    Expression right = (Expression) expr.getRight().doExpr(this);
-
-                    Type rt = getType(right);
-                    Type parent;
-                    if (lt.promotesTo(rt, nres))
-                        parent = rt;
-                    else if (rt.promotesTo(lt, nres))
-                        parent = lt;
-                    else
-                        throw new ExceptionAtNode("== Types don't match", expr);
-
-                    String funName = createEqualsFun((TypeStructRef) parent, expr);
-
-                    List<Expression> pm = new ArrayList<Expression>();
-                    pm.add(left);
-                    pm.add(right);
-                    pm.add(ExprConstInt.createConstant(depth));
-
-                    return new ExprFunCall(expr, funName, pm);
-                }
+            ExprFunCall efc = eqRewriteHelper(expr);
+            if (efc != null) {
+                return efc;
+            }
+        }
+        if (expr.getOp() == ExprBinary.BINOP_NEQ) {
+            ExprFunCall efc = eqRewriteHelper(new ExprBinary(ExprBinary.BINOP_EQ, expr.getLeft(), expr.getRight()));
+            if (efc != null) {
+                return new ExprUnary(expr, ExprUnary.UNOP_NOT, efc);
             }
         }
 
         return super.visitExprBinary(expr);
     }
 
+    public Object visitStmtWhile(StmtWhile stmt) {
+        converted = false;
+        Expression newCond = doExpression(stmt.getCond());
+        if (converted) {
+            String vname = varGen.nextVar();
+            StmtVarDecl vd = new StmtVarDecl(stmt.getCond(), TypePrimitive.bittype, vname, newCond);
+            addStatement(vd);
+            Statement newBody = (Statement) stmt.getBody().accept(this);
+            Expression nvar = new ExprVar(stmt.getCond(), vname);
+            newBody = new StmtBlock(newBody, new StmtAssign(nvar, newCond));
+            return new StmtWhile(stmt, nvar, newBody);
+        } else {
+            Statement newBody = (Statement) stmt.getBody().accept(this);
+            if (newCond == stmt.getCond() && newBody == stmt.getBody())
+                return stmt;
+            return new StmtWhile(stmt, newCond, newBody);
+        }
+    }
+    
+    public Object visitStmtDoWhile(StmtDoWhile stmt) {
+        converted = false;
+        Expression newCond = doExpression(stmt.getCond());
+        if (converted) {
+            String vname = varGen.nextVar();
+            StmtVarDecl vd = new StmtVarDecl(stmt.getCond(), TypePrimitive.bittype, vname, null);
+            addStatement(vd);
+            Statement newBody = (Statement) stmt.getBody().accept(this);
+            Expression nvar = new ExprVar(stmt.getCond(), vname);
+            newBody = new StmtBlock(newBody, new StmtAssign(nvar, newCond));
+            return new StmtDoWhile(stmt, newBody, nvar);
+        } else {
+            Statement newBody = (Statement) stmt.getBody().accept(this);
+            if (newCond == stmt.getCond() && newBody == stmt.getBody())
+                return stmt;
+            return new StmtWhile(stmt, newCond, newBody);
+        }
+    }
+    
+    public Object visitStmtFor(StmtFor stmt) {
+        SymbolTable oldSymTab = symtab;
+        symtab = new SymbolTable(symtab);
+        
+        
+        Statement newInit = null;
+        if(stmt.getInit() != null){
+            newInit = (Statement) stmt.getInit().accept(this);
+        }
+        
+        
+        converted = false;
+        
+        Expression newCond = doExpression(stmt.getCond());
+        boolean condConverted = converted;
+        converted = false;
+        Statement newIncr = null;
+        if(stmt.getIncr() != null){
+            newIncr = (Statement) stmt.getIncr().accept(this);
+        }
+        boolean incrConverted = converted;
+        
+        Statement tmp = stmt.getBody();
+        Statement newBody = StmtEmpty.EMPTY; 
+        if(tmp != null){ 
+            newBody = (Statement) tmp.accept(this);
+        }       
+        
+        if(condConverted || incrConverted){
+            addStatement(newInit);
+            
+            if(condConverted){
+                String vname = varGen.nextVar();
+                Expression oldCond = newCond;
+                StmtVarDecl vd = new StmtVarDecl(stmt.getCond(), TypePrimitive.bittype, vname, newCond);
+                addStatement(vd);
+                newCond = new ExprVar(stmt.getCond(), vname);
+                newBody = new StmtBlock(newBody, new StmtAssign(newCond, oldCond));
+            }
+            
+            newBody = new StmtBlock(newBody, newIncr);
+            
+            symtab = oldSymTab;
+            
+            return new StmtWhile(stmt, newCond, newBody);
+        }else{
+            
+            
+           
+            symtab = oldSymTab;
+                        
+            if (newInit == stmt.getInit() && newCond == stmt.getCond() &&
+                    newIncr == stmt.getIncr() && newBody == stmt.getBody())
+                return stmt;
+            return new StmtFor(stmt, newInit, newCond, newIncr, newBody, stmt.isCanonical());   
+            
+        }        
+    }
+    
+    
+
+    private ExprFunCall eqRewriteHelper(ExprBinary expr) {
+        Type lt = getType(expr.getLeft());
+        if (lt instanceof TypeStructRef && !(expr.getRight() instanceof ExprNullPtr)) {
+            TypeStructRef ltr = (TypeStructRef) lt;
+            StructDef sdef = nres.getStruct(ltr.getName());
+            if (sdef.immutable()) {
+                Expression left = (Expression) expr.getLeft().doExpr(this);
+                Expression right = (Expression) expr.getRight().doExpr(this);
+
+                Type rt = getType(right);
+                Type parent;
+                if (lt.promotesTo(rt, nres))
+                    parent = rt;
+                else if (rt.promotesTo(lt, nres))
+                    parent = lt;
+                else
+                    throw new ExceptionAtNode("== Types don't match", expr);
+
+                String funName = createEqualsFun((TypeStructRef) parent, expr);
+
+                List<Expression> pm = new ArrayList<Expression>();
+                pm.add(left);
+                pm.add(right);
+                pm.add(ExprConstInt.createConstant(depth));
+
+                return new ExprFunCall(expr, funName, pm, null);
+            }
+        }
+        return null;
+    }
+
+
     private String createEqualsFun(TypeStructRef type, FENode ctx) {
+        converted = true;
         StructDef struct = nres.getStruct(type.getName());
         String structName = struct.getFullName();
+        String structFullName = structName;
+        if (type.hasTypeParams()) {
+            structFullName += "<";
+            boolean fst = true;
+            for (Type t : type.getTypeParams()) {
+                if (!fst) {
+                    structFullName += ",";
+                }
+                fst = false;
+                structFullName += t.toString();
+            }
+            structFullName += ">";
+        }
 
-        if (equalsFuns.containsKey(structName)) {
-            return equalsFuns.get(structName);
+        if (equalsFuns.containsKey(structFullName)) {
+            return equalsFuns.get(structFullName);
         }
         String fname = varGen.nextVar("equals" + "_" + struct.getName());
-        equalsFuns.put(structName, fname);
+        equalsFuns.put(structFullName, fname);
         Function.FunctionCreator fc =
                 Function.creator(ctx, fname, Function.FcnType.Static);
 
@@ -164,16 +290,15 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
 
         List<Statement> stmts = new ArrayList<Statement>();
 
-        genEqualsBody(ctx, new ExprVar(ctx, left), new ExprVar(ctx, right), new ExprVar(
-                ctx, bnd), structName, struct.getPkg(),
- stmts);
+        genEqualsBody(ctx, new ExprVar(ctx, left), new ExprVar(ctx, right), new ExprVar(ctx, bnd), structName, struct.getPkg(), stmts, type);
         fc.body(new StmtBlock(stmts));
+        fc.annotation("IsEquals", "");
         newFuns.add(fc.create());
         return fname;
     }
 
     private void genEqualsBody(FENode ctx, ExprVar left, ExprVar right,
-            ExprVar bnd, String structName, String pkgName, List<Statement> stmts)
+            ExprVar bnd, String structName, String pkgName, List<Statement> stmts, TypeStructRef basetype)
     {
         // base case when bnd <= 0 => return 0
         ExprBinary cond =
@@ -223,7 +348,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
             List<String> cases = getCases(structName);
             for (String c : cases) {
                 Statement body =
-                        generateBody(ctx, c, structName, pkgName, left, right, bnd);
+                        generateBody(ctx, c, structName, pkgName, left, right, bnd, basetype);
                 stmt.addCaseBlock(c, body);
             }
             stmts.add(stmt);
@@ -245,7 +370,7 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
                 pm.add(r);
                 pm.add(new ExprBinary(context, ExprBinary.BINOP_SUB, bnd, ExprConstInt.one));
 
-                return new ExprFunCall(context, funName, pm);
+                return new ExprFunCall(context, funName, pm, null);
             } else {
                 return new ExprBinary(context, ExprBinary.BINOP_EQ, l, r);
             }
@@ -309,17 +434,31 @@ public class EliminateTripleEquals extends SymbolTableVisitor {
     }
 
     private Statement generateBody(FENode context, String caseName,  String structName, String pkgName,
-            ExprVar left, ExprVar right, ExprVar bnd) {
+            ExprVar left, ExprVar right, ExprVar bnd, TypeStructRef basetype) {
         StmtSwitch stmt = new StmtSwitch(context, right);
         List<Statement> caseBody = new ArrayList<Statement>();
 
         StructDef struct = nres.getStruct(caseName+"@"+pkgName);
         Expression eq = ExprConstInt.one;
         boolean first = true;
+        
+        final Map<String, Type> rmap = GetExprType.replMap(struct, basetype, context);
+        FEReplacer trep = new FEReplacer() {
+            public Object visitTypeStructRef(TypeStructRef tsr) {
+                if (rmap.containsKey(tsr.getName())) {
+                    return rmap.get(tsr.getName());
+                }
+                return super.visitTypeStructRef(tsr);
+            }
+        };
+        
         for (StructFieldEnt e : struct.getFieldEntriesInOrder()) {
             Expression l = new ExprField(left, e.getName());
             Expression r = new ExprField(right, e.getName());
             Type type = e.getType();
+            if (rmap != null) {
+                type = (Type) type.accept(trep);
+            }
             Expression fieldEq =
                     checkFieldEqual(context, l, r, type, caseBody, pkgName, bnd, left);
 

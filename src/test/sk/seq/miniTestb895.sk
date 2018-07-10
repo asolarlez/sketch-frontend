@@ -1,0 +1,204 @@
+
+include "generics.skh";
+include "stack.skh";
+include "math.skh";
+//seed 14 is best so far.
+pragma options "--bnd-unroll-amnt 15 --fe-output-test  --slv-seed 14 --slv-randassign --beopt:epsilon 0.05";
+
+
+struct Model{
+    int nConsts;    
+    int nIds;
+    int nlevels;
+    double[3][nIds+nConsts][nlevels] choices; // thre different action types, each with a probability.
+    double[nlevels][nIds+nConsts][nlevels] levels; //for each level, there is a probability.
+    double[nIds+nConsts][nIds+nConsts][nlevels] tokens; //for each token, there is a probability.
+}
+
+
+generator double[3] choice(Model m, int level, int token){
+    return m.choices[level][token];
+}
+
+generator double[m.nIds+m.nConsts] nextToken(Model m, int level, int token){
+    return m.tokens[level][token];
+}
+
+
+generator double[m.nlevels] nextLevel(Model m, int level, int token){
+    return m.levels[level][token];
+}
+
+
+/*
+generator
+Array<int> generate(Model m, int steps){
+    Stack<int> stack;
+    Array<int> out = newArray();
+    
+    add(out, -1);
+    
+    generator
+    int choose(){
+        int level = peek(stack);
+        int lout = last(out);
+        return sample( choice(m, l, lout) );
+    }
+    
+    generator
+    void outputToken(){
+        int level = peek(stack);
+        int lout = last(out);
+        int ntok =  sample( nextToken(m, l, lout) );
+        add(out, ntok);
+    }
+    
+    generator
+    void pushLevel(){
+        int level = peek(stack);
+        int lout = last(out);
+        int nlev =  sample( nextLevel(m, l, lout) );
+        stack = push(stack, nlev);        
+    }
+    
+    generator
+    void popLevel(){
+        stack = pop(stack);
+    }
+    
+    repeat(steps){
+        int choice = choose();
+        if(choice == 0){
+            pushLevel();
+        }else if(choice == 1){
+            outputToken();
+        }else if(choice==2){
+            popLevel();
+        }else{
+            assert false;
+        }
+    }
+}
+*/
+
+
+
+Model newModel(int consts, int ids){
+    int nlevels = 3 ; // ??(3);
+    Model m = new Model(nConsts = consts, nIds = ids, nlevels = ??);
+    repeat(i:m.nlevels){ 
+        repeat(j:(ids + consts)){
+            assert j < 10;
+            double tot = 0.0;
+            repeat(k: 3){ int t = ??(3);
+                          double tt = ((double)t)/7.0;
+                          tot += tt;
+                          m.choices[i][j][k] = tt; }
+            assert tot == 1.0;
+            tot = 0.0;
+            repeat(k: m.nlevels){ 
+                int t = ??(3);  
+                double tt = ((double)t)/7.0;
+                tot += tt;
+                m.levels[i][j][k] = tt;                
+            }
+            assert tot == 1.0;
+            tot = 0.0;
+            repeat(k: (ids+consts)){ 
+                assert k < 10;
+                int t = ??(3);  
+                double tt = ((double)t)/7.0;
+                tot += tt;
+                m.tokens[i][j][k] = tt; 
+            }
+            assert tot == 1.0;
+        }
+    }
+    return m;
+}
+
+
+@Native("{ cout<<\"COST: \"<<d<<endl;  }")
+void dprint(double d){}
+
+harness void main(){
+    
+    Model m = newModel(10, 0);
+    
+    //{=1,x=2,==3,(=4,+=5,)=6,;=7,}=8,*=9;
+    
+    //             { x = ( x + x ) ; }
+    int[] ex1 = {0,1,2,3,4,2,5,2,6,7,8 };
+    double cost1 = evaluate(ex1, m, len(ex1)+4);
+    
+    //             { x = ( x * x ) ; }
+    int[] ex2 = {0,1,2,3,4,2,9,2,6,7,8 };
+    double cost2 = evaluate(ex2, m, len(ex2)+4);
+       
+    dprint(cost1);
+    dprint(cost2);
+    
+}
+
+
+double evaluate([int n], int[n] vals, Model m, int steps){
+    
+    double cost = 0.0;
+    int i=0; 
+    int lout = 0;
+    Stack<int> stack = Empty();
+    stack = push(stack, 0);
+    generator int sample([int n1], double[n1] choices){
+        int t = ??;
+        assert choices[t] > 0.0;
+        cost += log(choices[t]);
+        return t;
+    }
+
+    generator void check([int n2], double[n2] choices, int k){
+        assert choices[k] > 0.0;
+        cost += log(choices[k]);        
+    }
+    
+    generator
+    int choose(){
+        int level = peek(stack);        
+        return sample( choice(m, level, lout) );
+    }
+    
+    generator
+    void checkToken(int token){
+        int level = peek(stack);        
+        check(nextToken(m, level, lout), token );
+        lout = token;
+    }
+    
+    generator
+    void pushLevel(){
+        int level = peek(stack);
+        int nlev =  sample( nextLevel(m, level, lout) );
+        stack = push(stack, nlev);        
+    }
+    
+    generator
+    void popLevel(){
+        stack = pop(stack);
+    }
+    
+    repeat(steps){
+        int choice = choose();
+        if(choice == 0){
+            pushLevel();
+        }else if(choice == 1){
+            checkToken(vals[i++]);
+        }else if(choice==2){
+            popLevel();
+        }else{
+            assert false;
+        }
+    }    
+    return cost;    
+}
+
+
+

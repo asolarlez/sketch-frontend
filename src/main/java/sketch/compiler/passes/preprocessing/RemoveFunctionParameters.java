@@ -192,7 +192,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 params.add(doExpression(actual));
             }
         }
-        return new ExprFunCall(efc, nfn, params);
+        return new ExprFunCall(efc, nfn, params, doCallTypeParams(efc));
     }
 
     /**
@@ -815,8 +815,13 @@ public class RemoveFunctionParameters extends FEReplacer {
                 if (param != newParam)
                     hasChanged = true;
             }
+
+            Map<String, Type> newTP = doCallTypeParams(efc);
+            if (newTP != efc.getTypeParams()) {
+                hasChanged = true;
+            }
             if (this.rmap.containsKey(efc.getName())) { 
-                return new ExprFunCall(efc, this.rmap.get(efc.getName()), newParams);
+                return new ExprFunCall(efc, this.rmap.get(efc.getName()), newParams, newTP);
             } else {
                 // If the lambda map contains a function call to a lambda expression
                 if (this.lambdaMap.containsKey(efc.getName())) {
@@ -853,7 +858,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 					return newLambda;
 
                 } else if (hasChanged) {
-                    return new ExprFunCall(efc, efc.getName(), newParams);
+                    return new ExprFunCall(efc, efc.getName(), newParams, newTP);
                 } else {
                     return efc;
                 }
@@ -1330,7 +1335,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         }
                         
                     }
-                    efc = new ExprFunCall(efc, efc.getName(), pl);
+                    efc = new ExprFunCall(efc, efc.getName(), pl, doCallTypeParams(efc));
                 }
             }
             return super.visitExprFunCall(efc);
@@ -1782,7 +1787,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                 // Create a new function call with the new actual parameters
                 exprFunctionCall =
                         new ExprFunCall(exprFunctionCall, exprFunctionCall.getName(),
-                                actualParameters);
+                                actualParameters, null);
 
                 // Add the formal parameter to be replaced in the function call
                 this.tempFunctionsParametersNeeded.put(exprFunctionCall.getName(),
@@ -2413,7 +2418,7 @@ public class RemoveFunctionParameters extends FEReplacer {
                         actuals.add(new ExprVar(actual, nm));
                     }
             }
-            return new ExprFunCall(efc, newName, actuals);
+            return new ExprFunCall(efc, newName, actuals, doCallTypeParams(efc));
         }
 
         public Object visitStmtBlock(StmtBlock stmt) {
@@ -2557,7 +2562,7 @@ public class RemoveFunctionParameters extends FEReplacer {
 											
 					// Create a new function call
 					ExprFunCall newFunctionCall = new ExprFunCall(callee, callee.getName(),
-							((ExprFunCall) functionCall.getParams().get(i)).getParams());
+                            ((ExprFunCall) functionCall.getParams().get(i)).getParams(), null);
 
 					// Add a variable declaration to the statements
 					Random random = new Random();

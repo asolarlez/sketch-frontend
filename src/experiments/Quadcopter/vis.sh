@@ -1,4 +1,4 @@
-NAME=updownController
+NAME=copterRight
 g++ -I "$SKETCH_HOME/include" -o ${NAME} ${NAME}.cpp ${NAME}_test.cpp
 
 echo 'var lastang = 0;'

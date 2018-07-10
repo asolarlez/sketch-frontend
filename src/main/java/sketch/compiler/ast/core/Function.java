@@ -36,6 +36,10 @@ public class Function extends FENode {
         return annotations.getOrEmpty(tag);
     }
 
+    public HashmapList<String, Annotation> getAnnotations() {
+        return annotations;
+    }
+
     public static enum FcnType {
         // Uninterpreted Function
         Uninterp("uninterp"),
@@ -134,6 +138,8 @@ public class Function extends FENode {
         }
     }
 
+    private final List<String> fixes;
+
     private final String name; // or null
     private final Type returnType;
     private final List<Parameter> params;
@@ -157,6 +163,7 @@ public class Function extends FENode {
         private String pkg;
         private Type returnType;
         private List<Parameter> params;
+        private List<String> fixes;
         private List<String> typeParams;
         private Statement body;
         private String implementsName;
@@ -175,6 +182,7 @@ public class Function extends FENode {
             this.annotations = base.annotations;
             this.fcnInfo = base.getInfo();
             this.typeParams = base.typeParams;
+            this.fixes = base.fixes;
         }
 
         public FunctionCreator(Object n) {
@@ -187,6 +195,7 @@ public class Function extends FENode {
             this.implementsName = null;
             this.fcnInfo = new FcnInfo(FcnType.Static);
             this.typeParams = new ArrayList<String>();
+            this.fixes = new ArrayList<String>();
         }
 
         public FunctionCreator name(final String name) {
@@ -215,6 +224,11 @@ public class Function extends FENode {
 
         public FunctionCreator params(final List<Parameter> params) {
             this.params = params;
+            return this;
+        }
+
+        public FunctionCreator fixes(final List<String> fixes) {
+            this.fixes = fixes;
             return this;
         }
 
@@ -296,11 +310,11 @@ public class Function extends FENode {
             if (base == null || base instanceof FEContext) {
                 return new Function((FEContext) base, fcnInfo, name, pkg, returnType,
                         params, typeParams,
-                        implementsName, body, annotations);
+                        implementsName, body, fixes, annotations);
             } else {
                 return new Function((FENode) base, fcnInfo, name, pkg, returnType,
                         params, typeParams,
-                        implementsName, body, annotations);
+                        implementsName, body, fixes, annotations);
             }
         }
     }
@@ -321,6 +335,7 @@ public class Function extends FENode {
             Type returnType,
  List<Parameter> params, List<String> typeParams,
             String fImplements, Statement body,
+            List<String> fixes,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
@@ -332,6 +347,7 @@ public class Function extends FENode {
         this.typeParams = typeParams;
         this.body = body;
         this.fImplements = fImplements;
+        this.fixes = fixes;
         this.annotations = annotations;
         assert annotations != null;
     }
@@ -341,6 +357,7 @@ public class Function extends FENode {
             Type returnType,
  List<Parameter> params, List<String> typeParams,
             String fImplements, Statement body,
+            List<String> fixes,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
@@ -353,6 +370,7 @@ public class Function extends FENode {
         this.typeParams = typeParams;
         this.fImplements = fImplements;
         this.annotations = annotations;
+        this.fixes = fixes;
         assert annotations != null;
     }
 
@@ -421,6 +439,10 @@ public class Function extends FENode {
         return body;
     }
 
+    public List<String> getFixes() {
+        return fixes;
+    }
+
     public void setPkg(String pkgName) {
         pkg = pkgName;
     }
@@ -445,9 +467,18 @@ public class Function extends FENode {
     public String printParams(){
         String s = "";
         boolean notf = false;
+        boolean hasSeenOptional = false;
         for(Parameter p : params){
+            if (!p.isImplicit() && hasSeenOptional) {
+                hasSeenOptional = false;
+                s += "]";
+            }
             if(notf){ s +=", "; }
             if(p.isParameterOutput()){ s += "ref "; }
+            if (p.isImplicit() && !hasSeenOptional) {
+                hasSeenOptional = true;
+                s += "[";
+            }
             s += p.getType() + " " + p.getName();
             notf = true;
         }
@@ -475,9 +506,22 @@ public class Function extends FENode {
                 fcnInfo.cudaType.cCodeName,
  fcnInfo.fcnType.cCodeName, returnType,
  name,
-                printTypeParams(), "(" + printParams() + ")", impl);
+                printTypeParams(), "(" + printParams() + ")", impl,
+
+                fixesString());
     }
 
+    protected String fixesString() {
+        if (fixes.size() > 0) {
+            String out = " fixes ";
+            for (String s : fixes) {
+                out += " " + s;
+            }
+            return out;
+        } else {
+            return "";
+        }
+    }
     public String toString() {
         return getSummary() + "/*" + getCx() + "*/";
     }

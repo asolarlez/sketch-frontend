@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import static sketch.util.DebugOut.assertFalse;
+
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
 import sketch.compiler.ast.core.Parameter;
@@ -28,8 +30,6 @@ import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.util.cuda.CudaThreadBlockDim;
 import sketch.util.datastructures.TypedHashSet;
-
-import static sketch.util.DebugOut.assertFalse;
 
 /**
  * implicitly upcast e.g. "x : Int" to "{ x, x, x ... } : Int[NTHREADS]" for function
@@ -137,7 +137,7 @@ public class GlobalToLocalImplicitCasts extends SymbolTableVisitor {
             }
             assert nextParams.size() == exp.getParams().size();
 
-            return new ExprFunCall(exp, exp.getName(), nextParams);
+            return new ExprFunCall(exp, exp.getName(), nextParams, null);
         }
 
         protected Expression getImplicitOutputParam(ExprFunCall exp, Expression e,

@@ -1,0 +1,23 @@
+
+
+include "math.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+void foo(double x, double y){}
+
+harness void main(){
+    float x1 = ??;
+    assert (-20.0 <= x1) && (x1 <= 6.0);
+    float a = x1 - 5.0;
+    if (x1 <= 4.0) 
+        a = 6.0 - x1;
+    if (x1 <= 2.0) 
+            a = 8.0 - x1;
+    if (x1 <= 0.0) 
+            a = 21.0 + x1;
+
+    foo(x1, a);
+    assert a <= 0.0 || a > 25.0;    
+
+}

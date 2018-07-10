@@ -137,6 +137,20 @@ public class CollectFunCallsToCombine extends SymbolTableVisitor {
             return stmt;
         }
 
+        public Object visitStmtFor(StmtFor stmt) {
+            return stmt;
+        }
+
+        @Override
+        public Object visitStmtDoWhile(StmtDoWhile stmt) {
+            return stmt;
+        }
+
+        @Override
+        public Object visitStmtWhile(StmtWhile stmt) {
+            return stmt;
+        }
+
         private void processStatement(Statement stmt) {
             if (stmt == null)
                 return;

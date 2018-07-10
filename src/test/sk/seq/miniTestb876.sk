@@ -1,0 +1,66 @@
+pragma options "-V 10";
+
+struct Range{
+    int lo;
+    int hi;
+}
+
+harness void main(int alo, int ahi, int blo, int bhi, int a, int b){
+    alo = alo - 10;
+    ahi = ahi - 10;
+    blo = blo-10;
+    bhi = bhi-10;
+    a = a -10;
+    b = b - 10;
+    assume alo <= ahi;
+    assume blo <= bhi;
+    assume b != 0;
+    Range ar = new Range(lo=alo, hi=ahi);
+    Range br = new Range(lo=blo, hi=bhi);
+    
+    Range c = opDiv(ar, br);
+    
+    assert c.lo <= c.hi;
+    if(alo <= a && a <= ahi){
+        if(blo <= b && b <= bhi){
+            int t = a/b;
+            assert c.lo <= t && t <= c.hi;            
+        }
+    }    
+}
+
+Range opDiv(Range a,Range b) {
+
+    if (a.lo >= 0 && b.lo > 0) {
+        return new Range(lo=a.lo/b.hi, hi=a.hi/b.lo);
+    }
+    if (a.hi <= 0 && b.hi < 0) {
+        return new Range(lo=a.hi / b.lo, hi=a.lo / b.hi);
+    }
+    if (a.hi <= 0 && b.lo > 0) {
+        return new Range(lo=a.lo / b.lo, hi=a.hi / b.hi);
+    }
+    if (a.lo >= 0 && b.hi < 0) {
+        return new Range(lo=a.hi / b.hi, hi=a.lo / b.lo);
+    }
+
+    if (-a.lo >= a.hi) {
+        return new Range(lo =a.lo,hi= -a.lo);
+    }
+    return new Range(lo=-a.hi,hi= a.hi);
+    //return new Range(lo={|val() / val()|} , hi={|val() / val()|});
+}
+
+
+
+Range opDivG(Range a, Range b){
+    generator int val(){
+        int c = ??(2);
+        return {| (-)?((a | b)(.lo | .hi)) | c |};
+    }
+    minrepeat{
+        if( {| val() >= val() |} && {| val() >= val() |})
+            return new Range(lo={|val() / val()|} , hi={|val() / val()|});
+    }
+    return new Range(lo={|val() / val()|} , hi={|val() / val()|});
+}

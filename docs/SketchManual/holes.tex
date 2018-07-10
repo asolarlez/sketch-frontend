@@ -56,7 +56,7 @@ The harness imposes a constraint on the product of the two functions. The \C{imp
 
 
 \subsection{Assumptions}
-Starting in \Sk{} 1.6.7, the compiler not supports standard \C{assume} statements. The semantics of \C{assume $cond$;} dictate that when the condition $cond$ is false, execution stops and any subsequent assertions are ignored. When a function is called by another function, any assumptions in the callee become assertions from the point of view of the caller; \ie{} the caller must guarantee that the inputs and environment it passes to the callee satisfy the assumptions. \emph{Note that this is not true of generator functions (\secref{generators})}; as we will describe later, generators get inlined into their calling context, so any \C{assume} statement in the generator is an assume statement in the function that invokes the generator.
+Starting in \Sk{} 1.6.7, the compiler supports standard \C{assume} statements. The semantics of \C{assume $cond$;} dictate that when the condition $cond$ is false, execution stops and any subsequent assertions are ignored. When a function is called by another function, any assumptions in the callee become assertions from the point of view of the caller; \ie{} the caller must guarantee that the inputs and environment it passes to the callee satisfy the assumptions. \emph{Note that this is not true of generator functions (\secref{generators})}; as we will describe later, generators get inlined into their calling context, so any \C{assume} statement in the generator is an assume statement in the function that invokes the generator.
 
 Also, when a function implements a specification, its assumptions must be weaker than those of the specification. In other words, any input that is legal for the specification must be legal for the implementation. 
 
@@ -351,6 +351,9 @@ push(Stack s, int val){
 \end{lstlisting}
 
 
+
+
+
 \subsection{Local Variables Construct}\seclabel{localvariablesconstruct}
 
 Sketch supports the use of the \C{$\$$(type)} construct to instruct the synthesizer to consider all variables of the specified \C{type} within scope when searching for a solution. 
@@ -413,3 +416,72 @@ generator void rep(int n, fun f){
     }    
 }
 \end{lstlisting}
+
+
+
+\subsection{\C{repeat} construct}
+The pattern illustrated by the \C{rep} generator above---where the user wants to generate multiple statements, all of which can be generated from the same code with holes---is quite common. Sketch includes a repeat construct to do exactly this: 
+\begin{lstlisting}
+repeat($N$){
+     $stmt$
+}
+\end{lstlisting}
+This construct is just syntactic sugar for the recursive $rep$ generator shown earlier. A big difference between using \C{repeat} and writing your own \C{rep} generator is that with repeat, the maximum number of repetitions will be dictated by the loop unrolling bound \C{bnd-unroll-amnt}, whereas if you write your own recursive generator, the maximum number of repetitions will be dictated by the inlining bound \C{bnd-inline-amnt}. Also note that if $N$ is not a constant or a constant hole, the result of using this construct will be a set of nested if statements.
+
+There is also a convenient variant of this construct: 
+\begin{lstlisting}
+repeat($i$ : $N$){
+     $stmt$
+}
+\end{lstlisting}
+Where $i$ is a fresh variable name, which will automatically be declared as an integer and can be used within $stmt$ to keep track of which copy you are in. The variable will have the value $n$ in the $n^{th}$ copy of $stmt$. As an example of how this may be used, consider the following code:
+
+
+\begin{lstlisting}
+
+  generator int add([int n, int k], int[n] A, int idx, int[k] offst){
+    int res = 0;
+    repeat(i: k){ 
+         res += A[idx + offst[i]];
+    }
+    return res;
+  }
+
+  int[n] combine([int n], int[n] A){
+         int[n] B;
+         for(int i=1; i<n-1; ++i){
+              int[3] offsts = {??-1, ??-1, ??-1}; //The -1 are necessary because ?? can only take positive values.
+               B[i] = add(A, i, offsts);
+         }
+         return B;
+  }
+
+  harness void main(){
+       assert combine({2, 4, 5}) == {0, 11, 0};
+  }
+
+\end{lstlisting}
+
+Note that in the sketch above, the \C{-1} in the definition of offsts is necessary because constant holes \C{??} can only take non-negative values.
+Given the harness, the combine function above will be synthed into the code below.
+
+\begin{lstlisting}
+
+void combine (int n, int[n] A, ref int[n] _out)
+{
+  _out = ((int[n])0);
+  for(int i = 1; i < (n - 1); i = i + 1)
+  {
+    int _out_s3 = A[i];
+    _out_s3 = _out_s3 + (A[i + -1]);
+    _out_s3 = _out_s3 + (A[i + 1]);
+    _out[i] = _out_s3;
+  }
+  return;
+}
+
+\end{lstlisting}
+
+Note how the repeat is expanded into three separate statements that read from \C{A} and add the result to the output variable. The compiler is able to tell that the first one is adding to zero, so it simplifies it and folds it into the declaration of the variable. 
+
+

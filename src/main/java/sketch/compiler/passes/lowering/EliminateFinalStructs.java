@@ -667,7 +667,7 @@ public class EliminateFinalStructs extends SymbolTableVisitor {
 
         if (changed) {
             this.addStatements(addStmts);
-            return new ExprFunCall(efc, efc.getName(), newp);
+            return new ExprFunCall(efc, efc.getName(), newp, doCallTypeParams(efc));
         } else {
             return efc;
         }

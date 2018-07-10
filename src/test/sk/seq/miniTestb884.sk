@@ -1,0 +1,41 @@
+
+adt List<T>{
+    cons{ T val; List<T> next; }
+    nil{}
+}
+
+
+List<T> single<T>(T x){
+    return new cons<T>(val=x, next=new nil<T>());
+}
+
+List<T> add<T>(List<T> lst, T val){
+    return new cons<T>(val=val, next=lst);
+}
+
+harness void main(){
+    int t = ??;
+   List<int> l = single(t);
+   l = add(l, (int)1);
+   l = add(l, 2);
+   
+   List<List<int>> ll = single(l);   
+   ll = add(ll, l);
+   ll = add(ll, l);
+   
+   while(l != new nil<int>() ){
+       l = ((cons<int>)l).next;
+   }
+   
+   List<List<int>> nl = new nil<List<int>>();
+   for(List<List<int>> tmp = ll; tmp != nl; ){
+       tmp =  ((cons<List<int>>)tmp).next;
+   }
+   
+   {
+       List<List<int>> tmp = ll;
+       do{
+           tmp =  ((cons<List<int>>)tmp).next;
+       }while(tmp != nl);              
+   }   
+}

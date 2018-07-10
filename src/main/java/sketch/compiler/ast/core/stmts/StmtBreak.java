@@ -18,6 +18,7 @@ package sketch.compiler.ast.core.stmts;
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.util.exceptions.SketchSolverException;
 
 /**
  * Not supported yet. A simple break statement. This statement is used to exit the
@@ -33,6 +34,7 @@ public class StmtBreak extends Statement
     public StmtBreak(FENode context)
     {
         super(context);
+        throw new SketchSolverException("Break statement not yet supported " + context.getCx());
     }
     /** Creates a new break statement.
      * @deprecated
@@ -40,6 +42,7 @@ public class StmtBreak extends Statement
     public StmtBreak(FEContext context)
     {
         super(context);
+        throw new SketchSolverException("Break statement not yet supported " + context);
     }
 
     /** Accept a front-end visitor. */

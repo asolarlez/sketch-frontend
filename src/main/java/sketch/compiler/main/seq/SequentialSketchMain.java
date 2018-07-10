@@ -17,6 +17,7 @@
 package sketch.compiler.main.seq;
 import static sketch.util.Misc.nonnull;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
@@ -44,6 +45,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.codegenerators.GenerateDocs;
 import sketch.compiler.codegenerators.OutputHoleFunc;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
 import sketch.compiler.dataflow.recursionCtrl.DelayedInlineRControl;
@@ -509,7 +511,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         prog = (Program) prog.accept(new SpmdbarrierCall());
 
         prog = (Program) prog.accept(new PidReplacer());
-        
+
 		prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
 		prog = (Program) prog.accept(new ExpressionCastingReplacer());
@@ -518,7 +520,8 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
 
         
-//		prog.debugDump("********************************************* Before remove lambda expression");
+        // prog.debugDump("********************************************* Before
+        // remove lambda expression");
         if (false) {
 
             prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
@@ -561,7 +564,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             }
         }
 
+
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen, options.bndOpts.eqDepth));
+
         prog = (Program) prog.accept(new MinimizeFcnCall());
 
         // prog = (getBeforeSemanticCheckStage()).run(prog);
@@ -621,6 +626,16 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         if (options.debugOpts.dumpAST) {
             prog.accept(new DumpAST());
+            return;
+        }
+
+        if (options.feOpts.outputDocs != null) {
+            try {
+                prog.accept(new GenerateDocs(options.feOpts.outputDocs));
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                throw new ProgramParseException("Failed to open file: " + e.getMessage());
+            }
             return;
         }
 

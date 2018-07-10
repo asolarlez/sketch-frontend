@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Vector;
 
 import static sketch.util.DebugOut.assertFalse;
@@ -341,6 +341,27 @@ public class FEReplacer implements FEVisitor
         return new ExprADTHole(exp, newParams);
     }
 
+    protected Map<String, Type> doCallTypeParams(ExprFunCall exp) {
+        boolean hasChanged = false;
+        Map<String, Type> newTP = null;
+        Map<String, Type> oldTP = exp.getTypeParams();
+        if (oldTP != null) {
+            newTP = new HashMap<String, Type>();
+            for (Entry<String, Type> tparam : exp.getTypeParams().entrySet()) {
+                Type newT = (Type) tparam.getValue().accept(this);
+                if (newT != tparam.getValue()) {
+                    hasChanged = true;
+                }
+                newTP.put(tparam.getKey(), newT);
+            }
+        }
+        if (hasChanged) {
+            return newTP;
+        } else {
+            return oldTP;
+        }
+    }
+
     public Object visitExprFunCall(ExprFunCall exp)
     {
         boolean hasChanged = false;
@@ -350,8 +371,12 @@ public class FEReplacer implements FEVisitor
             newParams.add(newParam);
             if (param != newParam) hasChanged = true;
         }
+        Map<String, Type> newTP = doCallTypeParams(exp);
+        if (newTP != exp.getTypeParams()) {
+            hasChanged = true;
+        }
         if (!hasChanged) return exp;
-        return new ExprFunCall(exp, exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams, newTP);
     }
 
     public Object visitExprParen (ExprParen exp) {
@@ -868,24 +893,11 @@ public class FEReplacer implements FEVisitor
         return newtype;
     }
 
-    public Set<String> fields = null;
+
     public Object visitStructDef (StructDef ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
-        fields = new HashSet<String>();
 
-        StructDef sdf = ts;
-        while (sdf != null) {
-            for (Entry<String, Type> entry : sdf) {
-                fields.add(entry.getKey());
-            }
-            String pn = sdf.getParentName();
-            if (pn != null) {
-                sdf = nres.getStruct(pn);
-            } else {
-                sdf = null;
-            }
-        }
         for (Entry<String, Type> entry : ts) {
             Type type = (Type) entry.getValue().accept (this);
             changed |= (type != entry.getValue());
@@ -899,7 +911,22 @@ public class FEReplacer implements FEVisitor
         }
     }
 
-    public Object visitTypeStructRef (TypeStructRef tsr) {
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        if (tsr.hasTypeParams()) {
+            List<Type> tp = tsr.getTypeParams();
+            List<Type> params = new ArrayList<Type>();
+            boolean changed = false;
+            for (Type t : tp) {
+                Type newt = (Type) t.accept(this);
+                params.add(newt);
+                if (newt != t) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                return new TypeStructRef(tsr.getName(), tsr.isUnboxed(), params);
+            }
+        }
         return tsr;
     }
 

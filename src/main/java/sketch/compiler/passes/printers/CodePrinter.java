@@ -19,6 +19,16 @@ public class CodePrinter extends FEReplacer {
 		out = new PrintWriter (os);
 	}
 
+    public CodePrinter moreIndent() {
+        ++indent;
+        return this;
+    }
+
+    public CodePrinter lessIndent() {
+        --indent;
+        return this;
+    }
+
 	protected void printTab () {
 		if(indent*tabWidth!=pad.length()) {
 			StringBuffer b=new StringBuffer();

@@ -1,0 +1,26 @@
+
+
+adt Tree{
+    Leaf{int value; }
+    Branch{ Tree left; Tree right; }
+}
+
+
+Tree foo(){
+    return null;
+}
+
+void printLeaf(Leaf l){}
+void printBranch(Branch b){}
+
+harness void main(){
+    
+    Tree t = foo();
+    switch(t){ //TypeError expression cannot be null.
+    case Leaf: printLeaf(t);
+    case Branch: printBranch(t);
+    
+    }
+    
+    
+}

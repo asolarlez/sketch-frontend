@@ -8,5 +8,5 @@ harness void main(){
 	
 	int c = 8;
 	
-	assert f(2) == 10;
+	assert f(2) == 10; //TypeError unsatisfiable
 }

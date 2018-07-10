@@ -128,6 +128,12 @@ public abstract class Type
 
     public abstract Collection<Type> getBaseTypes();
 
+    /*
+     * Returns a map such that if you use that map to rename this, you get the
+     * type t. The set names indicates the names that you are allowed to
+     * replace.
+     * 
+     */
     public abstract Map<String, Type> unify(Type t, Set<String> names);
 
     public abstract String cleanName();

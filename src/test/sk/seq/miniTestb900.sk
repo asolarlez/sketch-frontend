@@ -1,0 +1,12 @@
+include "list.skh";
+
+
+
+
+harness void main(int x){
+    
+    List<int> lst = add(add(add(empty(), 1), 2), 3);
+    
+    assert head(lst) == ??;
+    
+}

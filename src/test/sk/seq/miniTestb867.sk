@@ -21,7 +21,7 @@ harness void main(int x){
     case A: assert ii.t == t && x <= 5;
     case B: {
         t.inf.i = t.inf.i + 1;
-        assert t.inf.i < ??;
+        assert t.inf.i > 5+??;
         ii.t =  t.inf.t;        
     }
     }

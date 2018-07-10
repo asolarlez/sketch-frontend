@@ -47,6 +47,7 @@ import sketch.compiler.ast.spmd.exprs.SpmdNProc;
 import sketch.compiler.ast.spmd.exprs.SpmdPid;
 import sketch.compiler.ast.spmd.stmts.SpmdBarrier;
 import sketch.compiler.ast.spmd.stmts.StmtSpmdfork;
+import sketch.compiler.passes.lowering.GetExprType;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.stencilSK.VarReplacer;
 import sketch.util.exceptions.ExceptionAtNode;
@@ -510,11 +511,22 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
 
         List<Type> actualTypes = new ArrayList<Type>();
-        for (Expression ap : exp.getParams()) {
-            actualTypes.add(getType(ap));
-        }
+        TypeRenamer tren;
+        if (exp.getTypeParams() != null) {
+            tren = new TypeRenamer(doCallTypeParams(exp));
+            if (tren.tmap != exp.getTypeParams()) {
+                hasChanged = true;
+            }
+        } else {
+            for (Expression ap : exp.getParams()) {
+                actualTypes.add(getType(ap));
+            }
 
-        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, tdstate.getExpected());
+            tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, tdstate.getExpected());
+            if (!tren.tmap.isEmpty()) {
+                hasChanged = true;
+            }
+        }
         int actSz = exp.getParams().size();
         int formSz = f.getParams().size();
         if (actSz > formSz) {
@@ -588,7 +600,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
         if (!hasChanged)
             return exp;
-        return new ExprFunCall(exp, exp.getName(), newParams);
+        return new ExprFunCall(exp, exp.getName(), newParams, tren.tmap);
     }
 
     public Object visitExprParen(ExprParen exp) {
@@ -1133,8 +1145,23 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         return o;
     }
 
-    public Object visitTypeStructRef(TypeStructRef ts) {
-        return ts;
+    public Object visitTypeStructRef(TypeStructRef tsr) {
+        List<Type> tp = tsr.getTypeParams();
+        if (tp != null && !tp.isEmpty()) {
+            List<Type> params = new ArrayList<Type>();
+            boolean changed = false;
+            for (Type t : tp) {
+                Type newt = doType(t);
+                params.add(newt);
+                if (newt != t) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                return new TypeStructRef(tsr.getName(), tsr.isUnboxed(), params);
+            }
+        }
+        return tsr;
     }
 
     public Object visitParameter(Parameter par) {
@@ -1160,7 +1187,21 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
         }
 
         Map<String, Expression> repl = new HashMap<String, Expression>();
-        VarReplacer vr = new VarReplacer(repl);
+        VarReplacer vr;
+        if (tsr != null && tsr.hasTypeargs()) {
+            final Map<String, Type> renfinal = GetExprType.replMap(tsr, (TypeStructRef) nt, expNew);
+            vr = new VarReplacer(repl) {
+                public Object visitTypeStructRef(TypeStructRef tsr) {
+                    if (renfinal != null && renfinal.containsKey(tsr.getName())) {
+                        return renfinal.get(tsr.getName());
+                    }
+                    return super.visitTypeStructRef(tsr);
+                }
+            };
+        } else {
+            vr = new VarReplacer(repl);
+        }
+
         for (ExprNamedParam en : expNew.getParams()) {
             repl.put(en.getName(), en.getExpr());
         }
@@ -1229,7 +1270,8 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
         // visit each case body
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), var);
-        String name = ((TypeStructRef) t).getName();
+        TypeStructRef tsr = ((TypeStructRef) t);
+        String name = tsr.getName();
         StructDef ts = nres.getStruct(name);
         String pkg;
         if (ts == null) {
@@ -1242,7 +1284,7 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             if (!("default".equals(caseExpr) || "repeat".equals(caseExpr))) {
                 SymbolTable oldSymTab1 = symtab;
                 symtab = new SymbolTable(symtab);
-                symtab.registerVar(var.getName(), (new TypeStructRef(caseExpr, false)).addDefaultPkg(pkg, nres));
+                symtab.registerVar(var.getName(), (new TypeStructRef(caseExpr, false, tsr.getTypeParams())).addDefaultPkg(pkg, nres));
 
                 Statement body = procStatement(stmt.getBody(caseExpr));
                 newStmt.addCaseBlock(caseExpr, body);
@@ -1331,38 +1373,31 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
     }
 
     public Object visitStmtImplicitVarDecl(StmtImplicitVarDecl decl) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(decl, "Feature not supported");
     }
 
     public Object visitExprNamedParam(ExprNamedParam exprNamedParam) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(exprNamedParam, "Named parameters not supported");
     }
 
     public Object visitExprType(ExprType exprtyp) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(exprtyp, "Feature not supported");
     }
 
     public Object visitStmtSpmdfork(StmtSpmdfork stmtSpmdfork) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(stmtSpmdfork, "Feature not supported");
     }
 
     public Object visitSpmdBarrier(SpmdBarrier spmdBarrier) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(spmdBarrier, "Feature not supported");
     }
 
     public Object visitSpmdPid(SpmdPid spmdpid) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(spmdpid, "Feature not supported");
     }
 
     public Object visitSpmdNProc(SpmdNProc spmdnproc) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new ExceptionAtNode(spmdnproc, "Feature not supported");
     }
 
     public Object visitStmtAssume(StmtAssume stmt) {

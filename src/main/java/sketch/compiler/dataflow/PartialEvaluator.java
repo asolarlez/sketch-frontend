@@ -241,7 +241,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
     public Object visitExprConstFloat(ExprConstFloat exp) {
         exprRV = exp;
-        return vtype.BOTTOM(exp.toString());
+        return vtype.RCONST(exp.getVal());
     }
 
     public Object visitExprConstInt(ExprConstInt exp) {
@@ -304,7 +304,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     }
 
     public Object visitExprField(ExprField exp) {
-        Object retVal = vtype.BOTTOM();
+        abstractValue retVal = vtype.BOTTOM();
         Expression origLeft = exp.getLeft();
         abstractValue av = (abstractValue) origLeft.accept(this);
         Expression left = exprRV;
@@ -328,6 +328,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             }
             if (typ != null && typ.isStruct()) {
                 String caseName = ((TypeStructRef) typ).getName();
+                caseName = nres.getStructName(caseName);
                 if (cases.containsKey(caseName)) {
                     Map<String, abstractValue> fields = cases.get(caseName);
                     if (fields.containsKey(right)) {
@@ -337,8 +338,17 @@ public class PartialEvaluator extends SymbolTableVisitor {
             }
         }
 
-        if (isReplacer)
-            exprRV = new ExprField(exp, left, right, exp.isHole());
+        if (isReplacer) {
+            if (retVal != null && retVal.hasIntVal()) {
+                exprRV = new ExprConstInt(retVal.getIntVal());
+            } else {
+                if (retVal != null && retVal.hasRealVal()) {
+                    exprRV = new ExprConstFloat(retVal.getRealVal());
+                } else {
+                    exprRV = new ExprField(exp, left, right, exp.isHole());
+                }
+            }
+        }
         return retVal;
     }
 
@@ -532,7 +542,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
                 exprRV = new ExprConstInt(rv.getIntVal());
                 return rv;
             }else{
-                if (exp.getOp() == ExprBinary.BINOP_ADD) {
+                if (rv.hasRealVal()) {
+                    exprRV = new ExprConstFloat(rv.getRealVal());
+                    return rv;
+                }
+                if (exp.getOp() == ExprBinary.BINOP_ADD || exp.getOp() == ExprBinary.BINOP_OR || exp.getOp() == ExprBinary.BINOP_BOR) {
                     if ((right.hasIntVal() && right.getIntVal() == 0) ||
                             nright.equals(ExprConstInt.zero))
                     {
@@ -550,7 +564,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
                         }
                     }
                 } else {
-                    if (exp.getOp() == ExprBinary.BINOP_MUL) {
+                    if (exp.getOp() == ExprBinary.BINOP_MUL || exp.getOp() == ExprBinary.BINOP_AND || exp.getOp() == ExprBinary.BINOP_BAND) {
                         if ((right.hasIntVal() && right.getIntVal() == 0) ||
                                 nright.equals(ExprConstInt.zero))
                         {
@@ -718,7 +732,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
 
         //assert !isReplacer : "A replacer should really do something different with function calls.";
-        exprRV = isReplacer ?  new ExprFunCall(exp, name, nparams)  : exp ;
+        exprRV = isReplacer ? new ExprFunCall(exp, name, nparams, doCallTypeParams(exp)) : exp;
         return  vtype.BOTTOM();
     }
 
@@ -1052,8 +1066,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
     public Object visitParameter(Parameter param){
         Type ntype = (Type)param.getType().accept(this);
         state.varDeclare(param.getName() , ntype);
-        symtab.registerVar(param.getName(), ntype, param,
-                SymbolTable.KIND_FUNC_PARAM);
+        symtab.registerVar(transName(param.getName()), ntype, param, SymbolTable.KIND_FUNC_PARAM);
         if(isReplacer){            
             return new Parameter(param, param.getSrcTupleDepth(), ntype,
                     transName(param.getName()),
@@ -1184,11 +1197,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
                     stmt.getIncr().accept(this);
                 }
                 vcond = (abstractValue) stmt.getCond().accept(this);
-                if (iters > (1 << 13)) {
+				if (iters > (1 << 15)) {
                     // printWarning("Loop seems to repeat more than 2^13 times",
                     // stmt.getCx());
                     throw new ArrayIndexOutOfBoundsException(stmt.getCx() +
-                            "Loop seems to repeat more than 2^13 times");
+							"Loop seems to repeat more than 2^15 times");
                 }
             }
             if (!vcond.isBottom() && vcond.getIntVal() > 0) {
@@ -1305,7 +1318,10 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         StmtSwitch newStmt = new StmtSwitch(stmt.getContext(), ncond);
         String pkg = null;
-        ExprVar realCond = var;
+        ExprVar realCond = ncond;
+        // This is a big hack. It's here to make up for the fact that the
+        // subclasses are not consistently delcaring vars.
+        // TODO: Fix.
         for (int i = 0; i < 5; ++i) {
             try {
                 pkg = nres.getStruct(((TypeStructRef) getType(realCond)).getName()).getPkg();
@@ -1343,8 +1359,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
             symtab = new SymbolTable(symtab);
 
             if (caseExpr != "default") {
-                symtab.registerVar(var.getName(), new TypeStructRef(caseExpr, false),
-                        stmt, SymbolTable.KIND_LOCAL);
+                symtab.registerVar(ncond.getName(), new TypeStructRef(caseExpr, false), stmt, SymbolTable.KIND_LOCAL);
             }
             Statement body = null;
             String error = null;
@@ -1771,6 +1786,7 @@ nvarContext,
         }
     }
 
+    public Set<String> fields = null;
     public Object visitStructDef(StructDef ts) {
         boolean changed = false;
         TypedHashMap<String, Type> map = new TypedHashMap<String, Type>();
@@ -1836,17 +1852,19 @@ nvarContext,
         {
             String nm = stmt.getName(i);
             Type vt = (Type)stmt.getType(i).accept(this);
-            try {
+            if (vt instanceof TypeStructRef) {
                 StructDef sdef = null;
                 String pkg = null;
                 sdef = nres.getStruct(((TypeStructRef) vt).getName());
-                pkg = sdef.getPkg();
-                vt = vt.addDefaultPkg(pkg, nres);
-            } catch (RuntimeException err) {
-                // ignore
+                if (sdef != null) {
+                    pkg = sdef.getPkg();
+                    vt = vt.addDefaultPkg(pkg, nres);
+                }
             }
-            symtab.registerVar(stmt.getName(i), vt, stmt, SymbolTable.KIND_LOCAL);
             state.varDeclare(nm, vt);
+            String tname = transName(stmt.getName(i));
+            symtab.registerVar(tname, vt, stmt, SymbolTable.KIND_LOCAL);
+
             Expression ninit = null;
             if( stmt.getInit(i) != null ){
                 abstractValue init = (abstractValue) stmt.getInit(i).accept(this);
@@ -1910,8 +1928,7 @@ nvarContext,
                     // ignore
                 }
                 String tname = tref.getName();
-                String pname = sdef.getParentName();
-                if (pname != null) {
+                if (sdef.immutable()) {
                     Map<String, abstractValue> fields =
                             new HashMap<String, abstractValue>();
                     for (ExprNamedParam p : expNew.getParams()) {
@@ -2237,8 +2254,7 @@ nvarContext,
                 }
             }
             // NOTE xzl: should register the new variable
-            symtab.registerVar(varDecl.getName(0), varDecl.getType(0), varDecl,
-                    SymbolTable.KIND_LOCAL);
+            symtab.registerVar(varDecl.getName(0), varDecl.getType(0), varDecl, SymbolTable.KIND_LOCAL);
             addStatement(varDecl);
         }
 

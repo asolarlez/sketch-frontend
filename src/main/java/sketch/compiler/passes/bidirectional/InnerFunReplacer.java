@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
 import sketch.compiler.ast.core.Function;
@@ -326,11 +327,7 @@ public class InnerFunReplacer extends BidirectionalPass {
                     return exp;
                 }
 
-                if (pt instanceof TypeStructRef) {
-                    if (nres.isTemplate(((TypeStructRef) pt).getName())) {
-                        nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
-                    }
-                }
+                pt = normalizeType(pt);
 
                 TreeSet<String> oldDependent = dependent;
                 ParamInfo info = this.nfi.paramsToAdd.get(name);
@@ -351,6 +348,41 @@ public class InnerFunReplacer extends BidirectionalPass {
                 dependent = oldDependent;
             }
             return exp;
+        }
+
+        private Type normalizeType(Type pt) {
+            if (pt instanceof TypeStructRef) {
+                String lname = ((TypeStructRef) pt).getName();
+                if (nres.isTemplate(lname)) {
+                    nfi.typeParamsToAdd.add(((TypeStructRef) pt).getName());
+                } else {
+                    TypeStructRef tsr = (TypeStructRef) pt;
+                    if (tsr.hasTypeParams()) {
+                        List<Type> newt = new ArrayList<Type>();
+                        boolean changed = false;
+                        for (Type tp : tsr.getTypeParams()) {
+                            Type normalized = normalizeType(tp);
+                            newt.add(normalized);
+                            if (normalized != tp) {
+                                changed = true;
+                            }
+                        }
+                        if (!changed) {
+                            newt = tsr.getTypeParams();
+                        }
+                        String nm = nres.getStructName(lname);
+                        if (!nm.equals(lname) || changed) {
+                            pt = new TypeStructRef(nm, ((TypeStructRef) pt).isUnboxed(), newt);
+                        }
+                    } else {
+                        String nm = nres.getStructName(lname);
+                        if (!nm.equals(lname)) {
+                            pt = new TypeStructRef(nm, ((TypeStructRef) pt).isUnboxed());
+                        }
+                    }
+                }
+            }
+            return pt;
         }
 
         public Object visitStructDef(StructDef ts) {
@@ -566,7 +598,12 @@ public class InnerFunReplacer extends BidirectionalPass {
         for (int i = 0; i < svd.getNumVars(); i++) {
 
             if (driver.getSymbolTable().hasVar(svd.getName(i))) {
-                throw new ExceptionAtNode("Shadowing of variables is not allowed.", svd);
+                FEContext cx = driver.getSymbolTable().varCx(svd.getName(i));
+                String prev = "";
+                if (cx != null) {
+                    prev = " previously declared in " + cx;
+                }
+                throw new ExceptionAtNode("Shadowing of variables is not allowed (" + svd.getName(i) + prev + ").", svd);
             }
 
             Type ot = svd.getType(i);
@@ -607,7 +644,7 @@ public class InnerFunReplacer extends BidirectionalPass {
                 }
                 actuals.add(arg);
             }
-            return new ExprFunCall(efc, newName, actuals);
+            return new ExprFunCall(efc, newName, actuals, efc.getTypeParams());
         }
     }
 

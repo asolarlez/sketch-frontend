@@ -1,0 +1,255 @@
+
+include "math.skh";
+include "vec2d.skh";
+
+package segpkg;
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+
+adt Segment{
+    Point x;
+    Point y;
+    double ang;
+}
+
+Segment seg(double x1,double y1,double x2,double y2, double ang){
+    return new Segment(x=point(x1,y1), y=point(x2,y2), ang = ang);
+}
+
+double len(Segment seg){
+    return norm(seg.y .- seg.x);
+}
+
+
+bit nocross(Segment s1, Segment s2){
+    Point b1 = s1.x;
+    Point e1 = s1.y;
+    Point b2 = s2.x;
+    Point e2 = s2.y;
+    double t1 = (b1.x - e1.x);
+    double t2 = -(b2.x - e2.x);
+    double t3 = (e2.x - e1.x);
+    
+    double t4 = (b1.y - e1.y);
+    double t5 = -(b2.y - e2.y);
+    double t6 = (e2.y - e1.y);
+    double b = (t3-t6*t1/t4) / (t2 - t5*t1/t4);
+    double a = (t6 - b*t5)/t4;
+    
+    return (a < -0.1) || (a > 1.1) || (b < -0.1) || (b > 1.1);
+    
+    // a*b1 + (1-a)*e1 =  b*b2 + (1-b)*e2
+    // a*(b1-e1) - b*(b2-e2)  = e2 - e1
+    // a *t1 + b*t2 = t3
+    // a *t4 + b*t5 = t6
+    
+    // b = (t3-t6*t1/t4) / (t2 - t5*t1/t4);
+}
+
+
+
+Segment[N] updatePos([int N], Segment[N] segs, double[N] delAngs){
+	
+	Segment[N] newsegs;
+	Point v = segs[0].y .- segs[0].x;
+	newsegs[0] = seg(segs[0].x.x,segs[0].x.y, segs[0].y.x,segs[0].y.y, segs[0].ang + delAngs[0]);
+	double totAngle = 0.0;
+	double x = segs[0].y.x;
+	double y = segs[0].y.y;
+	for(int i=0; i < N-1; ++i){
+		totAngle += delAngs[i];
+		double cAng = segs[i].ang;
+		Point tmp = segs[i+1].y .- segs[i+1].x;
+		tmp = rotate@vec2d(tmp, totAngle);
+		Point newpos = tmp .+ newsegs[i].y;
+		newsegs[i+1] = seg(newsegs[i].y.x,newsegs[i].y.y, newpos.x, newpos.y, segs[i+1].ang + delAngs[i+1]); 
+	}
+	return newsegs;
+}
+
+
+Segment[N] translate([int N], Segment[N] segs, Point offst){
+	Segment[N] newsegs;
+	for(int i=0; i<N; ++i){
+		newsegs[i] = seg(segs[i].x.x+offst.x, segs[i].x.y+offst.y, segs[i].y.x+offst.x, segs[i].y.y+offst.y, segs[i].ang); 
+	}
+	return newsegs;
+}
+
+
+
+Segment[N] rotate([int N], Segment[N] segs, Point cmass, double ang){
+	Point mov(Point p){
+		Point r = (p .- cmass);
+		Point m = rotate@vec2d(r, ang);
+		return cmass .+ m;	
+	}
+
+	Segment[N] newsegs;
+	for(int i=0; i<N; ++i){
+		Point o1 = mov(segs[i].x);
+		Point o2 = mov(segs[i].y);
+		newsegs[i] = seg(o1.x, o1.y, o2.x, o2.y, segs[i].ang); 
+	}
+	return newsegs;
+}
+
+
+double angOffset([int N], Point cm1, Segment[N] before, Point cm2, Segment[N] after){
+	double[2] f(Point p1, Point p2){
+		Point r2 = (p2 .- cm2);
+		Point motion = r2 .- (p1 .- cm1);
+		return {cross(motion, r2), dot(r2,r2)};
+	}
+
+	double tot = 0.0;
+	double denom = 0.0;
+	for(int i=0; i<N; ++i){
+		double[2] v1 = f(before[i].x, after[i].x);
+		double[2] v2 = f(before[i].y, after[i].y);
+		tot += v1[0] + v2[0];
+		denom += v1[1] + v2[1];
+	}
+	return tot / denom;
+}
+
+
+Point centerOfMass([int N], Segment[N] segs){
+	double x=0.0;
+	double y = 0.0;
+	double denom = 0.0;
+	for(int i=0; i<N; ++i){
+		denom += 2.0;
+		x += segs[i].x.x + segs[i].y.x;
+		y += segs[i].x.y + segs[i].y.y;
+	}
+	return point(x/denom, y/denom);
+}
+
+
+
+double DT = 0.005;
+double K = 400.0;
+
+generator double Dt(){
+	return DT;
+}
+
+Segment[N] forces([int N], Segment[N] segs, Point cmass, ref Point vm, ref double angVel){
+	double torque = 0.0;
+	Point force = point(0.0, 0.0);
+	
+	double momentOfI = 0.0;
+	
+	Point fcompute(Point pos){
+		if(pos.y > 0.0){
+			return point(0.0, -9.8);
+		}else{
+			return point(0.0, -9.8 -K*pos.y);
+		}
+	}
+	
+	
+	
+	void addToForces(Point pos){
+		Point p = fcompute(pos);
+		force = force .+ p;
+		Point r = pos .- cmass;
+		torque += cross(p, r);
+		double rval = norm(r);
+		momentOfI += rval * rval;
+	}
+	
+	for(int i=0; i<N; ++i){
+		addToForces(segs[i].x);
+		addToForces(segs[i].y);		
+	}
+	
+	Point displace = vm .* DT .+ force .* (DT*DT/2.0);
+	vm = vm .+ (force .* DT);
+	
+	double rot = angVel * DT + (torque/momentOfI)*(DT*DT/2.0);
+	angVel = angVel + (torque/momentOfI)*DT;
+	
+	Segment[N] newsegs = rotate@segpkg(segs, cmass, rot);
+		
+	newsegs = translate(newsegs, displace);
+	return newsegs;
+}
+
+
+
+
+
+
+
+
+
+
+
+@Native("{cout<<x<<\"  \";}")
+void print(double x){}
+
+@Native("{cout<<\"[\";}")
+void left(){}
+
+@Native("{cout<<\"]\";}")
+void right(){}
+
+@Native("{cout<<\",\";}")
+void comma(){}
+
+@Native("{cout<<\" \\\\\"<<std::endl;}")
+void endl(){}
+
+void printSegs([int N], Segment[N] segs){
+	left();
+	left();
+	print(segs[0].x.x);
+	for(int i=0; i<N; ++i){
+		comma();
+		print(segs[i].y.x);	
+	}
+	right();
+	comma();
+	left();
+	print(segs[0].x.y);
+	for(int i=0; i<N; ++i){
+		comma();
+		print(segs[i].y.y);	
+	}
+	right();
+	right();
+	comma();
+	endl();
+} 
+
+
+void printSegsMore([int N], Segment[N] segs, Point cm){
+	left();
+	left();
+	print(segs[0].x.x);
+	for(int i=0; i<N; ++i){
+		comma();
+		print(segs[i].y.x);	
+	}
+	right();
+	comma();
+	left();
+	print(segs[0].x.y);
+	for(int i=0; i<N; ++i){
+		comma();
+		print(segs[i].y.y);	
+	}
+	right();
+	comma();
+	left();
+	print(cm.x);
+	comma();
+	print(cm.y);
+	right();
+	right();
+	comma();
+	endl();
+} 

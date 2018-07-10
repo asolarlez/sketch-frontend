@@ -19,6 +19,7 @@ import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
+import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtAssume;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.ast.core.typs.StructDef;
@@ -35,6 +36,7 @@ import sketch.compiler.passes.lowering.EliminateReturns;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 import sketch.compiler.spin.IdentifyModifiedVars;
 import sketch.compiler.stencilSK.VarReplacer;
+import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.exceptions.SketchNotResolvedException;
 
 /**
@@ -73,7 +75,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             star.accept(this);
             ExprStar newStar = (ExprStar) exprRV;
             if (newStar != star) {
-                exprRV  = new ExprNew(nexp, nexp.getTypeToConstruct(), nexp.getParams(),
+                exprRV = new ExprNew(nexp, nexp.getTypeToConstruct(), nexp.getParams(), 
                         true, newStar);
             } else {
                 exprRV = nexp;
@@ -82,7 +84,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             TypeStructRef sr = (TypeStructRef) exp.getTypeToConstruct();
             StructDef sd = nres.getStruct(sr.getName());
             if (!sd.getPkg().equals(currentTopPkg)) {
-                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed()), nexp.getParams(), nexp.isHole());
+                List<Type> tpm = nexp.getTypeParams();
+                nexp = new ExprNew(nexp, new TypeStructRef(sd.getFullName(), sr.isUnboxed(), tpm), nexp.getParams(), 
+                        nexp.isHole());
                 exprRV = nexp;
             }
 
@@ -179,7 +183,76 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Function newFun = fun.creator().name(newName).create();
         funcsToAnalyze.add(newFun);
         nres.registerFun(newFun);
-        return super.visitExprFunCall(new ExprFunCall(exp, newName, exp.getParams()));
+        return super.visitExprFunCall(new ExprFunCall(exp, newName, exp.getParams(), exp.getTypeParams()));
+    }
+
+    public Object processEqualsCall(Function fun, ExprFunCall exp) {
+        Iterator<Expression> actualParams = exp.getParams().iterator();
+        if (exp.getParams().size() < 3) {
+            throw new ExceptionAtNode(exp, "This cannot be an @IsEquals function.");
+        }
+        abstractValue avleft = null;
+        abstractValue avright = null;
+        lhsVisitor lhsv = null;
+        Expression nlhs = null;
+        Iterator<Parameter> formalParams = fun.getParams().iterator();
+
+        while (actualParams.hasNext()) {
+            Expression actual = actualParams.next();
+            Parameter param = formalParams.next();
+            if (param.isParameterOutput()) {
+
+                lhsv = new lhsVisitor();
+                nlhs = (Expression) actual.accept(lhsv);
+
+            }
+            if (param.isParameterInput()) {
+                abstractValue av = (abstractValue) actual.accept(this);
+                if (avleft == null) {
+                    avleft = av;
+                } else {
+                    if (avright == null)
+                        avright = av;
+                }
+            }
+        }
+        abstractValue outval = vtype.eq(avleft, avright);
+
+        {
+            String lhsName = null;
+            abstractValue lhsIdx = null;
+            int rlen = -1;
+
+            lhsName = lhsv.lhsName;
+            lhsIdx = lhsv.lhsIdx;
+            rlen = lhsv.rlen;
+            boolean isFieldAcc = lhsv.isFieldAcc;
+
+            if (!isFieldAcc) {
+                assignmentToLocal(outval, lhsName, lhsIdx, rlen);
+            } else {
+                boolean tmpir = isReplacer;
+                isReplacer = false;
+                assignmentToField(lhsName, null, lhsIdx, outval, null, null);
+                isReplacer = tmpir;
+            }
+        }
+
+        if (isReplacer) {
+            if (outval.hasIntVal()) {
+                addStatement(new StmtAssign(nlhs, new ExprConstInt(outval.getIntVal())));
+                exprRV = null;
+            } else {
+                Object obj = super.visitExprFunCall(exp);
+                return obj;
+            }
+        } else {
+            exprRV = exp;
+        }
+
+        // assert !isReplacer : "A replacer should really do something different
+        // with function calls.";
+        return outval;
     }
 
     public Object visitExprFunCall(ExprFunCall exp)
@@ -188,7 +261,7 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Function fun = nres.getFun(name);
         String funPkg = fun.getPkg();
         if (!funPkg.equals(currentTopPkg) && !name.contains("@")) {
-            exp = new ExprFunCall(exp, fun.getFullName(), exp.getParams());
+            exp = new ExprFunCall(exp, fun.getFullName(), exp.getParams(), exp.getTypeParams());
         }
 
         if(fun.getSpecification()!= null){
@@ -211,6 +284,10 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             if( fun.isUninterp()  || ( fun.isStatic() && !inlineStatics   ) ){
                 if(fun.isStatic()){
                     funcsToAnalyze.add(fun);
+                }
+
+                if (fun.hasAnnotation("IsEquals")) {
+                    return processEqualsCall(fun, exp);
                 }
 
                 if (fun.isUninterp() && fun.isGenerator()) {

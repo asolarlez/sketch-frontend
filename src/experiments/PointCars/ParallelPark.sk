@@ -6,7 +6,14 @@ harness void tester(){
     float err = parallel();    
     assert(err <= 10.0); 
 }
-
+/*
+ * 
+ *     /
+ *    /
+ *   /  a
+ *  /_)_______
+ * 
+ */
 void car(ref float cxb, ref float cyb, ref float cxf, ref float cyf,
             float ang, float v){
     float YL = cyf - cyb;
@@ -14,16 +21,16 @@ void car(ref float cxb, ref float cyb, ref float cxf, ref float cyf,
     float H = sqrt(YL*YL + XL*XL);
     float coa = (XL/H);
     float sia = (YL/H);
-    float DY = v*(sin(ang)*coa + cos(ang)*sia);
-    float DX = v*(cos(ang)*coa - sin(ang)*sia);
+    float DY = v*(sin(ang)*coa + cos(ang)*sia); // multiply the unit vector of the car with 
+    float DX = v*(cos(ang)*coa - sin(ang)*sia); // the rotation matrix of ang. 
     
     
     
-    cxf += DX;
+    cxf += DX; // move the front of the car by D.
     cyf += DY;
-    float tt = (DX + XL)* coa + (DY + YL)*sia;
-    float q = (DX*coa) + (XL*coa) + (DY*sia) + (YL*sia) -
-     0.5*sqrt(4.0*(tt*tt) - 4.0*(DX*DX + 2.0*DX*XL + DY*(DY + 2.0*YL)) );
+    float tt = (DX + XL)* coa + (DY + YL)*sia; //projection of (DX+XL, DY+YL) on 
+    float q = tt - // solution to (q*coa - (DX+XL))^2 + (q*sia - (DY+YL))^2 == XL^2 + YL^2
+     0.5*sqrt(4.0*(tt*tt) - 4.0*(DX*DX + 2.0*DX*XL + DY*(DY + 2.0*YL)) ); // 
     cxb += q*coa;
     cyb += q*sia;    
 }

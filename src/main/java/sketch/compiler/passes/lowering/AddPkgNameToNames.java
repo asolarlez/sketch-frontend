@@ -32,11 +32,19 @@ public class AddPkgNameToNames extends FEReplacer {
         return t.replace('@', '_');
     }
 
+    public List<String> transList(List<String> in) {
+        List<String> out = new ArrayList<String>();
+        for (String name : in) {
+            out.add(transFun(name) + "@" + GLOBALPKG);
+        }
+        return out;
+    }
+
     @Override
     public Object visitFunction(Function f) {
         f = (Function) super.visitFunction(f);
         return f.creator().name(transFun(f.getName())).spec(
-                transFun(f.getSpecification())).pkg(GLOBALPKG).create();
+                transFun(f.getSpecification())).pkg(GLOBALPKG).fixes(transList(f.getFixes())).create();
     }
 
     public Object visitStructDef(StructDef ts) {
@@ -48,7 +56,7 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitTypeStructRef(TypeStructRef tsr) {
         tsr = (TypeStructRef) super.visitTypeStructRef(tsr);
-        return new TypeStructRef(transStruct(tsr.getName()), tsr.isUnboxed());
+        return new TypeStructRef(transStruct(tsr.getName()), tsr.isUnboxed(), tsr.getTypeParams());
     }
 
     @Override
@@ -60,7 +68,7 @@ public class AddPkgNameToNames extends FEReplacer {
 
     public Object visitExprFunCall(ExprFunCall efc) {
         efc = (ExprFunCall) super.visitExprFunCall(efc);
-        return new ExprFunCall(efc, transFun(efc.getName()), efc.getParams());
+        return new ExprFunCall(efc, transFun(efc.getName()), efc.getParams(), doCallTypeParams(efc));
     }
 
     public Object visitProgram(Program prog) {

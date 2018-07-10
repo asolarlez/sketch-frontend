@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FENullVisitor;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
@@ -373,11 +374,7 @@ public class GetExprType extends FENullVisitor
                     ": You are trying to do a field access on a " + base + " in expr " +
  exp + " . " + exp, exp);
         }
-        FEReplacer repVars = new FEReplacer() {
-            public Object visitExprVar(ExprVar ev) {
-                return new ExprField(fexp.getLeft(), ev.getName());
-            }
-        };
+
         // ADT
         if (exp.isHole()) {
             return new NotYetComputedType();
@@ -389,6 +386,20 @@ public class GetExprType extends FENullVisitor
             }
             current = nres.getStruct(current.getParentName());
         }
+
+        final Map<String, Type> renfinal = replMap(current, (TypeStructRef) base, exp);
+        FEReplacer repVars = new FEReplacer() {
+            public Object visitExprVar(ExprVar ev) {
+                return new ExprField(fexp.getLeft(), ev.getName());
+            }
+
+            public Object visitTypeStructRef(TypeStructRef tsr) {
+                if (renfinal != null && renfinal.containsKey(tsr.getName())) {
+                    return renfinal.get(tsr.getName());
+                }
+                return super.visitTypeStructRef(tsr);
+            }
+        };
         Type ttt = current.getType(exp.getName());
         if (ttt != null) {
             return (Type) ttt.accept(repVars);
@@ -397,6 +408,21 @@ public class GetExprType extends FENullVisitor
         }
     }
 
+    public static Map<String, Type> replMap(StructDef current, TypeStructRef base, FENode ctx) {
+        Map<String, Type> renaming = null;
+        if (current.getTypeargs() != null && !current.getTypeargs().isEmpty()) {
+            renaming = new HashMap<String, Type>();
+            List<String> formals = current.getTypeargs();
+            List<Type> actuals = base.getTypeParams();
+            if (actuals == null || formals.size() != actuals.size()) {
+                throw new ExceptionAtNode("Inconsistent types", ctx);
+            }
+            for (int i = 0; i < formals.size(); ++i) {
+                renaming.put(formals.get(i), actuals.get(i));
+            }
+        }
+        return renaming;
+    }
 
     public Object visitExprFunCall(ExprFunCall exp)
     {
@@ -422,11 +448,16 @@ public class GetExprType extends FENullVisitor
             if (!fn.getTypeParams().isEmpty() &&
                     !(fn.getReturnType() instanceof TypePrimitive))
             {
-                List<Type> lt = new ArrayList<Type>();
-                for (Expression ep : exp.getParams()) {
-                    lt.add((Type) ep.accept(this));
+                TypeRenamer tr;
+                if (exp.getTypeParams() != null) {
+                    tr = new TypeRenamer(exp.getTypeParams());
+                } else {
+                    List<Type> lt = new ArrayList<Type>();
+                    for (Expression ep : exp.getParams()) {
+                        lt.add((Type) ep.accept(this));
+                    }
+                    tr = SymbolTableVisitor.getRenaming(fn, lt, nres, null);
                 }
-                TypeRenamer tr = SymbolTableVisitor.getRenaming(fn, lt, nres, null);
                 retType = tr.rename(retType);
             }
 

@@ -35,6 +35,7 @@ import sketch.util.datastructures.HashmapList;
 import sketch.util.datastructures.ImmutableTypedHashMap;
 import sketch.util.datastructures.ObjPairBase;
 import sketch.util.datastructures.TypedHashMap;
+import sketch.util.exceptions.ExceptionAtNode;
 
 /**
  * A hetereogeneous structure type. This type has a name for itself, and an ordered list
@@ -58,6 +59,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     private final String name;
     private String pkg;
     private final ImmutableTypedHashMap<String, Type> fieldTypMap;
+    private List<String> typeargs;
     // For sake of ADT
     private String parentName;
     private int actFieldsSize;
@@ -73,6 +75,10 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
     public boolean hasAnnotation(String tag) {
         return annotations.containsKey(tag);
+    }
+
+    public void setTypeargs(List<String> typeargs) {
+        this.typeargs = typeargs;
     }
 
     public Vector<Annotation> getAnnotation(String tag) {
@@ -93,6 +99,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
         private List<String> fieldOrder;
         private Object base;
         private HashmapList<String, Annotation> annotations;
+        private List<String> typeargs;
 
         public TStructCreator(FEContext ts) {
             base = ts;
@@ -108,6 +115,7 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
             fieldOrder = ts.fieldOrder;
             fieldTypMap = ts.fieldTypMap;
             annotations = ts.annotations;
+            typeargs = ts.typeargs;
         }
 
 
@@ -118,6 +126,11 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
         public TStructCreator pkg(final String pkg) {
             this.pkg = pkg;
+            return this;
+        }
+
+        public TStructCreator typeargs(List<String> typeargs) {
+            this.typeargs = typeargs;
             return this;
         }
 
@@ -166,14 +179,14 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
 
                 return new StructDef((FEContext) base, name, pkg, parentName,
                         isInstantiable, fieldTypMap,
-                        fieldOrder,
+                        fieldOrder, typeargs,
                         annotations);
             } else {
 
                 return new StructDef(((StructDef) base).getContext(), name,
  pkg,
                         parentName, isInstantiable,
-                        fieldTypMap, fieldOrder,
+                        fieldTypMap, fieldOrder, typeargs,
                         annotations);
             }
         }
@@ -195,11 +208,10 @@ public class StructDef extends FENode implements Iterable<Entry<String, Type>>
     }
 
     public static TStructCreator creator(FEContext ctx, String name, String parentName,
-            boolean isInstantiable, List<String> fields,
-            List<Type> ftypes, HashmapList<String, Annotation> annotations)
+            boolean isInstantiable, List<String> fields, List<Type> ftypes, List<String> typeargs, HashmapList<String, Annotation> annotations)
     {
         return (new TStructCreator(ctx)).name(name).parentName(parentName).isInstantiable(
-                isInstantiable).fields(fields, ftypes).annotations(
+                isInstantiable).fields(fields, ftypes).typeargs(typeargs).annotations(
 annotations);
     }
 
@@ -223,7 +235,7 @@ annotations);
      */
     public StructDef(FEContext context, String name, String pkg, String parentName,
             boolean isInstantiable,
-            List<String> fields, List<Type> ftypes,
+            List<String> fields, List<Type> ftypes, List<String> typeargs,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
@@ -241,13 +253,14 @@ annotations);
             types.put(fields.get(i), ftypes.get(i));
         this.fieldTypMap = types.immutable();
         this.annotations = annotations;
+        this.typeargs = typeargs;
         if (this.hasAnnotation("Immutable"))
             this.immutable = true;
     }
 
     public StructDef(FEContext context, String name, String pkg, String parentName,
             boolean isInstantiable,
-            TypedHashMap<String, Type> map, List<String> forder,
+            TypedHashMap<String, Type> map, List<String> forder, List<String> typeargs,
             HashmapList<String, Annotation> annotations)
     {
         super(context);
@@ -262,10 +275,13 @@ annotations);
         this.parentName = parentName;
         this.isInstantiable = isInstantiable;
         this.fieldTypMap = map.immutable();
-        assert fieldOrder.size() == fieldTypMap.size();
         this.annotations = annotations;
+        this.typeargs = typeargs;
         if (this.hasAnnotation("Immutable"))
             this.immutable = true;
+        if (fieldOrder.size() != fieldTypMap.size()) {
+            throw new ExceptionAtNode("You seem to have multiple fields with the same name", this);
+        }
     }
 
 
@@ -287,6 +303,7 @@ annotations);
     public String getFullName() {
         return name + '@' + pkg;
     }
+
 
     public void setParentName(String name) {
         parentName = name;
@@ -313,6 +330,9 @@ annotations);
 
     public void setImmutable() {
         immutable = true;
+        if (!annotations.containsKey("Immutable")) {
+            annotations.append("Immutable", new Annotation(this.getContext(), "Immutable", ""));
+        }
     }
     /**
      * Returns the number of fields.
@@ -352,6 +372,14 @@ annotations);
             t = cur.getFieldTypMap().get(f);
         }
         return t;
+    }
+
+    public List<String> getTypeargs() {
+        return typeargs;
+    }
+
+    public boolean hasTypeargs() {
+        return typeargs != null && !typeargs.isEmpty();
     }
 
     /** Return true iff F is a field of this struct. */

@@ -1,0 +1,13 @@
+
+include "stack.skh";
+
+harness void main(int x){
+    Stack<int> stack = Empty();
+    
+    void action(){
+        stack = push(stack, x);
+        assert peek(stack) == x;        
+    }
+    
+    action();
+}

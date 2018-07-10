@@ -4,9 +4,9 @@ void foo(int x, int y);
 harness void tester1(){
 	int x= ??;
 	int t;
-	if(x>7){ // TypeError parser will fail here.
+	if(x>7){ 
 		t = 5
-	}else{ 
+	}else{ // TypeError parser will fail here.
 		t = 15;
 	}
 	foo(t, x);

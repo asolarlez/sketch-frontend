@@ -3,7 +3,8 @@
 harness void main() {
 	int t = 3;
 	
-	fun f = () -> t = t + 5; //TypeError
+	fun f = (v) -> v + 5; 
+	fun g = (h, x) -> h(x); //TypeError lambdas do not yet support function parameters.
 		 	 	
- 	assert f() == 8;
+ 	assert g(f, t) == 8;
 }

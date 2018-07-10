@@ -12,8 +12,11 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.typs.NotYetComputedType;
 import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
+import sketch.compiler.passes.lowering.SymbolTableVisitor;
+import sketch.compiler.passes.lowering.SymbolTableVisitor.TypeRenamer;
 import sketch.compiler.passes.structure.CallGraph;
 import sketch.compiler.stencilSK.VarReplacer;
 
@@ -248,34 +251,78 @@ public class ThreadClosure extends FEReplacer {
         String name = nres.getFunName(efc.getName());
         Function f = nres.getFun(efc.getName());
         if (funsToVisit.containsKey(name)) {
+            if (!extendedSignatures.containsKey(f.getFullName())) {
+                f = extendParam(f, name, null);
+            } else {
+                f = extendedSignatures.get(f.getFullName());
+            }
+
             List<Parameter> addedParams = getAddedParams(name, f.isGenerator(), true);
             if (addedParams.size() != 0) {
+                int oldPSize = efc.getParams().size();
                 List<Expression> pl = new ArrayList<Expression>(efc.getParams());
                 for (Parameter p : addedParams) {
                     pl.add(new ExprVar(efc, p.getName()));
                 }
-                efc = new ExprFunCall(efc, efc.getName(), pl);
+                efc = new ExprFunCall(efc, efc.getName(), pl, efc.getTypeParams());
+                if (efc.getTypeParams() != null) {
+                    NotYetComputedType nyc = NotYetComputedType.singleton;
+                    Map<String, Type> tpar = efc.getTypeParams();
+                    boolean goon = false;
+                    for (Entry<String, Type> et : tpar.entrySet()) {
+                        if (et.getValue() instanceof NotYetComputedType) {
+                            goon = true;
+                        }
+                    }
+                    if (goon) {
+                        List<Type> actualTypes = new ArrayList<Type>();
+                        for (int i = 0; i < oldPSize; ++i) {
+                            actualTypes.add(nyc);
+                        }
+                        for (Parameter p : addedParams) {
+                            actualTypes.add(p.getType());
+                        }
+                        TypeRenamer tren = SymbolTableVisitor.getRenaming(f, actualTypes, nres, null);
+                        for (Entry<String, Type> et : tpar.entrySet()) {
+                            if (et.getValue() instanceof NotYetComputedType && tren.tmap.containsKey(et.getKey())) {
+                                et.setValue(tren.tmap.get(et.getKey()));
+                            }
+                        }
+                    }
+                }
+
             }
         }
         return super.visitExprFunCall(efc);
+    }
+
+    Map<String, Function> extendedSignatures = new HashMap<String, Function>();
+
+    private Function extendParam(Function fun, String name, Set<String> enca) {
+        List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
+        List<Parameter> newps = getAddedParams(name, fun.isGenerator(), false);
+        for (Parameter p : newps) {
+            p = (Parameter) this.visitParameter(p, fun);
+            if (enca != null) {
+                enca.add(p.getName());
+            }
+            pl.add(p);
+        }
+        // pl.addAll(newps);
+
+        fun = fun.creator().params(pl).create();
+        extendedSignatures.put(fun.getFullName(), fun);
+        return fun;
     }
 
     public Object visitFunction(Function fun) {
         String name = nres.getFunName(fun.getName());
         enclosingAdded = new HashSet<String>();
         if (funsToVisit.containsKey(name)) {
-            List<Parameter> pl = new ArrayList<Parameter>(fun.getParams());
-            List<Parameter> newps = getAddedParams(name, fun.isGenerator(), false);
-            for (Parameter p : newps) {
-                p = (Parameter) this.visitParameter(p, fun);
-                enclosingAdded.add(p.getName());
-                pl.add(p);
-            }
-            // pl.addAll(newps);
-
-            fun = fun.creator().params(pl).create();
+            fun = extendParam(fun, name, enclosingAdded);
         }
         return super.visitFunction(fun);
+
     }
 
 } // end of ThreadClosure

@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import static sketch.util.DebugOut.assertFalse;
+import static sketch.util.DebugOut.printWarning;
+
 import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
@@ -37,9 +40,6 @@ import sketch.util.cuda.CudaThreadBlockDim;
 import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.CopyableIterator;
-
-import static sketch.util.DebugOut.assertFalse;
-import static sketch.util.DebugOut.printWarning;
 
 /**
  * Generate functions which all threads will enter.
@@ -142,7 +142,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
     @Override
     public Object visitExprFunCall(ExprFunCall exp) {
         if (cg.getTarget(exp).isParallel()) {
-            return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams());
+            return new ExprFunCall(exp, "allthreads_" + exp.getName(), exp.getParams(), null);
         } else {
             return exp;
         }
@@ -391,7 +391,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
             switch (callee.getInfo().cudaType) {
                 case DeviceInline:
                     return new ExprFunCall(exp, "allthreads_" + exp.getName(),
-                            exp.getParams());
+                        exp.getParams(), null);
                 case Serial:
                     return exp;
                 case Global:
@@ -487,7 +487,7 @@ public class GenerateAllOrSomeThreadsFunctions extends SymbolTableVisitor {
                     nextArgs.add(new ExprVar(exp, threadIndexName));
                 }
                 nextArgs.addAll(exp.getParams());
-                return new ExprFunCall(exp, "somethreads_" + exp.getName(), nextArgs);
+                return new ExprFunCall(exp, "somethreads_" + exp.getName(), nextArgs, null);
             }
         }
 

@@ -5,7 +5,7 @@ adt F{
 
 
 
-void test(ref F x){
+void test(ref F x){ 
     x = new A(x=5);
 }
 

@@ -1,4 +1,4 @@
-pragma options "--bnd-inline-amnt 3";
+pragma options "--bnd-inline-amnt 9";
 
 int ff(int x, int y){
     if(y>0){

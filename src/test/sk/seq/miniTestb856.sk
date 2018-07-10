@@ -1,5 +1,5 @@
 
-pragma options "--fe-fpencoding TO_BACKEND -p lowering";
+pragma options "--fe-fpencoding TO_BACKEND -p lowering --debug-show-dag --beopt:epsilon 0.05";
 
 include "math.skh";
 
@@ -9,6 +9,5 @@ harness void main(int x, int y){
     if(y != 0){
         assert sin(arctan(xf / yf)) == xf/(sqrt(xf*xf+yf*yf));
     }
-    assert sin(Pi()/2.0) == 0.5 + 0.5;
-    
+    assert abs(sin(Pi()/2.0) - (0.5 + 0.5)) < 0.0001;    
 }

@@ -12,7 +12,7 @@ package P2{
         int gg(int x, int y){
             return x + y;
         }
-        assert foo(g, q)==q; // TypeError: Functions passed as arguments cannot have polymorphic outputs.
+        assert foo(g, q)==q; 
         assert moo(g, gg, q, q)==2*q;
     }    
 }

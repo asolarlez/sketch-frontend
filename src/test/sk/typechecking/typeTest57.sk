@@ -9,7 +9,7 @@ struct Leaf extends Tree{
 struct Branch extends Tree{
     Tree left;
     Tree right;
-    int value;//same variable in both variants
+    int value;//same variable in both variants is ok
 }
 
 

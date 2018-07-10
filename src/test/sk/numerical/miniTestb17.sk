@@ -1,0 +1,22 @@
+
+
+include "math.skh";
+
+pragma options "--be:usesnopt --be:numericalsolver";
+
+void foo(double x, double y){}
+
+#define MINIMIZE(v) hassert(v > 0.0)
+
+
+harness void main(){
+    double t = ??;
+    
+    double val = sin(t);
+    
+    
+    foo(t, val);
+    assert t > 0.05;
+    assert t < 2.0*Pi();
+    MINIMIZE(val);
+}
