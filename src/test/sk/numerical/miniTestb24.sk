@@ -5,13 +5,12 @@ include "miniTestb20_segs.skh";
 
 double[N] control([int N], Segment[N] segs, double time){
 	double[N] deltas;
-	
+	double ii = 0.0;
 	for(int i=0; i<N; ++i){
-		double ii = 0.0;			
 		ii += 1.0;
 		repeat(5){
 			if(time < (??*10.0)*Dt()){
-				deltas[i] = (??/150.0) + ii*(??/150.0) + segs[i].ang*(??/150.0);
+				deltas[i] = (??/150.0) + ii*(??/250.0) + segs[i].ang*(??/250.0);
 			}
 		}
 	}
@@ -20,9 +19,9 @@ double[N] control([int N], Segment[N] segs, double time){
 
 
 harness void main(){
-	int N = 5;
+	int N = 6;
 	Segment[N] segs;
-	double x = 0.0;
+	double x = -2.0;
 	double y = 0.0;
 	
 	repeat(i:N){
