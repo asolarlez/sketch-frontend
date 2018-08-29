@@ -1,0 +1,13 @@
+
+pragma options "--fe-fpencoding TO_BACKEND --debug-show-dag";
+
+include "math.skh";
+
+harness void main(int x, int y){
+    float xf = (float) x;
+    float yf = (float) y;
+    if(y != 0){
+        assert abs(sin(arctan(xf / yf)) - xf/(sqrt(xf*xf+yf*yf))) < 0.0001 ;
+    }
+    assert abs(sin(Pi()/2.0) - (0.5 + 0.5)) < 0.0001;    
+}

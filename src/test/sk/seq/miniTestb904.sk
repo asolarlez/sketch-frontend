@@ -1,0 +1,18 @@
+
+pragma options "--fe-fpencoding TO_BACKEND";
+
+
+double[N] control(int N){
+	double[N] deltas;
+	deltas[0] = 1.1;
+	return deltas;
+}
+
+harness void main(int n){
+	assume n == 6;
+	double[n] a = control(n);
+	
+	assert a[1] < 1.0;
+	
+
+}
