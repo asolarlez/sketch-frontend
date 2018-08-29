@@ -237,6 +237,10 @@ tryAgain:
 						mTRIPLE_EQUAL(true);
 						theRetToken=_returnToken;
 					}
+					else if ((LA(1)=='?') && (LA(2)=='?') && (LA(3)=='s')) {
+						mNDVAL2SP(true);
+						theRetToken=_returnToken;
+					}
 					else if ((LA(1)=='{') && (LA(2)=='|') && (LA(3)=='}')) {
 						mSELECT(true);
 						theRetToken=_returnToken;
@@ -333,12 +337,8 @@ tryAgain:
 						mNDVAL(true);
 						theRetToken=_returnToken;
 					}
-					else if ((LA(1)=='?') && (LA(2)=='?')) {
+					else if ((LA(1)=='?') && (LA(2)=='?') && (true)) {
 						mNDVAL2(true);
-						theRetToken=_returnToken;
-					}
-					else if ((LA(1)=='.') && (LA(2)=='?')) {
-						mNDVAL2SP(true);
 						theRetToken=_returnToken;
 					}
 					else if ((LA(1)=='*') && (LA(2)=='*')) {
@@ -1403,7 +1403,7 @@ tryAgain:
 		_ttype = NDVAL2SP;
 		int _saveIndex;
 		
-		match(".??");
+		match("??s");
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
 			_token = makeToken(_ttype);
 			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));

@@ -5,12 +5,14 @@ import java.util.List;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
+import sketch.compiler.ast.core.SymbolTable;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
+import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.exprs.regens.ExprRegen;
@@ -21,17 +23,19 @@ import sketch.compiler.ast.core.stmts.StmtDoWhile;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtVarDecl;
 import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 
 // FIXME xzl: temporarily disabled to help stencil
-public class ExtractComplexLoopConditions extends FEReplacer {
+public class ExtractComplexLoopConditions extends SymbolTableVisitor {
 	TempVarGen vgen;
 	
 	public ExtractComplexLoopConditions(TempVarGen vgen){
+		super(null);
 		this.vgen = vgen;
 	}
 	
-	private boolean isComplexExpr(FENode exp){		
+	private boolean isComplexExpr(FENode exp, final boolean unaryok) {
 		class isComplex extends FEReplacer{
 			boolean is = false;
 			@Override
@@ -40,6 +44,41 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 				return ar;
 			}
 			
+			public Object visitExprBinary(ExprBinary exp) {
+				if (exp.getOp() == ExprBinary.BINOP_EQ) {
+					Type t = getType(exp.getLeft());
+					if (t.isArray()) {
+						is = true;
+						return exp;
+					}
+					t = getType(exp.getRight());
+					if (t.isArray()) {
+						is = true;
+						return exp;
+					}
+				}
+				exp.getLeft().accept(this);
+				exp.getRight().accept(this);
+				return exp;
+			}
+
+			public Object visitExprUnary(ExprUnary exp) {
+				if (unaryok) {
+					return super.visitExprUnary(exp);
+				}
+				switch (exp.getOp()) {
+				case ExprUnary.UNOP_POSTDEC:
+				case ExprUnary.UNOP_POSTINC:
+				case ExprUnary.UNOP_PREDEC:
+				case ExprUnary.UNOP_PREINC:
+					is = true;
+					return exp;
+				default:
+					return super.visitExprUnary(exp);
+
+				}
+			}
+
 			@Override
 			public Object visitExprFunCall(ExprFunCall fc){
 				is = true;
@@ -80,8 +119,16 @@ public class ExtractComplexLoopConditions extends FEReplacer {
         if (sf.isCanonical()) {
             return super.visitStmtFor(sf);
         }
+
+		SymbolTable oldSymTab = symtab;
+		symtab = new SymbolTable(symtab);
+
+		if (sf.getInit() != null) {
+			sf.getInit().accept(this);
+		}
 		
-		if(isComplexExpr(sf.getCond())  ||  isComplexExpr(sf.getIncr()) || isComplexExpr(sf.getInit()) ){
+		if (isComplexExpr(sf.getCond(), false) || isComplexExpr(sf.getIncr(), true)
+				|| isComplexExpr(sf.getInit(), true)) {
 		    
 			
 			String nm = vgen.nextVar();
@@ -110,8 +157,10 @@ public class ExtractComplexLoopConditions extends FEReplacer {
                 bl.add(new StmtVarDecl(sf.getCond(), TypePrimitive.bittype, nm, sf.getCond()));
     			bl.add(new StmtWhile(sf, tmpvar, sb ));
 			}
+			symtab = oldSymTab;
 			return new StmtBlock(sf, bl);
 		}else{
+			symtab = oldSymTab;
 			return super.visitStmtFor(sf);
 		}
 	}
@@ -119,7 +168,7 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 	@Override
 	public Object visitStmtWhile(StmtWhile sw){
 		
-		if(isComplexExpr(sw.getCond())){
+		if (isComplexExpr(sw.getCond(), false)) {
 			List<Statement> bl = new ArrayList<Statement>();
 			String nm = vgen.nextVar();
 			bl.add(new StmtVarDecl(sw.getCond(), TypePrimitive.bittype, nm, sw.getCond()));
@@ -139,7 +188,7 @@ public class ExtractComplexLoopConditions extends FEReplacer {
 	@Override
 	public Object visitStmtDoWhile(StmtDoWhile sdw){
 		
-		if(isComplexExpr(sdw.getCond())){
+		if (isComplexExpr(sdw.getCond(), false)) {
 			List<Statement> bl = new ArrayList<Statement>();
 			
 			String nm = vgen.nextVar();

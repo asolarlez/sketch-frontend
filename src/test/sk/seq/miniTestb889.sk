@@ -11,6 +11,4 @@ harness void test(double x, double y, double z){
     double u = Solve({x, y, z});
     assert u == t*5.0;
     assert t*t*x + u*y + z == 0.0;
-    
-    
 }
