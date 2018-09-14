@@ -149,9 +149,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
             if (this.checkTA() ||
                     (vcrv.hasIntVal() && vcrv.getIntVal() == 0 && !hasAssumes))
             {
-                throw new ArrayIndexOutOfBoundsException(
-                        "ASSERTION CAN NOT BE SATISFIED: " +
-                    stmt.getCx() + " " + stmt.getMsg());
+                //throw new ArrayIndexOutOfBoundsException(
+                //        "ASSERTION CAN NOT BE SATISFIED: " +
+                //    stmt.getCx() + " " + stmt.getMsg());
             }
         }
             Expression ncond = exprRV;
