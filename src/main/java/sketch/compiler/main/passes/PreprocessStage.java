@@ -45,8 +45,6 @@ public class PreprocessStage extends MetaStage {
     @Override
     public Program visitProgramInner(Program prog) {
 
-		// prog.debugDump("************************************** Inside visit program inner");
-
         boolean useInsertEncoding =
                 (options.solverOpts.reorderEncoding == ReorderEncoding.exponential);
 
@@ -72,7 +70,6 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateBitSelector(varGen));
 
-		// prog.debugDump("************************************** 1");
 
         prog.accept(new CheckProperFinality());
 
@@ -99,7 +96,7 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new DisambiguateUnaries(varGen));
         
-        // prog.debugDump("After remove expr get");
+
 
         // Remove ExprGet will generate regens and adt holes
         prog = (Program) prog.accept(new EliminateRegens(varGen));
@@ -140,6 +137,7 @@ public class PreprocessStage extends MetaStage {
 
 
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
+
         if (partialEval) {
             prog =
                     (Program) prog.accept(new PreprocessSketch(varGen,

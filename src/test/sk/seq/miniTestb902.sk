@@ -1,0 +1,15 @@
+void foo([int n, int m], int[n] a, int[m][n] b){
+
+}
+
+harness void main(){
+int[5] w;
+int[5] x;
+int[3][5] y;
+int[10] z;
+
+foo(x, y); // n==5, m==n
+foo(w, x); // n==5, m==1
+foo(10, 3, z, y); // Involves an implicit cast for y.
+
+}

@@ -1,0 +1,19 @@
+
+include "math.skh";
+
+double foo(double n){
+    int t = ??;
+    return n * (float)t / 10.0;
+}
+
+bit like(double t1, double t2){
+    double dif = t1-t2;
+    return dif > -0.1 && dif < 0.1;
+}
+
+@FromFile("miniTestb901.data")
+harness void main(int n, double[2][n] in){
+    for(int i=0; i<n; ++i){
+        assert like(in[i][1], foo(in[i][0]));
+    }
+}

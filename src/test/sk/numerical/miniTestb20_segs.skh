@@ -129,8 +129,8 @@ Point centerOfMass([int N], Segment[N] segs){
 
 
 
-double DT = 0.005;
-double K = 400.0;
+double DT = 0.003;
+double K = 700.0;
 
 generator double Dt(){
 	return DT;
@@ -156,7 +156,7 @@ Segment[N] forces([int N], Segment[N] segs, Point cmass, ref Point vm, ref doubl
 		Point p = fcompute(pos);
 		force = force .+ p;
 		Point r = pos .- cmass;
-		torque += cross(p, r);
+		torque -= cross(p, r);
 		double rval = norm(r);
 		momentOfI += rval * rval;
 	}
@@ -166,6 +166,7 @@ Segment[N] forces([int N], Segment[N] segs, Point cmass, ref Point vm, ref doubl
 		addToForces(segs[i].y);		
 	}
 	
+	momentOfI = momentOfI*0.1;
 	Point displace = vm .* DT .+ force .* (DT*DT/2.0);
 	vm = vm .+ (force .* DT);
 	
