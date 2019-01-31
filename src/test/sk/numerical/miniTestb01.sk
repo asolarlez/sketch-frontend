@@ -2,7 +2,7 @@
 
 include "math.skh";
 
-pragma options "--be:usesnopt --be:numericalsolver";
+pragma options "--be:usesnopt --be:numericalsolver --debug-output-dag od.out";
 
 void foo(double x, double y){}
 

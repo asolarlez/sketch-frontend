@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.compiler.ast.core.Package;
@@ -16,6 +15,7 @@ import sketch.compiler.ast.core.stmts.StmtDoWhile;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtIfThen;
 import sketch.compiler.ast.core.stmts.StmtWhile;
+import sketch.compiler.passes.structure.CallGraph;
 
 
 /**
@@ -30,61 +30,19 @@ public class CollectFunCallsToCombine extends SymbolTableVisitor {
         recFuns = new ArrayList<String>();
     }
 
-    class CheckRecursive extends FEReplacer {
-        final List<String> parents;
-        boolean isRec;
-        NameResolver nres;
-
-        public CheckRecursive(List<String> names, NameResolver nres) {
-            this.parents = names;
-            this.isRec = false;
-            this.nres = nres;
-        }
-
-        @Override
-        public Object visitExprFunCall(ExprFunCall exp) {
-            if (this.parents.contains(exp.getName())) {
-                isRec = true;
-            } else if (recFuns.contains(exp.getName())) {
-                isRec = true;
-            } else {
-                List<String> newParents = new ArrayList<String>();
-                newParents.addAll(parents);
-                newParents.add(exp.getName());
-
-                Function fun = nres.getFun(exp.getName());
-                if (fun.getBody() != null) {
-                    CheckRecursive cr = new CheckRecursive(newParents, nres);
-                    nres.getFun(exp.getName()).getBody().accept(cr);
-                    if (cr.isRec) {
-                        recFuns.add(exp.getName());
-                        isRec = true;
-                    }
-                }
-            }
-            return exp;
-        }
-    }
-
     @Override
     public Object visitProgram(Program p) {
+		CallGraph cg = new CallGraph(p);
+
         nres = new NameResolver(p);
         for (Package pkg : p.getPackages()) {
             nres.setPackage(pkg);
             for (Function f : pkg.getFuncs()) {
-                if (!recFuns.contains(f.getName())) {
-                    List<String> parents = new ArrayList<String>();
-                    parents.add(f.getName());
-                    if (f.getBody() != null) {
-                        CheckRecursive cr = new CheckRecursive(parents, nres);
-                        f.getBody().accept(cr);
-                        if (cr.isRec)
-                            recFuns.add(f.getName());
-                    }
-                }
+				if (cg.closureCallersTo(f).contains(f)) {
+					recFuns.add(f.getName());
+				}
             }
         }
-
         return super.visitProgram(p);
     }
 

@@ -1,0 +1,4 @@
+package p1;
+void func() { if(??) { f3(); } }
+void f1 () { func(); }
+void f3() { func(); }

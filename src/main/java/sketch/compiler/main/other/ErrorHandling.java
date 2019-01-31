@@ -2,11 +2,11 @@ package sketch.compiler.main.other;
 
 import java.io.File;
 
+import static sketch.util.DebugOut.printDebug;
+
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.main.PlatformLocalization;
 import sketch.util.exceptions.LastGoodProgram;
-
-import static sketch.util.DebugOut.printDebug;
 
 /**
  * A few miscellany error handling functions for main methods
@@ -19,7 +19,11 @@ import static sketch.util.DebugOut.printDebug;
 public class ErrorHandling {
     public static void checkJavaVersion(int... gt_tuple) {
         String java_version = System.getProperty("java.version");
-        String[] version_numbers = java_version.split("\\.");
+		String[] version_numbers = java_version.split("\\.");
+		if (version_numbers.length < gt_tuple.length) {
+			// This happens with java version 10.
+			return;
+		}
         for (int a = 0; a < gt_tuple.length; a++) {
             int real_version = Integer.parseInt(version_numbers[a]);
             if (real_version < gt_tuple[a]) {

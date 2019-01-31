@@ -1166,6 +1166,12 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
     public Object visitParameter(Parameter par) {
         tdstate.enterParamDecl();
+
+		VarInfo vi = symtab.lookupVarInfo(par.getName());
+		if (vi != null && vi.kind == SymbolTable.KIND_FUNC_PARAM) {
+			throw new ExceptionAtNode("Repeated parameter name and/or shadowing of parameter names not allowed.", par);
+		}
+
         Object o = super.visitParameter(par);
         tdstate.exitParamDecl();
         return o;

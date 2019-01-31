@@ -11,5 +11,6 @@ harness void main(int i){
     m.mama[0] = t;
     m.mama[1] = t;
     m.mama[2] = t;
+    
     assert m.mama[(??+i)%5 + 3] == null;
 }

@@ -522,47 +522,33 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         
         // prog.debugDump("********************************************* Before
         // remove lambda expression");
-        if (false) {
 
-            prog = (Program) prog.accept(new RemoveFunctionParameters(varGen));
 
-            prog = (Program) prog.accept(new ExpandRepeatCases());
-            prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
-            prog = (Program) prog.accept(new EliminateEmptyArrayLen());
-            DisambiguateCallsAndTypeCheck dtc = new DisambiguateCallsAndTypeCheck();
-            // prog.debugDump("After disambiguate calls and type check");
-            prog = (Program) prog.accept(dtc);
-            // prog.debugDump("After dtc accept");
-            if (!dtc.good) {
-                throw new ProgramParseException("Semantic check failed");
-            }
-        } else {
+		// These three passes need to be integrated into the Bidirectional
+		// framework.
+		prog = (Program) prog.accept(new ExpandRepeatCases());
+		prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
+		prog = (Program) prog.accept(new EliminateEmptyArrayLen());
 
-            // These three passes need to be integrated into the Bidirectional
-            // framework.
-            prog = (Program) prog.accept(new ExpandRepeatCases());
-            prog = (Program) prog.accept(new EliminateListOfFieldsMacro());
-            prog = (Program) prog.accept(new EliminateEmptyArrayLen());
-
-            BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
-            TypeCheck tchk = new TypeCheck();
-            bda.addPass(tchk);
-            bda.addPostPass(tchk.getPostPass());
-            EliminateLambdas lamelim = new EliminateLambdas();
-            bda.addPass(lamelim);
-            InnerFunReplacer ifrepl = new InnerFunReplacer();
-            bda.addPass(ifrepl);
-            bda.addPostPass(ifrepl.getPostPass());
-            sketch.compiler.passes.bidirectional.RemoveFunctionParameters rfp = new sketch.compiler.passes.bidirectional.RemoveFunctionParameters();
-            bda.addPass(rfp);
-            bda.addPostPass(rfp.getPostPass());
-            prog = bda.doProgram(prog);
-            prog = (Program) prog.accept(new ThreadClosure(rfp, ifrepl));
-            prog = (Program) prog.accept(lamelim.getCleanup());
-            if (!tchk.good) {
-                throw new ProgramParseException("Semantic check failed");
-            }
+		BidirectionalAnalysis bda = new BidirectionalAnalysis(varGen);
+		TypeCheck tchk = new TypeCheck();
+		bda.addPass(tchk);
+		bda.addPostPass(tchk.getPostPass());
+		EliminateLambdas lamelim = new EliminateLambdas();
+		bda.addPass(lamelim);
+		InnerFunReplacer ifrepl = new InnerFunReplacer();
+		bda.addPass(ifrepl);
+		bda.addPostPass(ifrepl.getPostPass());
+		sketch.compiler.passes.bidirectional.RemoveFunctionParameters rfp = new sketch.compiler.passes.bidirectional.RemoveFunctionParameters();
+		bda.addPass(rfp);
+		bda.addPostPass(rfp.getPostPass());
+		prog = bda.doProgram(prog);
+		prog = (Program) prog.accept(new ThreadClosure(rfp, ifrepl));
+		prog = (Program) prog.accept(lamelim.getCleanup());
+		if (!tchk.good) {
+			throw new ProgramParseException("Semantic check failed");
         }
+
 
 
         prog = (Program) prog.accept(new EliminateTripleEquals(varGen, options.bndOpts.eqDepth));

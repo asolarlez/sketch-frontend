@@ -1,5 +1,7 @@
 package sketch.compiler.passes.structure;
 
+import static sketch.util.Misc.nonnull;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,7 +19,6 @@ import sketch.util.datastructures.TypedHashMap;
 import sketch.util.datastructures.TypedHashSet;
 import sketch.util.exceptions.ExceptionAtNode;
 import sketch.util.fcns.IsChanging;
-import static sketch.util.Misc.nonnull;
 
 /**
  * determines which functions call which functions, and the closure. debug print code
@@ -63,6 +64,10 @@ public class CallGraph extends FEReplacer {
     public Set<Function> callersTo(Function target) {
         return edges.callersTo(target);
     }
+
+	public Set<Function> closureCallersTo(Function target) {
+		return closureEdges.callersTo(target);
+	}
 
     @Override
     public String toString() {

@@ -1,0 +1,44 @@
+//@Description Toy benchmarks to show complex recursive generators.
+
+pragma options "--slv-nativeints";
+generator int rec(int x, int y, int z){ /* automatically rewritten */
+   int t = ??;
+   if(t == 0){
+     return x;
+   }   
+   if(t == 1){
+     return y;
+   }
+
+   if(t == 2){
+     return z;
+   }
+   int a = rec(x,y,z);
+   int b = rec(x,y,z);
+
+   if(t == 3){
+     return a * b;
+   }
+
+   if(t == 4){
+     return a + b;
+   } 
+   
+   if(t == 5){
+     return a - b;
+   }   
+}
+
+void constraint( int x, int y, int z ){
+   assert rec(x,y, z) == (x + x) * (y - z);
+}
+
+
+harness void main(){
+	constraint(7, 1, 0);
+	constraint(4, 1, 2);
+	constraint(8, 1, 2);
+}
+
+
+
