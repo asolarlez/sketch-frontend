@@ -26,6 +26,7 @@ import sketch.compiler.ast.core.typs.Type;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.main.cmdline.SketchOptions;
+import sketch.util.exceptions.ProgramParseException;
 
 /**
  * An integer-valued constant with an unknown value ("??" in the program, the hole), whose
@@ -186,6 +187,9 @@ public class ExprStar extends Expression
     public ExprStar(FEContext context, int size, Kind kind)
     {
         super(context);
+		if (size < 1) {
+			throw new ProgramParseException(context.toString() + ": Size must be at least 1");
+		}
         isFixed = true;
         isGlobal = false;
         this.size = size;

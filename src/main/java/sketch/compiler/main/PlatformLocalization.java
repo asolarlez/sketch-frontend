@@ -30,7 +30,7 @@ import sketch.util.exceptions.SketchSolverException;
  */
 public class PlatformLocalization {
     protected static PlatformLocalization singleton;
-    public String version = "1.7.5";
+	public String version = "1.7.6";
     public String osname = System.getProperty("os.name");
     public String osarch = System.getProperty("os.arch");
     public Properties localization;

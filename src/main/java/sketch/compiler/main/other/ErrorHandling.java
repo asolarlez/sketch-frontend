@@ -18,6 +18,11 @@ import sketch.util.exceptions.LastGoodProgram;
  */
 public class ErrorHandling {
     public static void checkJavaVersion(int... gt_tuple) {
+    	return;
+    	/*
+    	 * 
+    	 * After Java 10, java versioning became hard to parse.
+    	 * Plus, nobody has java < 6 anymore.
         String java_version = System.getProperty("java.version");
 		String[] version_numbers = java_version.split("\\.");
 		if (version_numbers.length < gt_tuple.length) {
@@ -38,6 +43,7 @@ public class ErrorHandling {
                 System.exit(1);
             }
         }
+        */
     }
 
     public static void dumpProgramToFile(LastGoodProgram lastGoodProg) {
