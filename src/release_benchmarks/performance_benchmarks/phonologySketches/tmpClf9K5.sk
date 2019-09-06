@@ -1,0 +1,218 @@
+// Ran in time 623.960200071 seconds
+pragma options "--slv-p-cpus 1  --bnd-mbits 5 -V 10 --bnd-unroll-amnt 10  ";
+#define MAXIMUMMORPHLENGTH 8
+#define NUMBEROFFEATURES 16
+#define True 1
+#define False 0
+
+struct Sound{//@Immutable("")
+  bit anterior;
+  bit rounded;
+  bit liquid;
+  bit continuant;
+  bit nasal;
+  bit lateral;
+  bit highTone;
+  bit back;
+  bit sonorant;
+  bit high;
+  bit coronal;
+  bit tense;
+  bit low;
+  bit vowel;
+  bit sibilant;
+  bit voice;
+}
+
+#define DEFINEVECTOR struct Vector extends Specification{@Immutable("")\
+  bit anterior_specified; bit anterior;\
+  bit rounded_specified; bit rounded;\
+  bit liquid_specified; bit liquid;\
+  bit continuant_specified; bit continuant;\
+  bit nasal_specified; bit nasal;\
+  bit lateral_specified; bit lateral;\
+  bit highTone_specified; bit highTone;\
+  bit back_specified; bit back;\
+  bit sonorant_specified; bit sonorant;\
+  bit high_specified; bit high;\
+  bit coronal_specified; bit coronal;\
+  bit tense_specified; bit tense;\
+  bit low_specified; bit low;\
+  bit vowel_specified; bit vowel;\
+  bit sibilant_specified; bit sibilant;\
+  bit voice_specified; bit voice;\
+}
+
+
+#define VECTOREQUAL(p,q) (p.anterior_specified == q.anterior_specified && p.rounded_specified == q.rounded_specified && p.liquid_specified == q.liquid_specified && p.continuant_specified == q.continuant_specified && p.nasal_specified == q.nasal_specified && p.lateral_specified == q.lateral_specified && p.highTone_specified == q.highTone_specified && p.back_specified == q.back_specified && p.sonorant_specified == q.sonorant_specified && p.high_specified == q.high_specified && p.coronal_specified == q.coronal_specified && p.tense_specified == q.tense_specified && p.low_specified == q.low_specified && p.vowel_specified == q.vowel_specified && p.sibilant_specified == q.sibilant_specified && p.voice_specified == q.voice_specified && (p.anterior_specified && p.anterior) == (q.anterior_specified && q.anterior) && (p.rounded_specified && p.rounded) == (q.rounded_specified && q.rounded) && (p.liquid_specified && p.liquid) == (q.liquid_specified && q.liquid) && (p.continuant_specified && p.continuant) == (q.continuant_specified && q.continuant) && (p.nasal_specified && p.nasal) == (q.nasal_specified && q.nasal) && (p.lateral_specified && p.lateral) == (q.lateral_specified && q.lateral) && (p.highTone_specified && p.highTone) == (q.highTone_specified && q.highTone) && (p.back_specified && p.back) == (q.back_specified && q.back) && (p.sonorant_specified && p.sonorant) == (q.sonorant_specified && q.sonorant) && (p.high_specified && p.high) == (q.high_specified && q.high) && (p.coronal_specified && p.coronal) == (q.coronal_specified && q.coronal) && (p.tense_specified && p.tense) == (q.tense_specified && q.tense) && (p.low_specified && p.low) == (q.low_specified && q.low) && (p.vowel_specified && p.vowel) == (q.vowel_specified && q.vowel) && (p.sibilant_specified && p.sibilant) == (q.sibilant_specified && q.sibilant) && (p.voice_specified && p.voice) == (q.voice_specified && q.voice))
+
+#define EMPTYVECTOR(v) (v.anterior_specified == 0 && v.rounded_specified == 0 && v.liquid_specified == 0 && v.continuant_specified == 0 && v.nasal_specified == 0 && v.lateral_specified == 0 && v.highTone_specified == 0 && v.back_specified == 0 && v.sonorant_specified == 0 && v.high_specified == 0 && v.coronal_specified == 0 && v.tense_specified == 0 && v.low_specified == 0 && v.vowel_specified == 0 && v.sibilant_specified == 0 && v.voice_specified == 0)
+
+#define VECTORCOST(v) validateCost(v.voice_specified + validateCost(v.sibilant_specified + validateCost(v.vowel_specified + validateCost(v.low_specified + validateCost(v.tense_specified + validateCost(v.coronal_specified + validateCost(v.high_specified + validateCost(v.sonorant_specified + validateCost(v.back_specified + validateCost(v.highTone_specified + validateCost(v.lateral_specified + validateCost(v.nasal_specified + validateCost(v.continuant_specified + validateCost(v.liquid_specified + validateCost(v.rounded_specified + validateCost(v.anterior_specified + 0))))))))))))))))
+
+#define VECTORMATCHESSOUND(vector, sound) ((!vector.anterior_specified || vector.anterior == sound.anterior) && (!vector.rounded_specified || vector.rounded == sound.rounded) && (!vector.liquid_specified || vector.liquid == sound.liquid) && (!vector.continuant_specified || vector.continuant == sound.continuant) && (!vector.nasal_specified || vector.nasal == sound.nasal) && (!vector.lateral_specified || vector.lateral == sound.lateral) && (!vector.highTone_specified || vector.highTone == sound.highTone) && (!vector.back_specified || vector.back == sound.back) && (!vector.sonorant_specified || vector.sonorant == sound.sonorant) && (!vector.high_specified || vector.high == sound.high) && (!vector.coronal_specified || vector.coronal == sound.coronal) && (!vector.tense_specified || vector.tense == sound.tense) && (!vector.low_specified || vector.low == sound.low) && (!vector.vowel_specified || vector.vowel == sound.vowel) && (!vector.sibilant_specified || vector.sibilant == sound.sibilant) && (!vector.voice_specified || vector.voice == sound.voice))
+
+#define PROJECTVECTOR(vector, sound)\
+  bit anterior = (!vector.anterior_specified && sound.anterior) || (vector.anterior_specified && vector.anterior);\
+  bit rounded = (!vector.rounded_specified && sound.rounded) || (vector.rounded_specified && vector.rounded);\
+  bit liquid = (!vector.liquid_specified && sound.liquid) || (vector.liquid_specified && vector.liquid);\
+  bit continuant = (!vector.continuant_specified && sound.continuant) || (vector.continuant_specified && vector.continuant);\
+  bit nasal = (!vector.nasal_specified && sound.nasal) || (vector.nasal_specified && vector.nasal);\
+  bit lateral = (!vector.lateral_specified && sound.lateral) || (vector.lateral_specified && vector.lateral);\
+  bit highTone = (!vector.highTone_specified && sound.highTone) || (vector.highTone_specified && vector.highTone);\
+  bit back = (!vector.back_specified && sound.back) || (vector.back_specified && vector.back);\
+  bit sonorant = (!vector.sonorant_specified && sound.sonorant) || (vector.sonorant_specified && vector.sonorant);\
+  bit high = (!vector.high_specified && sound.high) || (vector.high_specified && vector.high);\
+  bit coronal = (!vector.coronal_specified && sound.coronal) || (vector.coronal_specified && vector.coronal);\
+  bit tense = (!vector.tense_specified && sound.tense) || (vector.tense_specified && vector.tense);\
+  bit low = (!vector.low_specified && sound.low) || (vector.low_specified && vector.low);\
+  bit vowel = (!vector.vowel_specified && sound.vowel) || (vector.vowel_specified && vector.vowel);\
+  bit sibilant = (!vector.sibilant_specified && sound.sibilant) || (vector.sibilant_specified && vector.sibilant);\
+  bit voice = (!vector.voice_specified && sound.voice) || (vector.voice_specified && vector.voice);\
+  if (!anterior && !rounded && !liquid && continuant && !nasal && !lateral && highTone && back && sonorant && !high && !coronal && tense && low && vowel && !sibilant && voice) return phoneme_0;\
+  if (anterior && !rounded && !liquid && !continuant && !nasal && !lateral && !highTone && !back && !sonorant && !high && !coronal && !tense && !low && !vowel && !sibilant && voice) return phoneme_1;\
+  if (anterior && !rounded && !liquid && !continuant && !nasal && !lateral && !highTone && !back && !sonorant && !high && coronal && !tense && !low && !vowel && !sibilant && voice) return phoneme_2;\
+  if (!anterior && !rounded && !liquid && continuant && !nasal && !lateral && highTone && !back && sonorant && !high && !coronal && tense && !low && vowel && !sibilant && voice) return phoneme_3;\
+  if (!anterior && !rounded && !liquid && !continuant && nasal && !lateral && !highTone && back && sonorant && high && !coronal && !tense && !low && !vowel && !sibilant && voice) return phoneme_4;\
+  if (anterior && !rounded && !liquid && !continuant && nasal && !lateral && !highTone && !back && sonorant && !high && !coronal && !tense && !low && !vowel && !sibilant && voice) return phoneme_5;\
+  if (!anterior && !rounded && liquid && continuant && !nasal && lateral && !highTone && !back && sonorant && !high && coronal && !tense && !low && !vowel && !sibilant && voice) return phoneme_6;\
+  if (!anterior && rounded && !liquid && continuant && !nasal && !lateral && highTone && back && sonorant && !high && !coronal && tense && !low && vowel && !sibilant && voice) return phoneme_7;\
+  if (!anterior && !rounded && !liquid && continuant && !nasal && !lateral && highTone && !back && sonorant && high && !coronal && tense && !low && vowel && !sibilant && voice) return phoneme_8;\
+  if (anterior && !rounded && !liquid && continuant && !nasal && !lateral && !highTone && !back && !sonorant && !high && coronal && !tense && !low && !vowel && sibilant && !voice) return phoneme_9;\
+  if (!anterior && !rounded && liquid && continuant && !nasal && !lateral && !highTone && !back && sonorant && !high && coronal && !tense && !low && !vowel && !sibilant && voice) return phoneme_10;\
+  if (anterior && !rounded && !liquid && !continuant && !nasal && !lateral && !highTone && !back && !sonorant && !high && coronal && !tense && !low && !vowel && !sibilant && !voice) return phoneme_11;\
+  if (!anterior && !rounded && !liquid && continuant && !nasal && !lateral && !highTone && back && sonorant && !high && !coronal && !tense && !low && vowel && !sibilant && voice) return phoneme_12;\
+  if (!anterior && !rounded && !liquid && !continuant && !nasal && !lateral && !highTone && back && !sonorant && high && !coronal && !tense && !low && !vowel && !sibilant && !voice) return phoneme_13;\
+  if (!anterior && !rounded && !liquid && !continuant && !nasal && !lateral && !highTone && !back && sonorant && !high && !coronal && !tense && low && !vowel && !sibilant && !voice) return phoneme_14;\
+assert 0;\
+
+
+#define UNKNOWNVECTOR anterior = ??, anterior_specified = ??, rounded = ??, rounded_specified = ??, liquid = ??, liquid_specified = ??, continuant = ??, continuant_specified = ??, nasal = ??, nasal_specified = ??, lateral = ??, lateral_specified = ??, highTone = ??, highTone_specified = ??, back = ??, back_specified = ??, sonorant = ??, sonorant_specified = ??, high = ??, high_specified = ??, coronal = ??, coronal_specified = ??, tense = ??, tense_specified = ??, low = ??, low_specified = ??, vowel = ??, vowel_specified = ??, sibilant = ??, sibilant_specified = ??, voice = ??, voice_specified = ??
+Sound phoneme_0 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 1,nasal = 0,lateral = 0,highTone = 1,back = 1,sonorant = 1,high = 0,coronal = 0,tense = 1,low = 1,vowel = 1,sibilant = 0,voice = 1);
+Sound phoneme_1 = new Sound(anterior = 1,rounded = 0,liquid = 0,continuant = 0,nasal = 0,lateral = 0,highTone = 0,back = 0,sonorant = 0,high = 0,coronal = 0,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 1);
+Sound phoneme_2 = new Sound(anterior = 1,rounded = 0,liquid = 0,continuant = 0,nasal = 0,lateral = 0,highTone = 0,back = 0,sonorant = 0,high = 0,coronal = 1,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 1);
+Sound phoneme_3 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 1,nasal = 0,lateral = 0,highTone = 1,back = 0,sonorant = 1,high = 0,coronal = 0,tense = 1,low = 0,vowel = 1,sibilant = 0,voice = 1);
+Sound phoneme_4 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 0,nasal = 1,lateral = 0,highTone = 0,back = 1,sonorant = 1,high = 1,coronal = 0,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 1);
+Sound phoneme_5 = new Sound(anterior = 1,rounded = 0,liquid = 0,continuant = 0,nasal = 1,lateral = 0,highTone = 0,back = 0,sonorant = 1,high = 0,coronal = 0,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 1);
+Sound phoneme_6 = new Sound(anterior = 0,rounded = 0,liquid = 1,continuant = 1,nasal = 0,lateral = 1,highTone = 0,back = 0,sonorant = 1,high = 0,coronal = 1,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 1);
+Sound phoneme_7 = new Sound(anterior = 0,rounded = 1,liquid = 0,continuant = 1,nasal = 0,lateral = 0,highTone = 1,back = 1,sonorant = 1,high = 0,coronal = 0,tense = 1,low = 0,vowel = 1,sibilant = 0,voice = 1);
+Sound phoneme_8 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 1,nasal = 0,lateral = 0,highTone = 1,back = 0,sonorant = 1,high = 1,coronal = 0,tense = 1,low = 0,vowel = 1,sibilant = 0,voice = 1);
+Sound phoneme_9 = new Sound(anterior = 1,rounded = 0,liquid = 0,continuant = 1,nasal = 0,lateral = 0,highTone = 0,back = 0,sonorant = 0,high = 0,coronal = 1,tense = 0,low = 0,vowel = 0,sibilant = 1,voice = 0);
+Sound phoneme_10 = new Sound(anterior = 0,rounded = 0,liquid = 1,continuant = 1,nasal = 0,lateral = 0,highTone = 0,back = 0,sonorant = 1,high = 0,coronal = 1,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 1);
+Sound phoneme_11 = new Sound(anterior = 1,rounded = 0,liquid = 0,continuant = 0,nasal = 0,lateral = 0,highTone = 0,back = 0,sonorant = 0,high = 0,coronal = 1,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 0);
+Sound phoneme_12 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 1,nasal = 0,lateral = 0,highTone = 0,back = 1,sonorant = 1,high = 0,coronal = 0,tense = 0,low = 0,vowel = 1,sibilant = 0,voice = 1);
+Sound phoneme_13 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 0,nasal = 0,lateral = 0,highTone = 0,back = 1,sonorant = 0,high = 1,coronal = 0,tense = 0,low = 0,vowel = 0,sibilant = 0,voice = 0);
+Sound phoneme_14 = new Sound(anterior = 0,rounded = 0,liquid = 0,continuant = 0,nasal = 0,lateral = 0,highTone = 0,back = 0,sonorant = 1,high = 0,coronal = 0,tense = 0,low = 1,vowel = 0,sibilant = 0,voice = 0);
+#define UNKNOWNSOUND {| phoneme_0 | phoneme_1 | phoneme_2 | phoneme_3 | phoneme_4 | phoneme_5 | phoneme_6 | phoneme_7 | phoneme_8 | phoneme_9 | phoneme_10 | phoneme_11 | phoneme_12 | phoneme_13 | phoneme_14 |}
+#define UNKNOWNCONSTANTSPECIFICATION {| phoneme_0 | phoneme_1 | phoneme_2 | phoneme_3 | phoneme_4 | phoneme_5 | phoneme_6 | phoneme_7 | phoneme_8 | phoneme_9 | phoneme_10 | phoneme_11 | phoneme_12 | phoneme_13 | phoneme_14 |}
+
+
+#include "common.skh"
+Rule __GLOBALDEFINITION__0() { return unknown_rule(); }
+Rule __GLOBALDEFINITION__1() { return unknown_rule(); }
+Word __GLOBALDEFINITION__2() { return unknown_word(); }
+Word __GLOBALDEFINITION__3() { return unknown_word(); }
+Word __GLOBALDEFINITION__4() { return unknown_word(); }
+Word __GLOBALDEFINITION__5() { return unknown_word(); }
+Word __GLOBALDEFINITION__6() { return unknown_word(); }
+Word __GLOBALDEFINITION__7() { return unknown_word(); }
+Word __GLOBALDEFINITION__8() { return unknown_word(); }
+Word __GLOBALDEFINITION__9() { return unknown_word(); }
+harness void main() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+	int __DEFINITION__10 = ((((((((rule_cost(__globalConstant_Rule_0__)) + (0))) + (rule_cost(__globalConstant_Rule_1__)))) + (((((((word_length(__globalConstant_Word_2__)) - (6))) + (0))) + (((word_length(__globalConstant_Word_3__)) - (6))))))) + (((((((((((word_length(__globalConstant_Word_4__)) + (word_length(__globalConstant_Word_7__)))) - (0))) + (0))) + (((((word_length(__globalConstant_Word_5__)) + (word_length(__globalConstant_Word_8__)))) - (0))))) + (((((word_length(__globalConstant_Word_6__)) + (word_length(__globalConstant_Word_9__)))) - (0))))));
+	minimize(__DEFINITION__10);
+}
+
+harness void auxiliaryHarness_0() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+ assert (word_equal((new Word(l = 7, s = {phoneme_5,phoneme_12,phoneme_2,phoneme_0,phoneme_4,phoneme_12,phoneme_1})), apply_rule(__globalConstant_Rule_1__, apply_rule(__globalConstant_Rule_0__, concatenate3(__globalConstant_Word_4__, __globalConstant_Word_2__, __globalConstant_Word_7__), ((word_length(__globalConstant_Word_4__)) + (word_length(__globalConstant_Word_2__))), 8), ((word_length(__globalConstant_Word_4__)) + (word_length(__globalConstant_Word_2__))), 8)));
+}
+
+harness void auxiliaryHarness_1() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+ assert (word_equal((new Word(l = 8, s = {phoneme_2,phoneme_12,phoneme_4,phoneme_12,phoneme_1,phoneme_0,phoneme_6,phoneme_6})), apply_rule(__globalConstant_Rule_1__, apply_rule(__globalConstant_Rule_0__, concatenate3(__globalConstant_Word_5__, __globalConstant_Word_2__, __globalConstant_Word_8__), ((word_length(__globalConstant_Word_5__)) + (word_length(__globalConstant_Word_2__))), 9), ((word_length(__globalConstant_Word_5__)) + (word_length(__globalConstant_Word_2__))), 9)));
+}
+
+harness void auxiliaryHarness_2() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+ assert (word_equal((new Word(l = 6, s = {phoneme_2,phoneme_12,phoneme_4,phoneme_7,phoneme_1,phoneme_6})), apply_rule(__globalConstant_Rule_1__, apply_rule(__globalConstant_Rule_0__, concatenate3(__globalConstant_Word_6__, __globalConstant_Word_2__, __globalConstant_Word_9__), ((word_length(__globalConstant_Word_6__)) + (word_length(__globalConstant_Word_2__))), 7), ((word_length(__globalConstant_Word_6__)) + (word_length(__globalConstant_Word_2__))), 7)));
+}
+
+harness void auxiliaryHarness_3() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+ assert (word_equal((new Word(l = 7, s = {phoneme_5,phoneme_12,phoneme_11,phoneme_3,phoneme_14,phoneme_12,phoneme_1})), apply_rule(__globalConstant_Rule_1__, apply_rule(__globalConstant_Rule_0__, concatenate3(__globalConstant_Word_4__, __globalConstant_Word_3__, __globalConstant_Word_7__), ((word_length(__globalConstant_Word_4__)) + (word_length(__globalConstant_Word_3__))), 8), ((word_length(__globalConstant_Word_4__)) + (word_length(__globalConstant_Word_3__))), 8)));
+}
+
+harness void auxiliaryHarness_4() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+ assert (word_equal((new Word(l = 8, s = {phoneme_11,phoneme_12,phoneme_14,phoneme_12,phoneme_1,phoneme_0,phoneme_6,phoneme_6})), apply_rule(__globalConstant_Rule_1__, apply_rule(__globalConstant_Rule_0__, concatenate3(__globalConstant_Word_5__, __globalConstant_Word_3__, __globalConstant_Word_8__), ((word_length(__globalConstant_Word_5__)) + (word_length(__globalConstant_Word_3__))), 9), ((word_length(__globalConstant_Word_5__)) + (word_length(__globalConstant_Word_3__))), 9)));
+}
+
+harness void auxiliaryHarness_5() {
+Rule __globalConstant_Rule_0__ = __GLOBALDEFINITION__0();
+Rule __globalConstant_Rule_1__ = __GLOBALDEFINITION__1();
+Word __globalConstant_Word_2__ = __GLOBALDEFINITION__2();
+Word __globalConstant_Word_3__ = __GLOBALDEFINITION__3();
+Word __globalConstant_Word_4__ = __GLOBALDEFINITION__4();
+Word __globalConstant_Word_5__ = __GLOBALDEFINITION__5();
+Word __globalConstant_Word_6__ = __GLOBALDEFINITION__6();
+Word __globalConstant_Word_7__ = __GLOBALDEFINITION__7();
+Word __globalConstant_Word_8__ = __GLOBALDEFINITION__8();
+Word __globalConstant_Word_9__ = __GLOBALDEFINITION__9();
+ assert (word_equal((new Word(l = 6, s = {phoneme_11,phoneme_12,phoneme_14,phoneme_8,phoneme_1,phoneme_6})), apply_rule(__globalConstant_Rule_1__, apply_rule(__globalConstant_Rule_0__, concatenate3(__globalConstant_Word_6__, __globalConstant_Word_3__, __globalConstant_Word_9__), ((word_length(__globalConstant_Word_6__)) + (word_length(__globalConstant_Word_3__))), 7), ((word_length(__globalConstant_Word_6__)) + (word_length(__globalConstant_Word_3__))), 7)));
+}

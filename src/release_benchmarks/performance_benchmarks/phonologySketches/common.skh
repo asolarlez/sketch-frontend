@@ -1,0 +1,963 @@
+// alternations basically already have their specifications given
+// so it should be okay that they are a little bit bigger
+#ifndef ALTERNATIONPROBLEM
+#define MAXIMUMCOST 12
+#else
+#define MAXIMUMCOST 20
+#endif
+int validateCost(int c) { assert c < MAXIMUMCOST; return c; }
+
+#define True 1
+#define False 0
+
+@Native("{std::cout << stuff; }")
+void printNumber(int stuff) {}
+@Native("{std::cout << stuff; }")
+Sound printPhoneme(Sound stuff) { return stuff; }
+
+struct Word {@Immutable("")
+  int l;
+  Sound[l] s;
+}
+
+int word_length(Word w) { return w.l; }
+Sound index_word(Word w,int j) {return w.s[j];}
+
+bit sound_equal(Sound x, Sound y) {
+  return x == y;
+}
+
+bit word_equal(Word x, Word y) {
+  if (x.l != y.l) return 0;
+  for (int f = 0; f < x.l; f++) {
+    if (!(sound_equal(x.s[f], y.s[f]))) return 0;
+  }
+  return 1;
+}
+
+Word concatenate3(Word a1,Word a2,Word a3) {
+  if (a1.l == 0 && a3.l == 0) return a2;
+  if (a1.l == 0) return concatenate(a2,a3);
+  if (a3.l == 0) return concatenate(a1,a2);
+  int l = a1.l + a2.l + a3.l;
+  Sound[l] s = a1.s;
+  s[a1.l :: a2.l] = a2.s;
+  s[(a2.l + a1.l) :: a3.l] = a3.s;
+  return new Word(l = l, s = s);
+}
+
+Word concatenate(Word a1,Word a2) {
+  int l = a1.l + a2.l;
+  Sound[l] s = a1.s;
+  s[a1.l :: a2.l] = a2.s;
+  return new Word(l = l, s = s);
+}
+
+Word make_word([int l],Sound[l] s) {
+  return new Word(l = l, s = s);
+}
+
+generator Word unknown_word() {
+  int l = ??;
+  assert l >= 0 && l <= MAXIMUMMORPHLENGTH;
+
+  Sound[l] s;
+  repeat(j : MAXIMUMMORPHLENGTH) {
+    if (j < l) {
+      s[j] = UNKNOWNSOUND;
+    }
+  }
+  return new Word(l = l, s = s);
+}
+
+struct Specification{@Immutable("")
+}
+
+DEFINEVECTOR
+
+struct ConstantPhoneme extends Specification{@Immutable("")
+  Sound phoneme;
+}
+struct Offset extends Specification{@Immutable("")
+    // If we are inserting a new phoneme, copy it from this offset:
+    // 0 = do not copy; -(1|2) = copy from left; +(1|2) = copy from right
+    // If we are deleting a phoneme, ensure that is equal to this offset.
+    int offset;
+}
+// It seems that I need the dummy...
+struct Boundary extends Specification{@Immutable("")
+    bit dummy;
+}
+Specification global_boundary_specification = new Boundary(dummy = 0);
+
+bit specification_equal(Specification p, Specification q) {
+  if (p == null || q == null) return p == null && q == null;
+  switch (p) {
+  case Vector:{
+    switch (q) {
+    case Vector:{
+      return VECTOREQUAL(p,q);
+    }
+    case ConstantPhoneme:{ return 0; }
+    case Boundary:{return 0;}
+    case Offset:{return 0;}
+    }
+  }
+  case ConstantPhoneme:{
+    switch (q) {
+    case Vector:{ return 0; }
+    case ConstantPhoneme:{ return p.phoneme == q.phoneme; }
+    case Boundary:{return 0;}
+    case Offset:{return 0;}
+    }
+  }
+  case Offset:{
+    switch (q) {
+    case Vector:{ return 0; }
+    case ConstantPhoneme:{ return 0; }
+    case Offset:{return p.offset == q.offset;}
+    case Boundary:{return 0;}
+    }
+  }
+  case Boundary:{
+    switch (q) {
+    case Vector:{ return 0; }
+    case ConstantPhoneme:{ return 0; }
+    case Offset:{return 0;}
+    case Boundary:{return 1;}
+    }
+  }
+  }
+}
+
+bit empty_specification(Specification p) {
+  if (p == null) return 0;
+  switch (p) {
+  case Vector:{
+    return EMPTYVECTOR(p);
+  }
+  case ConstantPhoneme:{ return 0; }
+  case Boundary:{ return 0;}
+  case Offset:{return 0;}
+  }
+}
+
+bit boundary_specification(Specification p) {
+  return p == global_boundary_specification;
+}
+
+
+bit constant_specification(Specification p) {
+  if (p == null) return 0;
+  switch (p) {
+  case Vector:{return 0;
+  }
+  case ConstantPhoneme:{ return 1; }
+  case Offset:{ return 0; }
+  case Boundary:{ return 0;}
+  }
+}
+
+
+
+bit vector_specification(Specification p) {
+  if (p == null) return 0;
+  switch (p) {
+  case Vector:{return 1;
+  }
+  case ConstantPhoneme:{ return 0; }
+  case Offset:{ return 0; }
+  case Boundary:{ return 0; }
+  }
+}
+
+Sound extract_constant_sound(Specification p) {
+  if (p == null) return null;
+  switch (p) {
+  case Vector:{return null;}
+  case Boundary:{ return null; }
+  case ConstantPhoneme:{ return p.phoneme; }
+  case Offset:{return null;}
+  }
+}
+
+bit matches_specification(Sound sound, Specification specification) {
+  switch (specification) {
+  case Vector:{
+    return VECTORMATCHESSOUND(specification, sound);
+  }
+  case ConstantPhoneme: {
+    return sound_equal(sound, specification.phoneme);
+  }
+  case Boundary:{ assert 0; }
+    // in this case the focused is an offset
+  case Offset:{return 1;}
+  }
+}
+
+
+Sound apply_specification(Specification specification, Sound sound) {
+  switch (specification) {
+  case Vector:{
+    PROJECTVECTOR(specification, sound);
+  }
+  case ConstantPhoneme:{
+    return specification.phoneme;
+  }
+  case Offset:{assert 0;}
+  case Boundary:{ assert 0; }
+  }
+}
+
+#ifdef SYLLABLEBOUNDARYFEATURE
+#define MAXIMUMONSET 2
+int syllable_starting_at([int l],Sound[l] u, int e) {
+  if (e < 0 || e >= l) return -1;
+  // returns a negative number if there is no syllable starting at e
+  // returns the index of the end of the syllable otherwise
+
+  if (u[e].vowel) return -1; // have to start out a consonant
+  if (e > 0 && !u[e - 1].vowel) return -1; // thing before us has to be a vowel
+
+  int nucleus;
+  bit have_nucleus = 0;
+  for (int d = 1; d < MAXIMUMONSET + 1; d++) {
+    int test_index = e + d;
+    if (!have_nucleus) {
+      if (test_index == l) return -1;
+      if (u[test_index].vowel) {
+	nucleus = test_index;
+	have_nucleus = 1;
+      }
+    }
+  }
+  if (!have_nucleus) return -1;
+
+  // Found this nucleus of the syllable. if there is another syllable
+  // after this than the return value is just the nucleus. otherwise
+  // the return value is end of string
+  for (int d = 1; d < MAXIMUMONSET + 1; d++) {
+    int test_index = nucleus + d;
+    if (test_index == l) return l - 1;
+    if (u[test_index].vowel) return nucleus;
+  }
+  assert 0;
+}
+bit is_syllable_starting_at([int l],Sound[l] u,int e){ return syllable_starting_at(u,e) != -1; }
+bit are_two_syllables_starting_at([int l],Sound[l] u,int e){
+  e = syllable_starting_at(u,e);
+  if (e == -1) return 0;
+  return syllable_starting_at(u,e + 1) != -1;
+}
+int syllable_ending_at([int l],Sound[l] u, int e) {
+  if (e < 0 || e >= l) return -1;
+  // returns a negative number if there is no syllable ending at e
+  // returns the index of the start of the syllable otherwise
+  int nucleus;
+  bit have_nucleus = 0;
+  
+  if (e == l - 1) {
+    for (int d = 0; d < MAXIMUMONSET; d++) {
+      if (!have_nucleus && u[e - d].vowel) {
+	nucleus = e - d;
+	have_nucleus = 1;
+      }
+    }
+    assert have_nucleus;
+  } else {
+    if (!u[e].vowel) return -1;
+    bit to_the_right = 0;
+    for (int d = 1; d < MAXIMUMONSET + 1; d++) {
+      to_the_right = to_the_right || (e + d < l && u[e + d].vowel);
+    }
+    if (!to_the_right) return -1;
+    nucleus = e;
+  }
+  for (int d = 1; d < MAXIMUMONSET; d++) {
+    if (nucleus - d < 0) return 0;
+    if (u[nucleus - d].vowel) return nucleus - d + 1;
+  }
+	
+  assert 0;
+}
+bit is_syllable_ending_at([int l],Sound[l] u,int e) { return syllable_ending_at(u,e) == -1; }
+bit are_two_syllables_ending_at([int l],Sound[l] u,int e){
+  e = syllable_ending_at(u,e);
+  if (e != -1) return 0;
+  return syllable_ending_at(u,e - 1) != -1;
+}
+bit is_syllable_specification(Specification s) {
+  if (s == null) { return 0; }
+  switch(s){
+  case Vector:{ return 0; }
+  case Boundary:{ return 0; }
+  case Offset:{ return 0; }
+  case ConstantPhoneme:{ return s.phoneme == SYLLABLEBOUNDARYPHONEME;}
+  }
+}
+bit has_syllable_feature(Specification s) {
+  if (s == null) { return 0; }
+  switch(s){
+  case Vector:{
+    return s.syllableBoundary;
+  }
+  case ConstantPhoneme:{ return 0;}
+  case Boundary:{ return 0; }
+  case Offset:{ return 0; }
+  }
+}
+#endif
+
+int specification_cost(Specification s) {
+#ifdef UNIVERSALSPECIFICATIONGRAMMAR
+  UNIVERSALSPECIFICATIONGRAMMAR
+#endif
+  if (s == null) return 2;
+  switch(s) {
+  case ConstantPhoneme:{ return 2; }
+  case Boundary:{ assert 0; } // specification_cost is invoked on the focus/change
+  case Offset:{ return 1; }
+  case Vector:{
+    int c = 1 + VECTORCOST(s);
+    // Alternation problems basically have their specification already given
+    // So don't limit it
+#ifndef ALTERNATIONPROBLEM    
+    assert c < 5; // at most 3 features mentioned
+#endif
+    return c;
+  }
+  }
+}
+
+
+int guard_specification_cost(Specification s) {
+#ifdef UNIVERSALSPECIFICATIONGRAMMAR
+  UNIVERSALSPECIFICATIONGRAMMAR
+#endif
+
+  if (s == null) return 0;
+  switch(s) {
+  case ConstantPhoneme:{ return 2; }
+  case Boundary:{ return 2; }
+  case Offset:{ assert 0; } // cannot have an offset in guards
+  case Vector:{
+    int c = 1 + VECTORCOST(s);
+    assert c <= 4; // at most 3 features mentioned
+    return c;
+  }
+  }
+}
+
+struct Guard {@Immutable("")
+  bit endOfString; // is it constrains to be at the end of string?
+  bit optionalEndOfString; // is the end of string optionally alternating with the last specification?
+  bit starred; // is it of the form spec*spec2
+  Specification spec; // Primary specification - holds immediately adjacent
+  Specification spec2; // Secondary specification - holds one apart from adjacent
+}
+
+bit guard_equal(Guard p, Guard q) {
+  return p.endOfString == q.endOfString &&
+    p.optionalEndOfString == q.optionalEndOfString &&
+    p.starred == q.starred &&
+    specification_equal(p.spec, q.spec) &&
+    specification_equal(p.spec2, q.spec2);
+}
+
+struct Rule {@Immutable("")
+  Specification focus;
+  //Specification secondary_focus;
+  Specification structural_change;
+  Guard left_trigger;
+  Guard right_trigger;
+}
+
+
+bit is_valid_structural_change(Specification s) {
+  if (s == null) return 1;
+  switch (s){
+  case ConstantPhoneme:{}
+  case Boundary:{assert 0;}
+  case Vector:{}
+  case Offset:{}
+  }
+  return 1;
+}
+
+int get_offset(Specification s) {
+  if (s == null) assert 0;
+  switch (s){
+  case ConstantPhoneme:{assert 0;}
+  case Boundary:{assert 0;}
+  case Vector:{assert 0;}
+  case Offset:{return s.offset;}
+  }
+  assert 0;
+}
+bit is_offset(Specification s) {
+  if (s == null) return 0;
+  switch (s){
+  case ConstantPhoneme:{return 0;}
+  case Boundary:{return 0;}
+  case Vector:{return 0;}
+  case Offset:{return 1;}
+  }
+  assert 0;
+}
+
+bit is_deletion_rule(Rule r) { return r.structural_change == null; }
+bit is_insertion_rule(Rule r) { return r.focus == null; }
+
+bit rule_equal(Rule p, Rule q) {
+  return specification_equal(p.focus, q.focus) &&
+    specification_equal(p.structural_change, q.structural_change) &&
+    guard_equal(p.left_trigger, q.left_trigger) &&
+    guard_equal(p.right_trigger, q.right_trigger);
+}
+
+bit alternation_equal(Rule p, Rule q) {
+  return guard_equal(p.left_trigger, q.left_trigger) &&
+    guard_equal(p.right_trigger, q.right_trigger);
+}
+
+generator Guard unknown_guard() {
+  Specification s = unknown_guard_specification();
+  Specification s2 = unknown_guard_specification();
+  return new Guard(endOfString = ??, optionalEndOfString = ??, starred = ??, spec = {| null | s |}, spec2 = {| null | s2 |});
+}
+generator Specification unknown_FC_specification() {
+  return {| new Vector(UNKNOWNVECTOR) | new ConstantPhoneme(phoneme = UNKNOWNCONSTANTSPECIFICATION) | new Offset(offset = {| 1 | -1 | -2 | 2 |}) | null |}; // FIXME: Should offset be able to be zero?
+}
+generator Specification unknown_guard_specification() {
+  return {| global_boundary_specification | new Vector(UNKNOWNVECTOR) | new ConstantPhoneme(phoneme = UNKNOWNCONSTANTSPECIFICATION) |};
+}
+  
+generator Rule unknown_rule() {
+  return new Rule(focus = unknown_FC_specification(),
+		  structural_change = unknown_FC_specification(),
+		  left_trigger = unknown_guard(),
+		  right_trigger = unknown_guard());
+}
+
+bit rule_uses_boundary(Rule r){
+  return r.left_trigger.spec == global_boundary_specification;
+}
+
+int alternation_cost(Rule r) {
+  // For alternations the focus and structural change don't matter because they are essentially given by the problem
+  return guard_cost(r.right_trigger) + guard_cost(r.left_trigger);
+}
+
+int guard_cost(Guard g) {
+#ifdef UNIVERSALGUARDGRAMMAR
+  UNIVERSALGUARDGRAMMAR
+#endif    
+  return validateCost(guard_specification_cost(g.spec) +
+		      guard_specification_cost(g.spec2) +
+		      g.endOfString +
+		      2*g.optionalEndOfString + 
+		      g.starred);
+}
+
+bit guard_does_something(Guard g){
+  return g.endOfString || g.spec != null;
+}
+
+// apply_guard(u, g, 0)[j] = .*g matches u[0],u[1],...,u[j-1]. eg, the first j elements of u.
+// apply_guard(u, g, 1)[j] = g.* matches u[j],u[j+1],...,u[l-1], eg, from j onward
+bit[l+1] apply_guard_sophisticated([int l], Sound[l] u, Guard g, int untilSuffix, bit R, int unrollBound){
+  int B = untilSuffix;
+  
+  // guard sanity checks
+  if (g.spec == null) assert g.spec2 == null;
+  if (g.endOfString) assert !g.optionalEndOfString;
+  if (g.optionalEndOfString) {
+    assert !g.endOfString;
+    assert g.spec != null || g.spec2 != null;
+  }
+  
+  // Cannot have two boundary markers. Also, +_ is identical to _+. wlog + occurs on the left.
+  if (R) assert !boundary_specification(g.spec);
+  assert !boundary_specification(g.spec2);
+  
+  if (g.starred) { // * applies to the second specification
+    assert g.spec != null && g.spec2 != null;
+    // do not put a star on constant
+#ifndef DISABLEFEATURES
+    assert !constant_specification(g.spec);
+#endif
+    assert !boundary_specification(g.spec);
+    assert !boundary_specification(g.spec2);
+#ifdef SYLLABLEBOUNDARYFEATURE
+    // todo: allow star on and with syllable
+    assert !is_syllable_specification(g.spec);
+    assert !is_syllable_specification(g.spec2);
+#endif
+  }
+#ifdef SYLLABLEBOUNDARYFEATURE
+  if (is_syllable_specification(g.spec2))
+    assert is_syllable_specification(g.spec);
+#endif
+
+
+  // The index counts how many sounds we have consumed from the input
+  // consider making these macros if it ends up being too slow
+  // not sure if that even matters
+/* #define index2okay(i) (R? (l - (i)) : i) */
+/* #define index2sound(o) (R? (l - 1 - o) : o) */
+  int index2okay(int i){
+    if (R) return l - i;
+    else return i;
+  }
+  int index2sound(int o){
+    if (R) return l - 1 - (o - 1);
+    else return (o - 1);
+  }
+
+  Specification r1 = g.spec2;
+  Specification r2 = g.spec;
+
+  // If we have an optional ending, which regular expression does it apply to?
+  bit optionalEnding1 = g.optionalEndOfString && r1 != null;
+  bit optionalEnding2 = g.optionalEndOfString && r2 != null && r1 == null;
+
+
+  bit[l + 1] okay;
+  bit a1old = 0,a2old = 0;
+#ifdef SYLLABLEBOUNDARYFEATURE
+  bit[l + 1] A1;
+#endif
+  // the only way that the empty string can be matched by .*g is if g is either empty or #
+  // # by itself entails that both of the specifications are null
+  for (int j = 0; j <= l; j++) {
+    assert j <= unrollBound;
+    bit a1,a2;
+    if (r1 == null) { // leftmost specification is epsilon
+      a1 = j == 0 || !g.endOfString;
+    } else { // leftmost specification corresponds to a set of phonemes or a boundary
+      
+#ifdef SYLLABLEBOUNDARYFEATURE
+      if (is_syllable_specification(r1)) {
+	if (!R)
+	  a1 = is_syllable_ending_at(u, index2sound(j)) && (!g.endOfString || 0 == syllable_ending_at(u, index2sound(j)));
+	else
+	  a1 = is_syllable_starting_at(u, index2sound(j)) && (!g.endOfString || l - 1 == syllable_starting_at(u, index2sound(j)));
+      } else {
+#endif
+
+	// This should hold because r1 = spec2
+	// assert !boundary_specification(r1);
+      
+	a1 = j > 0 && matches_specification(u[index2sound(j)], r1) && (j == 1 || !g.endOfString);
+	if (optionalEnding1) // optional end of string: {#,r1}
+	  a1 = a1 || (j == 0);
+
+#ifdef SYLLABLEBOUNDARYFEATURE
+      }
+#endif     
+
+    }
+    if (r2 == null) { // all specifications are empty
+      a2 = a1;
+    } else if (g.starred) {
+      a2 = a1 || (j > 0 && matches_specification(u[index2sound(j)], r2) && a2old);
+    } else if (!g.starred) {
+#ifdef SYLLABLEBOUNDARYFEATURE
+      if (is_syllable_specification(g.spec)) {
+	if (!R) {
+	  int e = syllable_ending_at(u, j - 1);
+	  if (e != -1) a2 = A1[e];
+	  else a2 = 0;
+	} else {
+	  int e = syllable_starting_at(u, l - j);
+	  if (e != -1) a2 = A1[l - e - 1];
+	  else a2 = 0;
+	}
+      } else {
+#endif
+	a2 = j > 0 && 
+	  (boundary_specification(r2) ?
+	   a1 && j == B :
+	   a1old && matches_specification(u[index2sound(j)],g.spec));
+	if (optionalEnding2) // optional end of string: {#,r2}
+	  a2 = a2 || (j == 0);
+#ifdef SYLLABLEBOUNDARYFEATURE
+      }
+#endif
+	
+    }
+    okay[index2okay(j)] = a2;
+    a2old = a2;
+    a1old = a1;
+#ifdef SYLLABLEBOUNDARYFEATURE
+    A1[j] = a1;
+#endif
+  }
+  return okay;
+}
+
+bit rule_does_nothing(Rule r){
+  return empty_specification(r.focus) && empty_specification(r.structural_change) &&
+    !guard_does_something(r.right_trigger) && !guard_does_something(r.left_trigger);
+}
+
+int rule_cost(Rule r) {
+  if (rule_does_nothing(r)) return 0;
+#ifdef UNIVERSALRULEGRAMMAR
+  UNIVERSALRULEGRAMMAR
+#endif
+  return validateCost(guard_cost(r.right_trigger) + guard_cost(r.left_trigger) +
+		      specification_cost(r.focus) + specification_cost(r.structural_change));
+}
+
+bit uses_features(Rule r){
+  return specification_uses_features(r.focus) || specification_uses_features(r.structural_change) ||
+    guard_uses_features(r.left_trigger) || guard_uses_features(r.right_trigger);
+}
+bit specification_uses_features(Specification p){
+  if (p == null) return 0;
+  switch (p) {
+  case Vector:{
+    return !EMPTYVECTOR(p);
+  }
+  case ConstantPhoneme:{ return 0; }
+  case Boundary:{ return 0;}
+  case Offset:{return 0;}
+  }
+}
+bit guard_uses_features(Guard g){
+  return specification_uses_features(g.spec) || specification_uses_features(g.spec2);
+}
+bit guard_uses_clean(Guard g){
+  return g.starred;
+}
+bit rule_uses_clean(Rule r){
+  return guard_uses_clean(r.left_trigger) || guard_uses_clean(r.right_trigger);
+}
+
+Word apply_rule(Rule r, Word u, int untilSuffix, int unrollBound) {
+  Specification focus = r.focus;
+  Specification structural_change = r.structural_change;
+  Guard left_trigger = r.left_trigger;
+  Guard right_trigger = r.right_trigger;
+
+  assert u.l <= unrollBound;
+  /* assert u.l >= unrollBound - 1; */
+#ifdef DISABLEFEATURES
+  assert !uses_features(r);
+#endif
+#ifdef DISABLECLEAN
+  assert !rule_uses_clean(r);
+#endif
+  
+  // sanity checks
+  assert !(is_offset(focus) && is_offset(structural_change));
+  if (is_offset(focus)) {
+    // symmetry breaking: offset could be either left or right and it would be the same
+    assert is_deletion_rule(r) && get_offset(focus) == 1 && !right_trigger.starred && right_trigger.spec != null;
+  }
+  if (is_offset(structural_change)) { // copying
+    int o = get_offset(structural_change);
+    // Long-distance copying has to be unambiguous in order to have deterministic rules
+    if (o < 0 && left_trigger.starred)
+      assert left_trigger.endOfString && o == -2;
+    if (o > 0 && right_trigger.starred)
+      assert right_trigger.endOfString && o == 2;
+    // Make sure with specified which feature matrix is being copied
+    if (o == 1) assert right_trigger.spec != null;
+    if (o == 2) assert right_trigger.spec2 != null;
+    if (o == -1) assert left_trigger.spec != null;
+    if (o == -2) assert left_trigger.spec2 != null;
+  }
+  
+  // HEURISTIC: long-distance dependencies tend to only occur on one side
+#ifndef DISABLEFEATURES  
+  if (left_trigger.starred) assert !right_trigger.starred;
+  if (right_trigger.starred) assert !left_trigger.starred;
+#endif  
+  // K > [features] is always equivalent to K > K at a cost which is no greater
+  // ACTUALLY, this is not true with universal grammar!
+  // if (constant_specification(focus)) assert constant_specification(structural_change) || structural_change == null;
+  // K > K / _ is always over fitting
+  if (constant_specification(focus) && constant_specification(structural_change))
+    assert guard_does_something(left_trigger) || guard_does_something(right_trigger);
+  
+  assert is_valid_structural_change(structural_change);
+#ifdef SYLLABLEBOUNDARYFEATURE
+  // Syllables are encoded only as the special syllable phoneme
+  assert !has_syllable_feature(left_trigger.spec);
+  assert !has_syllable_feature(left_trigger.spec2);
+  assert !has_syllable_feature(right_trigger.spec);
+  assert !has_syllable_feature(right_trigger.spec2);
+  assert !has_syllable_feature(focus);
+  assert !has_syllable_feature(structural_change);
+#endif
+#ifndef SYLLABLEBOUNDARYFEATURE
+#define MAXIMALINCREASE 1
+#else
+#define MAXIMALINCREASE 3
+#endif
+
+
+  
+  Sound[u.l + MAXIMALINCREASE] output;
+
+  bit[u.l + 1] right_okay = apply_guard_sophisticated(u.s,right_trigger, untilSuffix, 1, unrollBound);
+  bit right_final_okay = right_okay[0];
+  
+  bit[u.l + 1] left_okay = apply_guard_sophisticated(u.s,left_trigger, untilSuffix, 0, unrollBound);
+  bit left_final_okay = left_okay[u.l];
+
+
+  bit[u.l] middle_okay;
+  for (int j = 0; j < u.l; j++) {
+    middle_okay[j] = focus == null || matches_specification(u.s[j], focus);
+    assert j < unrollBound;
+  }
+
+  bit[u.l] triggered;
+  for (int j = 0; j < u.l; j++) {
+    triggered[j] = middle_okay[j] && right_okay[j + 1] && left_okay[j];
+    assert j < unrollBound;
+  }
+
+  int output_length; // how long is the output
+  // Deletion rule
+  if (structural_change == null) {
+    assert focus != null;
+
+    // special case: rule doesn't apply
+    bit ruleApplies = 0;
+    for (int j = 0; j < u.l; j++){
+      assert j < unrollBound;
+      if (triggered[j] && (is_offset(focus) ? (j + 1 < u.l && u.s[j] == u.s[j + 1]) : 1)) {
+	assert !ruleApplies;
+	ruleApplies = 1;
+      }
+    }
+    if (!ruleApplies) return u;
+    
+    int outputIndex = 0;
+    for (int j = 0; j < u.l; j++) {
+      assert j < unrollBound;
+      if (!(triggered[j] && (is_offset(focus) ? (j + 1 < u.l && u.s[j] == u.s[j + 1]) : 1))) {
+	output[outputIndex] = u.s[j];
+	outputIndex++;
+      }
+    }
+    output_length = u.l - 1;
+  } else if (focus == null) { // insertion rule
+    if (!is_offset(structural_change)) { // not copying
+      assert constant_specification(structural_change);
+    } else { // copying
+      // Sanity checks should already have been performed
+    }
+
+#ifdef SYLLABLEBOUNDARYFEATURE
+    bit inserting_syllable = is_offset(structural_change) &&
+      ((get_offset(structural_change) == 1 && is_syllable_specification(right_trigger.spec)) ||
+       (get_offset(structural_change) == 2 && is_syllable_specification(right_trigger.spec2)) ||
+       (get_offset(structural_change) == -1 && is_syllable_specification(left_trigger.spec)) ||
+       (get_offset(structural_change) == -2 && is_syllable_specification(left_trigger.spec2)));
+    int inserted = 0;
+#else    
+    bit inserted = 0;
+#endif
+    
+    // Should we insert before u[j]?
+    for (int j = 0; j <= u.l; j++) {
+      assert j < unrollBound;
+      if (left_okay[j] && right_okay[j]) {
+	assert inserted == 0;
+#ifdef SYLLABLEBOUNDARYFEATURE
+	if (inserting_syllable) {
+	  int starting, ending; // we will copy the syllable which begins at index starting and ends at index ending. Includes the content at ending.
+	  if (get_offset(structural_change) > 0) { // grab a syllable to the right
+	    starting = j;
+	    ending = syllable_starting_at(u.s,j);
+	    if (get_offset(structural_change) == 2) {
+	      starting = ending + 1;
+	      ending = syllable_starting_at(u.s,starting);
+	    }
+	  } else { // grab a syllable to the left
+	    starting = syllable_ending_at(u.s,j - 1);
+	    ending = j - 1;
+	    if (get_offset(structural_change) == -2) {
+	      ending = starting - 1;
+	      starting = syllable_ending_at(u.s,ending);
+	    }
+	  }
+	  // copy the syllable from starting to ending
+	  for (int k = starting; k <= ending; k++) {
+	    output[j + inserted] = u.s[k];
+	    inserted++;
+	  }
+	} else { // not inserting a syllable so just use the old logic
+#endif
+	inserted = 1; 
+	output[j] = !is_offset(structural_change) ?
+	  extract_constant_sound(structural_change)
+	  : (get_offset(structural_change) == -2 && left_trigger.starred ?
+	     u.s[0] : u.s[j + get_offset(structural_change) - (get_offset(structural_change) > 0 ? 1 : 0)]);
+#ifdef SYLLABLEBOUNDARYFEATURE
+	}
+#endif
+      }
+      if (j < u.l) 
+	output[j + inserted] = u.s[j];
+    }
+    if (inserted == 0) return u;
+    output_length = u.l + inserted;
+  } else { // Modification rule
+    bit made_a_change = 0;
+    for (int j = 0; j < u.l; j++) {
+      assert j < unrollBound;
+      output[j] = !triggered[j] ? u.s[j] :
+	(is_offset(structural_change)?
+	 u.s[j + get_offset(structural_change)] :
+	 apply_specification(structural_change, u.s[j]));
+      if (triggered[j] && output[j] != u.s[j]) made_a_change = 1;
+    }
+    output_length = u.l;
+    if (!made_a_change) return u;
+  }
+  
+  return new Word(s = output[0::output_length], l = output_length);
+}
+
+// Assert that r does nothing on u, and then return u
+// The idea is that you can plop this in as a replacement for apply_rule
+/* Word do_nothing_rule(Rule r, Word u, int untilSuffix, int unrollBound) { */
+/*   Specification focus = r.focus; */
+/*   Specification structural_change = r.structural_change; */
+/*   Guard left_trigger = r.left_trigger; */
+/*   Guard right_trigger = r.right_trigger; */
+
+/*   bit[u.l + 1] right_okay = apply_guard_sophisticated(u.s,right_trigger,untilSuffix, 1, unrollBound); */
+/*   bit right_final_okay = right_okay[0]; */
+  
+/*   bit[u.l + 1] left_okay = apply_guard_sophisticated(u.s,left_trigger,untilSuffix, 0, unrollBound); */
+/*   bit left_final_okay = left_okay[u.l]; */
+
+
+/*   bit[u.l] middle_okay; */
+/*   for (int j = 0; j < u.l; j++) { */
+/*     middle_okay[j] = focus == null || matches_specification(u.s[j], focus); */
+/*     assert j < unrollBound; */
+/*   } */
+
+/*   bit[u.l] triggered; */
+/*   for (int j = 0; j < u.l; j++) { */
+/*     triggered[j] = middle_okay[j] && right_okay[j + 1] && left_okay[j]; */
+/*     assert j < unrollBound; */
+/*   } */
+
+/*   // Deletion rule */
+/*   if (structural_change == null) { */
+/*     assert focus != null; */
+
+/*     for (int j = 0; j < u.l; j++){ */
+/*       assert j < unrollBound; */
+/*       assert !(triggered[j] && (r.copyOffset == 0 ? 1 : (j + 1 < u.l && u.s[j] == u.s[j + 1]))); */
+/*     } */
+/*   } else if (focus == null) { // insertion rule */
+/*     // Should we insert before u[j]? */
+/*     for (int j = 0; j <= u.l; j++) { */
+/*       assert j < unrollBound; */
+/*       assert !(left_okay[j] && right_okay[j]) ; */
+/*     } */
+/*   } else { // Modification rule */
+/*     for (int j = 0; j < u.l; j++) { */
+/*       assert j < unrollBound; */
+/*       assert !(triggered[j] && apply_specification(structural_change, u.s[j]) != u.s[j]); */
+/*     } */
+/*   } */
+
+/*   return u; */
+/* } */
+
+
+
+
+// Alignment
+#ifdef MAYBEPATTERN
+bit match_pattern_(Word observation, Word pattern){
+  int m = pattern.l;
+  int n = observation.l;
+  
+  // table[x][y] = whether the first x symbols and observation can
+  // match the first y symbols in pattern
+  bit[m+1][n+1] table;
+
+  for (int x = 0; x < n+1; x++) {
+    for (int y =0 ; y <  m+1; y++) {
+      bit v;
+      if (x == 0) { // does the pattern match the empty string
+	v = y == 0 || (y == 1 && pattern.s[0] == MAYBEPATTERN);
+      } else if (y == 0) { // does the empty pattern match the string
+	v = x == 0;
+      } else if (y > x + 1 || x > y + 1) {
+	v = 0;
+      } else { // inductive case
+	Sound t = pattern.s[y - 1];
+	if (t == WILDPATTERN) {
+	  v = table[x - 1][y - 1];
+	} else if (t == MAYBEPATTERN){
+	  v = table[x - 1][y - 1] || (x < n && table[x][y - 1]);
+	} else{
+	  v = table[x - 1][y - 1] && observation.s[x - 1] == t;
+	}
+      }
+      table[x][y] = v;
+    }
+  }
+  return table[n][m];
+}
+bit match_pattern(Word observation, Word pattern){
+  int M = pattern.l;
+  int N = observation.l;
+#define K 2
+  
+  bit[2*K+1][N+1] table;
+
+  for (int n = 0; n < N+1; n++) {
+    for (int m =0 ; m <  2*K+1; m++) {
+      bit v;
+      if (n == 0) { // does the pattern match the empty string
+	v = m - K + n == 0 || (m - K + n == 1 && pattern.s[0] == MAYBEPATTERN);
+      } else if (m - K + n < 0 || m - K + n > M) {
+	v = 0;
+      } else if (m - K + n == 0) { // does the empty pattern match the string
+	v = n == 0;
+      /* } else if (y > x + 1 || x > y + 1) { */
+      /* 	v = 0; */
+      } else { // inductive case
+	Sound t = pattern.s[m - K + n - 1];
+	if (t == WILDPATTERN) {
+	  v = table[n - 1][m];
+	} else if (t == MAYBEPATTERN){
+	  v = table[n - 1][m] || (m - 1 >= 0 && table[n][m - 1]);
+	} else{
+	  v = table[n - 1][m] && observation.s[n - 1] == t;
+	}
+      }
+      table[n][m] = v;
+    }
+  }
+  return M - N + K >= 0 && M - N + K <= 2*K && table[N][M - N + K];
+}
+int pattern_cost(Word pattern){
+  int c = 0;
+  int m = 0;
+  for (int j = 0; j < pattern.l; j++) {
+    if (pattern.s[j] == MAYBEPATTERN) {
+      c += 2;
+      m += 1;
+      assert m < 3;
+    } else if (pattern.s[j] == WILDPATTERN){
+      c += 1;
+    }
+  }
+  return c;
+}
+#endif
