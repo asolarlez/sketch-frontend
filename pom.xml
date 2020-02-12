@@ -146,8 +146,8 @@
                 <version>2.0.2</version>
                 <configuration>
                     <classifier>test</classifier>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <excludes>
                         <exclude>sketch/compiler/main/other/ParseFunctions.java</exclude>
                         <exclude>sketch/compiler/main/par/ParallelSketchMain.java</exclude>
