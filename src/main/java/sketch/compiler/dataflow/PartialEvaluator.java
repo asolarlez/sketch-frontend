@@ -358,11 +358,11 @@ public class PartialEvaluator extends SymbolTableVisitor {
 
         boolean wereArraysUnchecked = uncheckedArrays;
 
-        uncheckedArrays = (!cond.hasIntVal () || cond.getIntVal () == 0);
+		uncheckedArrays = (!cond.hasIntVal() || cond.getIntVal() == 0) || wereArraysUnchecked;
         abstractValue vtrue = (abstractValue) exp.getB().accept(this);
         Expression nvtrue = exprRV;
 
-        uncheckedArrays = (!cond.hasIntVal () || cond.getIntVal () != 0);
+		uncheckedArrays = (!cond.hasIntVal() || cond.getIntVal() != 0) || wereArraysUnchecked;
         abstractValue vfalse = (abstractValue) exp.getC().accept(this);
         Expression nvfalse = exprRV;
 

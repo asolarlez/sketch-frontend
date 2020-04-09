@@ -21,6 +21,15 @@ return exprBool({y, y_0, k, k_0, t}, {PLUS});
 harness void main(int y, int y_0, int k, int k_0, int t,
                   int yp, int tp, int ypp, int tpp
    ){
+   y = y - 10;
+   y_0 = y_0 - 10;
+   k = k-10;
+   t = t-10;
+   yp = yp-10;
+   tp = tp - 10;
+   ypp = ypp - 10;
+   tpp = tpp - 10;
+	
    if(y==y_0 && k==k_0 && t==y_0-k_0){
       assert inv(y, y_0, k, k_0, t);
       if(inv(yp, y_0, k, k_0, tp) && tp>0){
