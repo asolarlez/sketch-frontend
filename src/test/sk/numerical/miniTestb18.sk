@@ -6,7 +6,7 @@ pragma options "--be:usesnopt --be:numericalsolver";
 
 void foo(double x, double y){}
 
-#define MINIMIZE(v) hassert(v > 0.0)
+#define MINIMIZE(v) hassert(v > -10.0)
 
 
 harness void main(){
@@ -15,6 +15,7 @@ harness void main(){
 	
 	assert x > 5.0;
 	assert y > 5.0;
+	//assert x*y < 26.0;
 	MINIMIZE(x*y);
 	foo(x,y);
 }

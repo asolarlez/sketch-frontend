@@ -14,7 +14,9 @@ harness void main(){
 		segs[i] = seg(x,y,nx,ny, 0.0);
 		x = nx;
 		y = ny;
-		deltas[i] = 0.02;
+		deltas[i] = ??;
+		assert deltas[i] < 1.0;
+		assert deltas[i] > 0.0;
 	}
 	
 	printSegs(segs);

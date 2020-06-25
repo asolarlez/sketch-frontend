@@ -2,7 +2,7 @@
 
 include "math.skh";
 
-pragma options "--be:usesnopt --be:numericalsolver --beopt:numericalsolvermode INTERACTIVE";
+pragma options "--be:usesnopt --be:numericalsolver";
 
 #define MINIMIZE(v) hassert(v > -10.0)
 
@@ -12,6 +12,6 @@ harness void main(){
     double t = ??;
     double u = ??;
     double val = (t-5.0)*(t-4.9) +  (u-2.0)*(u-1.5) ;
-    foo(t,u, val);
+    foo(t,u, val);   
     MINIMIZE(val);
 }
