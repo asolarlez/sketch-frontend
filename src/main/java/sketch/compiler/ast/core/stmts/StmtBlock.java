@@ -96,7 +96,9 @@ public class StmtBlock extends Statement
         int sz = 0;
         if (stmts != null) {
             for (Statement s : stmts) {
-                sz += s.size();
+				if (s != null) {
+					sz += s.size();
+				}
             }
         }
         return sz;
