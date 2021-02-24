@@ -683,7 +683,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 Future<?> f = executor.submit(sketchmain);
                 try {
-                    f.get((long) options.feOpts.timeout, TimeUnit.MINUTES);
+					f.get((long) (options.feOpts.timeout * 60), TimeUnit.SECONDS);
                 } catch (TimeoutException e) {
                     System.out.println("Sketch front-end timed out");
                     exitCode = 1;

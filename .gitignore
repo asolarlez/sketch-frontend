@@ -1,0 +1,7 @@
+src/test/sk/seq/*.output
+src/test/sk/seq/*.h
+src/test/sk/seq/*.cpp
+src/test/sk/seq/ref
+src/test/sk/seq/result
+src/experiments/RNA
+target

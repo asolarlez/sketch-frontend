@@ -1,0 +1,467 @@
+
+
+pragma options "--fe-fpencoding TO_BACKEND --bnd-inbits 7 -V 10 -p preproc";
+
+include "math.skh";
+#define N 117
+
+adt Vector {
+  float x;
+  float y;
+  float z;
+}
+
+Vector[N] input = {new Vector(x=1.10202, y=19.7078, z=-0.593769),new Vector(x=1.04447, y=15.6627, z=1.32681),new Vector(x=1.92815, y=15.3068, z=0.300839),new Vector(x=-3.80004, y=12.6122, z=0.168323),new Vector(x=-0.899094, y=17.6365, z=8.45719),new Vector(x=3.94321, y=17.4152, z=-1.74756),new Vector(x=-1.57569, y=17.115, z=4.10278),new Vector(x=-2.91419, y=-4.92867, z=2.68278),new Vector(x=-0.929056, y=15.8586, z=4.72061),new Vector(x=-3.86836, y=15.7424, z=0.663981),new Vector(x=0.657569, y=15.6681, z=0.304275),new Vector(x=2.85128, y=15.2665, z=-1.86381),new Vector(x=3.48801, y=10.1912, z=0.616259),new Vector(x=1.74642, y=15.6125, z=1.02777),new Vector(x=-3.01386, y=17.1011, z=0.89422),new Vector(x=1.68782, y=9.62563, z=0.098073),new Vector(x=2.44574, y=15.5665, z=0.702527),new Vector(x=-1.63409, y=17.9507, z=-0.103936),new Vector(x=5.01218, y=15.3332, z=9.3371),new Vector(x=1.14208, y=12.7396, z=11.7167),new Vector(x=-3.55329, y=14.5617, z=0.22493),new Vector(x=0.143009, y=13.7329, z=0.993565),new Vector(x=0.282859, y=14.392, z=1.14748),new Vector(x=1.68803, y=15.6137, z=4.25012),new Vector(x=1.90994, y=12.5883, z=1.67442),new Vector(x=0.657935, y=14.7431, z=0.063258),new Vector(x=-2.92451, y=16.5842, z=3.74294),new Vector(x=-1.74612, y=12.8581, z=0.120129),new Vector(x=1.67432, y=15.1279, z=1.54649),new Vector(x=-3.87748, y=12.9738, z=0.655902),new Vector(x=-3.83633, y=15.2701, z=1.40672),new Vector(x=-3.05707, y=-4.7037, z=1.1408),new Vector(x=-3.64858, y=12.4365, z=2.51095),new Vector(x=0.70831, y=16.7501, z=8.93744),new Vector(x=1.51443, y=16.8735, z=0.746171),new Vector(x=-0.874093, y=15.8426, z=13.6059),new Vector(x=-3.41104, y=15.6515, z=0.928179),new Vector(x=-3.93308, y=14.6284, z=1.27259),new Vector(x=1.33335, y=16.1222, z=8.32103),new Vector(x=1.71684, y=12.1664, z=0.0553527),new Vector(x=-5.13678, y=14.8479, z=1.37934),new Vector(x=0.305102, y=-4.22849, z=0.20723),new Vector(x=-3.37163, y=-3.18189, z=0.249053),new Vector(x=-4.70849, y=15.3217, z=2.80778),new Vector(x=-5.35262, y=13.6601, z=4.26935),new Vector(x=-1.46531, y=16.5576, z=3.6577),new Vector(x=-4.72852, y=15.3407, z=1.46496),new Vector(x=-4.50289, y=15.5146, z=1.85486),new Vector(x=1.92538, y=15.6834, z=1.56301),new Vector(x=-0.935572, y=-5.08997, z=0.438272),new Vector(x=0.709704, y=15.0751, z=11.6566),new Vector(x=-0.45205, y=16.9432, z=1.11647),new Vector(x=-3.59312, y=14.8814, z=10.4592),new Vector(x=-2.61645, y=16.9229, z=1.14668),new Vector(x=0.535177, y=14.8804, z=11.1786),new Vector(x=1.44521, y=15.3189, z=0.284982),new Vector(x=-2.47855, y=16.1, z=0.693828),new Vector(x=1.42948, y=15.0452, z=11.6905),new Vector(x=-3.65007, y=14.9984, z=12.0615),new Vector(x=-0.45639, y=16.9314, z=5.13495),new Vector(x=-3.38601, y=15.7144, z=-2.61105),new Vector(x=-0.313263, y=-5.10841, z=7.70416),new Vector(x=-0.511321, y=-5.35221, z=7.69649),new Vector(x=-1.13605, y=-4.44755, z=2.68576),new Vector(x=-4.15522, y=14.161, z=0.109786),new Vector(x=-2.48019, y=15.6758, z=1.35736),new Vector(x=-0.710717, y=-5.73985, z=4.85173),new Vector(x=-1.05772, y=15.83, z=0.562089),new Vector(x=-0.522956, y=-4.88504, z=6.17603),new Vector(x=-3.64673, y=14.6554, z=-0.891515),new Vector(x=-4.06166, y=12.9359, z=1.46965),new Vector(x=-4.5442, y=9.54324, z=1.65176),new Vector(x=0.856849, y=16.8114, z=7.66762),new Vector(x=-4.1436, y=7.25676, z=2.59149),new Vector(x=-4.10596, y=13.4716, z=4.16335),new Vector(x=-1.10926, y=15.6956, z=0.053801),new Vector(x=1.72867, y=13.0359, z=0.394066),new Vector(x=-0.0607705, y=15.6546, z=0.0738453),new Vector(x=-1.37769, y=15.8132, z=0.141731),new Vector(x=-3.52758, y=15.75, z=0.554367),new Vector(x=-1.69146, y=15.2909, z=1.64802),new Vector(x=1.65356, y=15.9225, z=0.348797),new Vector(x=-3.84039, y=13.4788, z=0.226974),new Vector(x=-3.77105, y=15.6757, z=0.355473),new Vector(x=-2.20813, y=16.0832, z=1.30444),new Vector(x=-0.891942, y=15.5551, z=1.70749),new Vector(x=-3.93493, y=14.5561, z=0.185161),new Vector(x=-1.58128, y=15.9158, z=1.2827),new Vector(x=0.139154, y=15.8653, z=1.6052),new Vector(x=-3.70255, y=15.1438, z=0.112569),new Vector(x=6.72673, y=14.4814, z=0.879421),new Vector(x=4.11366, y=14.4417, z=0.26261),new Vector(x=1.11673, y=15.9191, z=1.74405),new Vector(x=4.71296, y=15.0284, z=0.366856),new Vector(x=1.39723, y=15.8522, z=1.73946),new Vector(x=2.72337, y=13.5344, z=0.684668),new Vector(x=4.13539, y=14.4153, z=1.13639),new Vector(x=3.03151, y=12.8728, z=0.522499),new Vector(x=2.86902, y=13.2673, z=0.928826),new Vector(x=5.09515, y=12.9996, z=1.10881),new Vector(x=1.92888, y=14.6225, z=0.143087),new Vector(x=1.94654, y=14.2388, z=0.220487),new Vector(x=1.68729, y=13.9312, z=0.0553547),new Vector(x=1.65926, y=14.6406, z=0.0711484),new Vector(x=1.94899, y=14.7217, z=0.245172),new Vector(x=1.85938, y=15.1077, z=0.122517),new Vector(x=1.72214, y=14.9957, z=0.113457),new Vector(x=0.875734, y=16.2696, z=1.4171),new Vector(x=1.67239, y=15.9356, z=1.33295),new Vector(x=1.72682, y=15.8697, z=1.093),new Vector(x=1.72146, y=16.8509, z=1.25654),new Vector(x=1.89341, y=15.737, z=0.906838),new Vector(x=0.911579, y=16.9072, z=1.4097),new Vector(x=1.53343, y=16.7449, z=1.26325),new Vector(x=1.72246, y=16.2593, z=1.30053),new Vector(x=1.6852, y=15.7698, z=0.35918),new Vector(x=1.85172, y=15.9326, z=0.883589)};
+
+// First rotate along z axis with -thetaz, then along y-axis with -thetay, finally along x-axis with -thetax
+Vector inverse_rotate(Vector p, float theta_x, float theta_y, float theta_z) {
+	float x0 = p.x; float y0 = p.y; float z0 = p.z;
+	
+	float x1 = cos(-theta_z)*x0 - sin(-theta_z)*y0;
+	float y1 = sin(-theta_z)*x0 + cos(-theta_z)*y0;
+	float z1 = z0;
+	
+	float x2 = cos(-theta_y)*x1 + sin(-theta_y)*z1;
+	float y2 = y1;
+	float z2 = -sin(-theta_y)*x1 + cos(-theta_y)*z1;
+	
+	float x3 = x2;
+	float y3 = cos(-theta_x)*y2 -sin(-theta_x)*z2;
+	float z3 = sin(-theta_x)*y2 + cos(-theta_x)*z2;
+
+	return new Vector(x = x3, y = y3, z = z3);	
+}
+bit inter(bit x, bit y) { return x && y; }
+bit sub(bit x, bit y) { return x && !y; }
+bit union(bit x, bit y) { return x || y; }
+
+bit cuboid_0(Vector v, float xl, float xu, float yl, float yu, float zl, float zu) {
+    Vector r = inverse_rotate(v, -0.0, -1.57079632679, 0.0);
+    return r.x >= xl && r.x <= xu && r.y >= yl && r.y <= yu && r.z >= zl && r.z <= zu;
+}
+     
+bit sphere_0(Vector v) {
+    return (v.x - -3.2) * (v.x - -3.2) + 
+           (v.y - 15.2) * (v.y - 15.2) + 
+           (v.z - 0.8) * (v.z - 0.8) - 
+           0.8 <= 0.0;
+}
+       
+bit sphere_1(Vector v) {
+    return (v.x - 1.2) * (v.x - 1.2) + 
+           (v.y - 15.2) * (v.y - 15.2) + 
+           (v.z - 0.8) * (v.z - 0.8) - 
+           0.8 <= 0.0;
+}
+       
+bit cylinder_0(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, -0.0, 0.0);
+    bit withinRadius = (r.y - 10.0) * (r.y - 10.0) + (r.z - 5.0) * (r.z - 5.0) - 3.2 * 3.2 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+bit cylinder_1(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, 0.0, 1.57079632679);
+    bit withinRadius = (r.y - 3.2) * (r.y - 3.2) + (r.z - 0.8) * (r.z - 0.8) - 0.8 * 0.8 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+bit cylinder_2(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, 0.0, 1.57079632679);
+    bit withinRadius = (r.y - -1.2) * (r.y - -1.2) + (r.z - 0.8) * (r.z - 0.8) - 0.8 * 0.8 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+bit cylinder_3(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, -0.0, 1.57079632679);
+    bit withinRadius = (r.y - -7.0) * (r.y - -7.0) + (r.z - 2.4) * (r.z - 2.4) - 8.0 * 8.0 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+bit cylinder_4(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, -0.0, 0.0);
+    bit withinRadius = (r.y - 15.2) * (r.y - 15.2) + (r.z - 0.8) * (r.z - 0.8) - 0.8 * 0.8 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+bit cylinder_5(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, -1.57079632679, 0.0);
+    bit withinRadius = (r.y - 15.2) * (r.y - 15.2) + (r.z - 3.2) * (r.z - 3.2) - 0.8 * 0.8 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+bit cylinder_6(Vector v, float xl, float xu) {
+    Vector r = inverse_rotate(v, 0.0, -1.57079632679, 0.0);
+    bit withinRadius = (r.y - 15.2) * (r.y - 15.2) + (r.z - -1.2) * (r.z - -1.2) - 0.8 * 0.8 <= 0.0;
+	bit withinHeight = r.x >= xl && r.x <= xu;
+    return withinRadius && withinHeight;
+}
+     
+float offset_cylinder_5_0() {
+  return -21.0;
+}
+       
+float offset_cylinder_6_0() {
+  return -21.0;
+}
+       
+float offset_cylinder_1_0() {
+  return -21.0;
+}
+       
+float offset_cylinder_2_0() {
+  return -21.0;
+}
+       
+float offset_cylinder_3_0() {
+  return -21.0;
+}
+       
+float offset_cuboidy_0_0() {
+  return -21.0;
+}
+       
+float offset_cylinder_0_0() {
+  return -21.0;
+}
+       
+float offset_cylinder_4_0() {
+  return -21.0;
+}
+       
+float offset_cuboidz_0_0() {
+  return -21.0;
+}
+       
+float offset_cuboidx_0_0() {
+  return -21.0;
+}
+       
+float offset_cuboidz_0_1() {
+  return -7.0;
+}
+       
+float offset_cylinder_0_1() {
+  return -4.6;
+}
+       
+float offset_cylinder_4_1() {
+  return -4.6;
+}
+       
+float offset_cuboidx_0_1() {
+  return -1.9594348786357652e-16;
+}
+       
+float offset_cylinder_5_1() {
+  return 0.0;
+}
+       
+float offset_cylinder_6_1() {
+  return 0.0;
+}
+       
+float offset_cylinder_1_1() {
+  return 7.2;
+}
+       
+float offset_cylinder_2_1() {
+  return 7.2;
+}
+       
+float offset_cylinder_3_1() {
+  return 7.2;
+}
+       
+float offset_cuboidy_0_1() {
+  return 7.2;
+}
+       
+float offset_cylinder_0_2() {
+  return -4.0;
+}
+       
+float offset_cylinder_4_2() {
+  return -4.0;
+}
+       
+float offset_cuboidz_0_2() {
+  return -2.0;
+}
+       
+float offset_cuboidx_0_2() {
+  return 0.0;
+}
+       
+float offset_cylinder_5_2() {
+  return 0.79999999999999982;
+}
+       
+float offset_cylinder_6_2() {
+  return 0.79999999999999982;
+}
+       
+float offset_cuboidy_0_2() {
+  return 10.0;
+}
+       
+float offset_cylinder_1_2() {
+  return 12.8;
+}
+       
+float offset_cylinder_2_2() {
+  return 12.8;
+}
+       
+float offset_cylinder_3_2() {
+  return 12.8;
+}
+       
+float offset_cylinder_0_3() {
+  return -3.2;
+}
+       
+float offset_cylinder_4_3() {
+  return -3.2;
+}
+       
+float offset_cuboidz_0_3() {
+  return -1.2;
+}
+       
+float offset_cuboidx_0_3() {
+  return 0.79999999999999982;
+}
+       
+float offset_cylinder_5_3() {
+  return 1.2;
+}
+       
+float offset_cylinder_6_3() {
+  return 1.2;
+}
+       
+float offset_cuboidy_0_3() {
+  return 12.8;
+}
+       
+float offset_cylinder_1_3() {
+  return 15.2;
+}
+       
+float offset_cylinder_2_3() {
+  return 15.2;
+}
+       
+float offset_cylinder_3_3() {
+  return 15.2;
+}
+       
+float offset_cylinder_0_4() {
+  return -2.8;
+}
+       
+float offset_cylinder_4_4() {
+  return -2.8;
+}
+       
+float offset_cuboidz_0_4() {
+  return -0.8;
+}
+       
+float offset_cuboidx_0_4() {
+  return 1.2;
+}
+       
+float offset_cylinder_5_4() {
+  return 8.4;
+}
+       
+float offset_cylinder_6_4() {
+  return 8.4;
+}
+       
+float offset_cuboidy_0_4() {
+  return 15.2;
+}
+       
+float offset_cylinder_1_4() {
+  return 16.0;
+}
+       
+float offset_cylinder_2_4() {
+  return 16.0;
+}
+       
+float offset_cylinder_3_4() {
+  return 16.0;
+}
+       
+float offset_cylinder_0_5() {
+  return 0.8;
+}
+       
+float offset_cylinder_4_5() {
+  return 0.8;
+}
+       
+float offset_cuboidx_0_5() {
+  return 2.4000000000000004;
+}
+       
+float offset_cuboidz_0_5() {
+  return 2.8;
+}
+       
+float offset_cylinder_5_5() {
+  return 8.8;
+}
+       
+float offset_cylinder_6_5() {
+  return 8.8;
+}
+       
+float offset_cuboidy_0_5() {
+  return 16.0;
+}
+       
+float offset_cylinder_1_5() {
+  return 17.0;
+}
+       
+float offset_cylinder_2_5() {
+  return 17.0;
+}
+       
+float offset_cylinder_3_5() {
+  return 17.0;
+}
+       
+float offset_cylinder_0_6() {
+  return 1.2;
+}
+       
+float offset_cylinder_4_6() {
+  return 1.2;
+}
+       
+float offset_cuboidz_0_6() {
+  return 3.2;
+}
+       
+float offset_cuboidx_0_6() {
+  return 5.0;
+}
+       
+float offset_cuboidy_0_6() {
+  return 17.0;
+}
+       
+float offset_cylinder_5_6() {
+  return 21.0;
+}
+       
+float offset_cylinder_6_6() {
+  return 21.0;
+}
+       
+float offset_cylinder_1_6() {
+  return 21.0;
+}
+       
+float offset_cylinder_2_6() {
+  return 21.0;
+}
+       
+float offset_cylinder_3_6() {
+  return 21.0;
+}
+       
+float offset_cylinder_0_7() {
+  return 2.0;
+}
+       
+float offset_cylinder_4_7() {
+  return 2.0;
+}
+       
+float offset_cuboidz_0_7() {
+  return 4.0;
+}
+       
+float offset_cuboidx_0_7() {
+  return 8.4;
+}
+       
+float offset_cuboidy_0_7() {
+  return 21.0;
+}
+       
+float offset_cuboidz_0_8() {
+  return 4.6;
+}
+       
+float offset_cuboidx_0_8() {
+  return 8.8;
+}
+       
+float offset_cylinder_0_8() {
+  return 21.0;
+}
+       
+float offset_cylinder_4_8() {
+  return 21.0;
+}
+       
+float offset_cuboidz_0_9() {
+  return 21.0;
+}
+       
+float offset_cuboidx_0_9() {
+  return 21.0;
+}
+       
+
+harness void main() {
+int v0 = ??;
+assert(0 <= v0 && v0 < 10);
+int v1 = ??;
+assert(0 <= v1 && v1 < 3);
+int v2 = ??;
+assert(0 <= v2 && v2 < 10);
+int v3 = ??;
+assert(0 <= v3 && v3 < 8);
+int v4 = ??;
+assert(0 <= v4 && v4 < 10);
+int v5 = ??;
+assert(0 <= v5 && v5 < 10);
+int v6 = ??;
+assert(0 <= v6 && v6 < 8);
+float o0;
+bit[117] b0;
+float o1;
+float o2;
+float o3;
+float o4;
+float o5;
+
+for(int i=0; i<N; ++i){
+  Vector v = input[i];
+o4 = {offset_cuboidx_0_0(), offset_cuboidx_0_1(), offset_cuboidx_0_2(), offset_cuboidx_0_3(), offset_cuboidx_0_4(), offset_cuboidx_0_5(), offset_cuboidx_0_6(), offset_cuboidx_0_7(), offset_cuboidx_0_8(), offset_cuboidx_0_9()}[v5];
+o5 = {offset_cuboidy_0_0(), offset_cuboidy_0_1(), offset_cuboidy_0_2(), offset_cuboidy_0_3(), offset_cuboidy_0_4(), offset_cuboidy_0_5(), offset_cuboidy_0_6(), offset_cuboidy_0_7()}[v6];
+o2 = {offset_cuboidy_0_0(), offset_cuboidy_0_1(), offset_cuboidy_0_2(), offset_cuboidy_0_3(), offset_cuboidy_0_4(), offset_cuboidy_0_5(), offset_cuboidy_0_6(), offset_cuboidy_0_7()}[v3];
+o3 = {offset_cuboidz_0_0(), offset_cuboidz_0_1(), offset_cuboidz_0_2(), offset_cuboidz_0_3(), offset_cuboidz_0_4(), offset_cuboidz_0_5(), offset_cuboidz_0_6(), offset_cuboidz_0_7(), offset_cuboidz_0_8(), offset_cuboidz_0_9()}[v4];
+o1 = {offset_cuboidz_0_0(), offset_cuboidz_0_1(), offset_cuboidz_0_2(), offset_cuboidz_0_3(), offset_cuboidz_0_4(), offset_cuboidz_0_5(), offset_cuboidz_0_6(), offset_cuboidz_0_7(), offset_cuboidz_0_8(), offset_cuboidz_0_9()}[v2];
+o0 = {offset_cuboidx_0_0(), offset_cuboidx_0_1(), offset_cuboidx_0_2(), offset_cuboidx_0_3(), offset_cuboidx_0_4(), offset_cuboidx_0_5(), offset_cuboidx_0_6(), offset_cuboidx_0_7(), offset_cuboidx_0_8(), offset_cuboidx_0_9()}[v0];
+b0[i] = {sphere_0(v), sphere_1(v), cuboid_0(v, o0,o4,o5,o2,o3,o1)}[v1];
+}
+
+assert(b0[0] == 0 & b0[1] == 1 & b0[2] == 0 & b0[3] == 0 & b0[4] == 0 & b0[5] == 0 & b0[6] == 0 & b0[7] == 0 & b0[8] == 1 & b0[9] == 0 & b0[10] == 1 & b0[11] == 0 & b0[12] == 0 & b0[13] == 1 & b0[14] == 0 & b0[15] == 0 & b0[16] == 0 & b0[17] == 0 & b0[18] == 0 & b0[19] == 0 & b0[20] == 1 & b0[21] == 1 & b0[22] == 1 & b0[23] == 1 & b0[24] == 1 & b0[25] == 1 & b0[26] == 0 & b0[27] == 1 & b0[28] == 1 & b0[29] == 1 & b0[30] == 1 & b0[31] == 0 & b0[32] == 1 & b0[33] == 0 & b0[34] == 0 & b0[35] == 0 & b0[36] == 1 & b0[37] == 1 & b0[38] == 0 & b0[39] == 0 & b0[40] == 0 & b0[41] == 0 & b0[42] == 0 & b0[43] == 0 & b0[44] == 0 & b0[45] == 1 & b0[46] == 0 & b0[47] == 0 & b0[48] == 0 & b0[49] == 0 & b0[50] == 0 & b0[51] == 0 & b0[52] == 0 & b0[53] == 0 & b0[54] == 0 & b0[55] == 1 & b0[56] == 0 & b0[57] == 0 & b0[58] == 0 & b0[59] == 1 & b0[60] == 0 & b0[61] == 0 & b0[62] == 0 & b0[63] == 0 & b0[64] == 0 & b0[65] == 1 & b0[66] == 0 & b0[67] == 1 & b0[68] == 0 & b0[69] == 0 & b0[70] == 0 & b0[71] == 0 & b0[72] == 0 & b0[73] == 0 & b0[74] == 0 & b0[75] == 0 & b0[76] == 1 & b0[77] == 0 & b0[78] == 0 & b0[79] == 1 & b0[80] == 1 & b0[81] == 0 & b0[82] == 0 & b0[83] == 0 & b0[84] == 1 & b0[85] == 1 & b0[86] == 0 & b0[87] == 1 & b0[88] == 1 & b0[89] == 0 & b0[90] == 0 & b0[91] == 0 & b0[92] == 1 & b0[93] == 0 & b0[94] == 1 & b0[95] == 0 & b0[96] == 0 & b0[97] == 0 & b0[98] == 0 & b0[99] == 0 & b0[100] == 0 & b0[101] == 0 & b0[102] == 0 & b0[103] == 0 & b0[104] == 0 & b0[105] == 0 & b0[106] == 0 & b0[107] == 0 & b0[108] == 0 & b0[109] == 0 & b0[110] == 0 & b0[111] == 0 & b0[112] == 0 & b0[113] == 0 & b0[114] == 0 & b0[115] == 0 & b0[116] == 0);
+
+}

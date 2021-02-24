@@ -1,0 +1,36 @@
+#!/usr/bin/bash
+
+#-TT=`which "$0"`
+
+#scriptname=`readlink -f "$TT"`
+#dirname=`dirname "$scriptname"`
+
+#-dirname=`dirname "$TT"`
+
+#-tdname=`cygpath -w "$dirname\../../"`;
+tdname='C:\Users\asola\Documents\eclipse-workspace\sketch-frontend'
+jarbase='C:\Users\asola\.m2\repository'
+
+AJAR="$jarbase\\antlr\\antlr\\2.7.7\\antlr-2.7.7.jar"
+
+RJAR="$jarbase\\xtc\\rats-runtime\\1.15.0\\rats-runtime-1.15.0.jar"
+
+CLJAR="$jarbase\\commons-cli\\commons-cli\\1.2\\commons-cli-1.2.jar"
+
+CPPJAR="$jarbase\\org\\anarres\\jcpp\\1.4.7\\jcpp-1.4.7.jar"; 
+
+SLF="$jarbase\\org\\slf4j\\slf4j-api\\1.7.7\\slf4j-api-1.7.7.jar;$jarbase\\org\\slf4j\\slf4j-jcl\\1.7.7\\slf4j-jcl-1.7.7.jar;$jarbase\\commons-logging\\commons-logging\\1.1.1\\commons-logging-1.1.1.jar"
+IOJAR="$jarbase\\commons-io\\commons-io\\1.4\\commons-io-1.4.jar"
+
+UJAR="$tdname\\target\\classes";
+
+CMATH="$jarbase\\org\\apache\\commons\\commons-math3\\3.4.1\\commons-math3-3.4.1.jar"
+
+
+TMPCLASSPATH="$AJAR;$RJAR;$CLJAR;$CPPJAR;$UJAR;$IOJAR;$CMATH;$SLF"
+
+# Launch
+#
+java.exe -ea \
+  -classpath "$TMPCLASSPATH" \
+  -Xmx5g -ea -Xss4m sketch.compiler.main.seq.SequentialSketchMain --fe-inc 'C:\\Armando\\Workspace\\sketch-frontend\\src\\sketchlib' --fe-cegis-path 'C:\\Users\\asola\\Documents\\eclipse-workspace\\sketch-backend\\src\\Release\\Sketch.exe' "$@" 
