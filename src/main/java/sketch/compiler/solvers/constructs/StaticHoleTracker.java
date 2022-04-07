@@ -5,7 +5,7 @@ import java.util.Map;
 
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.stmts.StmtFor;
 import sketch.compiler.ast.core.stmts.StmtLoop;
 
@@ -24,8 +24,8 @@ public class StaticHoleTracker implements HoleNameTracker {
 	}
 	
 	public String getName(Object hole) {
-		if(hole instanceof ExprStar){
-			return ((ExprStar)hole).getSname();
+		if(hole instanceof ExprHole){
+			return ((ExprHole)hole).getSname();
 		}
 		String vname = null;
 		if(store.containsKey(hole)){

@@ -15,7 +15,7 @@ import sketch.compiler.ast.core.typs.Type;
  *          http://creativecommons.org/licenses/BSD/. While not required, if you make
  *          changes, please consider contributing back!
  */
-public class ExprSpecialStar extends ExprStar {
+public class ExprSpecialStar extends ExprHole {
     public final String name;
     private static int cnt = 0;
     public ExprSpecialStar(FENode context, String name, int size, Type typ) {

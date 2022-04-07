@@ -278,7 +278,7 @@ public class GetExprType extends FENullVisitor
     }
 
 
-    public Object visitExprStar(ExprStar exp){
+    public Object visitExprStar(ExprHole exp){
     	if(exp.getType() != null  ){
     		return exp.getType();
     	}else{

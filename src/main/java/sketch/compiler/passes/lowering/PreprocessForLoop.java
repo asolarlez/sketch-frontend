@@ -18,7 +18,7 @@ import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstFloat;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -288,7 +288,7 @@ public class PreprocessForLoop extends SymbolTableVisitor {
 				List<ExprVar> switchVars = new ArrayList<ExprVar>();
 				// Create new float holes to decide mode switches
 				for (int i = 0; i < MAX_NUM_MODES; i++) {
-					ExprStar switchHole = new ExprStar(stmt);
+					ExprHole switchHole = new ExprHole(stmt);
 					switchHole.makeSpecial();
 					switchHole.setType(TypePrimitive.floattype);
 
@@ -341,12 +341,12 @@ public class PreprocessForLoop extends SymbolTableVisitor {
 				
 				// Create a new boolean hole for each mode
 				Statement prev;
-				ExprStar h = new ExprStar(stmt);
+				ExprHole h = new ExprHole(stmt);
 				h.setType(TypePrimitive.bittype);
 				prev = new StmtAssign(stmt, newBoolVar, h);
 				for (int i = MAX_NUM_MODES - 1; i >= 0; i--) {
 					Expression cond = new ExprBinary(stmt, ExprBinary.BINOP_LT, floatItVar, switchVars.get(i));
-					h = new ExprStar(stmt);
+					h = new ExprHole(stmt);
 					h.setType(TypePrimitive.bittype);
 					Statement s = new StmtAssign(stmt, newBoolVar, h);
 					prev = new StmtIfThen(stmt, cond, s, prev);

@@ -166,7 +166,7 @@ public class EliminateRegens extends SymbolTableVisitor {
         ExprVar which = new ExprVar (cx, varGen.nextVar (pfx));
 
         globalDecls.add(new StmtVarDecl (cx, TypePrimitive.inttype, which.getName (), null));
-        ExprStar es = new ExprStar (which, Misc.nBitsBinaryRepr (n));
+        ExprHole es = new ExprHole (which, Misc.nBitsBinaryRepr (n));
         globalDecls.add(new StmtAssign (which, es));
         globalDecls.add(new StmtAssert (cx,
             new ExprBinary (
@@ -407,7 +407,7 @@ public class EliminateRegens extends SymbolTableVisitor {
             return exps;
         }
 
-        public Object visitExprStar (ExprStar exp) {
+        public Object visitExprStar (ExprHole exp) {
             List<Expression> exps = new ArrayList<Expression> ();
             exps.add(exp);
             return exps;

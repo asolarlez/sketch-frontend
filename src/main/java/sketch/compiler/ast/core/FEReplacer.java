@@ -468,6 +468,7 @@ public class FEReplacer implements FEVisitor
         Statement newBody = (Statement)func.getBody().accept(this);        
         if(newBody == null) newBody = new StmtEmpty(func);
         if (newBody == func.getBody() && samePars && rtype == func.getReturnType()) return func;
+
         return func.creator().returnType(rtype).params(newParam).body(newBody).create();
     }
 
@@ -777,6 +778,9 @@ public class FEReplacer implements FEVisitor
      */
     public Object visitPackage(Package spec)
     {
+		// TODO write your own version of this for ftml program transformation
+		// NOTE: the visitor returns a new Package. So you need to clone spec
+		// and add a new f.
 
         if (nres != null)
             nres.setPackage(spec);
@@ -787,6 +791,9 @@ public class FEReplacer implements FEVisitor
 
         boolean changed = false;
 
+		// goes through global vars.
+		// accepts them and adds.
+		// don't want to visit the global vars.
         for (Iterator iter = spec.getVars().iterator(); iter.hasNext();) {
             FieldDecl oldVar = (FieldDecl) iter.next();
             FieldDecl newVar = (FieldDecl) oldVar.accept(this);
@@ -807,6 +814,8 @@ public class FEReplacer implements FEVisitor
         }
         nstructsInPkg = -1;
 
+		// CHECK HERE: does this f has the function I'm cloning
+		// Function.clone()?
         int nonNull = 0;
         for (Iterator<Function> iter = spec.getFuncs().iterator(); iter.hasNext(); )
         {
@@ -815,6 +824,10 @@ public class FEReplacer implements FEVisitor
             if (oldFunc != newFunc) changed = true;
             // if(oldFunc != null)++nonNull;
             if(newFunc!=null) newFuncs.add(newFunc);
+
+			/// HERE:
+			// TODO For cloning func.creator() clones func;
+			/// func.creator().name(new_name);
         }
 
         if(newFuncs.size() != nonNull){
@@ -835,11 +848,11 @@ public class FEReplacer implements FEVisitor
 
     public Object visitOther(FENode node) { return node; }
 
-    public Object visitExprStar(ExprStar star) {
+	public Object visitExprStar(ExprHole star) {
         if (star.getType() != null) {
             Type t = (Type) star.getType().accept(this);
             if (t != star.getType()) {
-                ExprStar s = new ExprStar(star);
+				ExprHole s = new ExprHole(star);
                 s.setType(t);
                 if (star.special())
                     s.makeSpecial(star.parentHoles());

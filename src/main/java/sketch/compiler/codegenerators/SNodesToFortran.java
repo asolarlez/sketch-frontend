@@ -605,7 +605,7 @@ public class SNodesToFortran extends FENullVisitor {
     }
 
 
-	public Object visitExprStar(ExprStar star) {
+	public Object visitExprStar(ExprHole star) {
 	    throw new IllegalStateException();
     }
 

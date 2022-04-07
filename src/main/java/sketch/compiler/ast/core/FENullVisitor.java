@@ -84,7 +84,7 @@ public class FENullVisitor implements FEVisitor
     public Object visitExprADTHole(ExprADTHole exp) {
         return null;
     }
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         return null;
     }
 

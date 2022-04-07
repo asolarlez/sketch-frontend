@@ -5,7 +5,7 @@ import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Function.FcnSourceDeterministic;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.structure.ASTObjQuery;
 import sketch.util.datastructures.TypedHashSet;
@@ -65,7 +65,7 @@ public class SetDeterministicFcns extends FEReplacer {
             return exp;
         }
 
-        public Object visitExprStar(ExprStar star) {
+        public Object visitExprStar(ExprHole star) {
             result = FcnSourceDeterministic.Nondeterministic;
             return star;
         };

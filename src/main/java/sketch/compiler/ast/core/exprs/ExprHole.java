@@ -35,7 +35,7 @@ import sketch.util.exceptions.ProgramParseException;
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprStar extends Expression
+public class ExprHole extends Expression
 {
     public enum Kind {
         NORMAL, ANGELIC, COUNTER
@@ -62,7 +62,7 @@ public class ExprStar extends Expression
 	
     private Kind kind = Kind.NORMAL;
     private boolean isSpecial = false;
-    private List<ExprStar> parentHoles; // required for special depth holes
+    private List<ExprHole> parentHoles; // required for special depth holes
 
     // private Expression exprMax = null;
 
@@ -70,7 +70,7 @@ public class ExprStar extends Expression
 	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
 	public void extendName(String ext){ starName += ext; } 
 	
-    public ExprStar(ExprStar old, boolean isGlobal) {
+    public ExprHole(ExprHole old, boolean isGlobal) {
         super(old);
         size = old.size;
         isFixed = old.isFixed;
@@ -90,7 +90,7 @@ public class ExprStar extends Expression
 
     }
 
-	public ExprStar(ExprStar old)
+	public ExprHole(ExprHole old)
     {
         super(old);
         size = old.size;
@@ -110,19 +110,19 @@ public class ExprStar extends Expression
     }
 
     /** Create a new ExprConstInt with a specified value. */
-    public ExprStar(FENode context)
+    public ExprHole(FENode context)
     {
         this(context.getCx(), Kind.NORMAL);
     }
 
-    public ExprStar(FEContext context) {
+    public ExprHole(FEContext context) {
         this(context, Kind.NORMAL);
     }
 
     /** Create a new ExprConstInt with a specified value.
      * @deprecated
      */
-    public ExprStar(FEContext context, Kind kind)
+    public ExprHole(FEContext context, Kind kind)
     {
         super(context);
         size = 1;
@@ -140,7 +140,7 @@ public class ExprStar extends Expression
     /**
      *
      */
-    public ExprStar(FENode context, int size)
+    public ExprHole(FENode context, int size)
     {
         this(context.getCx(), size);
     }
@@ -148,7 +148,7 @@ public class ExprStar extends Expression
     /**
     *
     */
-    public ExprStar(FENode context, int rstart, int rend, int size) {
+    public ExprHole(FENode context, int rstart, int rend, int size) {
         super(context);
         this.size = size;
         isGlobal = false;
@@ -162,12 +162,12 @@ public class ExprStar extends Expression
         /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size) {
+    public ExprHole(FEContext context, int size) {
         this(context, size, Kind.NORMAL);
     }
 
     
-    public ExprStar(FENode context, int size, boolean isGlobal) {
+    public ExprHole(FENode context, int size, boolean isGlobal) {
         super(context);
         isFixed = true;
         this.isGlobal = isGlobal;
@@ -184,7 +184,7 @@ public class ExprStar extends Expression
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size, Kind kind)
+    public ExprHole(FEContext context, int size, Kind kind)
     {
         super(context);
 		if (size < 1) {
@@ -205,7 +205,7 @@ public class ExprStar extends Expression
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int rstart, int rend) {
+    public ExprHole(FEContext context, int rstart, int rend) {
         super(context);
         isFixed = true;
         isGlobal = false;
@@ -216,7 +216,7 @@ public class ExprStar extends Expression
         this.starName = HOLE_BASE + (NEXT_UID++);
     }
 
-	public ExprStar(FEContext context, double rstart, double rend) {
+	public ExprHole(FEContext context, double rstart, double rend) {
 		super(context);
 		isFixed = true;
 		isGlobal = false;
@@ -228,7 +228,7 @@ public class ExprStar extends Expression
 	}
 
     @Deprecated
-    public ExprStar(FEContext ctx, Type typ, int domainsize) {
+    public ExprHole(FEContext ctx, Type typ, int domainsize) {
         super(ctx);
         isGlobal = false;
         this.type = typ;
@@ -238,7 +238,7 @@ public class ExprStar extends Expression
         this.typeWasSetByScala = true;
     }
 
-    public ExprStar(FENode context, int size, Type typ) {
+    public ExprHole(FENode context, int size, Type typ) {
         this(context, size);
         this.setType(typ);
     }
@@ -268,7 +268,7 @@ public class ExprStar extends Expression
 			depObjects.setSize(i+1);
 		}
 		if(depObjects.get(i) == null){
-			ExprStar es = new ExprStar(this);
+			ExprHole es = new ExprHole(this);
 			es.extendName("_" + i);
 			es.type = t;
 			depObjects.set(i, es);
@@ -405,12 +405,12 @@ public class ExprStar extends Expression
 		isSpecial = true;
 	}
 
-    public void makeSpecial(List<ExprStar> parentDepths) {
+    public void makeSpecial(List<ExprHole> parentDepths) {
         isSpecial = true;
         this.parentHoles = parentDepths;
     }
 
-    public List<ExprStar> parentHoles() {
+    public List<ExprHole> parentHoles() {
         return this.parentHoles;
     }
 

@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
@@ -28,7 +28,7 @@ public class IntVtype extends abstractValueType {
 
 
     public abstractValue STAR(FENode star) {
-        if (star instanceof ExprStar && ((ExprStar) star).isAngelicMax()) {
+        if (star instanceof ExprHole && ((ExprHole) star).isAngelicMax()) {
             return BOTTOM("**", true);
 		}
         return BOTTOM("?", true);

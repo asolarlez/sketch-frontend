@@ -14,7 +14,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
@@ -93,7 +93,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
             functionCalls.get(current.getFullName()).add(nres.getFunName(efc.getName()));
         }
 
-        public void regHole(ExprStar hole) {
+        public void regHole(ExprHole hole) {
             functionHoles.get(current.getFullName()).add(hole.getSname());
         }
 
@@ -263,7 +263,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         throw new RuntimeException("COMPILER BUG: There should not be any Expression Fields at this point!!!");
     }
 
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         fhtrack.regHole(star);
         return super.visitExprStar(star);
     }

@@ -4,7 +4,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.main.cmdline.SketchOptions;
 import sketch.compiler.solvers.constructs.ValueOracle;
-import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.compiler.stencilSK.EliminateHoleStatic;
 
 /**
  * Substitute a solution into a program, and simplify the program.
@@ -27,7 +27,16 @@ public class SubstituteSolution extends MetaStage {
 
     @Override
     public Program visitProgramInner(Program prog) {
-        EliminateStarStatic eliminate_star = new EliminateStarStatic(solution);
+
+		// HERE CALL FMTL TRANSOFRM AST <<<< call the interpreter here.
+		// each function: init; clone; replace; concretize will be a class
+		// derived from FEReplacer
+		// e.g. for clone I
+		// class ApplyTransformations:
+		// for each line in ftml program
+		// calls each of the visitors.
+
+		EliminateHoleStatic eliminate_star = new EliminateHoleStatic(solution);
         Program p = (Program) prog.accept(eliminate_star);
 
         if (options.feOpts.outputXml != null) {

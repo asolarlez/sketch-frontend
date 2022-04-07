@@ -334,7 +334,18 @@ public class SATBackend {
 
     protected void extractOracleFromOutput(String fname){
         try {
-            File f = new File(fname);
+
+			String ftml_file = "/home/kliment/CLionProjects/sketch-source/cmake-build-debug/fmtl_program_file.fmtl";
+
+			System.out.println("HERE: " + ftml_file);
+
+			FileInputStream ftml_fis = new FileInputStream(ftml_file);
+			BufferedInputStream ftml_bis = new BufferedInputStream(ftml_fis);
+			LineNumberReader ftml_lir = new LineNumberReader(new InputStreamReader(ftml_bis));
+			oracle.read_ftml_program_language(ftml_lir);
+
+			assert (false);
+			File f = new File(fname);
             FileInputStream fis = new FileInputStream(f);
             BufferedInputStream bis = new BufferedInputStream(fis);
             LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));

@@ -210,8 +210,8 @@ public class ScalarizeVectorAssignments extends SymbolTableVisitor {
 		}
 
 
-        public Object visitExprStar(ExprStar exp) {
-            ExprStar ns = (ExprStar) super.visitExprStar(exp); // new ExprStar(exp,
+        public Object visitExprStar(ExprHole exp) {
+            ExprHole ns = (ExprHole) super.visitExprStar(exp); // new ExprStar(exp,
                                                                // exp.getSize());
 
 			if( exp.getType() instanceof TypeArray  ){
