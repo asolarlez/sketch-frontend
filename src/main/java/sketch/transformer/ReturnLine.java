@@ -6,4 +6,8 @@ public class ReturnLine extends UnitLine {
 	public ReturnLine(Expression _expression) {
 		expression = _expression;
 	}
+
+	public String toString() {
+		return "return " + expression.toString() + ";";
+	}
 }

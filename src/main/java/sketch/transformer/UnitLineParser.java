@@ -1,7 +1,7 @@
 package sketch.transformer;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +80,7 @@ public class UnitLineParser {
 			Vector<Param> params = parse_params();
 			assert_next_token("\\}");
 
-			Map<String, Param> map = new HashMap<String, Param>();
+			Map<String, Param> map = new TreeMap<String, Param>();
 			for (Param param : params) {
 				PairParam pair_param = (PairParam) param;
 				map.put(((StringParam) pair_param.get_left()).get_string(), pair_param.get_right());

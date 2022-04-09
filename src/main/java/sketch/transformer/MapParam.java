@@ -10,9 +10,19 @@ public class MapParam extends Param {
 		map = _map;
 	}
 
-//	public String toString() {
-//		String ret = new String();
-//
-//		return identifier.toString();
-//	}
+	public String toString() {
+		String ret = new String();
+
+		ret += "{";
+		boolean is_first = true;
+		for (String key : map.keySet()) {
+			if (!is_first) {
+				ret += ", ";
+			}
+			is_first = false;
+			ret += key + " : " + map.get(key);
+		}
+		ret += "}";
+		return ret;
+	}
 }

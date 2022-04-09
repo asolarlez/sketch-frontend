@@ -7,7 +7,11 @@ public class StringParam extends Param {
 		str = _str;
 	}
 
-	String get_string() {
+	public String get_string() {
+		return str;
+	}
+
+	public String toString() {
 		return str;
 	}
 }

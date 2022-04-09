@@ -175,7 +175,8 @@ public class ValueOracle extends AbstractValueOracle {
 			UnitLine unit_line = line_parser.parse();
 			
 			System.out.println("unit_line.toString(): " + unit_line.toString());
-			assert (concat.contentEquals(unit_line.toString()));
+			System.out.println("orig_line.toString(): " + line.toString());
+			assert (line.contentEquals(unit_line.toString()));
 			
 			code_block.push_back(unit_line);
 			

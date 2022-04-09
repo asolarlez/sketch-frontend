@@ -7,4 +7,8 @@ public class ObjectFunctionCall extends FunctionCall {
 		super(_function_call);
 		this.object_identifier = object_identifier;
 	}
+
+	public String toString() {
+		return object_identifier.toString() + "." + super.toString();
+	}
 }

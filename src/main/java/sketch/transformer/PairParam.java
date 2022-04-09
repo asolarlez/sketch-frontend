@@ -16,4 +16,8 @@ public class PairParam extends Param {
 	Param get_right() {
 		return right;
 	}
+
+	public String toString() {
+		return left.toString() + ", " + right.toString();
+	}
 }

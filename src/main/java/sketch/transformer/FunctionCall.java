@@ -4,7 +4,6 @@ import java.util.Vector;
 
 public class FunctionCall extends Node {
 
-
 	enum function_name {
 		declare, replace, inplace_unit_concretize, unit_clone
 	};
@@ -22,4 +21,18 @@ public class FunctionCall extends Node {
 		function_name = _identifier;
 		params = _params;
 	}
+
+	public String toString() {
+		String ret;
+		ret = function_name + "(";
+		for (int i = 0; i < params.size(); i++) {
+			if (i >= 1) {
+				ret += ", ";
+			}
+			ret += params.get(i).toString();
+		}
+		ret += ")";
+		return ret;
+	}
+
 }
