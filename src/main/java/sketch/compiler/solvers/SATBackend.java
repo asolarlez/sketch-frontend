@@ -336,9 +336,6 @@ public class SATBackend {
         try {
 
 			String ftml_file = "/home/kliment/CLionProjects/sketch-source/cmake-build-debug/fmtl_program_file.fmtl";
-
-			System.out.println("HERE: " + ftml_file);
-
 			FileInputStream ftml_fis = new FileInputStream(ftml_file);
 			BufferedInputStream ftml_bis = new BufferedInputStream(ftml_fis);
 			LineNumberReader ftml_lir = new LineNumberReader(new InputStreamReader(ftml_bis));

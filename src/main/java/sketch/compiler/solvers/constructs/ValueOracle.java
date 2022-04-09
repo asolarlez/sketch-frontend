@@ -38,6 +38,8 @@ import sketch.compiler.ast.core.typs.TypePrimitive;
 import sketch.compiler.parser.StreamItLex;
 import sketch.compiler.parser.StreamItParserFE;
 import sketch.transformer.CodeBlock;
+import sketch.transformer.UnitLine;
+import sketch.transformer.UnitLineParser;
 
 
 public class ValueOracle extends AbstractValueOracle {
@@ -155,8 +157,8 @@ public class ValueOracle extends AbstractValueOracle {
 			String concat = new String();
 			System.out.print("TOKE: ");
 			while (m.find()) {
-				String token = m.group(1);
-				System.out.print("<| " + m.group(1) + " |>");
+				String token = m.group(0);
+				System.out.print("<| " + m.group(0) + " |>");
 				tokens.add(token);
 				concat = concat.concat(token);
 			}
@@ -167,27 +169,18 @@ public class ValueOracle extends AbstractValueOracle {
 			
 			
 			assert (concat.contentEquals(line.replace(" ", "")));
+			
+			UnitLineParser line_parser = new UnitLineParser(tokens);
 
-
-//			assert (false);
-
-//			Tokens tokens = new Tokens(line);
-//
-//			if(tokens.length == 1)
-//			{
-//				code_block.push_back(new ExpressionLine(tokens[0]));
-//			}
-//			else if(tokens.length == 2)
-//			{
-//				code_block.push_back(new AssignmentLine(tokens[0], tokens[1]));
-//			}
-//			else
-//			{
-//				assert(false);
-//			}
+			UnitLine unit_line = line_parser.parse();
+			
+			System.out.println("unit_line.toString(): " + unit_line.toString());
+			assert (concat.contentEquals(unit_line.toString()));
+			
+			code_block.push_back(unit_line);
+			
+			
 		}
-
-		System.out.println(dir.getAbsolutePath());
 
 		System.out.println("DONE");
 

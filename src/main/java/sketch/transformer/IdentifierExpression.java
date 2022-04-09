@@ -1,9 +1,9 @@
 package sketch.transformer;
 
-public class IdentifierParam extends Param {
+public class IdentifierExpression extends Expression {
 	Identifier identifier;
 
-	public IdentifierParam(Identifier _identifier) {
+	IdentifierExpression(Identifier _identifier) {
 		identifier = _identifier;
 	}
 
