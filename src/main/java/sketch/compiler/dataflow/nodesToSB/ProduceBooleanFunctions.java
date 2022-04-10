@@ -94,7 +94,7 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
 
         public void regHole(ExprHole hole) {
-            functionHoles.get(current.getFullName()).add(hole.getSname());
+            functionHoles.get(current.getFullName()).add(hole.getHoleName());
         }
 
         public Set<String> holesForFun(String fun) {

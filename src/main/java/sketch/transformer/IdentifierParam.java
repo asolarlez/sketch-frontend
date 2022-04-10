@@ -10,4 +10,8 @@ public class IdentifierParam extends Param {
 	public String toString() {
 		return identifier.toString();
 	}
+
+	Identifier get_identifier() {
+		return identifier;
+	}
 }

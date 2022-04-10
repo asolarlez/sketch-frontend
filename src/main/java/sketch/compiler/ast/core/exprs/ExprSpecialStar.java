@@ -21,7 +21,7 @@ public class ExprSpecialStar extends ExprHole {
     public ExprSpecialStar(FENode context, String name, int size, Type typ) {
         super(context, size, typ);
         this.name = name;
-        this.starName = "H__BND" + cnt;
+        this.holeName = "H__BND" + cnt;
         ++cnt;
     }
     

@@ -13,4 +13,9 @@ public class AssignmentLine extends UnitLine {
 	public String toString() {
 		return identifier.toString() + " = " + expression.toString() + ";";
 	}
+
+	@Override
+	public void run(State state) {
+		state.add(identifier, expression.eval(state));
+	}
 }

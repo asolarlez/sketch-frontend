@@ -335,24 +335,28 @@ public class SATBackend {
     protected void extractOracleFromOutput(String fname){
         try {
 
-			String ftml_file = "/home/kliment/CLionProjects/sketch-source/cmake-build-debug/fmtl_program_file.fmtl";
-			FileInputStream ftml_fis = new FileInputStream(ftml_file);
-			BufferedInputStream ftml_bis = new BufferedInputStream(ftml_fis);
-			LineNumberReader ftml_lir = new LineNumberReader(new InputStreamReader(ftml_bis));
-			oracle.read_ftml_program_language(ftml_lir);
+			boolean has_fmtl_program = true;
 
-			assert (false);
-			File f = new File(fname);
-            FileInputStream fis = new FileInputStream(f);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
-            oracle.loadFromStream(lir);
-            fis.close();
-            java.io.File fd = new File(fname);
-            if (fd.exists() && !(options.feOpts.keepTmp || options.debugOpts.fakeSolver))
-            {
-                fd.delete();
-            }
+			if (has_fmtl_program) {
+				String ftml_file = "/home/kliment/CLionProjects/sketch-source/cmake-build-debug/fmtl_program_file.fmtl";
+				FileInputStream ftml_fis = new FileInputStream(ftml_file);
+				BufferedInputStream ftml_bis = new BufferedInputStream(ftml_fis);
+				LineNumberReader ftml_lir = new LineNumberReader(new InputStreamReader(ftml_bis));
+				oracle.read_ftml_program_language(ftml_lir);
+				System.out.println("DONE PARSING FTML FILE. ftml_program.size() = " + oracle.get_code_block().size());
+			} else {
+				File f = new File(fname);
+				FileInputStream fis = new FileInputStream(f);
+				BufferedInputStream bis = new BufferedInputStream(fis);
+				LineNumberReader lir = new LineNumberReader(new InputStreamReader(bis));
+				oracle.loadFromStream(lir);
+				fis.close();
+				java.io.File fd = new File(fname);
+				if (fd.exists() && !(options.feOpts.keepTmp || options.debugOpts.fakeSolver)) {
+					fd.delete();
+				}
+			}
+
         }
         catch (java.io.IOException e)
         {

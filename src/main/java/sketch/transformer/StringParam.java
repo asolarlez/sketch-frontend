@@ -1,10 +1,12 @@
 package sketch.transformer;
 
 public class StringParam extends Param {
-	String str;
+	private String str;
 
 	public StringParam(String _str) {
-		str = _str;
+		assert (_str.charAt(0) == '"');
+		assert (_str.charAt(_str.length() - 1) == '"');
+		str = _str.substring(1, _str.length() - 1);
 	}
 
 	public String get_string() {
@@ -12,6 +14,6 @@ public class StringParam extends Param {
 	}
 
 	public String toString() {
-		return str;
+		return "\"" + str + "\"";
 	}
 }

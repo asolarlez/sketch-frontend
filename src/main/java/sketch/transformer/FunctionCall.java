@@ -1,14 +1,24 @@
 package sketch.transformer;
 
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 public class FunctionCall extends Node {
 
-	enum function_name {
+	enum FunctionName {
 		declare, replace, inplace_unit_concretize, unit_clone
 	};
 
-	Identifier function_name;
+	private static Map<String, FunctionName> str_to_function_name = new TreeMap<String, FunctionName>();
+	static {
+		str_to_function_name.put("declare", FunctionName.declare);
+		str_to_function_name.put("replace", FunctionName.replace);
+		str_to_function_name.put("inplace_unit_concretize", FunctionName.inplace_unit_concretize);
+		str_to_function_name.put("unit_clone", FunctionName.unit_clone);
+	}
+
+	FunctionName function_name;
 
 	Vector<Param> params;
 
@@ -18,7 +28,8 @@ public class FunctionCall extends Node {
 	}
 
 	public FunctionCall(Identifier _identifier, Vector<Param> _params) {
-		function_name = _identifier;
+		assert (str_to_function_name.containsKey(_identifier.get_name()));
+		function_name = str_to_function_name.get(_identifier.get_name());
 		params = _params;
 	}
 
@@ -33,6 +44,38 @@ public class FunctionCall extends Node {
 		}
 		ret += ")";
 		return ret;
+	}
+
+	public Param eval(State state) {
+		assert (function_name == FunctionName.declare);
+
+		assert (params.size() == 3);
+
+		String skfunc_name = ((StringParam) params.get(0).eval(state)).get_string();
+		Vector<String> hole_names = ((VectorParam) params.get(1).eval(state)).get_vector_of_strings();
+		Map<String, String> port_var_to_port_val = ((MapParam) params.get(2).eval(state)).get_map_string_to_string();
+
+		// to call Declarer (which actually just asserts that the
+
+		System.out.println("in FunctionCall.eval(state);");
+
+		Declarer declarer = new Declarer(skfunc_name, hole_names, port_var_to_port_val);
+
+		System.out.println("state.get_program().accept(declarer)");
+
+		state.get_program().accept(declarer);
+
+		System.out.println("in FunctionCall.eval(state); DECLARER PASSED!!!");
+		assert (false);
+
+		return null;
+	}
+
+	public void run(State state) {
+		assert (function_name == FunctionName.replace || function_name == FunctionName.inplace_unit_concretize);
+
+		// TODO
+		assert (false);
 	}
 
 }

@@ -10,4 +10,8 @@ public class Identifier extends Node {
 	public String toString() {
 		return name;
 	}
+
+	public String get_name() {
+		return name;
+	}
 }

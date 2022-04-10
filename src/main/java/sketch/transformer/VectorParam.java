@@ -21,4 +21,12 @@ public class VectorParam extends Param {
 		return ret;
 	}
 
+	public Vector<String> get_vector_of_strings() {
+		Vector<String> ret = new Vector<String>();
+		for (int i = 0; i < params.size(); i++) {
+			ret.add(((StringParam) params.get(i)).get_string());
+		}
+		return ret;
+	}
+
 }

@@ -10,4 +10,14 @@ public class FunctionCallExpression extends Expression {
 	public String toString() {
 		return function_call.toString();
 	}
+
+	@Override
+	public Param eval(State state) {
+		return function_call.eval(state);
+	}
+
+	@Override
+	public void run(State state) {
+		function_call.run(state);
+	}
 }

@@ -284,7 +284,7 @@ public class EliminateHoleStatic extends SymbolTableVisitor {
         for (Entry<ExprHole, Object> ent : hole_values.entrySet()) {
             FEContext ctx = ent.getKey().getContext();
             out.print("    <hole_value line=\"" + ctx.getLineNumber() + "\" col=\"" +
-                    ctx.getColumnNumber() + "\"  name=\"" + ent.getKey().getSname() +
+                    ctx.getColumnNumber() + "\"  name=\"" + ent.getKey().getHoleName() +
                     "\" ");
             if (ent.getKey().getType() instanceof TypeArray) {
                 List<Expression> lst = (List<Expression>) ent.getValue();

@@ -25,7 +25,7 @@ public class StaticHoleTracker implements HoleNameTracker {
 	
 	public String getName(Object hole) {
 		if(hole instanceof ExprHole){
-			return ((ExprHole)hole).getSname();
+			return ((ExprHole)hole).getHoleName();
 		}
 		String vname = null;
 		if(store.containsKey(hole)){

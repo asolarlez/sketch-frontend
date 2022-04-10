@@ -1,5 +1,7 @@
 package sketch.transformer;
 
-public class Expression extends Node {
+public abstract class Expression extends Node {
+	public abstract Param eval(State state);
 
+	public abstract void run(State state);
 }

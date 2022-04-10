@@ -84,7 +84,7 @@ public class NtsbVtype extends IntVtype {
                     head += "SPVAR " + star.upperBound() + " ";
                     head += " $ ";
                     for (ExprHole es : star.parentHoles()) {
-                        head += es.getSname() + " ";
+                        head += es.getHoleName() + " ";
                     }
                     head += " $ ";
                 }

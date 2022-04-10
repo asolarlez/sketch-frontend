@@ -11,4 +11,9 @@ public class ExpressionLine extends UnitLine {
 	public String toString() {
 		return expression.toString() + ";";
 	}
+
+	@Override
+	public void run(State state) {
+		expression.run(state);
+	}
 }

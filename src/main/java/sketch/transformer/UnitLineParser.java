@@ -20,13 +20,10 @@ public class UnitLineParser {
 	private String next_token() {
 		String ret = _tokens.get(at);
 		at++;
-
-		System.out.println("next_token: " + ret);
 		return ret;
 	}
 
 	private void backtrack() {
-		System.out.println("backtrack");
 		at--;
 	}
 
@@ -56,10 +53,8 @@ public class UnitLineParser {
 	}
 
 	public Param parse_param() {
-		System.out.println("parsing parse_param");
 		String at_token = next_token();
 		if (has_pattern(at_token, string_pattern)) {
-			System.out.println("parsing str");
 			Param ret = new StringParam(at_token);
 			if (has_pattern(next_token(), ":")) {
 				Param right = parse_param();
@@ -95,8 +90,6 @@ public class UnitLineParser {
 
 	private Vector<Param> parse_params()
 	{
-
-		System.out.println("parsing parse_params");
 		Vector<Param> params = new Vector<Param>();
 		do
 		{
@@ -147,8 +140,6 @@ public class UnitLineParser {
 
 				assert_next_token(";");
 
-				System.out.println("DONE WITH function_call.");
-
 				return new ExpressionLine(
 						new FunctionCallExpression(new ObjectFunctionCall(object_identifier, function_call)));
 
@@ -175,8 +166,6 @@ public class UnitLineParser {
 					FunctionCall function_call = parse_function_call();
 
 					assert_next_token(";");
-
-					System.out.println("DONE WITH Assignment.");
 
 					return new AssignmentLine(object_identifier, new FunctionCallExpression(function_call));
 				}

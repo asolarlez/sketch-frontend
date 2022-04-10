@@ -54,7 +54,7 @@ public class ExprHole extends Expression
 	private Type type;
 	public int INT_SIZE=5;
     public final boolean isGlobal;
-    protected String starName = "ANON";
+    protected String holeName = "ANON";
     public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
 	private static String HOLE_BASE="H__";
@@ -66,9 +66,9 @@ public class ExprHole extends Expression
 
     // private Expression exprMax = null;
 
-	public String getSname(){ return starName; }
-	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
-	public void extendName(String ext){ starName += ext; } 
+	public String getHoleName(){ return holeName; }
+	public void renewName(){ holeName = HOLE_BASE + (NEXT_UID++); }
+	public void extendName(String ext){ holeName += ext; } 
 	
     public ExprHole(ExprHole old, boolean isGlobal) {
         super(old);
@@ -83,7 +83,7 @@ public class ExprHole extends Expression
 		frangelow = old.frangelow;
 		frangehigh = old.frangehigh;
         hasrange = old.hasrange;
-        this.starName = old.starName;
+        this.holeName = old.holeName;
         this.kind = old.kind;
         this.isSpecial = old.isSpecial;
         this.parentHoles = old.parentHoles;
@@ -104,7 +104,7 @@ public class ExprHole extends Expression
 		frangelow = old.frangelow;
 		frangehigh = old.frangehigh;
         hasrange = old.hasrange;
-        this.starName = old.starName;
+        this.holeName = old.holeName;
         this.kind = old.kind;
         // this.exprMax = old.exprMax;
     }
@@ -131,9 +131,9 @@ public class ExprHole extends Expression
         this.kind = kind;
         // this.exprMax = max;
         if (kind == Kind.COUNTER) {
-            this.starName = HOLE_BASE;
+            this.holeName = HOLE_BASE;
         } else {
-        this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+        this.holeName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
         }
     }
 
@@ -156,7 +156,7 @@ public class ExprHole extends Expression
         rangelow = rstart;
         rangehigh = rend;
         hasrange = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this.holeName = HOLE_BASE + (NEXT_UID++);
     }
 
         /**
@@ -175,9 +175,9 @@ public class ExprHole extends Expression
         this.kind = Kind.NORMAL;
         // this.exprMax = max;
         if (kind == Kind.COUNTER) {
-            this.starName = HOLE_BASE;
+            this.holeName = HOLE_BASE;
         } else {
-            this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+            this.holeName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
         }
     }
     
@@ -196,9 +196,9 @@ public class ExprHole extends Expression
         this.kind = kind;
         // this.exprMax = max;
         if (kind == Kind.COUNTER) {
-            this.starName = HOLE_BASE;
+            this.holeName = HOLE_BASE;
         } else {
-            this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+            this.holeName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
         }
     }
 
@@ -213,7 +213,7 @@ public class ExprHole extends Expression
         rangelow = rstart;
         rangehigh = rend;
         hasrange = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this.holeName = HOLE_BASE + (NEXT_UID++);
     }
 
 	public ExprHole(FEContext context, double rstart, double rend) {
@@ -224,7 +224,7 @@ public class ExprHole extends Expression
 		frangelow = rstart;
 		frangehigh = rend;
 		hasrange = true;
-		this.starName = HOLE_BASE + (NEXT_UID++);
+		this.holeName = HOLE_BASE + (NEXT_UID++);
 	}
 
     @Deprecated
@@ -234,7 +234,7 @@ public class ExprHole extends Expression
         this.type = typ;
         this.size = domainsize;// (int) Math.ceil(Math.log(domainsize) / Math.log(2));
         isFixed = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+        this.holeName = HOLE_BASE + (NEXT_UID++);
         this.typeWasSetByScala = true;
     }
 
@@ -292,10 +292,10 @@ public class ExprHole extends Expression
 
     private String detailName() {
         if (isAngelicMax()) {
-            return "**/*" + getSname() /* + (exprMax == null ? "" : "@" + exprMax) */
+            return "**/*" + getHoleName() /* + (exprMax == null ? "" : "@" + exprMax) */
                     + "*/";
         } else {
-            return "??" + "/*" + getSname() + "*/";
+            return "??" + "/*" + getHoleName() + "*/";
         }
     }
 
@@ -307,13 +307,13 @@ public class ExprHole extends Expression
     public String toString()
     {
         if (isAngelicMax()) {
-            return "**/*" + getSname() /* + (exprMax == null ? "" : "@" + exprMax) */
+            return "**/*" + getHoleName() /* + (exprMax == null ? "" : "@" + exprMax) */
                     + "*/";
         } else {
             if (getType() != null) {
-                return "??" + "/* " + getSname() + getType() + ":" + size + " */";
+                return "??" + "/* " + getHoleName() + getType() + ":" + size + " */";
             } else {
-                return "??" + "/*" + getSname() + "*/";
+                return "??" + "/*" + getHoleName() + "*/";
             }
         }
 

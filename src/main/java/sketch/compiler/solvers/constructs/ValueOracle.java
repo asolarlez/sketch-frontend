@@ -50,6 +50,8 @@ public class ValueOracle extends AbstractValueOracle {
 	protected Map<String, Expression> valMap;
 	protected List<Function> funlist;
 
+	CodeBlock code_block = new CodeBlock();
+
 	protected int starSizesCaped = -1;
 
 	public ValueOracle(HoleNameTracker holeNamer) {
@@ -145,47 +147,29 @@ public class ValueOracle extends AbstractValueOracle {
 
 	public void read_ftml_program_language(LineNumberReader in) throws IOException {
 		String line = null;
-
-		CodeBlock code_block = new CodeBlock();
 		
+		assert (get_code_block().isEmpty());
+
 		while ((line = in.readLine()) != null) {
-			System.out.println("LINE: " + line);
 			Matcher m = Pattern.compile("(\"[^\n\"]*\"|[a-zA-Z_][a-zA-Z_0-9]*|=|\\.|:|;|\\(|\\)|\\[|\\]|,|\\{|\\})")
 					.matcher(line);
 			Vector<String> tokens = new Vector<String>();
 
 			String concat = new String();
-			System.out.print("TOKE: ");
 			while (m.find()) {
 				String token = m.group(0);
-				System.out.print("<| " + m.group(0) + " |>");
 				tokens.add(token);
 				concat = concat.concat(token);
 			}
-			System.out.println();
-			
-			System.out.println("CONCAT: " +  concat);
-			System.out.println("ORIGIN: " + line.replace(" ", ""));
-			
-			
 			assert (concat.contentEquals(line.replace(" ", "")));
 			
 			UnitLineParser line_parser = new UnitLineParser(tokens);
-
 			UnitLine unit_line = line_parser.parse();
-			
-			System.out.println("unit_line.toString(): " + unit_line.toString());
-			System.out.println("orig_line.toString(): " + line.toString());
+//			System.out.println(unit_line.toString());
+//			System.out.println(line.toString());
 			assert (line.contentEquals(unit_line.toString()));
-			
-			code_block.push_back(unit_line);
-			
-			
+			get_code_block().push_back(unit_line);
 		}
-
-		System.out.println("DONE");
-
-		assert (false);
 	}
 
 	public void loadFromStream(LineNumberReader in) throws IOException {
@@ -245,5 +229,9 @@ public class ValueOracle extends AbstractValueOracle {
 
 	public void capStarSizes(int size) {
 		starSizesCaped = size;
+	}
+
+	public CodeBlock get_code_block() {
+		return code_block;
 	}
 }

@@ -172,7 +172,7 @@ public class EliminateRegens extends SymbolTableVisitor {
             new ExprBinary (
                 new ExprBinary (ExprConstInt.zero, "<=", which),
                 "&&",
-                new ExprBinary (which, "<", ExprConstant.createConstant (which, ""+ n))), "regen " + es.getSname(), StmtAssert.UBER));
+                new ExprBinary (which, "<", ExprConstant.createConstant (which, ""+ n))), "regen " + es.getHoleName(), StmtAssert.UBER));
 
         return which;
     }
