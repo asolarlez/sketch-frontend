@@ -13,6 +13,10 @@ public class State {
 		return program;
 	}
 
+	public void set_program(Program new_program) {
+		program = new_program;
+	}
+
 	public State(Program _program) {
 		program = _program;
 	}
@@ -22,5 +26,10 @@ public class State {
 		String key = identifier.toString();
 		assert (!state.containsKey(key));
 		state.put(key, param);
+	}
+
+	public Param get(Identifier identifier) {
+		assert (state.containsKey(identifier.get_name()));
+		return state.get(identifier.get_name());
 	}
 }

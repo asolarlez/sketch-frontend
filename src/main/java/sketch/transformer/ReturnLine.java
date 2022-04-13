@@ -10,4 +10,10 @@ public class ReturnLine extends UnitLine {
 	public String toString() {
 		return "return " + expression.toString() + ";";
 	}
+
+	@Override
+	public void run(State state) {
+		// TODO Auto-generated method stub
+		assert (false);
+	}
 }

@@ -68,6 +68,7 @@ public class ExprHole extends Expression
 
 	public String getHoleName(){ return holeName; }
 	public void renewName(){ holeName = HOLE_BASE + (NEXT_UID++); }
+	public void rename(String new_name){ holeName = new_name; }
 	public void extendName(String ext){ holeName += ext; } 
 	
     public ExprHole(ExprHole old, boolean isGlobal) {

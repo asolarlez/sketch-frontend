@@ -28,5 +28,4 @@ public class VectorParam extends Param {
 		}
 		return ret;
 	}
-
 }

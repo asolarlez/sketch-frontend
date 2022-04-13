@@ -14,4 +14,9 @@ public class IdentifierParam extends Param {
 	Identifier get_identifier() {
 		return identifier;
 	}
+
+	@Override
+	public Param eval(State state) {
+		return state.get(identifier);
+	}
 }

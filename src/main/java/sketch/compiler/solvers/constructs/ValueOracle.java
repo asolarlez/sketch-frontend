@@ -145,7 +145,7 @@ public class ValueOracle extends AbstractValueOracle {
 		valMap.put(vname, new ExprFunCall(s, newfun.getName(), params));
 	}
 
-	public void read_ftml_program_language(LineNumberReader in) throws IOException {
+	public void read_fmtl_program_language(LineNumberReader in) throws IOException {
 		String line = null;
 		
 		assert (get_code_block().isEmpty());
@@ -169,6 +169,20 @@ public class ValueOracle extends AbstractValueOracle {
 //			System.out.println(line.toString());
 			assert (line.contentEquals(unit_line.toString()));
 			get_code_block().push_back(unit_line);
+		}
+	}
+
+	public void load_from_map_string_string(Map<String, String> map) {
+		for (String key : map.keySet()) {
+			String vname = key;
+			String sval = map.get(vname);
+			if (sval.contains(".")) {
+				double val = Double.parseDouble(sval);
+				valMap.put(vname, new ExprConstFloat((FEContext) null, val));
+			} else {
+				int val = Integer.parseInt(sval);
+				valMap.put(vname, new ExprConstInt(val));
+			}
 		}
 	}
 

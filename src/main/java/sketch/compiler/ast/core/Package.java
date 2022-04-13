@@ -45,6 +45,7 @@ public class Package extends FENode
     private final List<StructDef> structs;
     private final List<StmtSpAssert> specialAsserts;
 
+
     public String toString(){
         String res = "package " + name + '\n';
         for (StructDef ts : structs) {
@@ -202,4 +203,37 @@ public class Package extends FENode
     public List<StmtSpAssert> getSpAsserts() {
         return specialAsserts;
     }
+
+	public static class PackageCreator {
+
+		private FENode context;
+		private String name;
+		private List<FieldDecl> vars;
+		private List<Function> funcs;
+		private List<StructDef> structs;
+		private List<StmtSpAssert> specialAsserts;
+
+		PackageCreator(Package source) {
+			this.context = source.getOrigin(); // no need to clone
+			this.name = source.name; // no need to clone
+			this.vars = new ArrayList<FieldDecl>(source.vars);
+			this.funcs = new ArrayList<Function>(source.funcs);
+			this.structs = new ArrayList<StructDef>(source.structs);
+			this.specialAsserts = new ArrayList<StmtSpAssert>(source.specialAsserts);
+		}
+
+		public PackageCreator add_funcion(Function new_function)
+		{
+			funcs.add(new_function);
+			return this;
+		}
+
+		public Package create() {
+			return new Package(context, name, structs, vars, funcs, specialAsserts);
+		}
+	}
+
+	public PackageCreator creator() {
+		return new PackageCreator(this);
+	}
 }

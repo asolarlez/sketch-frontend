@@ -10,4 +10,17 @@ public class IdentifierExpression extends Expression {
 	public String toString() {
 		return identifier.toString();
 	}
+
+	@Override
+	public Param eval(State state) {
+		// TODO Auto-generated method stub
+		assert (false);
+		return null;
+	}
+
+	@Override
+	public void run(State state) {
+		// TODO Auto-generated method stub
+		assert (false);
+	}
 }

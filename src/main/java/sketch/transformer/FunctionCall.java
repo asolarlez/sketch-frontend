@@ -66,15 +66,12 @@ public class FunctionCall extends Node {
 		state.get_program().accept(declarer);
 
 		System.out.println("in FunctionCall.eval(state); DECLARER PASSED!!!");
-		assert (false);
 
-		return null;
+		return new SkFuncParam(new Identifier(skfunc_name));
 	}
 
 	public void run(State state) {
-		assert (function_name == FunctionName.replace || function_name == FunctionName.inplace_unit_concretize);
-
-		// TODO
+		// no need.
 		assert (false);
 	}
 

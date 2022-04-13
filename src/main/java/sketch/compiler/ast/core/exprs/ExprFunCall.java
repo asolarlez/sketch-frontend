@@ -17,8 +17,10 @@
 package sketch.compiler.ast.core.exprs;
 import static sketch.util.Misc.nonnull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +47,38 @@ public class ExprFunCall extends Expression
     private int callid;
     private final List<Expression> params;
     private final Map<String, Type> tparams;
+    
+	public static class ExprFunCallCreator {
+		FENode context;
+	    private String name;
+
+	    private List<Expression> params;
+	    private Map<String, Type> tparams;
+
+	    ExprFunCallCreator(ExprFunCall source) {
+			context = source;
+			this.name = source.name; // no need to clone
+			this.params = new ArrayList<Expression>(source.params);
+			if (source.tparams == null) {
+				this.tparams = null;
+			} else {
+				this.tparams = new HashMap<String, Type>(source.tparams);
+			}
+		}
+
+		public ExprFunCallCreator name(String new_name) {
+			name = new_name;
+			return this;
+		}
+
+		public ExprFunCall create() {
+			return new ExprFunCall(context, name, params, tparams);
+		}
+	}
+
+	public ExprFunCallCreator creator() {
+		return new ExprFunCallCreator(this);
+	}
 
     public void resetCallid(){
     	this.callid = NEXT_UID++;

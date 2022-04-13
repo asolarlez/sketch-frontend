@@ -1163,9 +1163,9 @@ public class FEReplacer implements FEVisitor
         if (!hasChanged) {
         	// Return the orginal lambda expression
         	return exprLambda;
-        }
-        
-        // Return a new lambda expression
+		}
+
+		// Return a new lambda expression
 		return new ExprLambda(exprLambda, newParameters, newExpression);
 	}
 
