@@ -482,7 +482,6 @@ public class FEReplacer implements FEVisitor
             newStreams.add((Package) ssOrig.accept(this));
         }
 
-
         return prog.creator().streams(newStreams).create();
     }
 

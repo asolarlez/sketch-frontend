@@ -5,6 +5,7 @@ import java.util.Iterator;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Package;
+import sketch.compiler.ast.core.Package.PackageCreator;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 
 public class Replacer extends FEReplacer {
@@ -28,6 +29,10 @@ public class Replacer extends FEReplacer {
 		if (nres != null)
 			nres.setPackage(spec);
 
+		PackageCreator ret = spec.creator();
+
+		ret.clear_funcs();
+
 		// register functions
 		for (Iterator iter = spec.getFuncs().iterator(); iter.hasNext();) {
 			Function func = (Function) iter.next();
@@ -35,13 +40,18 @@ public class Replacer extends FEReplacer {
 				assert (!found_function);
 				found_function = true;
 				assert(!found_var_name);
-				visitFunction(func);
+				Function new_func = (Function) visitFunction(func);
+				assert (new_func != func);
+				ret.add_funcion(func);
 				assert(found_var_name);
+			}
+			else {
+				ret.add_funcion(func);
 			}
 		}
 		assert (found_function);
 
-		return spec;
+		return ret.create();
 	}
 
 	public Object visitExprFunCall(ExprFunCall exp) {

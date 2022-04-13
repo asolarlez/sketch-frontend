@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import sketch.compiler.ast.core.Program;
+
 public class FunctionCall extends Node {
 
 	enum FunctionName {
@@ -63,7 +65,9 @@ public class FunctionCall extends Node {
 
 		System.out.println("state.get_program().accept(declarer)");
 
-		state.get_program().accept(declarer);
+		Program new_program = (Program) state.get_program().accept(declarer);
+		assert (new_program != state.get_program());
+		state.set_program(new_program);
 
 		System.out.println("in FunctionCall.eval(state); DECLARER PASSED!!!");
 

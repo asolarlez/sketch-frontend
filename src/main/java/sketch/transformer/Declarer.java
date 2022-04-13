@@ -42,7 +42,8 @@ public class Declarer extends FEReplacer {
 				found_function = true;
 				assert (processed_hole_names.size() == 0);
 				assert (processed_port_vars.size() == 0);
-				visitFunction(func);
+				Function new_func = (Function) visitFunction(func);
+				assert (new_func == func);
 				assert (processed_hole_names.size() == hole_names.size());
 				assert (processed_port_vars.size() == port_var_to_port_val.size());
 			}

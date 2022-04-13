@@ -18,6 +18,11 @@ public class StaticHoleTracker implements HoleNameTracker {
 		return true;	
 	}
 	
+	public StaticHoleTracker() {
+		this.varGen = null;
+		store = new HashMap<Object, String>();
+	}
+
 	public StaticHoleTracker(TempVarGen varGen){
 		this.varGen = varGen;
 		store = new HashMap<Object, String>();
@@ -31,6 +36,7 @@ public class StaticHoleTracker implements HoleNameTracker {
 		if(store.containsKey(hole)){
 			vname = store.get(hole);
 		}else{
+			assert (varGen != null);
 			vname = HOLE_PREFIX + varGen.nextVar();			
 			store.put(hole, vname);			
 		}

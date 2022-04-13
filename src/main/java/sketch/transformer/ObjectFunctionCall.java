@@ -28,8 +28,9 @@ public class ObjectFunctionCall extends FunctionCall {
 
 		System.out.println("state.get_program().accept(cloner)");
 
-		// does it create a new program every time?
-		state.set_program((Program) state.get_program().accept(cloner));
+		Program new_program = (Program) state.get_program().accept(cloner);
+		assert (new_program != state.get_program());
+		state.set_program(new_program);
 
 		System.out.println("in FunctionCall.eval(state); CLONER PASSED!!!");
 
@@ -53,8 +54,10 @@ public class ObjectFunctionCall extends FunctionCall {
 
 			System.out.println("state.get_program().accept(replacer)");
 
-			// do I need to update the program here?
-			state.get_program().accept(replacer);
+			Program new_program = (Program) state.get_program().accept(replacer);
+			assert (new_program != state.get_program());
+			state.set_program(new_program);
+
 
 			System.out.println("in FunctionCall.run(state); REPLACER PASSED!!!");
 
@@ -67,22 +70,19 @@ public class ObjectFunctionCall extends FunctionCall {
 			String skfunc_name = object_identifier.get_name();
 			Map<String, String> hole_vals = ((MapParam) params.get(0).eval(state)).get_map_string_to_string();
 
-			// TODO
+			System.out.println("in ObjectFunctionCall.run(state);");
 
-//			System.out.println("in ObjectFunctionCall.run(state);");
-//
-//			Replacer replacer = new Replacer(skfunc_name, hole_vals);
-//
-//			System.out.println("state.get_program().accept(replacer)");
-//
-//			state.get_program().accept(replacer);
-//
-//			System.out.println("in FunctionCall.run(state); REPLACER PASSED!!!");
-//
-//			return;
+			Concretizer concretizer = new Concretizer(skfunc_name, hole_vals, state.get_program());
 
-			// TODO;
-			assert (false);
+			System.out.println("state.get_program().accept(concretizer): " + skfunc_name);
+
+			Program new_program = (Program) state.get_program().accept(concretizer);
+			assert (new_program != state.get_program());
+			state.set_program(new_program);
+
+			System.out.println("in FunctionCall.run(state); CONCRETIZER PASSED!!!");
+
+			return;
 
 		} else {
 			// ERROR OR NEED TO EXTEND.

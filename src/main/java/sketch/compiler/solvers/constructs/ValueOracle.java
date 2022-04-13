@@ -54,6 +54,11 @@ public class ValueOracle extends AbstractValueOracle {
 
 	protected int starSizesCaped = -1;
 
+	public ValueOracle() {
+		valMap = null;
+		this.holeNamer = new StaticHoleTracker();
+	}
+
 	public ValueOracle(HoleNameTracker holeNamer) {
 		super();
 		valMap = null;
@@ -173,6 +178,8 @@ public class ValueOracle extends AbstractValueOracle {
 	}
 
 	public void load_from_map_string_string(Map<String, String> map) {
+		assert (valMap == null);
+		valMap = new HashMap<String, Expression>();
 		for (String key : map.keySet()) {
 			String vname = key;
 			String sval = map.get(vname);

@@ -43,11 +43,10 @@ public class Cloner extends FEReplacer {
 				Function clone = func.creator().name(clone_name).create();
 
 				assert (processed_hole_names.size() == 0);
-				visitFunction(clone);
+				Function new_clone = (Function) visitFunction(clone);
 				assert (processed_hole_names.size() == hole_rename_map.size());
 
-				ret.add_funcion(clone);
-
+				ret.add_funcion(new_clone);
 			}
 		}
 		assert (found_function);
@@ -57,14 +56,14 @@ public class Cloner extends FEReplacer {
 
 	@Override
 	public Object visitExprStar(ExprHole star) {
-		String hole_name = star.getHoleName();
-		assert (hole_rename_map.containsKey(hole_name));
-		assert (!processed_hole_names.contains(hole_name));
+		String hole_var = star.get_hole_var();
+		assert (hole_rename_map.containsKey(hole_var));
+		assert (!processed_hole_names.contains(hole_var));
 
 		ExprHole ret = new ExprHole(star);
-		ret.rename(hole_rename_map.get(hole_name));
+		ret.rename(hole_rename_map.get(hole_var));
 
-		processed_hole_names.add(hole_name);
+		processed_hole_names.add(hole_var);
 
 		return ret;
 	}

@@ -231,6 +231,14 @@ public class Package extends FENode
 		public Package create() {
 			return new Package(context, name, structs, vars, funcs, specialAsserts);
 		}
+
+		public List<Function> getFuncs() {
+			return funcs;
+		}
+
+		public void clear_funcs() {
+			funcs.clear();
+		}
 	}
 
 	public PackageCreator creator() {
