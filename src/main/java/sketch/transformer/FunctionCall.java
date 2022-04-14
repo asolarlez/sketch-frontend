@@ -71,7 +71,7 @@ public class FunctionCall extends Node {
 
 		System.out.println("in FunctionCall.eval(state); DECLARER PASSED!!!");
 
-		return new SkFuncParam(new Identifier(skfunc_name));
+		return new SkFuncParam(new IdentifierParam(new Identifier(skfunc_name)));
 	}
 
 	public void run(State state) {

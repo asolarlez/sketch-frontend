@@ -673,7 +673,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         Program substitutedCleaned =
  (new CleanupFinalCode(varGen, options,
-				visibleRControl(finalCleaned))).visitProgram(substituted);
+						visibleRControl(substituted))).visitProgram(substituted);
 
 
 		generateCode(substitutedCleaned);

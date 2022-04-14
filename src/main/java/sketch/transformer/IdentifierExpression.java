@@ -1,9 +1,9 @@
 package sketch.transformer;
 
 public class IdentifierExpression extends Expression {
-	Identifier identifier;
+	IdentifierParam identifier;
 
-	IdentifierExpression(Identifier _identifier) {
+	IdentifierExpression(IdentifierParam _identifier) {
 		identifier = _identifier;
 	}
 
@@ -13,9 +13,7 @@ public class IdentifierExpression extends Expression {
 
 	@Override
 	public Param eval(State state) {
-		// TODO Auto-generated method stub
-		assert (false);
-		return null;
+		return identifier.eval(state);
 	}
 
 	@Override

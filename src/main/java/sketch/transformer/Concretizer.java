@@ -56,7 +56,7 @@ public class Concretizer extends FEReplacer {
 				} else {
 					assert (!hole_vals.isEmpty());
 				}
-				ret.add_funcion(func);
+				ret.add_funcion(new_func);
 			} else {
 				ret.add_funcion(func);
 			}

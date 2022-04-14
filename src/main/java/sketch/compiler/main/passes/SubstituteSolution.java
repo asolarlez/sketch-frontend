@@ -39,19 +39,24 @@ public class SubstituteSolution extends MetaStage {
     	
 		SketchTransformerDriver driver = new SketchTransformerDriver(value_oracle.get_code_block());
 		System.out.println("IN SubstituteSolution.visitProgramInner; RUN SK_TRANSFORMER DRIVER.");
-		driver.run(program);
+		Program final_program = driver.eval(program);
 
-		// BEFORE REACHING HERE THE PROGRAM TRANSFORMATION SHOULD ALREADY BE APPLIED
 		System.out.println("DONE WITH APPLYING PROGRAM TRANSFORMATION.");
-		assert (false);
 
-		EliminateHoleStatic eliminate_hole = new EliminateHoleStatic(value_oracle);
-		Program p = (Program) program.accept(eliminate_hole);
+		if (true) {
+			return final_program;
+		} else {
+		// BEFORE REACHING HERE THE PROGRAM TRANSFORMATION SHOULD ALREADY BE APPLIED
+			assert (false);
 
-        if (options.feOpts.outputXml != null) {
-			eliminate_hole.dump_xml(options.feOpts.outputXml);
-        }
+			EliminateHoleStatic eliminate_hole = new EliminateHoleStatic(value_oracle);
+			Program p = (Program) program.accept(eliminate_hole);
 
-        return p;
+			if (options.feOpts.outputXml != null) {
+				eliminate_hole.dump_xml(options.feOpts.outputXml);
+			}
+
+			return p;
+		}
     }
 }

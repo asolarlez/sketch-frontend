@@ -56,7 +56,7 @@ public class Cloner extends FEReplacer {
 
 	@Override
 	public Object visitExprStar(ExprHole star) {
-		String hole_var = star.get_hole_var();
+		String hole_var = star.get_name_var();
 		assert (hole_rename_map.containsKey(hole_var));
 		assert (!processed_hole_names.contains(hole_var));
 

@@ -69,7 +69,7 @@ public class ExprHole extends Expression
 
 	public String getHoleName(){ return holeName; }
 
-	public String get_hole_var() {
+	public String get_name_var() {
 		if (hole_var == "") {
 			return getHoleName();
 		} else {
@@ -90,7 +90,7 @@ public class ExprHole extends Expression
 	}
 
 	public void extendName(String ext) {
-		assert (hole_var == "");
+		assert (hole_var == "" || ext == "");
 		holeName += ext;
 	}
 	

@@ -1,13 +1,13 @@
 package sketch.transformer;
 
 public class SkFuncParam extends Param {
-	Identifier name;
+	IdentifierParam name;
 
-	public SkFuncParam(Identifier _identifier) {
+	public SkFuncParam(IdentifierParam _identifier) {
 		name = _identifier;
 	}
 
 	public Identifier get_identifier() {
-		return name;
+		return name.get_identifier();
 	}
 }

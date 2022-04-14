@@ -42,7 +42,7 @@ public class Replacer extends FEReplacer {
 				assert(!found_var_name);
 				Function new_func = (Function) visitFunction(func);
 				assert (new_func != func);
-				ret.add_funcion(func);
+				ret.add_funcion(new_func);
 				assert(found_var_name);
 			}
 			else {
@@ -55,13 +55,11 @@ public class Replacer extends FEReplacer {
 	}
 
 	public Object visitExprFunCall(ExprFunCall exp) {
-		if (exp.getName().contentEquals(var_name)) {
+		if (exp.get_name_var().contentEquals(var_name)) {
 			found_var_name = true;
 			return exp.creator().name(new_val).create();
 		} else {
 			return exp;
 		}
 	}
-
-
 }

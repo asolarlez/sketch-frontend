@@ -125,7 +125,7 @@ public class UnitLineParser {
 			at_token = next_token();
 			assert (has_pattern(at_token, identifier_pattern));
 			
-			return new ReturnLine(new IdentifierExpression(new Identifier(at_token)));
+			return new ReturnLine(new IdentifierExpression(new IdentifierParam(new Identifier(at_token))));
 		} else {
 			assert (has_pattern(at_token, identifier_pattern));
 

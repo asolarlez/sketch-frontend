@@ -8,6 +8,7 @@ import sketch.compiler.ast.core.Program;
 public class State {
 	Map<String, Param> state = new TreeMap<String, Param>();
 	private Program program;
+	private Program ret = null;
 
 	public Program get_program() {
 		return program;
@@ -15,6 +16,16 @@ public class State {
 
 	public void set_program(Program new_program) {
 		program = new_program;
+	}
+	
+	public void set_return(Program _ret) {
+		assert(ret == null);
+		ret = _ret;
+	}
+
+	public Program get_return() {
+		assert (ret != null);
+		return ret;
 	}
 
 	public State(Program _program) {

@@ -9,9 +9,11 @@ public class SketchTransformerDriver {
 		code_block = _code_block;
 	}
 
-	public void run(Program program) {
+	public Program eval(Program program) {
 		State state = new State(program);
 
 		code_block.run(state);
+
+		return state.get_return();
 	}
 }

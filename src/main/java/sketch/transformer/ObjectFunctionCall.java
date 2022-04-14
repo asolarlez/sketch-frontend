@@ -34,7 +34,7 @@ public class ObjectFunctionCall extends FunctionCall {
 
 		System.out.println("in FunctionCall.eval(state); CLONER PASSED!!!");
 
-		return new SkFuncParam(new Identifier(clone_name));
+		return new SkFuncParam(new IdentifierParam(new Identifier(clone_name)));
 	}
 
 	@Override
