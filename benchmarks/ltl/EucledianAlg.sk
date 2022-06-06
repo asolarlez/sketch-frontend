@@ -1,0 +1,29 @@
+pragma options "--bnd-unroll-amnt 500";
+
+harness void euclidean(int a,int b){
+	assume(a >= 0 && a <= 4);
+	assume(b >= 0 && b <= 4);
+	int res = -1;
+	assert(F(gcd(a,b) == res || res == -1));
+	while(b != 0){
+		int t = b;
+		b = {| a | b |}%b;
+		a = t;
+	}
+	if(a > 0){
+		res = a;
+	}else{
+		res = -1;
+	}
+}
+
+int gcd(int a,int b){
+	while(a != b){
+		if(a > b){
+			a = a-b;
+		}else{
+			b = b-a;
+		}
+	}
+	return a;
+}

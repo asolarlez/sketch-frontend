@@ -1,0 +1,104 @@
+pragma options "--bnd-inline-amnt 100 --bnd-int-range 10";
+
+void id(ref int x){
+	x = x;
+}
+
+void foo(int x){
+	assert(F(x == 0));
+	x = x-1;
+	x++;
+	x--;
+	id(x);
+	x = x-1;
+}
+
+harness void f(){
+foo(2);
+foo(1);
+}
+
+/*bit even (int x)
+{
+  bit[3] st15 = {0,1,0};
+  bit[3] stc15 = {0,1,0};
+  bit h15 = 0;
+  if(x == 0)
+  {
+    {
+      st15[0] = (0 || ((stc15[0]) && 1)) || ((stc15[1]) && ((2 != 0) && ((x % 2) == 0)));
+      st15[1] = 0 || ((stc15[1]) && 1);
+      st15[2] = 0 || ((stc15[0]) && h15);
+      stc15 = st15;
+      h15 = 1;
+      st15[0] = (0 || ((stc15[0]) && 1)) || ((stc15[1]) && ((2 != 0) && ((x % 2) == 0)));
+      st15[1] = 0 || ((stc15[1]) && 1);
+      st15[2] = 0 || ((stc15[0]) && h15);
+      stc15 = st15;
+      assert (st15[2]); //Assert at RecursiveTest.sk:17 (0)
+      return 1;
+    }
+  }
+  else
+  {
+    {
+    st15[0] = (0 || ((stc15[0]) && 1)) || ((stc15[1]) && ((2 != 0) && ((x % 2) == 0)));
+      st15[1] = 0 || ((stc15[1]) && 1);
+      st15[2] = 0 || ((stc15[0]) && h15);
+      stc15 = st15;
+      h15 = 1;
+      st15[0] = (0 || ((stc15[0]) && 1)) || ((stc15[1]) && ((2 != 0) && ((x % 2) == 0)));
+      st15[1] = 0 || ((stc15[1]) && 1);
+      st15[2] = 0 || ((stc15[0]) && h15);
+      stc15 = st15;
+      assert (st15[2]);
+      return odd(x - 1);
+    }
+  }
+  st15[0] = (0 || ((stc15[0]) && 1)) || ((stc15[1]) && ((2 != 0) && ((x % 2) == 0)));
+      st15[1] = 0 || ((stc15[1]) && 1);
+      st15[2] = 0 || ((stc15[0]) && h15);
+      stc15 = st15;
+      h15 = 1;
+      st15[0] = (0 || ((stc15[0]) && 1)) || ((stc15[1]) && ((2 != 0) && ((x % 2) == 0)));
+      st15[1] = 0 || ((stc15[1]) && 1);
+      st15[2] = 0 || ((stc15[0]) && h15);
+      stc15 = st15;
+      assert (st15[2]);
+}*/
+
+bit even(int x){
+  bit ret;
+  assert(x % 2 == 1 || F(ret));
+  if(x == 0){
+  	ret = ??;
+  	return ret;
+  }else{
+  	ret = odd(x-1);
+  	return ret;
+  }
+}
+
+bit odd(int x){
+	bit ret;
+	assert(x % 2 == 0 || F(ret));
+	if(x == 0){
+		ret = ??;
+		return ret;
+	}
+	if(x == 1){
+		ret = ??;
+		return ret;
+	}else{
+		ret = even(x-1);
+		return ret;
+	}
+}
+
+harness void main2(){
+	assert(odd(1));
+	assert(odd(3));
+	assert(even(0));
+	assert(even(2));
+	assert(even(4));
+}

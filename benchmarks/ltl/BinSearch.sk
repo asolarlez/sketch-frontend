@@ -1,0 +1,42 @@
+pragma options "--bnd-arr-size 4 --bnd-unroll-amnt 10";
+
+generator bit guard(int x,int y){
+	return {| x <= y | x < y |};
+}
+
+harness int bsearch(int n,int[n] arr,int x){
+	assume(n < 5);
+	assume(sorted(n,arr));
+	int left = 0;
+	int right = n-1;
+	int ret;
+	// The following asserts establishes the desired behavior of the while loop
+	// "Eventually either the search is successful or the element does not exists in the array" 
+	assert(F(arr[ret] == x || ret == -1)); 
+	while(guard(left,right)){
+		int mid = (left+right)/2;
+		if(arr[mid] < x){
+			left = mid+??;
+			assert(left >= 0 && left < n);
+		}else{
+			if(arr[mid] > x){
+				right = mid-??;
+				assert(right >= 0 && right < n);
+			}else{
+				ret = mid;
+				return ret;
+			}
+		}
+	}
+	ret = -1;
+	return ret;
+}
+
+bit sorted(int n,int[n] arr){
+	for(int i = 0; i < n-1; i++){
+		if(arr[i] > arr[i+1]){
+			return 0;
+		}
+	}
+	return 1;
+}

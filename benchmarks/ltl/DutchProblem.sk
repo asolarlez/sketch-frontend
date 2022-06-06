@@ -1,0 +1,133 @@
+pragma options "--bnd-unroll-amnt 4 --bnd-arr-size 4";
+
+harness void dp(int n,int[n] arr,int rb1, int wb2, int bb3){// int bb1, int rb2, int wb2, int bb2, int rb3, int wb3,int bb3){ 
+	assume(n >= 3 && n <= 4);
+	assume(dutched(n,arr));
+	assume(hasColor(n,arr,0) && hasColor(n,arr,1) && hasColor(n,arr,2));
+
+	int r = 0;
+	int w = 0;
+	int b = n-1;
+	int j = -1;
+
+	bit swaped = 0;
+	
+	assume(rb1 >= 0 && rb1 < n);
+	assume(wb2 >= 0 && wb2 < n);
+	assume(bb3 >= 0 && bb3 < n);
+	
+	while(angelP4(w,b,n)){
+	
+		bodyDP(n,arr,swaped,r,w,b,j,rb1,wb2,bb3);
+		
+	}	
+	assert(dutchFlag(n,arr));
+}
+
+generator int angelP2(int c,ref int r,ref int w,ref int b){
+	int tmp = -1;
+	if(c == 0){
+		tmp = r;
+		r = {| r | w | b | (r | w | b) (+|-) ?? |};
+		w = {| r | w | b | (r | w | b) (+|-) ?? |};
+		b = {| r | w | b | (r | w | b) (+|-) ?? |};
+		return tmp;
+	}
+	if(c == 1){
+		tmp = w;
+		r = {| r | w | b | (r | w | b) (+|-) ?? |};
+		w = {| r | w | b | (r | w | b) (+|-) ?? |};
+		b = {| r | w | b | (r | w | b) (+|-) ?? |};
+		return tmp;
+	}
+	if(c == 2){
+		tmp = b;
+		r = {| r | w | b | (r | w | b) (+|-) ?? |};
+		w = {| r | w | b | (r | w | b) (+|-) ?? |};
+		b = {| r | w | b | (r | w | b) (+|-) ?? |};
+		return tmp;
+	}
+}
+
+generator bit angelP4(int x,int y, int z){
+	return {| x < (y | z) | x <= (y | z) |};
+}
+
+generator bit angelP3(int x,int y1, int y2, int y3){
+	return {| x == (y1 | y2 | y3) | x != (y1 | y2 | y3) |}; 
+}
+
+generator int angelP2p(int c,ref int r,ref int w,ref int b){
+	int tmp;
+	if(c == 0){
+		tmp = r;
+		r = r+1;
+		return tmp;
+	}
+	if(c == 1){
+		tmp = w;
+		w = w;
+		return tmp;
+	}
+	if(c == 2){
+		tmp = b;
+		b = b-1;
+		return tmp;
+	}
+}
+
+void bodyDP(int n,ref int[n] arr,bit swaped,ref int r,ref int w,
+			ref int b,ref int j,int rb1,int wb2,int bb3){		
+	
+	//assert(!(arr[w] == 0 && !swaped && r == rb1) || F(r == rb1+1));
+	//assert(!(arr[w] == 1 && !swaped && w == wb2) || F(w == wb2));
+	//assert(!(arr[w] == 2 && !swaped && b == bb3) || F(b == bb3-1));
+	
+	swaped = 0;
+	int c = arr[w];
+	
+	j = angelP2(c,r,w,b);
+	
+	int tmp = arr[w];
+	arr[w] = arr[j];
+	arr[j] = tmp;
+		
+	swaped = 1;
+		
+	if(angelP3(c,0,1,2)){
+		w = w+1;
+	}
+				
+}
+
+bit dutched(int n,int[n] arr){
+	int i = 0;
+	while(i < n){
+		if(!(arr[i] == 0 || arr[i] == 1 || arr[i] == 2)){
+			return 0;
+		}
+		i++;
+	}
+	return 1;
+}
+
+bit hasColor(int n,int[n] arr, int c){
+	int i = 0;
+	bit red, white, blue;
+	while(i < n){
+		if(arr[i] == c){
+			return 1;
+		}
+		i++;
+	}
+	return 0;
+}
+
+bit dutchFlag(int n,int[n] arr){
+	for(int i = 0; i < n-1; i++){
+		if(arr[i] > arr[i+1]){
+			return 0;
+		}
+	}
+	return 1;
+}

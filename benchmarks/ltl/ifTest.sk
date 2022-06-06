@@ -1,0 +1,8 @@
+harness void main(){
+	int[4] a = {1,2,3,4};
+	int i = 0;
+	int j = 0;
+	assert(F(a[i] == 1));
+	i = 0;
+	j = 1;
+}

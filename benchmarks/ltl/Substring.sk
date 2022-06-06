@@ -1,0 +1,69 @@
+pragma options "--slv-seed 1507167148 --bnd-int-range 100 --bnd-unroll-amnt 3";
+
+generator int reduce(int x,int rev1,int bnd){
+	assume(bnd >= 0);
+	if(??){
+		return {| x | rev1 | ?? |};
+	}else{
+		return {|reduce(x,rev1,bnd-1) (+|*|/|%) reduce(x,rev1,bnd-1)|};
+	}
+}
+
+int reverse(int x,int xb,int resb){
+	
+	int res = 0;
+	while(x > 0){
+		//res = res*10+x%10;
+		//res = reduce(x,res,2);
+		monitoring(x,res,xb,resb);
+		//x = x/??;
+	}
+	
+	return res;
+}
+
+void monitoring(ref int x,ref int res,int xb,int resb){
+	
+	//assert(!(x == xb && res == resb) || F(res == (resb*10+x%10) && X(x == xb/10))); //~34 min
+	//assert(!(x == xb && res == resb) || F(res == (resb*10+x%10) && F(x == xb/10))); //~47 min
+	
+	//assert(!(res == resb) || F(res == (resb*10+x%10)));
+	//assert(!(x == xb) || F(x == xb/10));
+	//~23 min
+	
+	assert(G(!(x == xb) || F(x == xb/10)));
+	assert(G(!(res == resb) || F(res == (resb*10+x%10))));
+	//~8 min
+	
+	//assert((!(x == xb) || F(x == xb/10)) && (!(res == resb) || F(res == (resb*10+x%10)))); 
+	//~43 min
+	x = x;
+	res = reduce(x,res,2);
+	x = x/??;
+	//res = res*10+x%10;
+	//x = x/10;
+	
+	
+}
+
+int rev;
+int base;
+
+int reverseRec(int x){
+
+	rev = 0;
+	base = 1;
+	if(x > 0){
+		rev = reverseRec(x/10);
+		rev = rev + ((x%10)*base);
+		base = base*10;
+	}
+	return rev;
+}
+
+harness void main(int x,int xb,int resb){
+	assume(x >= 0 && x <= 100);
+	assume(xb >= 0 && xb <= 100);
+	assume(resb >= 0 && resb <= 100);
+	assert(reverse(x,xb,resb) == reverseRec(x));
+}
