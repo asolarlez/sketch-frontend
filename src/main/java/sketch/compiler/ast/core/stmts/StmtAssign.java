@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.ast.core.stmts;
+import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.exprs.ExprBinary;
@@ -53,6 +54,18 @@ public class StmtAssign extends Statement
         this.op = op;
     }
 
+	/**
+	 * Fernando
+	 * 
+	 * @deprecated
+	 */
+	public StmtAssign(FEContext context, Expression lhs, Expression rhs, int op) {
+		super(context);
+		this.lhs = lhs;
+		this.rhs = rhs;
+		this.op = op;
+	}
+
     /** Creates a new assignment statement with the specified left-
      * and right-hand sides and no operation (i.e., 'lhs=rhs;'). */
     public StmtAssign(Expression lhs, Expression rhs, int op)
@@ -67,6 +80,7 @@ public class StmtAssign extends Statement
         this(lhs, lhs, rhs, 0);
     }
 
+
     /** Creates a new assignment statement with the specified left-
      * and right-hand sides and no operation (i.e., 'lhs=rhs;') and
      * context. */
@@ -75,6 +89,15 @@ public class StmtAssign extends Statement
         this(cx, lhs, rhs, 0);
     }
     
+	/**
+	 * Fernando
+	 * 
+	 * @deprecated
+	 */
+	public StmtAssign(FEContext cx, Expression lhs, Expression rhs) {
+		this(cx, lhs, rhs, 0);
+	}
+
     public ExprVar getLhsBase() {
         return (new GetAssignLHS()).visitStmtAssign(this);
     }

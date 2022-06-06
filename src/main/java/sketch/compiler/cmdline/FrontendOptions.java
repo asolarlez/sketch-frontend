@@ -95,4 +95,8 @@ public class FrontendOptions extends CliAnnotatedOptionGroup {
 
     @CliParameter(help = "Stop Sketch after given number of minutes.")
     public float timeout = 0;
+
+	// Fernando test
+	@CliParameter(help = "Possibly this works.")
+	public boolean ltl = false;
 }

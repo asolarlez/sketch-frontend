@@ -15,6 +15,7 @@
  */
 
 package sketch.compiler.ast.core.exprs;
+import sketch.compiler.ast.core.FEContext;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.FEVisitor;
 
@@ -75,6 +76,11 @@ public class ExprBinary extends Expression
         this.right = right;
         alias = this;
     }
+
+	public ExprBinary(FEContext node, ExprBinary bin) {
+		this(bin.getOp(), bin.getLeft(), bin.getRight());
+		this.setCx(node);
+	}
 
     /**
      * Create a new binary expression given the operation and the

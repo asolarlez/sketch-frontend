@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -292,7 +294,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
     
     public SynthesisResult partialEvalAndSolve(Program prog) {
         SketchLoweringResult sketchProg = lowerToSketch(prog);
-        // sketchProg.result.debugDump("");
+		// sketchProg.result.debugDump("");
         if (prog.hasFunctions()) {
 
             SATBackend solver;
@@ -600,7 +602,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         Program prog = null;
         try {
 			prog = parseProgram();
-            // System.out.println(prog);
+			// System.out.println(prog);
         } catch (SketchException se) {
             throw se;
         } catch (IllegalArgumentException ia) {
@@ -625,6 +627,38 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             return;
         }
 
+		// Fernando test
+
+		// A syntactic verification of the LTL formulas
+		// Check that none function is named as a LTL operator
+		prog.accept(new LTLExclusivity());
+		// Check that every LTL formula is well formed.
+		prog.accept(new LTLWFExpression());
+		// Check that every LTL formula occurs in assert statements.
+		Program prog2 = prog; // Create a copy of the current program
+		// Remove all the asserts and assumes
+		prog2 = (Program) prog2.accept(new LTLRemoveAsserts());
+		// If there is a function call with LTL operators, return error
+		prog2.accept(new LTLInAssert());
+
+
+		// Get the lines where an LTL assert occurrs
+		List<Integer> ltlAsserts = new LinkedList<Integer>();
+		LTLDetective pika = new LTLDetective(ltlAsserts);
+		prog = (Program) prog.accept(pika);
+		ltlAsserts = pika.getLTLAsserts();
+
+		// Create the prefix notation for the boolean operators
+		prog = (Program) prog.accept(new LTLPrefixFormat());
+
+		// Add the regressions
+		LTLRegression regression = new LTLRegression(ltlAsserts);
+		prog = (Program) prog.accept(regression);
+
+		prog = (Program) prog.accept(new LTLProtectExprs());
+
+		prog.debugDump("After LTL lowering.");
+
 		prog = this.preprocAndSemanticCheck(prog);
         // System.out.println(prog);
 
@@ -636,7 +670,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = synthResult.lowered.result;
 
 		Program finalCleaned = synthResult.lowered.highLevelC;
-		
+
         // (Program) (new
         // DeleteInstrumentCalls()).visitProgram(synthResult.lowered.highLevelC);
 
@@ -652,13 +686,14 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         } else {
             substituted = finalCleaned;
         }
-        
 
 
         Program substitutedCleaned =
  (new CleanupFinalCode(varGen, options,
 				visibleRControl(finalCleaned))).visitProgram(substituted);
 
+		// Fernando: Remove LTL instrumentation
+		substitutedCleaned = (Program) substitutedCleaned.accept(new LTLRemoving());
 
 		generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");

@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static sketch.util.DebugOut.printWarning;
+
 import sketch.compiler.Directive;
 import sketch.compiler.passes.printers.SimpleCodePrinter;
-
-import static sketch.util.DebugOut.printWarning;
 
 /**
  * An entire Sketch program. This includes all of the program's declared
@@ -155,7 +155,7 @@ public class Program extends FENode
     }
 
     public void debugDump(String message) {
-        System.out.println("\n//// " + message);
+		// System.out.println("Prueba\n//// " + message);
         debugDump(System.out);
         System.out.println("------------------------------\n");
     }

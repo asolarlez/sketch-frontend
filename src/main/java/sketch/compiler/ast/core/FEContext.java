@@ -30,11 +30,19 @@ public class FEContext
     private int lineNumber, columnNumber;
     private String file;
     private String lastComment;
+	// Fernando
+	private boolean ltl;
+	private boolean ltlAssert;
+	private boolean aut;
 
     /** Create a new context object with no location information. */
     public FEContext()
     {
         this(null);
+		// Fernando
+		ltl = false;
+		ltlAssert = false;
+		aut = false;
     }
 
     /** Create a new context object with a known filename but no
@@ -45,6 +53,10 @@ public class FEContext
     public FEContext(String fileName)
     {
         this(fileName, -1);
+		// Fernando
+		ltl = false;
+		ltlAssert = false;
+		aut = false;
     }
 
     /** Create a new context object with a known filename and line
@@ -56,6 +68,10 @@ public class FEContext
     public FEContext(String fileName, int line)
     {
         this(fileName, line, -1);
+		// Fernando
+		ltl = false;
+		ltlAssert = false;
+		aut = false;
     }
 
     /** Create a new context object with known filename, line number,
@@ -80,6 +96,10 @@ public class FEContext
         }else{
         	file = lfile;
         }
+		// Fernando
+		ltl = false;
+		ltlAssert = false;
+		aut = false;
     }
 
     public FEContext(String fileName, int line, int col, String lastComment) {
@@ -97,7 +117,41 @@ public class FEContext
         } else {
             file = lfile;
         }
+		// Fernando
+		ltl = false;
+		ltlAssert = false;
+		aut = false;
     }
+
+	// Fernando: set ltl context
+	public void setLTL(boolean ltl) {
+		this.ltl = ltl;
+	}
+
+	// Fernando: get ltl context
+	public boolean getLTL() {
+		return ltl;
+	}
+
+	// Fernando: set ltl context
+	public void setLTLAssert(boolean ltlAssert) {
+		this.ltlAssert = ltlAssert;
+	}
+
+	// Fernando: get ltl context
+	public boolean getLTLAssert() {
+		return ltlAssert;
+	}
+
+	// Fernando: set ltl context
+	public void setAut(boolean aut) {
+		this.aut = aut;
+	}
+
+	// Fernando: get ltl context
+	public boolean getAut() {
+		return aut;
+	}
 
     /** Get the name of the file this node appears in, or null if it is
      * unavailable. */
