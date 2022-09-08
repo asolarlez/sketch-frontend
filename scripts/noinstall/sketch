@@ -11,5 +11,5 @@ execargs="--fe-cegis-path $cegispath --fe-inc $sketchlib $@"
 #echo execargs: $execargs
 #echo cegis: $cegispath
 
-export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx600m -ea -server"; mvn -f "$projfile" -e exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$execargs"
+export MAVEN_OPTS="-Xms40m -Xmx600m -ea -server"; mvn -f "$projfile" -e exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$execargs"
 

@@ -52,6 +52,9 @@ public class SolverOptions extends CliAnnotatedOptionGroup {
     @CliParameter(help = "Seeds the random number generator. If set to zero, a random seed is used.")
     public int seed = 0;
 
+	@CliParameter(help = "Path to hypersketch (.hsk) file.")
+	public String hypersketch = "";
+
     @CliParameter(help = "SAT solver to use for synthesis. Options: 'ABC' "
             + "for the ABC solver, 'MINI' for the MiniSat solver.")
     public SynthSolvers synth = SynthSolvers.NOT_SET;
