@@ -321,7 +321,7 @@ public class SATBackend {
 	protected void extractOracleFromOutput(String fname) {
 		try {
 
-			boolean has_fmtl_program = true;
+			boolean has_fmtl_program = false;
 
 			if (has_fmtl_program) {
 				String fmtl_file = "fmtl_program_file.fmtl";

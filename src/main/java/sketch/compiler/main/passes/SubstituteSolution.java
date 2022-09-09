@@ -37,17 +37,18 @@ public class SubstituteSolution extends MetaStage {
 		// for each line in ftml program
 		// calls each of the visitors.
     	
-		SketchTransformerDriver driver = new SketchTransformerDriver(value_oracle.get_code_block());
-		System.out.println("IN SubstituteSolution.visitProgramInner; RUN SK_TRANSFORMER DRIVER.");
-		Program final_program = driver.eval(program);
 
-		System.out.println("DONE WITH APPLYING PROGRAM TRANSFORMATION.");
+		if (false) {
+			SketchTransformerDriver driver = new SketchTransformerDriver(value_oracle.get_code_block());
+			System.out.println("IN SubstituteSolution.visitProgramInner; RUN SK_TRANSFORMER DRIVER.");
+			Program final_program = driver.eval(program);
 
-		if (true) {
+			System.out.println("DONE WITH APPLYING PROGRAM TRANSFORMATION.");
+
 			return final_program;
 		} else {
 		// BEFORE REACHING HERE THE PROGRAM TRANSFORMATION SHOULD ALREADY BE APPLIED
-			assert (false);
+//			assert (false);
 
 			EliminateHoleStatic eliminate_hole = new EliminateHoleStatic(value_oracle);
 			Program p = (Program) program.accept(eliminate_hole);

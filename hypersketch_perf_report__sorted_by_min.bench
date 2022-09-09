@@ -1,0 +1,11 @@
+{
+	--- PERFORMANCE SCORE --- 
+	exec[baseline]                 ::	[min: 9; max: 10]; avg: 9; cnt: 2;
+	compile[SkFunc::evalinps]      ::	[min: 141; max: 171]; avg: 156; cnt: 2;
+	compile+exec[SkFunc::evalinps] ::	[min: 246; max: 326]; avg: 286; cnt: 2;
+	solve__step_0__nctrlbs_784     ::	[min: 2562707; max: 14465137]; avg: 7663507; cnt: 6;
+	cegis__dag__n3101              ::	[min: 2576270; max: 14481374]; avg: 7675220; cnt: 6;
+	hypersketch::eval              ::	[min: 47558762; max: 47558762]; avg: 47558762; cnt: 1;
+	--- PERFORMANCE SCORE ---
+} 
+
