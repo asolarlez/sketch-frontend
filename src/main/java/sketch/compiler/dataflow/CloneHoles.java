@@ -7,15 +7,15 @@ import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.exprs.ExprField;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
 
 public class CloneHoles extends FEReplacer {
 
     // TODO xzl: what's this?
-    public Object visitExprStar(ExprStar es) {
-        ExprStar newStar = new ExprStar(es);
+    public Object visitExprStar(ExprHole es) {
+        ExprHole newStar = new ExprHole(es);
         if (es.special())
             newStar.makeSpecial(es.parentHoles());
         es.renewName();
@@ -44,7 +44,7 @@ public class CloneHoles extends FEReplacer {
     public Object visitExprNew(ExprNew exp) {
         ExprNew nexp = (ExprNew) super.visitExprNew(exp);
         if (nexp.isHole() && nexp.getStar() != null) {
-            ExprStar newStar = (ExprStar) nexp.getStar().accept(this);
+            ExprHole newStar = (ExprHole) nexp.getStar().accept(this);
         }
         return nexp;
     }

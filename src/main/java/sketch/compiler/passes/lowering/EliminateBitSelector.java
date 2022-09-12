@@ -1,7 +1,7 @@
 package sketch.compiler.passes.lowering;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -37,7 +37,7 @@ public class EliminateBitSelector extends SymbolTableVisitor {
     	  assert tmptype.equals(TypePrimitive.bittype) : "The {|} operator is currently only defined for bit vectors: " + exp;
     	  StmtVarDecl decl = new StmtVarDecl(exp, bvtype , nm, null  );
     	  this.addStatement( decl );
-    	  ExprStar star = new ExprStar(exp);
+    	  ExprHole star = new ExprHole(exp);
     	  star.setType( bvtype );
     	  StmtAssign ass = new StmtAssign(tmpvar, star );
     	  this.addStatement(ass);

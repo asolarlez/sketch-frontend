@@ -14,7 +14,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -54,11 +54,11 @@ public class PreprocessSketch extends DataflowWithFixpoint {
 
 
 
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         Object obj = super.visitExprStar(star);
         if (!inlineStatics && !star.isGlobal) {
-            ExprStar old = (ExprStar)exprRV;
-            ExprStar n = new ExprStar(old);
+            ExprHole old = (ExprHole)exprRV;
+            ExprHole n = new ExprHole(old);
             n.extendName(rcontrol.callStack());
             if (old.special())
                 n.makeSpecial(old.parentHoles());
@@ -71,9 +71,9 @@ public class PreprocessSketch extends DataflowWithFixpoint {
         Object obj = super.visitExprNew(exp);
         ExprNew nexp = (ExprNew) this.exprRV;
         if (nexp.isHole()) {
-            ExprStar star = nexp.getStar();
+            ExprHole star = nexp.getStar();
             star.accept(this);
-            ExprStar newStar = (ExprStar) exprRV;
+            ExprHole newStar = (ExprHole) exprRV;
             if (newStar != star) {
                 exprRV = new ExprNew(nexp, nexp.getTypeToConstruct(), nexp.getParams(), 
                         true, newStar);

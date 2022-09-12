@@ -247,7 +247,7 @@ public class CodePrinterVisitor extends SymbolTableVisitor {
 		return enp;
 	}
 
-	public Object visitExprStar (ExprStar es) {
+	public Object visitExprStar (ExprHole es) {
 		// TODO: doesn't properly visit children of ExprStar
         print(es.toString());
 		return es;

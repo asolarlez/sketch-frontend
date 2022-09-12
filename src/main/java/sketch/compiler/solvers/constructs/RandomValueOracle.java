@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.typs.Type;
 
 /**
@@ -38,9 +38,9 @@ public class RandomValueOracle extends ValueOracle {
 	}
 
 	protected ExprConstInt getVal (FENode node, String name) {
-		assert (node instanceof ExprStar) : "Unexpected hole type";
+		assert (node instanceof ExprHole) : "Unexpected hole type";
 
-		int bitWidth = ((ExprStar) node).getSize ();
+		int bitWidth = ((ExprHole) node).getSize ();
 		int val = rand.nextInt (1 << bitWidth);
 
 		//System.out.print (val +",");

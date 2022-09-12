@@ -44,7 +44,7 @@ import sketch.compiler.ast.core.FEVisitor;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.codegenerators.GenerateDocs;
 import sketch.compiler.codegenerators.OutputHoleFunc;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
@@ -306,10 +306,15 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
                 solver.activateTracing();
             }
             backendParameters();
-            solver.partialEvalAndSolve(sketchProg.result);
+			solver.partialEvalAndSolve(sketchProg.result); // solves the sketch
+															// and return;
+															// result: sketch
+															// before lowering
+															// and the oracle
 
-
-            return new SynthesisResult(sketchProg, solver.getOracle(),
+			return new SynthesisResult(sketchProg, solver.getOracle(), // stores
+																		// the
+																		// oracle.
                     solver.getLastSolutionStats());
         } else {
             return new SynthesisResult(sketchProg, null, null);
@@ -430,7 +435,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
 	protected boolean isSketch (Program p) {
 		class hasHoles extends FEReplacer {
-			public Object visitExprStar (ExprStar es) {
+			public Object visitExprStar(ExprHole es) {
 				throw new ControlFlowException ("yes");
 			}
 		}
@@ -632,7 +637,15 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         // prog =
         // (new LowerToHLC(varGen, options)).visitProgram(withoutConstsReplaced);
 
-		SynthesisResult synthResult = this.partialEvalAndSolve(prog);
+		SynthesisResult synthResult = this.partialEvalAndSolve(prog); // this is
+																		// the
+																		// tuple
+																		// (lowered
+																		// sketch,
+																		// and
+																		// oracle,
+																		// and
+																		// stats)
 		prog = synthResult.lowered.result;
 
 		Program finalCleaned = synthResult.lowered.highLevelC;
@@ -646,6 +659,9 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
         // (Program) (new DeleteCudaSyncthreads()).visitProgram(beforeUnvectorizing);
         Program substituted;
         if (synthResult.solution != null) {
+			// here the oracle plugs in the values.
+			// SubstituteSolution is derived from FEReplacer
+			//
             substituted =
  (new SubstituteSolution(varGen, options,
 					synthResult.solution)).visitProgram(finalCleaned);
@@ -657,7 +673,7 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         Program substitutedCleaned =
  (new CleanupFinalCode(varGen, options,
-				visibleRControl(finalCleaned))).visitProgram(substituted);
+						visibleRControl(substituted))).visitProgram(substituted);
 
 
 		generateCode(substitutedCleaned);

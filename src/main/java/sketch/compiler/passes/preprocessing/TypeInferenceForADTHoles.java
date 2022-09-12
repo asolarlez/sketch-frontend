@@ -13,7 +13,7 @@ import sketch.compiler.ast.core.exprs.ExprADTHole;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtReturn;
@@ -97,7 +97,7 @@ public class TypeInferenceForADTHoles extends SymbolTableVisitor {
     public Object visitExprNew(ExprNew exp){
         if (exp.isHole() && exp.getTypeToConstruct() == null){
             if(ts != null && ts.isStruct()){
-                ExprStar star = new ExprStar(exp, 5, TypePrimitive.int32type);
+                ExprHole star = new ExprHole(exp, 5, TypePrimitive.int32type);
                 exp =
                         new ExprNew(exp.getContext(), ts, exp.getParams(), true);
                 exp.setStar(star);

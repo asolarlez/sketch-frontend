@@ -3,7 +3,7 @@ package sketch.compiler.passes.optimization;
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.TempVarGen;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtLoop;
@@ -69,7 +69,7 @@ public class ReplaceMinLoops extends FEReplacer {
 
         final StmtVarDecl vardecl =
                 new StmtVarDecl(stmtMinLoop, TypePrimitive.inttype, localName,
-                        new ExprStar(stmtMinLoop));
+                        new ExprHole(stmtMinLoop));
         final ExprVar ev = new ExprVar(stmtMinLoop, localName);
         final StmtMinimize smin = new StmtMinimize(ev, false);
         this.addStatement(vardecl);

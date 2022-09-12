@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprUnary;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
@@ -180,7 +180,7 @@ public class EliminateReorderBlocks extends FEReplacer {
 		Expression me = new ExprConstInt (cx, i);
 		Expression notPicked = new ExprUnary ("!", new ExprArrayRange (cx, picked, me));
 		Expression pickMe = !it.hasNext () ? notPicked
-				: new ExprBinary (notPicked, "&&", new ExprStar (cx));
+				: new ExprBinary (notPicked, "&&", new ExprHole (cx));
 		Statement setPicked = new StmtAssign (new ExprArrayRange (cx, picked, me), ExprConstInt.one);
 		Statement setChoice = new StmtAssign (new ExprArrayRange (cx, choices, me), chooseIter);
 		Expression myTurn = new ExprBinary (

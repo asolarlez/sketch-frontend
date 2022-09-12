@@ -35,7 +35,7 @@ import sketch.util.exceptions.ProgramParseException;
  * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
-public class ExprStar extends Expression
+public class ExprHole extends Expression
 {
     public enum Kind {
         NORMAL, ANGELIC, COUNTER
@@ -54,7 +54,8 @@ public class ExprStar extends Expression
 	private Type type;
 	public int INT_SIZE=5;
     public final boolean isGlobal;
-    protected String starName = "ANON";
+    protected String holeName = "ANON";
+	private String hole_var = "";
     public boolean typeWasSetByScala = false;
 	private static int NEXT_UID=0;
 	private static String HOLE_BASE="H__";
@@ -62,15 +63,38 @@ public class ExprStar extends Expression
 	
     private Kind kind = Kind.NORMAL;
     private boolean isSpecial = false;
-    private List<ExprStar> parentHoles; // required for special depth holes
+    private List<ExprHole> parentHoles; // required for special depth holes
 
     // private Expression exprMax = null;
 
-	public String getSname(){ return starName; }
-	public void renewName(){ starName = HOLE_BASE + (NEXT_UID++); }
-	public void extendName(String ext){ starName += ext; } 
+	public String getHoleName(){ return holeName; }
+
+	public String get_name_var() {
+		if (hole_var == "") {
+			return getHoleName();
+		} else {
+			return hole_var;
+		}
+	}
+
+	public void renewName() {
+		assert (hole_var == "");
+		holeName = HOLE_BASE + (NEXT_UID++);
+	}
+
+	public void rename(String new_name) {
+		if (hole_var == "") {
+			hole_var = holeName;
+		}
+		holeName = new_name;
+	}
+
+	public void extendName(String ext) {
+		assert (hole_var == "" || ext == "");
+		holeName += ext;
+	}
 	
-    public ExprStar(ExprStar old, boolean isGlobal) {
+    public ExprHole(ExprHole old, boolean isGlobal) {
         super(old);
         size = old.size;
         isFixed = old.isFixed;
@@ -83,14 +107,15 @@ public class ExprStar extends Expression
 		frangelow = old.frangelow;
 		frangehigh = old.frangehigh;
         hasrange = old.hasrange;
-        this.starName = old.starName;
+		this.hole_var = old.hole_var;
+        this.holeName = old.holeName;
         this.kind = old.kind;
         this.isSpecial = old.isSpecial;
         this.parentHoles = old.parentHoles;
 
     }
 
-	public ExprStar(ExprStar old)
+	public ExprHole(ExprHole old)
     {
         super(old);
         size = old.size;
@@ -104,25 +129,26 @@ public class ExprStar extends Expression
 		frangelow = old.frangelow;
 		frangehigh = old.frangehigh;
         hasrange = old.hasrange;
-        this.starName = old.starName;
+		this.hole_var = old.hole_var;
+        this.holeName = old.holeName;
         this.kind = old.kind;
         // this.exprMax = old.exprMax;
     }
 
     /** Create a new ExprConstInt with a specified value. */
-    public ExprStar(FENode context)
+    public ExprHole(FENode context)
     {
         this(context.getCx(), Kind.NORMAL);
     }
 
-    public ExprStar(FEContext context) {
+    public ExprHole(FEContext context) {
         this(context, Kind.NORMAL);
     }
 
     /** Create a new ExprConstInt with a specified value.
      * @deprecated
      */
-    public ExprStar(FEContext context, Kind kind)
+    public ExprHole(FEContext context, Kind kind)
     {
         super(context);
         size = 1;
@@ -131,16 +157,18 @@ public class ExprStar extends Expression
         this.kind = kind;
         // this.exprMax = max;
         if (kind == Kind.COUNTER) {
-            this.starName = HOLE_BASE;
+			assert (this.hole_var == "");
+            this.holeName = HOLE_BASE;
         } else {
-        this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+			assert (this.hole_var == "");
+			this.holeName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
         }
     }
 
     /**
      *
      */
-    public ExprStar(FENode context, int size)
+    public ExprHole(FENode context, int size)
     {
         this(context.getCx(), size);
     }
@@ -148,7 +176,7 @@ public class ExprStar extends Expression
     /**
     *
     */
-    public ExprStar(FENode context, int rstart, int rend, int size) {
+    public ExprHole(FENode context, int rstart, int rend, int size) {
         super(context);
         this.size = size;
         isGlobal = false;
@@ -156,18 +184,19 @@ public class ExprStar extends Expression
         rangelow = rstart;
         rangehigh = rend;
         hasrange = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+		assert (this.hole_var == "");
+        this.holeName = HOLE_BASE + (NEXT_UID++);
     }
 
         /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size) {
+    public ExprHole(FEContext context, int size) {
         this(context, size, Kind.NORMAL);
     }
 
     
-    public ExprStar(FENode context, int size, boolean isGlobal) {
+    public ExprHole(FENode context, int size, boolean isGlobal) {
         super(context);
         isFixed = true;
         this.isGlobal = isGlobal;
@@ -175,16 +204,18 @@ public class ExprStar extends Expression
         this.kind = Kind.NORMAL;
         // this.exprMax = max;
         if (kind == Kind.COUNTER) {
-            this.starName = HOLE_BASE;
+			assert (this.hole_var == "");
+            this.holeName = HOLE_BASE;
         } else {
-            this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+			assert (this.hole_var == "");
+            this.holeName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
         }
     }
     
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int size, Kind kind)
+    public ExprHole(FEContext context, int size, Kind kind)
     {
         super(context);
 		if (size < 1) {
@@ -196,16 +227,18 @@ public class ExprStar extends Expression
         this.kind = kind;
         // this.exprMax = max;
         if (kind == Kind.COUNTER) {
-            this.starName = HOLE_BASE;
+			assert (this.hole_var == "");
+            this.holeName = HOLE_BASE;
         } else {
-            this.starName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
+			assert (this.hole_var == "");
+            this.holeName = (kind == Kind.ANGELIC ? ANGJ_BASE : HOLE_BASE) + (NEXT_UID++);
         }
     }
 
     /**
      * @deprecated
      */
-    public ExprStar(FEContext context, int rstart, int rend) {
+    public ExprHole(FEContext context, int rstart, int rend) {
         super(context);
         isFixed = true;
         isGlobal = false;
@@ -213,10 +246,11 @@ public class ExprStar extends Expression
         rangelow = rstart;
         rangehigh = rend;
         hasrange = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+		assert (this.hole_var == "");
+        this.holeName = HOLE_BASE + (NEXT_UID++);
     }
 
-	public ExprStar(FEContext context, double rstart, double rend) {
+	public ExprHole(FEContext context, double rstart, double rend) {
 		super(context);
 		isFixed = true;
 		isGlobal = false;
@@ -224,21 +258,22 @@ public class ExprStar extends Expression
 		frangelow = rstart;
 		frangehigh = rend;
 		hasrange = true;
-		this.starName = HOLE_BASE + (NEXT_UID++);
+		this.holeName = HOLE_BASE + (NEXT_UID++);
 	}
 
     @Deprecated
-    public ExprStar(FEContext ctx, Type typ, int domainsize) {
+    public ExprHole(FEContext ctx, Type typ, int domainsize) {
         super(ctx);
         isGlobal = false;
         this.type = typ;
         this.size = domainsize;// (int) Math.ceil(Math.log(domainsize) / Math.log(2));
         isFixed = true;
-        this.starName = HOLE_BASE + (NEXT_UID++);
+		assert (this.hole_var == "");
+        this.holeName = HOLE_BASE + (NEXT_UID++);
         this.typeWasSetByScala = true;
     }
 
-    public ExprStar(FENode context, int size, Type typ) {
+    public ExprHole(FENode context, int size, Type typ) {
         this(context, size);
         this.setType(typ);
     }
@@ -268,7 +303,7 @@ public class ExprStar extends Expression
 			depObjects.setSize(i+1);
 		}
 		if(depObjects.get(i) == null){
-			ExprStar es = new ExprStar(this);
+			ExprHole es = new ExprHole(this);
 			es.extendName("_" + i);
 			es.type = t;
 			depObjects.set(i, es);
@@ -292,10 +327,10 @@ public class ExprStar extends Expression
 
     private String detailName() {
         if (isAngelicMax()) {
-            return "**/*" + getSname() /* + (exprMax == null ? "" : "@" + exprMax) */
+            return "**/*" + getHoleName() /* + (exprMax == null ? "" : "@" + exprMax) */
                     + "*/";
         } else {
-            return "??" + "/*" + getSname() + "*/";
+            return "??" + "/*" + getHoleName() + "*/";
         }
     }
 
@@ -307,13 +342,13 @@ public class ExprStar extends Expression
     public String toString()
     {
         if (isAngelicMax()) {
-            return "**/*" + getSname() /* + (exprMax == null ? "" : "@" + exprMax) */
+            return "**/*" + getHoleName() /* + (exprMax == null ? "" : "@" + exprMax) */
                     + "*/";
         } else {
             if (getType() != null) {
-                return "??" + "/* " + getSname() + getType() + ":" + size + " */";
+                return "??" + "/* " + getHoleName() + getType() + ":" + size + " */";
             } else {
-                return "??" + "/*" + getSname() + "*/";
+                return "??" + "/*" + getHoleName() + "*/";
             }
         }
 
@@ -405,12 +440,12 @@ public class ExprStar extends Expression
 		isSpecial = true;
 	}
 
-    public void makeSpecial(List<ExprStar> parentDepths) {
+    public void makeSpecial(List<ExprHole> parentDepths) {
         isSpecial = true;
         this.parentHoles = parentDepths;
     }
 
-    public List<ExprStar> parentHoles() {
+    public List<ExprHole> parentHoles() {
         return this.parentHoles;
     }
 

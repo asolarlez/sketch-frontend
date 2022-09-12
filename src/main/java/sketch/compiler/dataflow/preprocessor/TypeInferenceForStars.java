@@ -57,7 +57,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
             }
             return super.visitExprField(exp);
         }
-        public Object visitExprStar(ExprStar star) {
+        public Object visitExprStar(ExprHole star) {
             if (!star.typeWasSetByScala) {
                 // NOTE -- don't kill better types by Scala compiler / Skalch grgen output
                 star.setType(type);
@@ -539,7 +539,7 @@ public class TypeInferenceForStars extends SymbolTableVisitor {
                 Type ftype = mst.get(en.getName());
                 Expression actual = en.getExpr();
                 if (ftype == null) {
-                    if (actual instanceof ExprStar) {
+                    if (actual instanceof ExprHole) {
                         throw new ExceptionAtNode("The type of field " + name +
                                 " is ambiguous. Can't resolve the type of the hole.",
                                 expNew);

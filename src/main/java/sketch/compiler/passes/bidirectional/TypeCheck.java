@@ -600,7 +600,7 @@ public class TypeCheck extends BidirectionalPass {
                 // check that initializer is array initializer
                 // (I guess it could also be conditional expression? Don't
                 // bother.)
-                if (init instanceof ExprStar) {
+                if (init instanceof ExprHole) {
                     // don't do anything, the star will take on whatever type it
                     // needs to
                 } else if (!(init instanceof ExprArrayInit)) {
