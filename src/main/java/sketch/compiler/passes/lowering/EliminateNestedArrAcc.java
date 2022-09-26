@@ -13,7 +13,10 @@ public class EliminateNestedArrAcc extends FEReplacer {
         this.bcheck = bcheck;
     }
 	public Object visitExprArrayRange(ExprArrayRange exp) {
-		
+		/*
+		 * bla; x = A[2::3][z]; ==> bla; assert z<3; x=A[2+z]
+		 * 
+		 */
 		RangeLen rl = exp.getSelection();
 		Expression newStart = doExpression( rl.start());
 		Expression newBase = doExpression(exp.getBase());

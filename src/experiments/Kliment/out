@@ -1,0 +1,1590 @@
+SKETCH version 1.7.6
+Benchmark = sketch.sk
+
+//// After stage preproc
+/* BEGIN PACKAGE ANONYMOUS*/
+struct Data {
+    int num_doubles;
+    double[num_doubles] doubles;
+}
+/*sketch.sk:23*/
+
+void glblInit_num_units__ANONYMOUS_s68 (ref int num_units__ANONYMOUS_s67_1)/*sketch.sk:23*/
+{
+  num_units__ANONYMOUS_s67_1 = 0;
+}
+/*sketch.sk:259*/
+
+void main (int num_doubles_3, double[num_doubles_3] doubles_4, bit out_5, ref global int num_units__ANONYMOUS_s62_6)/*sketch.sk:259*/
+{
+  if(num_doubles_3 >= 1)/*sketch.sk:261*/
+  {
+    {
+      Data@ANONYMOUS data_7;
+      data_7 = new Data(num_doubles=num_doubles_3, doubles=doubles_4);
+      int l0_8;
+      l0_8 = 2;
+      int l1_9;
+      l1_9 = 2;
+      bit _out_s5_a;
+      {
+        Data@ANONYMOUS data_b = data_7;
+        int l0_c = 2;
+        int l1_d = 2;
+        {
+          bit _has_out__e = 0;
+          {
+            _out_s5_a = 0;
+          }
+          bit not_f;
+          not_f = 0;
+          {
+          }
+          bit ret_10;
+          bit ret_s7_11;
+          {
+            {
+              Data@ANONYMOUS data_12 = data_b;
+              int length0_13 = 2;
+              int length1_14 = 2;
+              {
+                bit _has_out__15 = 0;
+                {
+                  ret_s7_11 = 0;
+                }
+                int _whichexpr_s0_16;
+                _whichexpr_s0_16 = ??/* H__7_35_33int:1 */;
+                {
+                  assert ((0 <= _whichexpr_s0_16) && (_whichexpr_s0_16 < 2)); //regen H__7
+                }
+                {
+                  {
+                    {
+                      bit _pac_sc_s8_17;
+                      {
+                        if(_whichexpr_s0_16 == 0)/*sketch.sk:193*/
+                        {
+                          bit _out_s10_18;
+                          {
+                            {
+                              Data@ANONYMOUS data_19 = data_12;
+                              int length_1a = 2;
+                              int or_length_1b = 2;
+                              {
+                                bit _has_out__1c = 0;
+                                {
+                                  _out_s10_18 = 0;
+                                }
+                                {
+                                  print_init_and();
+                                }
+                                bit ret_s26_1d;
+                                {
+                                  {
+                                    Data@ANONYMOUS data_1e = data_19;
+                                    bit rez_0_1f = 1;
+                                    int length_20 = 2;
+                                    int or_length_21 = 2;
+                                    {
+                                      bit _has_out__22 = 0;
+                                      {
+                                        ret_s26_1d = 0;
+                                      }
+                                      bit rez_23 = 1;
+                                      {
+                                      }
+                                      bit _out_s28_24;
+                                      {
+                                        {
+                                          Data@ANONYMOUS data_25 = data_1e;
+                                          int length_26 = 2;
+                                          {
+                                            bit _has_out__27 = 0;
+                                            {
+                                              _out_s28_24 = 0;
+                                            }
+                                            {
+                                              print_init_or();
+                                            }
+                                            bit ret_s32_28;
+                                            {
+                                              {
+                                                Data@ANONYMOUS data_29 = data_25;
+                                                bit rez_0_2a = 0;
+                                                int length_2b = 2;
+                                                {
+                                                  bit _has_out__2c = 0;
+                                                  {
+                                                    ret_s32_28 = 0;
+                                                  }
+                                                  bit rez_2d = 0;
+                                                  {
+                                                  }
+                                                  bit _out_s34_2e;
+                                                  {
+                                                    {
+                                                      Data@ANONYMOUS data_2f = data_29;
+                                                      {
+                                                        bit _has_out__30 = 0;
+                                                        {
+                                                          _out_s34_2e = 0;
+                                                        }
+                                                        int _whichexpr_s1_31;
+                                                        _whichexpr_s1_31 = ??/* H__8_35_33_24_15_12_10_7int:2 */;
+                                                        {
+                                                          assert ((0 <= _whichexpr_s1_31) && (_whichexpr_s1_31 < 4)); //regen H__8
+                                                        }
+                                                        int _whichexpr_s2_32;
+                                                        _whichexpr_s2_32 = ??/* H__9_35_33_24_15_12_10_7int:2 */;
+                                                        {
+                                                          assert ((0 <= _whichexpr_s2_32) && (_whichexpr_s2_32 < 4)); //regen H__9
+                                                        }
+                                                        {
+                                                          {
+                                                            num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                          }
+                                                          bit not_33;
+                                                          not_33 = ??/* H__0_35_33_24_15_12_10_7bit:1 */;
+                                                          {
+                                                            if(not_33)/*sketch.sk:29*/
+                                                            {
+                                                              {
+                                                                {
+                                                                  print_not();
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                          int first_id_34;
+                                                          first_id_34 = ??/* H__1_35_33_24_15_12_10_7int:5 */;
+                                                          int second_id_35;
+                                                          second_id_35 = ??/* H__2_35_33_24_15_12_10_7int:5 */;
+                                                          double const_0_36;
+                                                          {
+                                                            const_0_36 = (_whichexpr_s1_31 == 0 ? 0.1 : (_whichexpr_s1_31 == 1 ? 0.2 : (_whichexpr_s1_31 == 2 ? 0.5 : 1.0)));
+                                                          }
+                                                          double const_1_37;
+                                                          {
+                                                            const_1_37 = (_whichexpr_s2_32 == 0 ? 0.1 : (_whichexpr_s2_32 == 1 ? 0.2 : (_whichexpr_s2_32 == 2 ? 0.5 : 1.0)));
+                                                          }
+                                                          {
+                                                            print_unit(first_id_34, second_id_35, const_0_36, const_1_37);
+                                                          }
+                                                          bit bool_38;
+                                                          {
+                                                            bool_38 = (data_2f.doubles[first_id_34]) <= (((data_2f.doubles[second_id_35]) * const_0_36) + const_1_37);
+                                                          }
+                                                          {
+                                                            if(not_33)/*sketch.sk:39*/
+                                                            {
+                                                              {
+                                                                {
+                                                                  {
+                                                                    _out_s34_2e = !(bool_38);
+                                                                  }
+                                                                  {
+                                                                    _has_out__30 = 1;
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                            else
+                                                            {
+                                                              {
+                                                                {
+                                                                  {
+                                                                    _out_s34_2e = bool_38;
+                                                                  }
+                                                                  {
+                                                                    _has_out__30 = 1;
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                  if(_out_s34_2e)/*sketch.sk:87*/
+                                                  {
+                                                    {
+                                                      rez_2d = 1;
+                                                    }
+                                                  }
+                                                  {
+                                                    {
+                                                      {
+                                                        bit cont_39;
+                                                        cont_39 = ??/* H__4_35_33_24_15_12_10bit:1 */;
+                                                        {
+                                                          if(cont_39)/*sketch.sk:94*/
+                                                          {
+                                                            {
+                                                              {
+                                                                bit _out_s36_3a;
+                                                                {
+                                                                  {
+                                                                    Data@ANONYMOUS data_3b = data_29;
+                                                                    bit rez_0_3c = rez_2d;
+                                                                    int length_3d = 1;
+                                                                    {
+                                                                      bit _has_out__3e = 0;
+                                                                      {
+                                                                        _out_s36_3a = 0;
+                                                                      }
+                                                                      bit rez_3f = rez_0_3c;
+                                                                      {
+                                                                      }
+                                                                      bit _out_s34_40;
+                                                                      {
+                                                                        {
+                                                                          Data@ANONYMOUS data_41 = data_3b;
+                                                                          {
+                                                                            bit _has_out__42 = 0;
+                                                                            {
+                                                                              _out_s34_40 = 0;
+                                                                            }
+                                                                            int _whichexpr_s1_43;
+                                                                            _whichexpr_s1_43 = ??/* H__8_35_33_24_15_12_10_8_7int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s1_43) && (_whichexpr_s1_43 < 4)); //regen H__8
+                                                                            }
+                                                                            int _whichexpr_s2_44;
+                                                                            _whichexpr_s2_44 = ??/* H__9_35_33_24_15_12_10_8_7int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s2_44) && (_whichexpr_s2_44 < 4)); //regen H__9
+                                                                            }
+                                                                            {
+                                                                              {
+                                                                                num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                                              }
+                                                                              bit not_45;
+                                                                              not_45 = ??/* H__0_35_33_24_15_12_10_8_7bit:1 */;
+                                                                              {
+                                                                                if(not_45)/*sketch.sk:29*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      print_not();
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                              int first_id_46;
+                                                                              first_id_46 = ??/* H__1_35_33_24_15_12_10_8_7int:5 */;
+                                                                              int second_id_47;
+                                                                              second_id_47 = ??/* H__2_35_33_24_15_12_10_8_7int:5 */;
+                                                                              double const_0_48;
+                                                                              {
+                                                                                const_0_48 = (_whichexpr_s1_43 == 0 ? 0.1 : (_whichexpr_s1_43 == 1 ? 0.2 : (_whichexpr_s1_43 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              double const_1_49;
+                                                                              {
+                                                                                const_1_49 = (_whichexpr_s2_44 == 0 ? 0.1 : (_whichexpr_s2_44 == 1 ? 0.2 : (_whichexpr_s2_44 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              {
+                                                                                print_unit(first_id_46, second_id_47, const_0_48, const_1_49);
+                                                                              }
+                                                                              bit bool_4a;
+                                                                              {
+                                                                                bool_4a = (data_41.doubles[first_id_46]) <= (((data_41.doubles[second_id_47]) * const_0_48) + const_1_49);
+                                                                              }
+                                                                              {
+                                                                                if(not_45)/*sketch.sk:39*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s34_40 = !(bool_4a);
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__42 = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s34_40 = bool_4a;
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__42 = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                      if(_out_s34_40)/*sketch.sk:87*/
+                                                                      {
+                                                                        {
+                                                                          rez_3f = 1;
+                                                                        }
+                                                                      }
+                                                                      {
+                                                                        {
+                                                                          {
+                                                                            {
+                                                                              {
+                                                                                _out_s36_3a = rez_3f;
+                                                                              }
+                                                                              {
+                                                                                _has_out__3e = 1;
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                                {
+                                                                  ret_s32_28 = _out_s36_3a;
+                                                                }
+                                                                {
+                                                                  _has_out__2c = 1;
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                          else
+                                                          {
+                                                            {
+                                                              {
+                                                                {
+                                                                  ret_s32_28 = rez_2d;
+                                                                }
+                                                                {
+                                                                  _has_out__2c = 1;
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                            {
+                                              _out_s28_24 = ret_s32_28;
+                                            }
+                                            {
+                                              print_end_or();
+                                            }
+                                            {
+                                              _has_out__27 = 1;
+                                            }
+                                          }
+                                        }
+                                      }
+                                      if(!(_out_s28_24))/*sketch.sk:123*/
+                                      {
+                                        {
+                                          rez_23 = 0;
+                                        }
+                                      }
+                                      {
+                                        {
+                                          {
+                                            bit cont_4b;
+                                            cont_4b = ??/* H__5_35_33_24_15bit:1 */;
+                                            {
+                                              if(cont_4b)/*sketch.sk:130*/
+                                              {
+                                                {
+                                                  {
+                                                    bit _out_s30_4c;
+                                                    {
+                                                      {
+                                                        Data@ANONYMOUS data_4d = data_1e;
+                                                        bit rez_0_4e = rez_23;
+                                                        int length_4f = 1;
+                                                        int or_length_50 = 2;
+                                                        {
+                                                          bit _has_out__51 = 0;
+                                                          {
+                                                            _out_s30_4c = 0;
+                                                          }
+                                                          bit rez_52 = rez_0_4e;
+                                                          {
+                                                          }
+                                                          bit _out_s28_53;
+                                                          {
+                                                            {
+                                                              Data@ANONYMOUS data_54 = data_4d;
+                                                              int length_55 = 2;
+                                                              {
+                                                                bit _has_out__56 = 0;
+                                                                {
+                                                                  _out_s28_53 = 0;
+                                                                }
+                                                                {
+                                                                  print_init_or();
+                                                                }
+                                                                bit ret_s32_57;
+                                                                {
+                                                                  {
+                                                                    Data@ANONYMOUS data_58 = data_54;
+                                                                    bit rez_0_59 = 0;
+                                                                    int length_5a = 2;
+                                                                    {
+                                                                      bit _has_out__5b = 0;
+                                                                      {
+                                                                        ret_s32_57 = 0;
+                                                                      }
+                                                                      bit rez_5c = 0;
+                                                                      {
+                                                                      }
+                                                                      bit _out_s34_5d;
+                                                                      {
+                                                                        {
+                                                                          Data@ANONYMOUS data_5e = data_58;
+                                                                          {
+                                                                            bit _has_out__5f = 0;
+                                                                            {
+                                                                              _out_s34_5d = 0;
+                                                                            }
+                                                                            int _whichexpr_s1_60;
+                                                                            _whichexpr_s1_60 = ??/* H__8_35_33_24_15_13_12_10_7int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s1_60) && (_whichexpr_s1_60 < 4)); //regen H__8
+                                                                            }
+                                                                            int _whichexpr_s2_61;
+                                                                            _whichexpr_s2_61 = ??/* H__9_35_33_24_15_13_12_10_7int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s2_61) && (_whichexpr_s2_61 < 4)); //regen H__9
+                                                                            }
+                                                                            {
+                                                                              {
+                                                                                num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                                              }
+                                                                              bit not_62;
+                                                                              not_62 = ??/* H__0_35_33_24_15_13_12_10_7bit:1 */;
+                                                                              {
+                                                                                if(not_62)/*sketch.sk:29*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      print_not();
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                              int first_id_63;
+                                                                              first_id_63 = ??/* H__1_35_33_24_15_13_12_10_7int:5 */;
+                                                                              int second_id_64;
+                                                                              second_id_64 = ??/* H__2_35_33_24_15_13_12_10_7int:5 */;
+                                                                              double const_0_65;
+                                                                              {
+                                                                                const_0_65 = (_whichexpr_s1_60 == 0 ? 0.1 : (_whichexpr_s1_60 == 1 ? 0.2 : (_whichexpr_s1_60 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              double const_1_66;
+                                                                              {
+                                                                                const_1_66 = (_whichexpr_s2_61 == 0 ? 0.1 : (_whichexpr_s2_61 == 1 ? 0.2 : (_whichexpr_s2_61 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              {
+                                                                                print_unit(first_id_63, second_id_64, const_0_65, const_1_66);
+                                                                              }
+                                                                              bit bool_67;
+                                                                              {
+                                                                                bool_67 = (data_5e.doubles[first_id_63]) <= (((data_5e.doubles[second_id_64]) * const_0_65) + const_1_66);
+                                                                              }
+                                                                              {
+                                                                                if(not_62)/*sketch.sk:39*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s34_5d = !(bool_67);
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__5f = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s34_5d = bool_67;
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__5f = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                      if(_out_s34_5d)/*sketch.sk:87*/
+                                                                      {
+                                                                        {
+                                                                          rez_5c = 1;
+                                                                        }
+                                                                      }
+                                                                      {
+                                                                        {
+                                                                          {
+                                                                            bit cont_68;
+                                                                            cont_68 = ??/* H__4_35_33_24_15_13_12_10bit:1 */;
+                                                                            {
+                                                                              if(cont_68)/*sketch.sk:94*/
+                                                                              {
+                                                                                {
+                                                                                  {
+                                                                                    bit _out_s36_69;
+                                                                                    {
+                                                                                      {
+                                                                                        Data@ANONYMOUS data_6a = data_58;
+                                                                                        bit rez_0_6b = rez_5c;
+                                                                                        int length_6c = 1;
+                                                                                        {
+                                                                                          bit _has_out__6d = 0;
+                                                                                          {
+                                                                                            _out_s36_69 = 0;
+                                                                                          }
+                                                                                          bit rez_6e = rez_0_6b;
+                                                                                          {
+                                                                                          }
+                                                                                          bit _out_s34_6f;
+                                                                                          {
+                                                                                            {
+                                                                                              Data@ANONYMOUS data_70 = data_6a;
+                                                                                              {
+                                                                                                bit _has_out__71 = 0;
+                                                                                                {
+                                                                                                  _out_s34_6f = 0;
+                                                                                                }
+                                                                                                int _whichexpr_s1_72;
+                                                                                                _whichexpr_s1_72 = ??/* H__8_35_33_24_15_13_12_10_8_7int:2 */;
+                                                                                                {
+                                                                                                  assert ((0 <= _whichexpr_s1_72) && (_whichexpr_s1_72 < 4)); //regen H__8
+                                                                                                }
+                                                                                                int _whichexpr_s2_73;
+                                                                                                _whichexpr_s2_73 = ??/* H__9_35_33_24_15_13_12_10_8_7int:2 */;
+                                                                                                {
+                                                                                                  assert ((0 <= _whichexpr_s2_73) && (_whichexpr_s2_73 < 4)); //regen H__9
+                                                                                                }
+                                                                                                {
+                                                                                                  {
+                                                                                                    num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                                                                  }
+                                                                                                  bit not_74;
+                                                                                                  not_74 = ??/* H__0_35_33_24_15_13_12_10_8_7bit:1 */;
+                                                                                                  {
+                                                                                                    if(not_74)/*sketch.sk:29*/
+                                                                                                    {
+                                                                                                      {
+                                                                                                        {
+                                                                                                          print_not();
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                  int first_id_75;
+                                                                                                  first_id_75 = ??/* H__1_35_33_24_15_13_12_10_8_7int:5 */;
+                                                                                                  int second_id_76;
+                                                                                                  second_id_76 = ??/* H__2_35_33_24_15_13_12_10_8_7int:5 */;
+                                                                                                  double const_0_77;
+                                                                                                  {
+                                                                                                    const_0_77 = (_whichexpr_s1_72 == 0 ? 0.1 : (_whichexpr_s1_72 == 1 ? 0.2 : (_whichexpr_s1_72 == 2 ? 0.5 : 1.0)));
+                                                                                                  }
+                                                                                                  double const_1_78;
+                                                                                                  {
+                                                                                                    const_1_78 = (_whichexpr_s2_73 == 0 ? 0.1 : (_whichexpr_s2_73 == 1 ? 0.2 : (_whichexpr_s2_73 == 2 ? 0.5 : 1.0)));
+                                                                                                  }
+                                                                                                  {
+                                                                                                    print_unit(first_id_75, second_id_76, const_0_77, const_1_78);
+                                                                                                  }
+                                                                                                  bit bool_79;
+                                                                                                  {
+                                                                                                    bool_79 = (data_70.doubles[first_id_75]) <= (((data_70.doubles[second_id_76]) * const_0_77) + const_1_78);
+                                                                                                  }
+                                                                                                  {
+                                                                                                    if(not_74)/*sketch.sk:39*/
+                                                                                                    {
+                                                                                                      {
+                                                                                                        {
+                                                                                                          {
+                                                                                                            _out_s34_6f = !(bool_79);
+                                                                                                          }
+                                                                                                          {
+                                                                                                            _has_out__71 = 1;
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                      {
+                                                                                                        {
+                                                                                                          {
+                                                                                                            _out_s34_6f = bool_79;
+                                                                                                          }
+                                                                                                          {
+                                                                                                            _has_out__71 = 1;
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                          if(_out_s34_6f)/*sketch.sk:87*/
+                                                                                          {
+                                                                                            {
+                                                                                              rez_6e = 1;
+                                                                                            }
+                                                                                          }
+                                                                                          {
+                                                                                            {
+                                                                                              {
+                                                                                                {
+                                                                                                  {
+                                                                                                    _out_s36_69 = rez_6e;
+                                                                                                  }
+                                                                                                  {
+                                                                                                    _has_out__6d = 1;
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                    {
+                                                                                      ret_s32_57 = _out_s36_69;
+                                                                                    }
+                                                                                    {
+                                                                                      _has_out__5b = 1;
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                              else
+                                                                              {
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      ret_s32_57 = rez_5c;
+                                                                                    }
+                                                                                    {
+                                                                                      _has_out__5b = 1;
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                                {
+                                                                  _out_s28_53 = ret_s32_57;
+                                                                }
+                                                                {
+                                                                  print_end_or();
+                                                                }
+                                                                {
+                                                                  _has_out__56 = 1;
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                          if(!(_out_s28_53))/*sketch.sk:123*/
+                                                          {
+                                                            {
+                                                              rez_52 = 0;
+                                                            }
+                                                          }
+                                                          {
+                                                            {
+                                                              {
+                                                                {
+                                                                  {
+                                                                    _out_s30_4c = rez_52;
+                                                                  }
+                                                                  {
+                                                                    _has_out__51 = 1;
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                    {
+                                                      ret_s26_1d = _out_s30_4c;
+                                                    }
+                                                    {
+                                                      _has_out__22 = 1;
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                              else
+                                              {
+                                                {
+                                                  {
+                                                    {
+                                                      ret_s26_1d = rez_23;
+                                                    }
+                                                    {
+                                                      _has_out__22 = 1;
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                                {
+                                  _out_s10_18 = ret_s26_1d;
+                                }
+                                {
+                                  print_end_and();
+                                }
+                                {
+                                  _has_out__1c = 1;
+                                }
+                              }
+                            }
+                          }
+                          _pac_sc_s8_17 = _out_s10_18;
+                        }
+                        else
+                        {
+                          bit _out_s12_7a;
+                          {
+                            {
+                              Data@ANONYMOUS data_7b = data_12;
+                              int length_7c = 2;
+                              int and_length_7d = 2;
+                              {
+                                bit _has_out__7e = 0;
+                                {
+                                  _out_s12_7a = 0;
+                                }
+                                {
+                                  print_init_or();
+                                }
+                                bit ret_s14_7f;
+                                {
+                                  {
+                                    Data@ANONYMOUS data_80 = data_7b;
+                                    bit rez_0_81 = 0;
+                                    int length_82 = 2;
+                                    int and_length_83 = 2;
+                                    {
+                                      bit _has_out__84 = 0;
+                                      {
+                                        ret_s14_7f = 0;
+                                      }
+                                      bit rez_85 = 0;
+                                      {
+                                      }
+                                      bit _out_s16_86;
+                                      {
+                                        {
+                                          Data@ANONYMOUS data_87 = data_80;
+                                          int length_88 = 2;
+                                          {
+                                            bit _has_out__89 = 0;
+                                            {
+                                              _out_s16_86 = 0;
+                                            }
+                                            {
+                                            }
+                                            {
+                                              print_init_and();
+                                            }
+                                            bit rez_s20_8a;
+                                            {
+                                              {
+                                                Data@ANONYMOUS data_8b = data_87;
+                                                bit rez_0_8c = 1;
+                                                int length_8d = 2;
+                                                {
+                                                  bit _has_out__8e = 0;
+                                                  {
+                                                    rez_s20_8a = 0;
+                                                  }
+                                                  bit rez_8f = 1;
+                                                  {
+                                                  }
+                                                  bit _out_s22_90;
+                                                  {
+                                                    {
+                                                      Data@ANONYMOUS data_91 = data_8b;
+                                                      {
+                                                        bit _has_out__92 = 0;
+                                                        {
+                                                          _out_s22_90 = 0;
+                                                        }
+                                                        int _whichexpr_s1_93;
+                                                        _whichexpr_s1_93 = ??/* H__8_35_33_25_20_17_5_2int:2 */;
+                                                        {
+                                                          assert ((0 <= _whichexpr_s1_93) && (_whichexpr_s1_93 < 4)); //regen H__8
+                                                        }
+                                                        int _whichexpr_s2_94;
+                                                        _whichexpr_s2_94 = ??/* H__9_35_33_25_20_17_5_2int:2 */;
+                                                        {
+                                                          assert ((0 <= _whichexpr_s2_94) && (_whichexpr_s2_94 < 4)); //regen H__9
+                                                        }
+                                                        {
+                                                          {
+                                                            num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                          }
+                                                          bit not_95;
+                                                          not_95 = ??/* H__0_35_33_25_20_17_5_2bit:1 */;
+                                                          {
+                                                            if(not_95)/*sketch.sk:29*/
+                                                            {
+                                                              {
+                                                                {
+                                                                  print_not();
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                          int first_id_96;
+                                                          first_id_96 = ??/* H__1_35_33_25_20_17_5_2int:5 */;
+                                                          int second_id_97;
+                                                          second_id_97 = ??/* H__2_35_33_25_20_17_5_2int:5 */;
+                                                          double const_0_98;
+                                                          {
+                                                            const_0_98 = (_whichexpr_s1_93 == 0 ? 0.1 : (_whichexpr_s1_93 == 1 ? 0.2 : (_whichexpr_s1_93 == 2 ? 0.5 : 1.0)));
+                                                          }
+                                                          double const_1_99;
+                                                          {
+                                                            const_1_99 = (_whichexpr_s2_94 == 0 ? 0.1 : (_whichexpr_s2_94 == 1 ? 0.2 : (_whichexpr_s2_94 == 2 ? 0.5 : 1.0)));
+                                                          }
+                                                          {
+                                                            print_unit(first_id_96, second_id_97, const_0_98, const_1_99);
+                                                          }
+                                                          bit bool_9a;
+                                                          {
+                                                            bool_9a = (data_91.doubles[first_id_96]) <= (((data_91.doubles[second_id_97]) * const_0_98) + const_1_99);
+                                                          }
+                                                          {
+                                                            if(not_95)/*sketch.sk:39*/
+                                                            {
+                                                              {
+                                                                {
+                                                                  {
+                                                                    _out_s22_90 = !(bool_9a);
+                                                                  }
+                                                                  {
+                                                                    _has_out__92 = 1;
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                            else
+                                                            {
+                                                              {
+                                                                {
+                                                                  {
+                                                                    _out_s22_90 = bool_9a;
+                                                                  }
+                                                                  {
+                                                                    _has_out__92 = 1;
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                  if(!(_out_s22_90))/*sketch.sk:50*/
+                                                  {
+                                                    {
+                                                      rez_8f = 0;
+                                                    }
+                                                  }
+                                                  {
+                                                    {
+                                                      {
+                                                        bit cont_9b;
+                                                        cont_9b = ??/* H__3_35_33_25_20_17_5bit:1 */;
+                                                        {
+                                                          if(cont_9b)/*sketch.sk:57*/
+                                                          {
+                                                            {
+                                                              {
+                                                                bit _out_s24_9c;
+                                                                {
+                                                                  {
+                                                                    Data@ANONYMOUS data_9d = data_8b;
+                                                                    bit rez_0_9e = rez_8f;
+                                                                    int length_9f = 1;
+                                                                    {
+                                                                      bit _has_out__a0 = 0;
+                                                                      {
+                                                                        _out_s24_9c = 0;
+                                                                      }
+                                                                      bit rez_a1 = rez_0_9e;
+                                                                      {
+                                                                      }
+                                                                      bit _out_s22_a2;
+                                                                      {
+                                                                        {
+                                                                          Data@ANONYMOUS data_a3 = data_9d;
+                                                                          {
+                                                                            bit _has_out__a4 = 0;
+                                                                            {
+                                                                              _out_s22_a2 = 0;
+                                                                            }
+                                                                            int _whichexpr_s1_a5;
+                                                                            _whichexpr_s1_a5 = ??/* H__8_35_33_25_20_17_5_3_2int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s1_a5) && (_whichexpr_s1_a5 < 4)); //regen H__8
+                                                                            }
+                                                                            int _whichexpr_s2_a6;
+                                                                            _whichexpr_s2_a6 = ??/* H__9_35_33_25_20_17_5_3_2int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s2_a6) && (_whichexpr_s2_a6 < 4)); //regen H__9
+                                                                            }
+                                                                            {
+                                                                              {
+                                                                                num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                                              }
+                                                                              bit not_a7;
+                                                                              not_a7 = ??/* H__0_35_33_25_20_17_5_3_2bit:1 */;
+                                                                              {
+                                                                                if(not_a7)/*sketch.sk:29*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      print_not();
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                              int first_id_a8;
+                                                                              first_id_a8 = ??/* H__1_35_33_25_20_17_5_3_2int:5 */;
+                                                                              int second_id_a9;
+                                                                              second_id_a9 = ??/* H__2_35_33_25_20_17_5_3_2int:5 */;
+                                                                              double const_0_aa;
+                                                                              {
+                                                                                const_0_aa = (_whichexpr_s1_a5 == 0 ? 0.1 : (_whichexpr_s1_a5 == 1 ? 0.2 : (_whichexpr_s1_a5 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              double const_1_ab;
+                                                                              {
+                                                                                const_1_ab = (_whichexpr_s2_a6 == 0 ? 0.1 : (_whichexpr_s2_a6 == 1 ? 0.2 : (_whichexpr_s2_a6 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              {
+                                                                                print_unit(first_id_a8, second_id_a9, const_0_aa, const_1_ab);
+                                                                              }
+                                                                              bit bool_ac;
+                                                                              {
+                                                                                bool_ac = (data_a3.doubles[first_id_a8]) <= (((data_a3.doubles[second_id_a9]) * const_0_aa) + const_1_ab);
+                                                                              }
+                                                                              {
+                                                                                if(not_a7)/*sketch.sk:39*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s22_a2 = !(bool_ac);
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__a4 = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s22_a2 = bool_ac;
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__a4 = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                      if(!(_out_s22_a2))/*sketch.sk:50*/
+                                                                      {
+                                                                        {
+                                                                          rez_a1 = 0;
+                                                                        }
+                                                                      }
+                                                                      {
+                                                                        {
+                                                                          {
+                                                                            {
+                                                                              {
+                                                                                _out_s24_9c = rez_a1;
+                                                                              }
+                                                                              {
+                                                                                _has_out__a0 = 1;
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                                {
+                                                                  rez_s20_8a = _out_s24_9c;
+                                                                }
+                                                                {
+                                                                  _has_out__8e = 1;
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                          else
+                                                          {
+                                                            {
+                                                              {
+                                                                {
+                                                                  rez_s20_8a = rez_8f;
+                                                                }
+                                                                {
+                                                                  _has_out__8e = 1;
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                            {
+                                              _out_s16_86 = rez_s20_8a;
+                                            }
+                                            {
+                                              print_end_and();
+                                            }
+                                            {
+                                              _has_out__89 = 1;
+                                            }
+                                          }
+                                        }
+                                      }
+                                      if(_out_s16_86)/*sketch.sk:156*/
+                                      {
+                                        {
+                                          rez_85 = 1;
+                                        }
+                                      }
+                                      {
+                                        {
+                                          {
+                                            bit cont_ad;
+                                            cont_ad = ??/* H__6_35_33_25_20bit:1 */;
+                                            {
+                                              if(cont_ad)/*sketch.sk:163*/
+                                              {
+                                                {
+                                                  {
+                                                    bit _out_s18_ae;
+                                                    {
+                                                      {
+                                                        Data@ANONYMOUS data_af = data_80;
+                                                        bit rez_0_b0 = rez_85;
+                                                        int length_b1 = 1;
+                                                        int and_length_b2 = 2;
+                                                        {
+                                                          bit _has_out__b3 = 0;
+                                                          {
+                                                            _out_s18_ae = 0;
+                                                          }
+                                                          bit rez_b4 = rez_0_b0;
+                                                          {
+                                                          }
+                                                          bit _out_s16_b5;
+                                                          {
+                                                            {
+                                                              Data@ANONYMOUS data_b6 = data_af;
+                                                              int length_b7 = 2;
+                                                              {
+                                                                bit _has_out__b8 = 0;
+                                                                {
+                                                                  _out_s16_b5 = 0;
+                                                                }
+                                                                {
+                                                                }
+                                                                {
+                                                                  print_init_and();
+                                                                }
+                                                                bit rez_s20_b9;
+                                                                {
+                                                                  {
+                                                                    Data@ANONYMOUS data_ba = data_b6;
+                                                                    bit rez_0_bb = 1;
+                                                                    int length_bc = 2;
+                                                                    {
+                                                                      bit _has_out__bd = 0;
+                                                                      {
+                                                                        rez_s20_b9 = 0;
+                                                                      }
+                                                                      bit rez_be = 1;
+                                                                      {
+                                                                      }
+                                                                      bit _out_s22_bf;
+                                                                      {
+                                                                        {
+                                                                          Data@ANONYMOUS data_c0 = data_ba;
+                                                                          {
+                                                                            bit _has_out__c1 = 0;
+                                                                            {
+                                                                              _out_s22_bf = 0;
+                                                                            }
+                                                                            int _whichexpr_s1_c2;
+                                                                            _whichexpr_s1_c2 = ??/* H__8_35_33_25_20_18_17_5_2int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s1_c2) && (_whichexpr_s1_c2 < 4)); //regen H__8
+                                                                            }
+                                                                            int _whichexpr_s2_c3;
+                                                                            _whichexpr_s2_c3 = ??/* H__9_35_33_25_20_18_17_5_2int:2 */;
+                                                                            {
+                                                                              assert ((0 <= _whichexpr_s2_c3) && (_whichexpr_s2_c3 < 4)); //regen H__9
+                                                                            }
+                                                                            {
+                                                                              {
+                                                                                num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                                              }
+                                                                              bit not_c4;
+                                                                              not_c4 = ??/* H__0_35_33_25_20_18_17_5_2bit:1 */;
+                                                                              {
+                                                                                if(not_c4)/*sketch.sk:29*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      print_not();
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                              int first_id_c5;
+                                                                              first_id_c5 = ??/* H__1_35_33_25_20_18_17_5_2int:5 */;
+                                                                              int second_id_c6;
+                                                                              second_id_c6 = ??/* H__2_35_33_25_20_18_17_5_2int:5 */;
+                                                                              double const_0_c7;
+                                                                              {
+                                                                                const_0_c7 = (_whichexpr_s1_c2 == 0 ? 0.1 : (_whichexpr_s1_c2 == 1 ? 0.2 : (_whichexpr_s1_c2 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              double const_1_c8;
+                                                                              {
+                                                                                const_1_c8 = (_whichexpr_s2_c3 == 0 ? 0.1 : (_whichexpr_s2_c3 == 1 ? 0.2 : (_whichexpr_s2_c3 == 2 ? 0.5 : 1.0)));
+                                                                              }
+                                                                              {
+                                                                                print_unit(first_id_c5, second_id_c6, const_0_c7, const_1_c8);
+                                                                              }
+                                                                              bit bool_c9;
+                                                                              {
+                                                                                bool_c9 = (data_c0.doubles[first_id_c5]) <= (((data_c0.doubles[second_id_c6]) * const_0_c7) + const_1_c8);
+                                                                              }
+                                                                              {
+                                                                                if(not_c4)/*sketch.sk:39*/
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s22_bf = !(bool_c9);
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__c1 = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      {
+                                                                                        _out_s22_bf = bool_c9;
+                                                                                      }
+                                                                                      {
+                                                                                        _has_out__c1 = 1;
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                      if(!(_out_s22_bf))/*sketch.sk:50*/
+                                                                      {
+                                                                        {
+                                                                          rez_be = 0;
+                                                                        }
+                                                                      }
+                                                                      {
+                                                                        {
+                                                                          {
+                                                                            bit cont_ca;
+                                                                            cont_ca = ??/* H__3_35_33_25_20_18_17_5bit:1 */;
+                                                                            {
+                                                                              if(cont_ca)/*sketch.sk:57*/
+                                                                              {
+                                                                                {
+                                                                                  {
+                                                                                    bit _out_s24_cb;
+                                                                                    {
+                                                                                      {
+                                                                                        Data@ANONYMOUS data_cc = data_ba;
+                                                                                        bit rez_0_cd = rez_be;
+                                                                                        int length_ce = 1;
+                                                                                        {
+                                                                                          bit _has_out__cf = 0;
+                                                                                          {
+                                                                                            _out_s24_cb = 0;
+                                                                                          }
+                                                                                          bit rez_d0 = rez_0_cd;
+                                                                                          {
+                                                                                          }
+                                                                                          bit _out_s22_d1;
+                                                                                          {
+                                                                                            {
+                                                                                              Data@ANONYMOUS data_d2 = data_cc;
+                                                                                              {
+                                                                                                bit _has_out__d3 = 0;
+                                                                                                {
+                                                                                                  _out_s22_d1 = 0;
+                                                                                                }
+                                                                                                int _whichexpr_s1_d4;
+                                                                                                _whichexpr_s1_d4 = ??/* H__8_35_33_25_20_18_17_5_3_2int:2 */;
+                                                                                                {
+                                                                                                  assert ((0 <= _whichexpr_s1_d4) && (_whichexpr_s1_d4 < 4)); //regen H__8
+                                                                                                }
+                                                                                                int _whichexpr_s2_d5;
+                                                                                                _whichexpr_s2_d5 = ??/* H__9_35_33_25_20_18_17_5_3_2int:2 */;
+                                                                                                {
+                                                                                                  assert ((0 <= _whichexpr_s2_d5) && (_whichexpr_s2_d5 < 4)); //regen H__9
+                                                                                                }
+                                                                                                {
+                                                                                                  {
+                                                                                                    num_units__ANONYMOUS_s62_6 = num_units__ANONYMOUS_s62_6 + 1;
+                                                                                                  }
+                                                                                                  bit not_d6;
+                                                                                                  not_d6 = ??/* H__0_35_33_25_20_18_17_5_3_2bit:1 */;
+                                                                                                  {
+                                                                                                    if(not_d6)/*sketch.sk:29*/
+                                                                                                    {
+                                                                                                      {
+                                                                                                        {
+                                                                                                          print_not();
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                  int first_id_d7;
+                                                                                                  first_id_d7 = ??/* H__1_35_33_25_20_18_17_5_3_2int:5 */;
+                                                                                                  int second_id_d8;
+                                                                                                  second_id_d8 = ??/* H__2_35_33_25_20_18_17_5_3_2int:5 */;
+                                                                                                  double const_0_d9;
+                                                                                                  {
+                                                                                                    const_0_d9 = (_whichexpr_s1_d4 == 0 ? 0.1 : (_whichexpr_s1_d4 == 1 ? 0.2 : (_whichexpr_s1_d4 == 2 ? 0.5 : 1.0)));
+                                                                                                  }
+                                                                                                  double const_1_da;
+                                                                                                  {
+                                                                                                    const_1_da = (_whichexpr_s2_d5 == 0 ? 0.1 : (_whichexpr_s2_d5 == 1 ? 0.2 : (_whichexpr_s2_d5 == 2 ? 0.5 : 1.0)));
+                                                                                                  }
+                                                                                                  {
+                                                                                                    print_unit(first_id_d7, second_id_d8, const_0_d9, const_1_da);
+                                                                                                  }
+                                                                                                  bit bool_db;
+                                                                                                  {
+                                                                                                    bool_db = (data_d2.doubles[first_id_d7]) <= (((data_d2.doubles[second_id_d8]) * const_0_d9) + const_1_da);
+                                                                                                  }
+                                                                                                  {
+                                                                                                    if(not_d6)/*sketch.sk:39*/
+                                                                                                    {
+                                                                                                      {
+                                                                                                        {
+                                                                                                          {
+                                                                                                            _out_s22_d1 = !(bool_db);
+                                                                                                          }
+                                                                                                          {
+                                                                                                            _has_out__d3 = 1;
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                      {
+                                                                                                        {
+                                                                                                          {
+                                                                                                            _out_s22_d1 = bool_db;
+                                                                                                          }
+                                                                                                          {
+                                                                                                            _has_out__d3 = 1;
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                          if(!(_out_s22_d1))/*sketch.sk:50*/
+                                                                                          {
+                                                                                            {
+                                                                                              rez_d0 = 0;
+                                                                                            }
+                                                                                          }
+                                                                                          {
+                                                                                            {
+                                                                                              {
+                                                                                                {
+                                                                                                  {
+                                                                                                    _out_s24_cb = rez_d0;
+                                                                                                  }
+                                                                                                  {
+                                                                                                    _has_out__cf = 1;
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                    {
+                                                                                      rez_s20_b9 = _out_s24_cb;
+                                                                                    }
+                                                                                    {
+                                                                                      _has_out__bd = 1;
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                              else
+                                                                              {
+                                                                                {
+                                                                                  {
+                                                                                    {
+                                                                                      rez_s20_b9 = rez_be;
+                                                                                    }
+                                                                                    {
+                                                                                      _has_out__bd = 1;
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                                {
+                                                                  _out_s16_b5 = rez_s20_b9;
+                                                                }
+                                                                {
+                                                                  print_end_and();
+                                                                }
+                                                                {
+                                                                  _has_out__b8 = 1;
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                          if(_out_s16_b5)/*sketch.sk:156*/
+                                                          {
+                                                            {
+                                                              rez_b4 = 1;
+                                                            }
+                                                          }
+                                                          {
+                                                            {
+                                                              {
+                                                                {
+                                                                  {
+                                                                    _out_s18_ae = rez_b4;
+                                                                  }
+                                                                  {
+                                                                    _has_out__b3 = 1;
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                    {
+                                                      ret_s14_7f = _out_s18_ae;
+                                                    }
+                                                    {
+                                                      _has_out__84 = 1;
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                              else
+                                              {
+                                                {
+                                                  {
+                                                    {
+                                                      ret_s14_7f = rez_85;
+                                                    }
+                                                    {
+                                                      _has_out__84 = 1;
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                                {
+                                  _out_s12_7a = ret_s14_7f;
+                                }
+                                {
+                                  print_end_or();
+                                }
+                                {
+                                  _has_out__7e = 1;
+                                }
+                              }
+                            }
+                          }
+                          _pac_sc_s8_17 = _out_s12_7a;
+                        }
+                      }
+                      {
+                        ret_s7_11 = _pac_sc_s8_17;
+                      }
+                      {
+                        _has_out__15 = 1;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          ret_10 = ret_s7_11;
+          {
+            {
+              {
+                {
+                  {
+                    _out_s5_a = ret_10;
+                  }
+                  {
+                    _has_out__e = 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      assert (_out_s5_a == out_5); //Assert at sketch.sk:266 (0)
+    }
+  }
+}
+/*sketch.sk:73*/
+
+void print_end_and ()/*sketch.sk:73*/
+{
+}
+/*sketch.sk:209*/
+
+uninterp void print_end_if ()/*sketch.sk:209*/
+/*sketch.sk:110*/
+
+void print_end_or ()/*sketch.sk:110*/
+{
+}
+/*sketch.sk:72*/
+
+void print_init_and ()/*sketch.sk:72*/
+{
+}
+/*sketch.sk:208*/
+
+uninterp void print_init_if ()/*sketch.sk:208*/
+/*sketch.sk:109*/
+
+void print_init_or ()/*sketch.sk:109*/
+{
+}
+/*sketch.sk:20*/
+
+void print_not ()/*sketch.sk:20*/
+{
+}
+/*sketch.sk:21*/
+
+void print_unit (int id0_dc, int id1_dd, double const0_de, double const1_df)/*sketch.sk:21*/
+{
+}
+/*sketch.sk:255*/
+
+void test (ref global int num_units__ANONYMOUS_s52_2)/*sketch.sk:255*/
+{
+  main(12, {12.0,11.1,11.32,40.0,8.0,265.0,0.85,10.0,0.2,1.19,0.2,7.03}, 1, num_units__ANONYMOUS_s52_2);
+}
+/*sketch.sk:255*/
+
+void test__Wrapper ()  implements test__WrapperNospec/*sketch.sk:255*/
+{
+  global int num_units__ANONYMOUS_s51_0;
+  glblInit_num_units__ANONYMOUS_s68(num_units__ANONYMOUS_s51_0);
+  test(num_units__ANONYMOUS_s51_0);
+}
+/*sketch.sk:255*/
+
+void test__WrapperNospec ()/*sketch.sk:255*/
+{
+}
+/* END PACKAGE ANONYMOUS*/
+------------------------------
+
+[SKETCH] DONE
+Total time = 5027

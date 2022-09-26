@@ -1,0 +1,59 @@
+generator int rec(int a, int b, int c, int d, int bnd){
+    assert bnd >= 0;
+    int t = ??;
+    if(t == 0) {return a;}
+    if(t == 1) {return b;}
+    if(t == 2) {return c;}
+    if(t == 3) {return d;}
+
+    int x = rec(a, b, c, d, bnd-1);
+    int y = rec(a, b, c, d, bnd-1);
+
+    if(t == 7) {return 200;}
+    if(t == 8) {return -200;}
+    if(t == 9) {return  x + y;}
+    if(t == 10) {return  x - y;}
+    if(t == 11) {return  x * y;}
+    if(t == 11) {return  -x;}
+    if(t == 14) {return x/y;}
+    if(t == 12) {int out = min(x, y); return out;}
+    else {int out = max(x, y); return out;}
+}
+int min(int a, int b){
+    int _out;
+    if (a<b) _out = a;
+    else _out = b;
+    return _out;
+}
+
+int max(int a, int b){
+    int _out;
+    if (a>b) _out = a;
+    else _out = b;
+    return _out;
+}
+
+int absleft(int l1, int r1, int l2, int r2){
+    int _out = rec(l1, r1, l2, r2, 3);
+    return _out;
+}
+
+int absright(int l1, int r1, int l2, int r2){
+    int _out = rec(l1, r1, l2, r2, 3);
+    return _out;
+}
+
+bit lessThan(int left1, int right1, int left2, int right2, int c1, int c2){
+    return (absleft(left1, right1, left2, right2) <= c1) && (c2 <= absright(left1, right1, left2, right2));
+}
+
+
+bit domainOpt(ref int left,ref int right){
+    return (right - left >= 0);
+}
+
+harness void main(){
+    assert (lessThan(-2,0,-1,0,1,1));
+
+} 
+
