@@ -26,8 +26,12 @@ public class CommonSketchMain {
 
         // pass all short-style arguments to the backend
         backendOptions.addAll(options.backendArgs);
+        if(options.solverOpts.hypersketch != "") {
+            backendOptions.add("--hypersketch");
+            backendOptions.add("" + options.solverOpts.hypersketch);
+        }
         backendOptions.add("--bnd-inbits");
-        backendOptions.add(""+ options.bndOpts.inbits);
+        backendOptions.add("" + options.bndOpts.inbits);
         if (options.bndOpts.angelicbits > 0) {
             backendOptions.add("--bnd-angelicbits");
             backendOptions.add("" + options.bndOpts.angelicbits);

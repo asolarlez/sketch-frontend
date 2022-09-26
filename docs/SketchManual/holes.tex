@@ -99,10 +99,10 @@ The constant hole \C{??} can actually stand for any of the following different t
 The system will use a simple form of type inference to determine the exact type of a given hole.
 
 \subsection{Ranges for holes}
-When searching for the value of a constant hole, the synthesizer will only search values greater than or equal to zero and less than $2^N$, where $N$ is a parameter given by the flag \C{--bnd-ctrlbits}. If you wan to be explicit about the number of bits for a given hole, you can state it as \C{??(N)}, where \C{N} is an integer constant.
+When searching for the value of a constant hole, the synthesizer will only search values greater than or equal to zero and less than $2^N$, where $N$ is a parameter given by the flag \C{--bnd-cbits}. If you wan to be explicit about the number of bits for a given hole, you can state it as \C{??(N)}, where \C{N} is an integer constant.
 
-\flagdoc{bnd-ctrlbits}{
-The flag \C{bnd-ctrlbits} tells the synthesizer what range of values to consider for all integer holes. If one wants a given integer hole to span a different range of values, one can use the extended notation \C{??(N)}, where \C{N} is the number of bits to use for that hole.
+\flagdoc{bnd-cbits}{
+The flag \C{bnd-cbits} tells the synthesizer what range of values to consider for all integer holes. If one wants a given integer hole to span a different range of values, one can use the extended notation \C{??(N)}, where \C{N} is the number of bits to use for that hole.
 }
 
 
