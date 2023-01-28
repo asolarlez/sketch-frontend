@@ -12,21 +12,20 @@ import sketch.transformer.SketchTransformerDriver;
  * 
  * @author gatoatigrado (nicholas tung) [email: ntung at ntung]
  * @license This file is licensed under BSD license, available at
- *          http://creativecommons.org/licenses/BSD/. While not required, if you make
- *          changes, please consider contributing back!
+ * http://creativecommons.org/licenses/BSD/. While not required, if you make
+ * changes, please consider contributing back!
  */
 public class SubstituteSolution extends MetaStage {
 	protected final ValueOracle value_oracle;
+	private String hypersketch;
 
-    public SubstituteSolution(TempVarGen varGen, SketchOptions options,
-            ValueOracle solution)
-    {
-        super("subst", "Substitute a solution (assignment to ??'s) into the sketch",
-                varGen, options);
+	public SubstituteSolution(TempVarGen varGen, SketchOptions options, ValueOracle solution) {
+		super("subst", "Substitute a solution (assignment to ??'s) into the sketch", varGen, options);
 		this.value_oracle = solution;
-    }
+		this.hypersketch = options.solverOpts.hypersketch;
+	}
 
-    @Override
+	@Override
 	public Program visitProgramInner(Program program) {
 
 		// HERE CALL FMTL TRANSOFRM AST <<<< call the interpreter here.
@@ -36,19 +35,17 @@ public class SubstituteSolution extends MetaStage {
 		// class ApplyTransformations:
 		// for each line in ftml program
 		// calls each of the visitors.
-    	
 
-		if (false) {
+		if (this.hypersketch.length() >= 1) {
 			SketchTransformerDriver driver = new SketchTransformerDriver(value_oracle.get_code_block());
 			System.out.println("IN SubstituteSolution.visitProgramInner; RUN SK_TRANSFORMER DRIVER.");
+
 			Program final_program = driver.eval(program);
 
 			System.out.println("DONE WITH APPLYING PROGRAM TRANSFORMATION.");
 
 			return final_program;
 		} else {
-		// BEFORE REACHING HERE THE PROGRAM TRANSFORMATION SHOULD ALREADY BE APPLIED
-//			assert (false);
 
 			EliminateHoleStatic eliminate_hole = new EliminateHoleStatic(value_oracle);
 			Program p = (Program) program.accept(eliminate_hole);
@@ -59,5 +56,5 @@ public class SubstituteSolution extends MetaStage {
 
 			return p;
 		}
-    }
+	}
 }
