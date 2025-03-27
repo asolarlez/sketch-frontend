@@ -5,3 +5,4 @@ src/test/sk/seq/ref
 src/test/sk/seq/result
 src/experiments/RNA
 target
+tmp-assembly.xml

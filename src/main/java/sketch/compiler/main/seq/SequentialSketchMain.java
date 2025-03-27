@@ -94,14 +94,10 @@ import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
 
 /**
- * Convert StreamIt programs to legal Java code.  This is the main
- * entry point for the StreamIt syntax converter.  Running it as
- * a standalone program reads the list of files provided on the
- * command line and produces equivalent Java code on standard
- * output or the file named in the <tt>--output</tt> command-line
- * parameter.
+ * Derived from a file created by David Maze for the StreamIt project. Now the
+ * main entry point to the Sketch compiler.
  *
- * @author  David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
+ * @author David Maze &lt;dmaze@cag.lcs.mit.edu&gt;
  * @version $Id$
  */
 public class SequentialSketchMain extends CommonSketchMain implements Runnable

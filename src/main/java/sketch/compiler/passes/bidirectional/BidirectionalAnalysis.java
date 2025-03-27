@@ -711,6 +711,18 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
 
         try {
 
+			List<String> fixes = func.getFixes();
+			if (fixes != null) {
+				for (String fix : fixes) {
+					String resolvedFix = nres.getFunName(fix);
+					if (resolvedFix == null) {
+						throw new ExceptionAtNode("Function " + fix + " in the fixes list of " + func.getName()
+								+ " is can not be found. Did you put the wrong name?", func);
+					}
+				}
+
+			}
+
         List<Parameter> newParam = new ArrayList<Parameter>();
         Iterator<Parameter> it = func.getParams().iterator();
         boolean samePars = true;

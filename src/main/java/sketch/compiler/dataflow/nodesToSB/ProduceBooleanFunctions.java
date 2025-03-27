@@ -98,7 +98,11 @@ public class ProduceBooleanFunctions extends PartialEvaluator {
         }
 
         public Set<String> holesForFun(String fun) {
-            return functionHoles.get(fun);
+			Set<String> rv = functionHoles.get(fun);
+			if (rv == null) {
+				rv = functionHoles.get(fun + "@ANONYMOUS");
+			}
+			return rv;
         }
 
         public void computeFixpoint() {
