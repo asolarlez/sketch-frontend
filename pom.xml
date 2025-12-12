@@ -7,7 +7,7 @@
     <name>SKETCH compiler frontend</name>
     <description>SKETCH compiler frontend, responsible for AST lowering
         and optimization</description>
-    <version>1.7.6</version>
+    <version>1.8</version>
     <url>http://sketch1.csail.mit.edu</url>
 
     <properties>
@@ -146,8 +146,8 @@
                 <version>2.0.2</version>
                 <configuration>
                     <classifier>test</classifier>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <excludes>
                         <exclude>sketch/compiler/main/other/ParseFunctions.java</exclude>
                         <exclude>sketch/compiler/main/par/ParallelSketchMain.java</exclude>
