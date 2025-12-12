@@ -1,0 +1,33 @@
+include "math.skh";
+
+//pragma options "--be:usesnopt --be:numericalsolver";
+pragma options "--bnd-cbits 3";
+
+generator float leaf(float x)
+{
+    return {| x*x | sqrt(x) |};
+}
+
+generator float dt_node(float x)
+{
+    float split = 1.0;
+    assert (0.5 < split && split < 2.0);
+    if(x < split)
+    {
+        return x*x;
+    }
+    else
+    {
+        return sqrt(x);
+    }
+}
+
+@FromFile("constraints01.txt")
+harness void main(float x, float y)
+{
+    assert ((0.3 < x && x < 0.5) || (3.9 < x && x < 4.1));
+    assert ((y-0.1 < x*x && x*x < y+0.1) || (y-0.1 < sqrt(x) && sqrt(x) < y+0.1));
+    float ff = 1.0;
+    //float rez = dt_node(x);
+    //assert(y-0.1 < rez && rez < y + 0.1);
+}

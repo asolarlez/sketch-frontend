@@ -1,0 +1,8 @@
+//hypersketch 
+main() {
+    print("Hello World!!!");
+    file = File(file_name, sketch_main__Wrapper);
+    solution = SATSolver(sketch_main__Wrapper, file);
+    program = sketch_main__Wrapper.produce_executable(solution);
+    return program;
+}

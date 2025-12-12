@@ -1,0 +1,11 @@
+ int x() { return ??; }
+int y() { return ??; }
+
+harness void range(){  
+       assert (x() <= 2 && y() <= 2 && x() >= 0 && y() >= 0);
+}
+
+harness void a() fixes x {
+       assert (x() == 1);
+       assert (x() + y() == 3);
+}

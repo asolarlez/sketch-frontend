@@ -1,0 +1,93 @@
+pragma options "--fe-fpencoding TO_BACKEND --bnd-unroll-amnt 250";
+
+#define NUM_PIECES 20
+#define NUM_VALUES 10
+#define VALUE_SCALING 0.1
+
+struct PiecewiseFunction {
+    int[NUM_PIECES] splitpoints;
+    int[NUM_PIECES + 1] values;
+}
+
+generator PiecewiseFunction create() {
+    PiecewiseFunction p = new PiecewiseFunction(splitpoints = ??, values = ??);
+    for(int i = 0; i < NUM_PIECES - 1; i++) {
+        int si = p.splitpoints[i];
+        int sip1 = p.splitpoints[i + 1];
+        assert si < sip1;
+    }
+    for(int i = 0; i < NUM_PIECES + 1; i++) {
+        assert -NUM_VALUES <= p.values[i];
+        assert p.values[i] <= NUM_VALUES;
+    }
+    return p;
+}
+
+float run(PiecewiseFunction f, int x) {
+    for (int i = 0; i < NUM_PIECES; i++) {
+        int si = f.splitpoints[i];
+        if (x < si) {
+            return (float) f.values[i] * VALUE_SCALING;
+        }
+    }
+    return (float) f.values[NUM_PIECES] * VALUE_SCALING;
+}
+
+float score(int num_events, int is_empty, float intercept, float[num_events] coefficients, float scoreEmpty, float[num_events] event_strengths) {
+    if (is_empty == 1) {
+        return scoreEmpty;
+    }
+    float score = intercept;
+    for (int i = 0; i < num_events; i ++) {
+        score += coefficients[i] * event_strengths[i];
+    }
+    return score;
+}
+
+@FromFile("test_data.dat")
+harness void main(
+        int num_events,
+        int[num_events] event_channels,
+        int[num_events] event_positions,
+        float[num_events] event_strengths,
+        int num_rbps,
+        int[num_rbps] rbp_positions,
+        float[num_rbps] rbp_strengths,
+        int num_alternatives,
+        int[num_alternatives] is_empty,
+        float[num_alternatives] intercepts,
+        float[num_events][num_alternatives] coefficients,
+        int correct_idx
+    ){
+
+    PiecewiseFunction onAcc = create();
+    PiecewiseFunction onDon = create();
+    float scoreEmpty = ??;
+
+
+    for(int j = 0; j < num_rbps; j++) {
+        assert j <= 5;
+        for (int i = 0; i < num_events; i++) {
+            float adjustment = run(event_channels[i] == 0 ? onAcc : onDon, rbp_positions[j] - event_positions[i]);
+            event_strengths[i] += adjustment * rbp_strengths[j];
+        }
+    }
+
+    /*
+
+    assert correct_idx == argmax_i scoring_fn[i](event_strengths)
+
+    forall i,
+        assert scoring_fn[correct_idx](event_strengths) >= scoring_fn[i](event_strengths)
+
+    */
+
+    float ideal_score = score(num_events, is_empty[correct_idx], intercepts[correct_idx], coefficients[correct_idx], scoreEmpty, event_strengths);
+    for (int i = 0; i < num_alternatives; i++) {
+        if (i == correct_idx) {
+            continue;
+        }
+        float this_score = score(num_events, is_empty[i], intercepts[i], coefficients[i], scoreEmpty, event_strengths);
+        assert ideal_score >= this_score;
+    }
+}

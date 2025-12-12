@@ -1,0 +1,62 @@
+pragma options "--slv-timeout 30";
+pragma options "--bnd-int-range 2000";
+
+generator int rec(int a, int b, int c, int d, int bnd){
+        assert bnd >= 0;
+        int t = ??;
+        if(t == 0) {return a;}
+        if(t == 1) {return b;}
+        if(t == 2) {return c;}
+        if(t == 3) {return d;}
+
+        int x = rec(a, b, c, d, bnd-1);
+        int y = rec(a, b, c, d, bnd-1);
+
+        if(t == 4) { return x * y; }
+        if(t == 5) {int out = min(x, y); return out;}
+        if(t == 6) {int out = max(x, y); return out;}
+}
+
+
+int min(int a, int b){
+        int _out;
+        if (a<b) _out = a;
+        else _out = b;
+        return _out;
+}
+
+int max(int a, int b){
+        int _out;
+        if (a>b) _out = a;
+        else _out = b;
+        return _out;
+}
+
+int absleft(int l1, int r1, int l2, int r2){
+        int _out = rec(l1, r1, l2, r2, 3);
+        return _out;
+}
+
+int absright(int l1, int r1, int l2, int r2){
+        int _out = rec(l1, r1, l2, r2, 3);
+        return _out;
+}
+
+bit lessThan(int left1, int right1, int left2, int right2, int c1, int c2){
+        return (absleft(left1, right1, left2, right2) <= c1) && (c2 <= absright(left1, right1, left2, right2));
+}
+
+
+harness void main(){
+        assert !(lessThan(-3,-3,-16,-8,22,22));
+        assert (lessThan(-14,0,-29,-4,0,0));
+        assert !(lessThan(-31,-31,31,31,0,0));
+        assert (lessThan(30,30,-30,21,-31,-31));
+        assert !(lessThan(28,31,-30,-5,-12,-12));
+        assert !(lessThan(-15,0,-29,-29,-30,-30));
+        assert !(lessThan(-28,-25,-30,-29,-29,-29));
+        assert !(lessThan(-30,-4,8,8,-30,-30));
+        assert !(lessThan(23,24,4,5,21,21));
+        assert (lessThan(4,30,2,29,8,8));
+
+} //end of main
