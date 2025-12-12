@@ -1,0 +1,12 @@
+op = declare("op", ["H__2"], {});
+op__id21 = op.unit_clone("op__id21", {"H__2" : "H__2__id21"});
+op__id21.inplace_unit_concretize({"H__2__id21" : "1"});
+sketch_main = declare("sketch_main", ["H__0", "H__1"], {"op" : "op"});
+sketch_main__id22 = sketch_main.unit_clone("sketch_main__id22", {"H__0" : "H__0__id22", "H__1" : "H__1__id22"});
+sketch_main__id22.replace("op", op__id21);
+sketch_main__id22.inplace_unit_concretize({"H__0__id22" : "1", "H__1__id22" : "0"});
+sketch_main__Wrapper = declare("sketch_main__Wrapper", [], {"sketch_main" : "sketch_main"});
+sketch_main__Wrapper__id23 = sketch_main__Wrapper.unit_clone("sketch_main__Wrapper__id23", {});
+sketch_main__Wrapper__id23.replace("sketch_main", sketch_main__id22);
+sketch_main__Wrapper__id23.inplace_unit_concretize({});
+return sketch_main__Wrapper__id23;
