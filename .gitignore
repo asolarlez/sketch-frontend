@@ -9,3 +9,4 @@ console_output.out
 .directory
 fmtl_program_file.fmtl
 hs_err_pid*
+.DS_Store
