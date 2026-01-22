@@ -1,0 +1,81 @@
+pragma options "--bnd-unroll-amnt 10";
+
+generator bit guard(int a,int b){
+        return {| (a | b) (> | < | == | !=) (a | b) |};
+}
+
+int pairedD([int n],int[n] arr){
+	int res = 0;
+	int i = {| ?? | n |};
+	while(guard(i,n)){
+		if(arr[{| i+?? | i-?? | ?? |}] == arr[{| i+?? | i-?? | ?? |}]){
+			res = res+arr[{| i+?? | i-?? | ?? |}];
+		}
+	i = {| i+?? | i-?? | ?? |};
+	}
+	if(arr[{| i+?? | i-?? | ?? |}] == arr[{| i+?? | i-?? | ?? |}]){
+		res = res+arr[{| i+?? | i-?? | ?? |}];
+	}
+	return res;
+}
+
+harness void ex1(){
+    assert(pairedD({7, 7, 2, 9, 3, 4, 4, 7}) == 18);
+}
+harness void ex2(){
+    assert(pairedD({4, 4, 8, 6, 6, 6}) == 16);
+}
+harness void ex3(){
+    assert(pairedD({8, 8}) == 16);
+}
+harness void ex4(){
+    assert(pairedD({7, 7, 8, 1, 9, 9, 2, 8}) == 16);
+}
+harness void ex5(){
+    assert(pairedD({7, 5, 5, 3, 1, 7}) == 12);
+}
+harness void ex6(){
+    assert(pairedD({2, 9, 1, 9, 8, 8, 6, 4, 3, 3}) == 11);
+}
+harness void ex7(){
+    assert(pairedD({6, 9, 1, 7, 7, 6, 4, 3, 3, 5}) == 10);
+}
+harness void ex8(){
+    assert(pairedD({9, 6, 7, 3, 9, 9}) == 18);
+}
+harness void ex9(){
+    assert(pairedD({7, 7, 6, 6, 4, 5}) == 13);
+}
+harness void ex10(){
+    assert(pairedD({5, 5, 6, 9, 8, 8}) == 13);
+}
+harness void ex11(){
+    assert(pairedD({1, 7, 6, 6, 3, 5, 5, 2, 6}) == 11);
+}
+harness void ex12(){
+    assert(pairedD({8, 3, 3, 8, 8, 2, 5}) == 11);
+}
+harness void ex13(){
+    assert(pairedD({9, 2, 4, 7, 7, 3, 8, 6, 6, 7}) == 13);
+}
+harness void ex14(){
+    assert(pairedD({9, 5, 4, 6, 6, 6, 0, 7}) == 12);
+}
+harness void ex15(){
+    assert(pairedD({1, 7, 7, 9, 7, 0, 2, 8, 8, 2}) == 15);
+}
+harness void ex16(){
+    assert(pairedD({9, 9, 2, 2, 4, 7, 5, 1, 6, 0}) == 11);
+}
+harness void ex17(){
+    assert(pairedD({8, 3, 3, 7, 4, 4, 4}) == 11);
+}
+harness void ex18(){
+    assert(pairedD({0, 2, 8, 7, 7, 8, 8, 6}) == 15);
+}
+harness void ex19(){
+    assert(pairedD({5, 5, 7, 7, 9, 1, 0, 5, 4, 9}) == 12);
+}
+harness void ex20(){
+    assert(pairedD({6, 8, 8, 0, 2, 6}) == 14);
+}

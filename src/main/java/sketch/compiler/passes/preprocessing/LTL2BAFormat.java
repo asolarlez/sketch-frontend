@@ -4,358 +4,158 @@
 package sketch.compiler.passes.preprocessing;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import sketch.compiler.ast.core.FEReplacer;
+import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprBinary;
-import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 
 /**
- * @author ferna Two classe:
+ * Front-end visitor pass for transforming an sketch predicate into a string
+ * that LTL2BA recognizes.
+ * 
+ * @author Fernando A. Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
+ * @version $Id$
+ *
  */
 public class LTL2BAFormat extends FEReplacer {
 
-	private String res;
-	private int pid;
+	private String ltlString;
+	private Statement ltlCurrentLine;
 	private Map<Integer, Expression> propNames;
-	private int ltlCurrentLine;
+	private int pid;
+	private boolean isInf;
 
 	/**
 	 * @param symtab
 	 */
-	public LTL2BAFormat(int ltlCurrentLine) {
-		res = "";
-		pid = 0;
-		propNames = new HashMap<Integer, Expression>();
+	public LTL2BAFormat(Statement ltlCurrentLine) {
 		this.ltlCurrentLine = ltlCurrentLine;
+		this.propNames = new HashMap<Integer, Expression>();
+		this.pid = 0;
+		this.ltlString = "";
+		this.isInf = false;
+	}
+
+	public LTL2BAFormat(Statement ltlCurrentLine, boolean isInf) {
+		this.ltlCurrentLine = ltlCurrentLine;
+		this.propNames = new HashMap<Integer, Expression>();
+		this.pid = 0;
+		this.ltlString = "";
+		this.isInf = isInf;
+	}
+
+	public String getLtlString() {
+		return ltlString;
+	}
+
+	public Map<Integer, Expression> getPropNames() {
+		return propNames;
 	}
 
 	public Object visitStmtAssert(StmtAssert stmt) {
 		Object result = super.visitStmtAssert(stmt);
 
-		Object cond = stmt.getCond();
+		Expression cond = stmt.getCond();
 
-		if (stmt.getCx().getLTLAssert() && stmt.getCx().getLineNumber() == ltlCurrentLine) {
-			visitExprFunCall((ExprFunCall) cond, true);
+		if (stmt.equals(ltlCurrentLine)
+				&& (stmt.getCx().getLineNumber() == ltlCurrentLine.getCx().getLineNumber() || isInf)) {
+			// Transformation of binary expressions, functions, and variables.
+			cond = (Expression) cond.accept(new LTLOperands());
+			ltlString = cond.toString();
 			return result;
 		}
-
 		return result;
 	}
 
-	public Object visitExprBinary(ExprBinary bin, boolean print) {
-		res += "p" + pid;
-		bin = (ExprBinary) bin.accept(new VarCast());
-		propNames.put(pid, bin);
-		pid++;
-		return super.visitExprBinary(bin);
-	}
-
-	public Object visitExprVar(ExprVar v, boolean print) {
-		res += "p" + pid;
-		if (v.getName().equals("true")) {
-			propNames.put(pid, ExprConstInt.one);
-		} else if (v.getName().equals("false")) {
-			propNames.put(pid, ExprConstInt.zero);
-		} else {
-			propNames.put(pid, v);
+	class LTLOperands extends FEReplacer {
+		public Object visitExprFunCall(ExprFunCall func) {
+			String fname = func.getName();
+			if (!(fname.equals("X") || fname.equals("F") || fname.equals("G") || fname.equals("!") || fname.equals("U")
+					|| fname.equals("||") || fname.equals("&&"))) {
+				return func.accept(new IndexFCVars());
+			}
+			List<Expression> params = func.getParams();
+			List<Expression> newParams = new LinkedList<Expression>();
+			Iterator<Expression> it = params.iterator();
+			while (it.hasNext()) {
+				Expression pi = it.next();
+				pi = (Expression) pi.accept(new IndexVars());
+				newParams.add(pi);
+			}
+			return new ExprFunCall(func.getCx(), fname, newParams);
 		}
-		pid++;
-		return super.visitExprVar(v);
 	}
 
-
-	public Object visitExprFunCall(ExprFunCall func, boolean print) {
-		if (print) {
-			String fName = func.getName();
-			if (fName.equals("G")) {
-				res += "[] (";
-				Expression e = func.getParams().get(0);
-				if (e instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e, true);
-				} else if (e instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e, true);
-				} else if (e instanceof ExprVar) {
-					visitExprVar((ExprVar) e, true);
-				}
-				res += ")";
-			} else if (fName.equals("F")) {
-				res += "<> (";
-				Expression e = func.getParams().get(0);
-				if (e instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e, true);
-				} else if (e instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e, true);
-				} else if (e instanceof ExprVar) {
-					visitExprVar((ExprVar) e, true);
-				}
-				res += ")";
-			} else if (fName.equals("X")) {
-				res += "X (";
-				Expression e = func.getParams().get(0);
-				if (e instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e, true);
-				} else if (e instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e, true);
-				} else if (e instanceof ExprVar) {
-					visitExprVar((ExprVar) e, true);
-				}
-				res += ")";
-			} else if (fName.equals("!")) {
-				res += "! (";
-				Expression e = func.getParams().get(0);
-				if (e instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e, true);
-				} else if (e instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e, true);
-				} else if (e instanceof ExprVar) {
-					visitExprVar((ExprVar) e, true);
-				}
-				res += ")";
-			} else if (fName.equals("U")) {
-				Expression e1 = func.getParams().get(0);
-				Expression e2 = func.getParams().get(1);
-				res += "(";
-				if (e1 instanceof ExprFunCall && e2 instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " U ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprFunCall) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " U ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprBinary) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " U ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " U ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprFunCall) {
-					visitExprVar((ExprVar) e1, true);
-					res += " U ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprVar) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " U ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprVar) {
-					visitExprVar((ExprVar) e1, true);
-					res += " U ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprBinary) {
-					visitExprVar((ExprVar) e1, true);
-					res += " U ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprVar) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " U ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				}
-			} else if (fName.equals("V")) {
-				Expression e1 = func.getParams().get(0);
-				Expression e2 = func.getParams().get(1);
-				res += "(";
-				if (e1 instanceof ExprFunCall && e2 instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " V ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprFunCall) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " V ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprBinary) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " V ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " V ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprFunCall) {
-					visitExprVar((ExprVar) e1, true);
-					res += " V ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprVar) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " V ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprVar) {
-					visitExprVar((ExprVar) e1, true);
-					res += " V ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprBinary) {
-					visitExprVar((ExprVar) e1, true);
-					res += " V ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprVar) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " V ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				}
-			} else if (fName.equals("&&")) {
-				Expression e1 = func.getParams().get(0);
-				Expression e2 = func.getParams().get(1);
-				res += "(";
-				if (e1 instanceof ExprFunCall && e2 instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " && ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprFunCall) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " && ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprBinary) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " && ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " && ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprFunCall) {
-					visitExprVar((ExprVar) e1, true);
-					res += " && ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprVar) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " && ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprVar) {
-					visitExprVar((ExprVar) e1, true);
-					res += " && ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprBinary) {
-					visitExprVar((ExprVar) e1, true);
-					res += " && ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprVar) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " && ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				}
-			} else if (fName.equals("||")) {
-				Expression e1 = func.getParams().get(0);
-				Expression e2 = func.getParams().get(1);
-				res += "(";
-				if (e1 instanceof ExprFunCall && e2 instanceof ExprFunCall) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " || ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprFunCall) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " || ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprBinary) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " || ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprBinary) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " || ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprFunCall) {
-					visitExprVar((ExprVar) e1, true);
-					res += " || ";
-					visitExprFunCall((ExprFunCall) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprFunCall && e2 instanceof ExprVar) {
-					visitExprFunCall((ExprFunCall) e1, true);
-					res += " || ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprVar) {
-					visitExprVar((ExprVar) e1, true);
-					res += " || ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprVar && e2 instanceof ExprBinary) {
-					visitExprVar((ExprVar) e1, true);
-					res += " || ";
-					visitExprBinary((ExprBinary) e2, true);
-					res += ")";
-				} else if (e1 instanceof ExprBinary && e2 instanceof ExprVar) {
-					visitExprBinary((ExprBinary) e1, true);
-					res += " || ";
-					visitExprVar((ExprVar) e2, true);
-					res += ")";
+	class IndexVars extends FEReplacer {
+		public Object visitExprBinary(ExprBinary bin) {
+			if (propNames.containsValue(bin)) {
+				for (Map.Entry<Integer, Expression> e : propNames.entrySet()) {
+					if (e.getValue().equals(bin)) {
+						pid = e.getKey();
+					}
 				}
 			} else {
-				/*
-				 * res += fName + "("; for (int i = 0; i <
-				 * func.getParams().size(); ++i) { res += (i != 0) ? "," : "" +
-				 * func.getParams().get(i); } res += ")";
-				 */
-				res += "p" + pid;
-				propNames.put(pid, func);
 				pid++;
+				propNames.put(pid, bin);
 			}
+			return new ExprVar(bin.getCx(), "p" + pid);
 		}
 
-		return super.visitExprFunCall(func);
-	}
-
-	public String ltlString() {
-		return res;
-	}
-
-	public Map<Integer, Expression> getPropTable() {
-		return propNames;
-	}
-
-	class VarCast extends FEReplacer {
-
-		public VarCast() {
-		}
-
-		public Object visitExprVar(ExprVar v) {
-			
-			String vN = v.getName();
-
-			if (vN.equals("true")) {
-				return new ExprConstInt(v, 1);
-			} else if (vN.equals("false")) {
-				return new ExprConstInt(v, 0);
+		public Object visitExprVar(ExprVar var) {
+			if (propNames.containsValue(var)) {
+				for (Map.Entry<Integer, Expression> e : propNames.entrySet()) {
+					if (e.getValue().equals(var)) {
+						pid = e.getKey();
+					}
+				}
+			} else {
+				pid++;
+				propNames.put(pid, var);
 			}
-
-			return super.visitExprVar(v);
+			return new ExprVar(var.getCx(), "p" + pid);
 		}
 
+		public Object visitExprArrayRange(ExprArrayRange ran) {
+			if (propNames.containsValue(ran)) {
+				for (Map.Entry<Integer, Expression> e : propNames.entrySet()) {
+					if (e.getValue().equals(ran)) {
+						pid = e.getKey();
+					}
+				}
+			} else {
+				pid++;
+				propNames.put(pid, ran);
+			}
+			return new ExprVar(ran.getCx(), "p" + pid);
+		}
+
+		public Object visitExprFunCall(ExprFunCall func) {
+			return func.accept(new LTLOperands());
+		}
+	}
+
+	class IndexFCVars extends FEReplacer {
+		public Object visitExprFunCall(ExprFunCall func) {
+			if (propNames.containsValue(func)) {
+				for (Map.Entry<Integer, Expression> e : propNames.entrySet()) {
+					if (e.getValue().equals(func)) {
+						pid = e.getKey();
+					}
+				}
+			} else {
+				pid++;
+				propNames.put(pid, func);
+			}
+			return new ExprVar(func.getCx(), "p" + pid);
+		}
 	}
 }

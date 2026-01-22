@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon May 05 10:32:50 EDT 2025
+@default-maven-default-http-blocker-http\://0.0.0.0/.lastUpdated=1746455568374
+http\://0.0.0.0/.error=Could not transfer artifact junit\:junit\:jar\:4.6 from/to maven-default-http-blocker (http\://0.0.0.0/)\: Blocked mirror for repositories\: [uc berkeley cobol (http\://ntung.com/mvn, default, releases+snapshots), mvnrepository (http\://repo1.maven.org/maven2, default, releases+snapshots)]
+https\://repo.maven.apache.org/maven2/.lastUpdated=1746455570663

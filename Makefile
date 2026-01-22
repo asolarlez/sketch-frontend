@@ -118,7 +118,9 @@ run-platform-seq: # run a test using the platform jar
 	java -cp target/sketch-*-all-*.jar -ea sketch.compiler.main.seq.SequentialSketchMain $(EXEC_ARGS)
 
 run-local-seq:
-	@export MAVEN_OPTS="-XX:MaxPermSize=256m -Xms40m -Xmx600m -ea -server"; mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+	@export MAVEN_OPTS="-Xms40m -Xmx600m -ea -server"; mvn -e compile exec:java "-Dmaven.repo.local=m2" "-Dexec.mainClass=sketch.compiler.main.seq.SequentialSketchMain" "-Dexec.args=$(EXEC_ARGS)"
+        # -Dmaven.repo.local check documentation
+	# -XX:MaxPermSize=256m
 
 dump-fcn-info: # dump information about functions to a file. usage: EXEC_ARGS=filename.sk
 	mvn -e compile exec:java "-Dexec.mainClass=sketch.compiler.main.other.ParseFunctions" "-Dexec.args=$(EXEC_ARGS)"

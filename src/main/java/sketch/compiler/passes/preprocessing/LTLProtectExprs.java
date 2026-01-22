@@ -13,6 +13,14 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.typs.TypeArray;
 import sketch.compiler.passes.lowering.SymbolTableVisitor;
 
+/**
+ * Front-end visitor pass for creating guards avoiding possible invalid
+ * executions. Such as null pointer exceptions or division by zero.
+ * 
+ * @author Fernando A. Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
+ * @version $Id$
+ *
+ */
 public class LTLProtectExprs extends SymbolTableVisitor {
 
 	public LTLProtectExprs() {

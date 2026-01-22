@@ -1,0 +1,75 @@
+pragma options "--bnd-int-range 20 --bnd-arr-size 6";
+
+generator int exp(int x,int bnd){
+	assert(bnd >= 0);
+	int t = ??;
+	if(t == 0){return ??;}
+	if(t == 1){return x;}
+	
+	if(t == 3){return exp(x,bnd-1)+exp(x,bnd-1);}
+	if(t == 4){return exp(x,bnd-1)-exp(x,bnd-1);}
+}
+
+generator int exp2(int a,int b,int bnd){
+	assert(bnd >= 0);
+	int t = ??;
+	if(t == 0){return ??;}
+	if(t == 1){return a;}
+	if(t == 2){return b;}
+	
+	if(t == 3){return exp2(a,b,bnd-1)+exp2(a,b,bnd-1);}
+	if(t == 4){return exp2(a,b,bnd-1)-exp2(a,b,bnd-1);}
+}
+
+generator bit guard(int a){
+	return {| (a | ??) (== | != | > | < | >= | <=) (a | ??) |};
+}
+
+generator bit guard2(int a,int b){
+	return {| (a | b | ??) (== | != | > | < | >= | <=) (a | b | ??) |};
+}
+
+int[n] getLeadersM(int n,int[n] arr){
+	int[n] res;
+	for(int i = 0; i < n; i++){
+		res[i] = -1;
+	}
+
+	int max_from_right = arr[exp(n,1)];
+	res[exp(n,1)] = max_from_right;
+	
+	int j = exp(n,1);
+	while(guard(j)){
+		if(guard2(max_from_right,arr[exp2(j,n,1)])){
+			max_from_right = arr[exp2(j,n,1)];
+			res[exp2(j,n,1)] = max_from_right;
+		}
+		j = exp2(j,n,1);
+	}
+	
+	return res;
+}
+
+int[n] leadersModel(int n,int[n] arr){
+	int[n] res;
+	for(int i = 0; i < n; i++){
+		res[i] = -1;
+	}
+	for(int i = 0; i < n; i++){
+		int j;
+		for(j = i+1; j < n; j++){
+			if(arr[i] <= arr[j]){
+				j = n;
+			}
+		}
+		if(j == n){
+			res[i] = arr[i];
+		}
+	}
+	return res;
+}
+
+harness void main([int n],int[n] arr){
+	assume(n > 0 && n <= 6);
+	assert(getLeadersM(n,arr) == leadersModel(n,arr));
+}

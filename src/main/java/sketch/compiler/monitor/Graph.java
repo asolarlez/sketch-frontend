@@ -23,6 +23,17 @@ import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.util.Pair;
 
+/**
+ * Class defining a graph associated with a finite-state machine. In this class,
+ * we call the software LTL2BA to transform an LTL formula into a BA. After such
+ * transformation we use Tarjan's algorithm and a DFS implementation for
+ * constructing the RM.
+ * 
+ * 
+ * @author Fernando A. Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
+ * @version $Id$
+ *
+ */
 public class Graph {
 
 	private int v;
@@ -35,6 +46,7 @@ public class Graph {
 	private LinkedList<IState> stG;
 	private Collection<ITransition> transitions;
 	private int idA;
+	private String helper = "";
 
 	@SuppressWarnings("unchecked")
 	public Graph(int v, Expression language[], int initv, LinkedList<Integer> finalS) {
@@ -42,9 +54,9 @@ public class Graph {
 		this.initv = initv;
 		this.language = language;
 		this.finalS = finalS;
-		adj = new LinkedList[v];
+		this.adj = new LinkedList[v];
 		for (int i = 0; i < v; i++)
-			adj[i] = new LinkedList<Pair<Expression, Integer>>();
+			this.adj[i] = new LinkedList<Pair<Expression, Integer>>();
 		time = 0;
 	}
 
@@ -87,14 +99,20 @@ public class Graph {
 		this.language = langBAA;
 		this.finalS = finalG;
 		this.adj = new LinkedList[vG];
-		this.adjE = new LinkedList[vG];
+		// this.adjE = new LinkedList[vG];
 		for (int i = 0; i < v; i++)
 			adj[i] = new LinkedList<Pair<Expression, Integer>>();
+		// this.adjE = this.adj;
 		for (ITransition t : transitions) {
 			IState u = t.getSourceState();
 			IState v = t.getTargetState();
 			addEdge(stG.indexOf(u), makeProp(t.getLabels()), stG.indexOf(v));
 		}
+	}
+
+	public Graph(String form, int idA, String helper) {
+		this(form, idA);
+		this.helper = helper;
 	}
 
 	private Expression makeProp(Set<IGraphProposition> labels) {
@@ -158,6 +176,24 @@ public class Graph {
 			while (i.hasNext()) {
 				Pair<Expression, Integer> v = i.next();
 				g.addEdge(v.getSecond(), v.getFirst(), u);
+			}
+		}
+		g.transitions = this.transitions;
+		g.stG = this.stG;
+		return g;
+	}
+
+	public Graph transposeE() {
+		Graph g = this.transpose();
+		LinkedList<Pair<Expression, Integer>> adjEp[] = new LinkedList[v];
+		for (int i = 0; i < v; i++)
+			adjEp[i] = new LinkedList<Pair<Expression, Integer>>();
+		g.setAdjE(adjEp);
+		for (int u = 0; u < v; u++) {
+			Iterator<Pair<Expression, Integer>> i = adjE[u].iterator();
+			while (i.hasNext()) {
+				Pair<Expression, Integer> v = i.next();
+				g.addEdgeE(v.getSecond(), v.getFirst(), u);
 			}
 		}
 		g.transitions = this.transitions;
@@ -235,7 +271,6 @@ public class Graph {
 	 */
 	private LinkedList<Pair<Expression, Graph>> subgraphs() {
 		LinkedList<Pair<Expression, Graph>> subs = new LinkedList<Pair<Expression, Graph>>();
-
 		for (Expression a : language) {
 			Expression lt[] = { a };
 			Graph sg = new Graph(v, lt, initv, finalS);
@@ -245,9 +280,12 @@ public class Graph {
 					Pair<Expression, Integer> v = i.next();
 					if (v.getFirst().equals(a)) {
 						sg.addEdge(u, a, v.getSecond());
-					}
+					} // else if (v.getFirst().toString().equals("<SIGMA>")) {
+						// sg.addEdge(u, a, v.getSecond());
+						// }
 				}
 			}
+			// System.out.println(sg);
 			subs.add(new Pair<Expression, Graph>(a, sg));
 		}
 
@@ -327,7 +365,7 @@ public class Graph {
 					while (i.hasNext()) {
 						Pair<Expression, Integer> v = i.next();
 						if (!visited[v.getSecond()] && v.getFirst().equals(a.getSecond())
-								&& gt.adj[v.getSecond()].size() > 0) {
+								&& gt.adj[v.getSecond()].size() > 0 && adjExp(gt.adj[v.getSecond()], v.getFirst())) {
 							queue.add(v.getSecond());
 							visited[v.getSecond()] = true;
 							/*
@@ -342,6 +380,17 @@ public class Graph {
 		}
 
 		return halt;
+	}
+
+	public boolean adjExp(LinkedList<Pair<Expression, Integer>> ad, Expression a) {
+		Iterator<Pair<Expression, Integer>> it = ad.iterator();
+		while (it.hasNext()) {
+			Pair<Expression, Integer> p = it.next();
+			if (p.getFirst().equals(a)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/*
@@ -431,6 +480,12 @@ public class Graph {
 		}
 	}
 
+	public void castLang(FENode cx, Map<Integer, Expression> propNames) {
+		for (int i = 0; i < v; i++) {
+			language[i] = (Expression) language[i].accept(new CastExpression(propNames, idA));
+		}
+	}
+
 	public String toString() {
 		String ret = "";
 		ret += "ID:\n" + idA + "\n";
@@ -445,6 +500,7 @@ public class Graph {
 			}
 		}
 		ret += "Delta Expression:\n";
+
 		for (int i = 0; i < v; i++) {
 			Iterator<Pair<Expression, Integer>> v1 = adjE[i].iterator();
 			while (v1.hasNext()) {
@@ -452,6 +508,7 @@ public class Graph {
 				ret += i + " -> " + c.getSecond() + " [label= \"" + c.getFirst() + "\"]\n";
 			}
 		}
+
 		return ret;
 	}
 
@@ -476,6 +533,33 @@ public class Graph {
 			}
 		}
 		ExprArrayRange lhs = new ExprArrayRange(new ExprVar(context, "st" + idA), new ExprConstInt(ncontext, vT));
+		return new StmtAssign(ncontext, lhs, ret);
+	}
+
+	public StmtAssign makeRegression(FENode context, int vT, String index) {
+		FEContext curr = context.getCx();
+		FEContext ncontext = new FEContext(curr.getFileName(), curr.getLineNumber(), curr.getColumnNumber(),
+				curr.getComment());
+		ncontext.setLTL(true);
+		ncontext.setAut(true);
+		Expression ret = (Expression) new ExprConstInt(ncontext, 0);
+		for (int u = 0; u < v; u++) {
+			Iterator<Pair<Expression, Integer>> v1 = adjE[u].iterator();
+			while (v1.hasNext()) {
+				Pair<Expression, Integer> c = v1.next();
+				if (c.getSecond() == vT) {
+					ExprArrayRange preSt = new ExprArrayRange(
+							new ExprArrayRange(new ExprVar(ncontext, "stc" + idA), new ExprVar(ncontext, index)),
+							new ExprConstInt(context, u));
+					Expression labelSt = c.getFirst();
+					ExprBinary regr = new ExprBinary(ExprBinary.BINOP_AND, (Expression) preSt, labelSt);
+					ret = (Expression) new ExprBinary(ExprBinary.BINOP_OR, ret, regr);
+				}
+			}
+		}
+		ExprArrayRange lhs = new ExprArrayRange(
+				new ExprArrayRange(new ExprVar(ncontext, "st" + idA), new ExprVar(ncontext, index)),
+				new ExprConstInt(context, vT));
 		return new StmtAssign(ncontext, lhs, ret);
 	}
 
@@ -557,6 +641,10 @@ public class Graph {
 
 	public void setIdA(int idA) {
 		this.idA = idA;
+	}
+
+	public String getHelper() {
+		return this.helper;
 	}
 
 	/*

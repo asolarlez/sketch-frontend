@@ -1,0 +1,45 @@
+pragma options "--bnd-unroll-amnt 25 --bnd-int-range 25";
+
+generator int exp(int a,int b,int bnd){
+	assert(bnd >= 0);
+	int t = ??;
+	if(t == 0){return ??;}
+	if(t == 1){return a;}
+	if(t == 2){return b;}
+	
+	if(t == 3){return exp(a,b,bnd-1)+exp(a,b,bnd-1);}
+	if(t == 4){return exp(a,b,bnd-1)-exp(a,b,bnd-1);}
+}
+
+generator bit guard(int a,int b){
+	return {| (a | b) (== | != | > | < | >= | <=) (a | b) |};
+}
+
+bit existOther(int a,int ap,int bp,int c){
+	if(ap%c == 0 && bp%c == 0){
+		if(a < c){
+			return 0;
+		}
+		return 1;
+	}
+	return 1;
+}
+
+harness void gcd(int a,int b,int c){
+	assume(a > 0 && b > 0);
+	assume(a <= 25 && b <= 25);
+	assume(c > 0);
+	
+	int ap = a;
+	int bp = b;
+	
+	assert(U(a <= pre_a && b <= pre_b,a == b));
+	while(guard(a,b)){
+		if(guard(a,b)){
+			a = exp(a,b,1);
+		}else{
+			b = exp(a,b,1);
+		}
+	}
+	assert(ap%a == 0 && bp%a == 0 && existOther(a,ap,bp,c));
+}

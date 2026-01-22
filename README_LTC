@@ -1,0 +1,37 @@
+### Follow the below instructions after installing off-the-shelf Sketch
+
+### Building sketch-frontend with LTC
+
+This project depends on the academic library `ltl2ba4j` available in (i.e., is not available in Maven Central): 
+https://www.sable.mcgill.ca/~ebodde/rv/ltl2ba4j/  
+We included the required JAR in this repository:
+
+sketch-frontend/c-lib/ltl2ba4j.jar
+
+Before building, you must install this JAR into the project-local Maven repository.
+
+#### One-time setup
+
+From the `c-lib` directory inside `sketch-frontend`, run:
+
+>>> cd sketch-frontend/c-lib
+
+>>> mvn install:install-file \
+  -Dmaven.repo.local=../m2 \
+  -Dfile=ltl2ba4j.jar \
+  -DgroupId=org.rwth.i2 \
+  -DartifactId=ltl2ba4j \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DgeneratePom=true
+
+
+This installs ltl2ba4j into the project-local Maven repository (./m2), which is required because the Makefile overrides the default Maven repository location.
+
+Build and run
+
+After the setup step, you can build and run normally. For instance, to run the arbiter benchmark:
+
+make run-local-seq EXEC_ARGS="benchmarks/ltlmonit/infinite/arbiter.sk"
+
+No additional configuration should be necessary as long as c-lib/ltl2ba4j.jar is present and the m2 directory is kept with the project.

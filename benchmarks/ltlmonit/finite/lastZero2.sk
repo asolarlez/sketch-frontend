@@ -1,0 +1,47 @@
+pragma options "--bnd-arr-size 20 --bnd-unroll-amnt 20";
+
+bit isLZ([int n],int[n] arr,int iz){
+        for(int i = iz+1;i < n;i++){
+                if(arr[i] == 0){ return 0;}
+        }
+        return 1;
+}
+
+bit pre(int n,int[n] arr){
+	bit oneZ = 0;
+	for(int i = 0;i < n;i++){
+		if(arr[i] == 0){
+			oneZ = 1;
+		}
+	}
+	return oneZ;
+}
+
+int findLastZero([int n],int[n] arr){
+	if(n == 1){return 0;}
+	int i = 0;
+	int j = n-1;
+	int iz = -1;
+	bit br = 0;
+	assert(arr[j] == 0 || F(pre_i < i && pre_j > j));
+	while(i <= j && !br){
+		repeat(2){
+			if(arr[{| i |  j |}] == 0 && !br){
+				iz = {| i | j |};
+				br = ??;
+			}
+		}
+		i = {| i+?? | j+?? | i-?? | j-?? |};
+		j = {| i+?? | j+?? | i-?? | j-?? |};
+	}
+	assert(arr[iz] == 0);
+	assert(isLZ(arr,iz));
+	assert(iz >= 0 && iz < n);
+	return iz;
+}
+
+harness void main(int n,bit[n] arr){
+	assume(n >= 1 && n <= 20);
+	assume(pre(n,arr));
+	int iz = findLastZero(arr);
+}

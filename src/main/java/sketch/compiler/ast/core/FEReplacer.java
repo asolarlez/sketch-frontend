@@ -824,10 +824,10 @@ public class FEReplacer implements FEVisitor
 
 
         List<Function> nf = newFuncs;
-        // newFuncs = oldNewFuncs;
+		// newFuncs = oldNewFuncs;
         if (!changed)
             return spec;
-        return new Package(spec, spec.getName(), newStructs, newVars, nf,
+		return new Package(spec, spec.getName(), newStructs, newVars, nf,
                 spec.getSpAsserts());
 
     }

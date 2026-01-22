@@ -15,6 +15,12 @@ import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.util.Pair;
 
+/**
+ * Only for testing the construction of an RM.
+ *
+ * @author Fernando A. Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
+ * @version $Id$
+ */
 public class MainTestMonitor {
 
 	public static void main(String[] args) {

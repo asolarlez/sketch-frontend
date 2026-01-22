@@ -1,0 +1,86 @@
+#include "../../../src/sketchlib/generators.skh"
+pragma options "--slv-nativeints --bnd-inbits 2 --bnd-unroll-amnt 4";
+
+int[n] insertion([int n],int[n] vs){
+	int i = ??;//1
+	while(i < n){
+		int v = vs[i];
+		int j = expr({i,n,v},{PLUS,MINUS});//i-1
+		while(exprBool({j,i,n},{}) && //j >= 0
+		      exprBool({j,i,n,v,vs[j]},{})){ //vs[j] > v 
+			vs[j+1] = vs[j];
+			vs[j] = v;
+			j--;
+		}
+		i++;
+	}
+	return vs;
+}
+
+bit elem([int n],int m,int[n] vs){
+	int i = 0;
+	while(i < n){
+		if(vs[i] == m){return true;}
+		i++;
+	}
+	return false;
+}
+
+harness void test_sort([int n],int[n] vs){
+	int[n] svs = insertion(vs);
+	int i = 0;
+	while(i < n){
+		assert(elem(vs[i],svs));
+		i++;
+	}
+	i = 0;
+	while(i < n){
+		assert(elem(svs[i],vs));
+		i++;
+	}
+	i = 0;
+	while(i < n-1){
+		assert(svs[i] <= svs[i+1]);
+		i++;
+	}
+}
+
+int[n] dedup([int n],int[n] vs,ref int sz){
+	int[n] svs = insertion(vs);
+	int[n] result;
+	sz = ??; //0
+	int i = ??; //0
+	assert(G(sz >= pre_sz));
+	while(i < n){
+		int j = expr({sz,i},{PLUS,MINUS}); //sz-1
+		if(sz == ?? || //0
+		   {|svs[i] (> | >= | < | <= | != | ==) result[j]|}){ //svs[i] > result[j]
+			result[sz] = svs[i];
+			sz = expr({sz,i},{PLUS,MINUS});//sz+1
+		}
+		i++;
+	}
+	return result;
+}
+
+harness void test_dedup([int n],int[n] vs){
+	int sz = 0;
+	int[n] dvs0 = dedup(vs,sz);
+	assert(n == 0 || sz > 0);
+	int[sz] dvs = dvs0[0::sz];
+	int i = 0;
+	while(i < sz){
+		assert(elem(vs[i],dvs));
+		i++;
+	}
+	i = 0;
+	while(i < sz){
+		assert(elem(dvs[i],vs));
+		i++;
+	}
+	i = 0;
+	while(i < sz-1){
+		assert(dvs[i] < dvs[i+1]);
+		i++;
+	}
+}

@@ -1,0 +1,169 @@
+#include "../../../src/sketchlib/generators.skh"
+//pragma options "--bnd-inline-amnt 4 --bnd-unroll-amnt 7 --bnd-arr-size 7 --bnd-int-range 7 --bnd-inbits 3";
+pragma options "--bnd-inline-amnt 4 --bnd-unroll-amnt 15 --bnd-arr-size 15 --bnd-int-range 28 --bnd-inbits 4";
+
+bit[N] input(int N,int count);
+
+bit oneFloor([int N],bit[N] floor){
+        int fs = 0;
+        for(int i = 0; i < N; i++){
+                fs = floor[i] ? fs+1 : fs;
+        }
+        return fs == 1;
+}
+
+bit pendingRequests([int N],bit[N] button){
+        int numReqs = 0;
+        for(int i = 0; i < N; i++){
+                if(button[i]){
+                        numReqs++;
+                }
+        }
+        return numReqs > 0;
+}
+
+void changeFloor([int N],ref bit[N] floor,int count){
+        for(int i = 0; i < N; i++){
+                floor[i] = guardFloor(i,count) ? ?? : ??;
+                //floor[i] = i == count ? 1 : 0;
+        }
+}
+
+bit noRestFloors([int N],bit[N] floor,int fi){
+        int fs = 0;
+        for(int i = 0; i < fi; i++){
+                fs = floor[i] ? fs+1 : fs;
+        }
+        for(int i = fi+1; i < N; i++){
+                fs = floor[i] ? fs+1 : fs;
+        }
+        return fs == 0;
+}
+
+bit guardFloor(int i,int count){
+        return exprBool({i,count},{});
+}
+
+generator bit prop([int N],bit[N] a){
+        int t = ??;
+        if(t == 0){return a[??];}
+        if(t == 1){return !prop(a);};
+        if(t == 2){return prop(a)&prop(a);}
+        if(t == 3){return prop(a)|prop(a);}
+}
+
+int len(int N){
+	assume(N >= 2);
+	//int ret = (2*N)-2;
+	int cost_length = 2;
+	int ret = expr_cost({N},{0,1,2},cost_length);
+	assert(ret >= N && ret < 2*N);
+	return ret;
+}
+
+int rank_aux(int length,int fake,int fl){
+	//int ret = ((length-fake)+fl)%length;
+	int cost_ret = 2;
+	int ret = expr_cost({length,fake,fl},{0,1,4},cost_ret);
+	assert(ret >= 0 && ret < length);
+	return ret;
+}
+
+int newCount(int N,int length,int fake){
+	assume(fake < length);
+	//int ret = length-fake;
+	int cost_newC = 2;
+	int left = expr_cost({fake,length},{0,1},cost_newC);
+	int right = expr_cost({fake,length},{0,1},cost_newC);
+	//int ret = fake < N-1 ? fake : length-fake;
+	int ret = guardCount(fake,N,length) ? left : right; 
+	assert(ret < N);
+	return ret;
+}
+
+bit guardCount(int fake,int N,int length){
+	int right = {| N-1 | length-1 |};
+	return {|fake (< | <= | >= | >) right |};
+}
+
+harness void test_FuncsAux(){
+	assert(len(2) == 2);
+	assert(len(3) == 4);
+	assert(len(4) == 6);
+	assert(rank_aux(4,3,1) == 2);
+	assert(rank_aux(4,1,3) == 2);
+	assert(rank_aux(6,4,2) == 4);
+	assert(rank_aux(8,7,4) == 5);
+
+	assert(newCount(3,4,1) == 1);
+	assert(newCount(4,6,3) == 3);
+	assert(newCount(4,6,2) == 2);
+	assert(newCount(5,8,4) == 4);
+
+	assert(newCount(3,4,3) == 1);
+	assert(newCount(4,6,4) == 2);
+	assert(newCount(4,6,5) == 1);
+	assert(newCount(5,8,5) == 3);
+	assert(newCount(5,8,6) == 2);
+}
+
+harness void lift(int N,int fake,bit[N] button,bit[N] floor,bit serve,int count){
+	assert(with_help(G(oneFloor(floor)),foo));
+	for(int fl = 0; fl < N; fl++){
+		assert(with_help(G(!button[fl] || F(floor[fl] && serve)),next_floor));
+	}
+	for(int fl = 0; fl < N; fl++){
+		assert(with_help(G(!(floor[fl] && serve) || X(noRestFloors(floor,fl))),foo2));
+	}
+	while(1){
+		assume(N >= 2 && N <= 15);
+		int length = len(N);
+		assume(fake >= 0 && fake < length);
+		assume(count >= 0 && count < N);
+		for(int i = 0; i < N; i++){
+			assume(!button[i] || !(floor[i] && serve));
+		}
+		
+		count = newCount(N,length,fake); 
+		
+		serve = ??;
+	
+		button = input(N,count) | button;
+		
+		if(button[count]){
+			changeFloor(floor,count);
+			
+			serve = ??;
+			
+			button[count] = ??;
+		}
+		
+		if(pendingRequests(button)){
+			fake = expr({fake,length},{1,4});
+		}
+				
+		assert(fake >= 0 && fake < length);
+		assert(count >= 0 && count < N);
+		for(int i = 0;i < N;i++){
+			assert(!button[i] || !(floor[i] && serve));
+		}
+	}
+}
+
+int next_floor(int N, int fake, int count, bit[N] button, bit[N] floor, bit serve, int fl){
+	assume(N >= 2);
+	int length = len(N); 
+	assume(fl >= 0 && fl < length);
+	assume(fake >= 0 && fake < length);
+	int ret = rank_aux(length,fake,fl);
+	assert(ret >= 0 && ret < length);
+	return !button[fl] ? 0 : ret;
+}
+
+int foo(int N, int fake, int count, bit[N] button, bit[N] floor, bit serve){
+	return 0;
+}
+
+int foo2(int N, int fake, int count, bit[N] button, bit[N] floor, bit serve, int fl){
+	return 0;
+}

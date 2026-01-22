@@ -43,10 +43,12 @@ import static sketch.util.DebugOut.printError;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FEVisitor;
+import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.stmts.Statement;
 import sketch.compiler.codegenerators.GenerateDocs;
 import sketch.compiler.codegenerators.OutputHoleFunc;
 import sketch.compiler.dataflow.recursionCtrl.AdvancedRControl;
@@ -62,6 +64,7 @@ import sketch.compiler.main.passes.ParseProgramStage;
 import sketch.compiler.main.passes.PreprocessStage;
 import sketch.compiler.main.passes.StencilTransforms;
 import sketch.compiler.main.passes.SubstituteSolution;
+import sketch.compiler.monitor.Graph;
 import sketch.compiler.passes.annotations.CompilerPassDeps;
 import sketch.compiler.passes.bidirectional.BidirectionalAnalysis;
 import sketch.compiler.passes.bidirectional.EliminateLambdas;
@@ -91,6 +94,7 @@ import sketch.compiler.solvers.SolutionStatistics;
 import sketch.compiler.solvers.constructs.ValueOracle;
 import sketch.compiler.solvers.parallel.StrategicalBackend;
 import sketch.util.ControlFlowException;
+import sketch.util.Pair;
 import sketch.util.exceptions.InternalSketchException;
 import sketch.util.exceptions.ProgramParseException;
 import sketch.util.exceptions.SketchException;
@@ -507,7 +511,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 
         prog = (Program) prog.accept(new ConstantReplacer(null));
 
-
         prog = (Program) prog.accept(new MinimizeFcnCall());
 
         prog = (Program) prog.accept(new SpmdbarrierCall());
@@ -517,7 +520,6 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 		prog = (Program) prog.accept(new ExtractComplexLoopConditions(varGen));
 
 		prog = (Program) prog.accept(new ExpressionCastingReplacer());
-
 
 		prog = (Program) prog.accept(new LocalVariablesReplacer(varGen));
 
@@ -627,38 +629,86 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
             return;
         }
 
-		// Fernando test
+		// LTC
+		
+		// A syntactic test over the LTL formulae occurring in the sketch.
 
-		// A syntactic verification of the LTL formulas
-		// Check that none function is named as a LTL operator
+		// None function should be named as an LTL operator or with_help.
 		prog.accept(new LTLExclusivity());
-		// Check that every LTL formula is well formed.
+
+		// This pass checks that every LTL formula is well-formed.
 		prog.accept(new LTLWFExpression());
-		// Check that every LTL formula occurs in assert statements.
-		Program prog2 = prog; // Create a copy of the current program
-		// Remove all the asserts and assumes
-		prog2 = (Program) prog2.accept(new LTLRemoveAsserts());
-		// If there is a function call with LTL operators, return error
-		prog2.accept(new LTLInAssert());
 
+		// This pass gets the asserts where an LTL formula occurs.
+		// To do so, the pass returns a list having the lines where an assert
+		// with LTL formula as condition.
+		List<Statement> ltlAsserts = new LinkedList<>();
+		LTLFinite finite = new LTLFinite(ltlAsserts);
+		prog = (Program) prog.accept(finite);
+		ltlAsserts = finite.getLTLAsserts();
 
-		// Get the lines where an LTL assert occurrs
-		List<Integer> ltlAsserts = new LinkedList<Integer>();
-		LTLDetective pika = new LTLDetective(ltlAsserts);
-		prog = (Program) prog.accept(pika);
-		ltlAsserts = pika.getLTLAsserts();
-
-		// Create the prefix notation for the boolean operators
+		// This pass transforms each boolean expression into its prefix
+		// form.
 		prog = (Program) prog.accept(new LTLPrefixFormat());
 
-		// Add the regressions
-		LTLRegression regression = new LTLRegression(ltlAsserts);
-		prog = (Program) prog.accept(regression);
+		ltlAsserts = new LinkedList<Statement>();
+		finite = new LTLFinite(ltlAsserts);
+		prog = (Program) prog.accept(finite);
+		ltlAsserts = finite.getLTLAsserts();
 
-		prog = (Program) prog.accept(new LTLProtectExprs());
+		LTLWhileForever forever = new LTLWhileForever();
+		prog.accept(forever);
 
-		prog.debugDump("After LTL lowering.");
+		boolean anyForever = forever.getIsInf();
+		boolean hasRet = forever.getHasRet();
+		Program prog3 = null;
+		if (!ltlAsserts.isEmpty()) {
+			if (!anyForever) {
 
+				// This pass adds the RM instrumentation.
+				int idST = 0;
+				LTLLoopRMInstr loopInstr = new LTLLoopRMInstr(ltlAsserts, idST);
+				prog = (Program) prog.accept(loopInstr);
+				ltlAsserts = loopInstr.getLTLAsserts();
+				idST = loopInstr.getIdST();
+				LTLFuncRMInstr funcInstr = new LTLFuncRMInstr(ltlAsserts, idST);
+				prog = (Program) prog.accept(funcInstr);
+
+				// This pass creates guards for avoiding null pointer exceptions
+				// and
+				// division by zero. These guards are incorporated as extra
+				// conditions over the propositions occurring in the LTL
+				// formulae.
+				prog = (Program) prog.accept(new LTLProtectExprs());
+
+				// To debug, we print the sketch with the generated RM
+				// instrumentation.
+				prog.debugDump("After LTL finite lowering.");
+			} else {
+				if (!hasRet) {
+					// prog.accept(new CheckWithHelp(ltlAsserts));
+					GetFuncForeverInfo info = new GetFuncForeverInfo();
+					prog = (Program) prog.accept(info);
+					int idST = 0;
+					// Change: wed sept 3
+					List<Pair<Statement, Graph>> mapLTLAut = new LinkedList<Pair<Statement, Graph>>();
+					// Change: wed sept 3
+					LTLFuncRMInstrInf funcInstr = new LTLFuncRMInstrInf(ltlAsserts, idST, mapLTLAut);
+					prog = (Program) prog.accept(funcInstr);
+					List<Pair<String, List<Parameter>>> fNamesParams = new LinkedList<Pair<String, List<Parameter>>>();
+					LTLInvAut autInv = new LTLInvAut(ltlAsserts, funcInstr.getMapLTLAut(), fNamesParams);
+					prog = (Program) prog.accept(autInv);
+					prog = (Program) prog.accept(new LTLSortRankFuncs(fNamesParams));
+					LTLAnotatePres declareP = new LTLAnotatePres();
+					prog = (Program) prog.accept(declareP);
+					prog = (Program) prog.accept(new LTLInitValues());
+					prog3 = prog;
+					prog = (Program) prog.accept(new LTLRemoveFuncs());
+					prog.debugDump("After LTL finite lowering.");
+				}
+			}
+		}
+		 
 		prog = this.preprocAndSemanticCheck(prog);
         // System.out.println(prog);
 
@@ -693,7 +743,11 @@ public class SequentialSketchMain extends CommonSketchMain implements Runnable
 				visibleRControl(finalCleaned))).visitProgram(substituted);
 
 		// Fernando: Remove LTL instrumentation
-		substitutedCleaned = (Program) substitutedCleaned.accept(new LTLRemoving());
+		substitutedCleaned = (Program) substitutedCleaned.accept(new LTLRemoving(ltlAsserts));
+		if (anyForever) {
+			prog3 = (Program) prog3.accept(new LTLRemoving(ltlAsserts));
+			substitutedCleaned = (Program) substitutedCleaned.accept(new LTLAddWhiles(prog3));
+		}
 
 		generateCode(substitutedCleaned);
         this.log(1, "[SKETCH] DONE");

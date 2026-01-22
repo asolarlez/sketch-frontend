@@ -167,6 +167,17 @@ public class ExprFunCall extends Expression
 
     public String toString()
     {
-        return name + "(" + printParams() + ")" + printTParams();
+		// Reserved function names of LTL MonTer: F, G, U, ||, &&
+		if (params.size() == 2 && (name.equals("U")) || name.equals("||") || name.equals("&&")) {
+			return "((" + params.get(0) + ") " + name + " (" + params.get(1) + "))";
+		}
+		switch (name) {
+		case "F":
+			return "<>(" + printParams() + ")";
+		case "G":
+			return "[](" + printParams() + ")";
+		default:
+		}
+		return name + "(" + printParams() + ")" + printTParams();
     }
 }

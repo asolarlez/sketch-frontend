@@ -1,0 +1,84 @@
+#include "../../../src/sketchlib/generators.skh"
+pragma options "--bnd-inline-amnt 4 --bnd-unroll-amnt 15 --bnd-arr-size 12 --bnd-int-range 12 --bnd-inbits 4";
+
+bit[N] input(int N,int count);
+bit input2(int N,int count);
+
+bit oneGrant([int N],bit[N] grant,bit gMa){
+	int num = 0;
+	for(int i = 0; i < N; i++){
+		num = grant[i] ? num+1 : num;
+	}
+	num = gMa ? num+1 : num;
+	return num <= 1;
+}
+
+bit none([int N],bit[N] grant){
+	for(int i = 0; i < N; i++){
+		if(grant[i]){return 0;}
+	}
+	return 1;
+}
+
+harness void arbiter(int N,bit[N] owes,bit[N] grant,int count,bit oMa,bit gMa){
+	assert(with_help(G(oneGrant(grant,gMa)),foo));
+	for(int disp = 0; disp < N; disp++){
+		assert(with_help(G(!owes[disp] || F(grant[disp])),some_ranks));
+	}
+	assert(with_help(G(!oMa || X(U(none(grant),gMa))),priorMaster));
+	while(1){
+		assume(N >= 2 && N <= 12);
+		assume(count >= 0 && count < N);
+		for(int i = 0; i < N; i++){
+			assume(!owes[i] || !grant[i]);
+		}
+		assume(!oMa || !gMa);
+		 
+		grant = (bit[??]){??,??,??,??,??};	
+		owes = input(N,count) | owes;
+		gMa = ??;
+		oMa = input2(N,count) | oMa;
+		
+		if(oMa){
+			oMa = ??;
+			gMa = ??;
+		}else{
+			if(owes[count]){
+				owes[count] = ??;
+				grant[count] = ??;
+			}
+		}
+		count = expr({count,N},{0,4});
+	
+		assert(count >= 0 && count < N);
+		for(int i = 0;i < N;i++){
+			assert(!owes[i] || !grant[i]);
+		}
+		assert(!oMa || !gMa);
+	}
+}
+
+int some_ranks(int N,int count,bit[N] owes,bit[N] grant,bit oMa,bit gMa,int disp){
+	if(!oMa){
+		if(!owes[disp]){
+			return 0;
+		}else{
+		        //return ((N-count)+disp)%N;
+		        int ret = expr({N,disp,count},{PLUS,MINUS,MOD});
+			assert(ret < N);
+			return ret;
+		}
+	}else{
+		int ret = expr({N,disp,count},{PLUS});
+		return ret;
+	}
+}
+
+int priorMaster(int N,int count,bit[N] owes,bit[N] grant,bit oMa,bit gMa){
+	int ret = expr({N,count},{PLUS});
+	return ret;
+}
+
+int foo(int N,int count,bit[N] owes,bit[N] grant,bit oMa,bit gMa){
+	return 0;
+}

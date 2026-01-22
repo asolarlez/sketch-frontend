@@ -42,4 +42,3 @@ T head<T>(List<T> l){
 List<T> add<T>(List<T> lst, T val){
     return new Cons<T>(val=val, next=lst);
 }
-

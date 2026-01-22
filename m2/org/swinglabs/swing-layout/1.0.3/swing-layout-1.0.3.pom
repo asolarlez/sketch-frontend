@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.swinglabs</groupId>
+	<artifactId>swing-layout</artifactId>
+	<packaging>jar</packaging>
+	<name>Swing Layout Extensions</name>
+	<version>1.0.3</version>
+    <url>https://swing-layout.dev.java.net/</url>
+    <licenses>
+        <license>
+            <name>Lesser General Public License (LGPL)</name>
+            <url>http://www.gnu.org/copyleft/lesser.html</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://swing-layout.dev.java.net/source/browse/swing-layout/</url>
+    </scm>
+    <description>Extensions to Swing to create professional cross platform layout</description>
+</project>

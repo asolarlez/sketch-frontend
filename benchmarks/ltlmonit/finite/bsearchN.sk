@@ -1,0 +1,69 @@
+pragma options "--bnd-unroll-amnt 6 --bnd-arr-size 6 --bnd-int-range 12";
+
+generator int exp([int n],int[n] arr,int bnd){
+        assert(bnd >= 0);
+        int t = ??;
+        if(t == 0){return ??;}
+        if(t == 1){return arr[??];}
+
+        if(t == 2){return exp(arr,bnd-1)-exp(arr,bnd-1);}
+        if(t == 3){return exp(arr,bnd-1)+exp(arr,bnd-1);}
+}
+
+bit in([int n],int[n] arr,int x){
+	for(int i = 0;i < n;i++){
+		if(arr[i] == x){return true;}
+	}
+	return false;
+}
+
+int bsearch([int n],int[n] arr,int x){
+	int l = 0;
+	int r = n-1;
+	int mid = (l+r)/2;
+	assert(!(arr[mid] > x) || F(r < mid));
+        assert(!(arr[mid] < x) || F(l > mid));
+	while(l <= r){
+		mid = (l+r)/2;
+		if(arr[mid] == x){
+			return mid;
+		}
+		if(arr[mid] < x){
+			l = exp({mid,l,r},1);
+		}
+		if(arr[mid] > x){
+			r = exp({mid,l,r},1);
+		}
+	}
+	return -1;
+}
+
+bit nonduplicates([int n],int[n] arr){
+	for(int i = 0;i < n;i++){
+		for(int j = i+1;j < n;j++){
+			if(arr[i] == arr[j]){return false;}
+		}
+	}
+	return true;
+}
+
+bit sorted([int n],int[n] arr){
+	for(int i = 1;i < n;i++){
+		if(arr[i-1] > arr[i]){return false;}
+	}
+	return true;
+}
+
+int elem([int n],int[n] arr,int x){
+	for(int i = 0;i < n;i++){
+		if(arr[i] == x){return i;}
+	}
+	return -1;
+}
+
+harness void h_bsearch([int n],int[n] arr,int x){
+	assume(n >= 0 && n <= 6);
+	assume(sorted(arr));
+	assume(nonduplicates(arr));
+	assert(elem(arr,x) == bsearch(arr,x));
+}

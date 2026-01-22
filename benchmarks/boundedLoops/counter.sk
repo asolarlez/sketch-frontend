@@ -1,0 +1,49 @@
+bit access (int x, int st){
+  if(st == 0){
+    if(1)
+      return 1;
+    if(x == 0)
+      return 1;
+    return 0;
+  }
+  if(st == 1){
+  	if(x == 0)
+  	  return 1;
+    if(1)
+      return 1;
+    return 0;
+  }
+  return 0;
+}
+
+harness void bound(int x, bit[2] st0, bit[2] stc0){
+  assume ((stc0[0]) || (stc0[1]));
+  for(int i = 0; i < 2; (i)++){
+    assume ((stc0[i]) ^ (!(access(x, i))));
+  }
+  bit accept0 = 0;
+  int init_x = x;
+  x = x - ??;
+  st0[0] = (0 || ((stc0[0]) && 1)) || ((stc0[1]) && (x == 0));
+  st0[1] = 0 || ((stc0[1]) && 1);
+  stc0 = st0;
+  accept0 = (st0[0] ? 1 : accept0);
+  assert ((st0[0]) || (st0[1]));
+  for(int i = 0; i < 2; (i)++){
+    assert ((st0[i]) ^ (!(access(x, i))));
+  }
+  if((rank_counter(init_x)) == 0){
+    assert (accept0);
+    assert(x <= 0);
+  }else{
+    assert (((rank_counter(init_x)) > (rank_counter(x))) && ((rank_counter(init_x)) >= 0));
+  }
+}
+
+int rank_counter(int x){
+  if(x == 0){
+    return 0;
+  }else{
+    return x - 1;
+  }
+}

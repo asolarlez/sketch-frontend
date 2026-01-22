@@ -135,7 +135,6 @@ public class PreprocessStage extends MetaStage {
 
         prog = (Program) prog.accept(new EliminateNestedArrAcc(true));
 
-
         prog = (Program) prog.accept(new MakeMultiDimExplicit(varGen));
 
         if (partialEval) {

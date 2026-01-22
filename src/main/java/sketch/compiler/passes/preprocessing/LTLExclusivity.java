@@ -5,10 +5,10 @@ import sketch.compiler.ast.core.Function;
 import sketch.util.exceptions.ExceptionAtNode;
 
 /**
- * Front-end visitor pass for verifying that none user declared function has a
- * LTL operator as name.
+ * Front-end visitor pass for verifying that function is named as an LTL
+ * operator.
  * 
- * @author Fernando Abigail Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
+ * @author Fernando A. Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
  * @version $Id$
  *
  */
@@ -20,8 +20,9 @@ public class LTLExclusivity extends FEReplacer {
 	@Override
 	public Object visitFunction(Function func) throws ExceptionAtNode {
 		String fName = func.getName();
-		if (fName.equals("X") || fName.equals("F") || fName.equals("G") || fName.equals("U") || fName.equals("R"))
-			throw new ExceptionAtNode("ltl operators cannot be used as function declarations.", func);
+		if (fName.equals("X") || fName.equals("F") || fName.equals("G") || fName.equals("U") || fName.equals("Forall")
+				|| fName.equals("Exists") || fName.equals("with_help"))
+			throw new ExceptionAtNode("LTL operators cannot be used as function declarations.", func);
 		return super.visitFunction(func);
 	}
 

@@ -1,0 +1,57 @@
+#include "../../../src/sketchlib/generators.skh"
+
+pragma options "--bnd-inline-amnt 3 --bnd-unroll-amnt 7 --bnd-arr-size 7 --bnd-inbits 3";
+
+bit[N] input(int N);
+
+bit all(int N,bit[N] finished){
+        for(int i = 0; i < N; i++){
+                if(!finished[i]){
+                        return 0;
+                }
+        }
+        return 1;
+}
+
+int numFinished(int N,bit allFinished,bit[N] finished){
+	int dec = expr({N},{PLUS,MINUS,MOD});
+	assert(0 <= dec && dec <= N);
+	return dec;
+}
+
+int numF(int N,bit[N] finished){
+	int pend = 0;
+	for(int i = 0; i < N; i++){
+		pend = finished[i] ? pend+1 : pend;
+	}
+    return pend;    
+}
+
+generator bit[N] newToken(int N,bit[N] in,bit[N] finished){
+        int t = ??;
+        if(t == 0){return in & finished;}
+        if(t == 1){return in | finished;}
+        if(t == 2){return in ^ finished;}
+}
+
+harness void collector(int N,bit[N] finished){
+        bit allFinished = 0;
+        assert(with_help(G(!(F(allFinished)) || (F(all(N,finished)))),numFinished));
+        assert(with_help(G(!allFinished || X(U(!allFinished,all(N,finished)) || G(!allFinished))),numFinished));
+	while(1){
+                assume(N >= 2 && N <= 7);
+                assume(allFinished ^ !all(N,finished));
+                int f = numF(N,finished);
+                //finished = input(N) | finished;
+                finished = newToken(N,input(N),finished);
+                assert(f <= numF(N,finished));
+                allFinished = all(N,finished);
+                if(allFinished){
+                	allFinished = ??;
+                	repeat(i:N){
+                		finished[i] = ??;
+                	}
+               	}
+                assert(allFinished ^ !all(N,finished));
+        }
+}

@@ -16,12 +16,27 @@ import sketch.compiler.ast.core.stmts.StmtAssign;
 import sketch.compiler.ast.core.stmts.StmtBlock;
 import sketch.compiler.monitor.Graph;
 
+/**
+ * Front-end visitor pass implementing the analysis over the variable "h". More
+ * precisely, this pass creates the instrumentation that analyzes when a
+ * function has ended its execution.
+ * 
+ * @author Fernando A. Galicia-Mendoza &lt;fmendoza@mit.edu&gt;
+ * @version $Id$
+ *
+ */
 public class LTLHalting extends FEReplacer {
 
 	Graph fa;
+	List<Graph> automataAux;
 
 	public LTLHalting(Graph fa) {
 		this.fa = fa;
+		this.automataAux = null;
+	}
+
+	public LTLHalting(List<Graph> automataAux) {
+		this.automataAux = automataAux;
 	}
 
 	public Object visitStmtBlock(StmtBlock block) {
@@ -38,14 +53,13 @@ public class LTLHalting extends FEReplacer {
 				curr.getComment());
 		ncontext.setLTL(true);
 		StmtAssign halting = new StmtAssign(ncontext, new ExprVar(ncontext, "h" + fa.getIdA()), new ExprConstInt(1));
-		newStmts.addAll(createRegression(halting));
+		// newStmts.addAll(createRegression(halting));
 		newStmts.add(halting);
 		newStmts.addAll(createRegression(halting));
 		ExprConstInt finFA = new ExprConstInt(ncontext, fa.getFinalS().get(0));
 		ExprArrayRange finAssert = new ExprArrayRange(new ExprVar(ncontext, "st" + fa.getIdA()), finFA);
 		StmtAssert finAssertS = new StmtAssert(ncontext, finAssert, false);
 		newStmts.add(finAssertS);
-
 		return new StmtBlock(ncontext, newStmts);
 	}
 

@@ -1,0 +1,12 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon May 05 10:07:40 EDT 2025
+@default-maven-default-http-blocker-http\://0.0.0.0/.lastUpdated=1746454060930
+@default-mvnrepository-http\://repo1.maven.org/maven2/.lastUpdated=1682121350574
+@default-uc\ berkeley\ cobol-http\://ntung.com/mvn/.lastUpdated=1682121350434
+file\:///scratch/fmendoza/sketch-frontend/.error=
+file\:///scratch/fmendoza/sketch-frontend/.lastUpdated=1675143516471
+http\://0.0.0.0/.error=Could not transfer artifact org.rwth.i2\:ltl2ba\:pom\:1.0.0 from/to maven-default-http-blocker (http\://0.0.0.0/)\: Blocked mirror for repositories\: [uc berkeley cobol (http\://ntung.com/mvn, default, releases+snapshots), mvnrepository (http\://repo1.maven.org/maven2, default, releases+snapshots)]
+http\://ntung.com/mvn/.error=Could not transfer artifact org.rwth.i2\:ltl2ba\:pom\:1.0.0 from/to uc berkeley cobol (http\://ntung.com/mvn)\: Failed to transfer file\: http\://ntung.com/mvn/org/rwth/i2/ltl2ba/1.0.0/ltl2ba-1.0.0.pom. Return code is\: 522 , ReasonPhrase\:.
+http\://repo1.maven.org/maven2/.error=Could not transfer artifact org.rwth.i2\:ltl2ba\:pom\:1.0.0 from/to mvnrepository (http\://repo1.maven.org/maven2)\: Failed to transfer file\: http\://repo1.maven.org/maven2/org/rwth/i2/ltl2ba/1.0.0/ltl2ba-1.0.0.pom. Return code is\: 501 , ReasonPhrase\:HTTPS Required.
+https\://repo.maven.apache.org/maven2/.error=
+https\://repo.maven.apache.org/maven2/.lastUpdated=1746452103791

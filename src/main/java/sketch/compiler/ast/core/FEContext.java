@@ -30,19 +30,26 @@ public class FEContext
     private int lineNumber, columnNumber;
     private String file;
     private String lastComment;
-	// Fernando
+
+	// Variables used by LTL MonTer.
 	private boolean ltl;
 	private boolean ltlAssert;
 	private boolean aut;
+	private boolean pre, preInit;
+	private boolean ltlInf, ltlInfAssert;
 
     /** Create a new context object with no location information. */
     public FEContext()
     {
         this(null);
-		// Fernando
+		// LTL MonTer
 		ltl = false;
 		ltlAssert = false;
 		aut = false;
+		pre = false;
+		preInit = false;
+		ltlInf = false;
+		ltlInfAssert = false;
     }
 
     /** Create a new context object with a known filename but no
@@ -53,10 +60,14 @@ public class FEContext
     public FEContext(String fileName)
     {
         this(fileName, -1);
-		// Fernando
+		// LTL MonTer
 		ltl = false;
 		ltlAssert = false;
 		aut = false;
+		pre = false;
+		preInit = false;
+		ltlInf = false;
+		ltlInfAssert = false;
     }
 
     /** Create a new context object with a known filename and line
@@ -68,10 +79,14 @@ public class FEContext
     public FEContext(String fileName, int line)
     {
         this(fileName, line, -1);
-		// Fernando
+		// LTL MonTer
 		ltl = false;
 		ltlAssert = false;
 		aut = false;
+		pre = false;
+		preInit = false;
+		ltlInf = false;
+		ltlInfAssert = false;
     }
 
     /** Create a new context object with known filename, line number,
@@ -96,10 +111,14 @@ public class FEContext
         }else{
         	file = lfile;
         }
-		// Fernando
+		// LTL MonTer
 		ltl = false;
 		ltlAssert = false;
 		aut = false;
+		pre = false;
+		preInit = false;
+		ltlInf = false;
+		ltlInfAssert = false;
     }
 
     public FEContext(String fileName, int line, int col, String lastComment) {
@@ -117,30 +136,74 @@ public class FEContext
         } else {
             file = lfile;
         }
-		// Fernando
+		// LTL MonTer
 		ltl = false;
 		ltlAssert = false;
 		aut = false;
+		pre = false;
+		preInit = false;
+		ltlInf = false;
+		ltlInfAssert = false;
     }
 
-	// Fernando: set ltl context
+	/**
+	 * True if this node is an LTL formula. False, otherwise.
+	 */
 	public void setLTL(boolean ltl) {
 		this.ltl = ltl;
 	}
 
-	// Fernando: get ltl context
+	/**
+	 * Returns true if this node is an LTL formula. False, otherwise.
+	 */
 	public boolean getLTL() {
 		return ltl;
 	}
 
-	// Fernando: set ltl context
+	/**
+	 * True if this node is an LTL formula. False, otherwise.
+	 */
+	public void setLTLInf(boolean ltlInf) {
+		this.ltlInf = ltlInf;
+	}
+
+	/**
+	 * Returns true if this node is an LTL formula. False, otherwise.
+	 */
+	public boolean getLTLInf() {
+		return ltlInf;
+	}
+
+	/**
+	 * True if this node is an assert having an LTL formula as condition. False,
+	 * otherwise.
+	 */
 	public void setLTLAssert(boolean ltlAssert) {
 		this.ltlAssert = ltlAssert;
 	}
 
-	// Fernando: get ltl context
+	/**
+	 * Returns true if this node is an assert with an LTL formula. False,
+	 * otherwise.
+	 */
 	public boolean getLTLAssert() {
 		return ltlAssert;
+	}
+
+	/**
+	 * True if this node is an assert having an LTL formula as condition. False,
+	 * otherwise.
+	 */
+	public void setLTLInfAssert(boolean ltlInfAssert) {
+		this.ltlInfAssert = ltlInfAssert;
+	}
+
+	/**
+	 * Returns true if this node is an assert with an LTL formula. False,
+	 * otherwise.
+	 */
+	public boolean getLTLInfAssert() {
+		return ltlInfAssert;
 	}
 
 	// Fernando: set ltl context
@@ -151,6 +214,22 @@ public class FEContext
 	// Fernando: get ltl context
 	public boolean getAut() {
 		return aut;
+	}
+
+	public void setPre(boolean pre) {
+		this.pre = pre;
+	}
+
+	public boolean getPre() {
+		return pre;
+	}
+
+	public void setPreInit(boolean preInit) {
+		this.preInit = preInit;
+	}
+
+	public boolean getPreInit() {
+		return preInit;
 	}
 
     /** Get the name of the file this node appears in, or null if it is

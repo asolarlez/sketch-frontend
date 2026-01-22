@@ -155,7 +155,7 @@ public class Program extends FENode
     }
 
     public void debugDump(String message) {
-		// System.out.println("Prueba\n//// " + message);
+		System.out.println("\n//// " + message);
         debugDump(System.out);
         System.out.println("------------------------------\n");
     }

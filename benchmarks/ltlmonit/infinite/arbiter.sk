@@ -1,0 +1,60 @@
+#include "../../../src/sketchlib/generators.skh"
+pragma options "--bnd-inline-amnt 4 --bnd-unroll-amnt 15 --bnd-arr-size 15 --bnd-int-range 15 --bnd-inbits 4";
+
+bit[N] input(int N,int count);
+
+bit oneGrant([int N],bit[N] grant){
+	int num = 0;
+	for(int i = 0; i < N; i++){
+		num = grant[i] ? num+1 : num;
+	}
+	return num <= 1;
+}
+
+harness void arbiter(int N,bit[N] owes,bit[N] grant,int count){
+	assert(with_help(G(oneGrant(grant)),foo));
+	for(int disp = 0; disp < N; disp++){
+		assert(with_help(G(!owes[disp] || F(grant[disp])),some_ranks));
+	}
+	while(1){
+		assume(N >= 2);
+		assume(count >= 0 && count < N);
+		for(int i = 0; i < N; i++){
+			assume(!owes[i] || !grant[i]);
+		}
+		 
+		//grant = false;	
+		grant = (bit[??]){??,??,??,??,??};
+	
+		owes = input(N,count) | owes;
+		
+		if(owes[count]){
+			owes[count] = ??;
+			//owes[count] = beh_owes(owes[count],grant[count]);
+			grant[count] = ??;
+			//grant[count] = beh_grant(owes[count],grant[count]);
+		}
+		count = expr({count,N},{0,4});
+		//count = (count+1)%N;
+	
+		assert(count >= 0 && count < N);
+		for(int i = 0;i < N;i++){
+			assert(!owes[i] || !grant[i]);
+		}
+	}
+}
+
+int some_ranks(int N,int count,bit[N] owes,bit[N] grant, int disp){
+	if(!owes[disp]){
+		return 0;
+	}else{
+        //return ((N-count)+disp)%N;
+        int ret = expr({N,disp,count},{PLUS,MINUS,MOD});
+        assert(ret < N);
+        return ret;
+	}
+}
+
+int foo(int N,int count,bit[N] owes,bit[N] grant){
+	return 0;
+}
