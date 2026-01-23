@@ -16,7 +16,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -55,7 +55,7 @@ public class BitVectorPreprocessor extends SymbolTableVisitor
 			}
 			return super.visitExprBinary(exp);
 	    }
-		public Object visitExprStar(ExprStar star) {
+		public Object visitExprStar(ExprHole star) {
 			hasUnknown = true;
 			return star;
 		}

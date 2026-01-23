@@ -602,7 +602,7 @@ public class PartialEvaluator extends SymbolTableVisitor {
         return rv;
 
     }
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         Type t = (Type) star.getType().accept(this);
         star.setType(t);
         exprRV = star;

@@ -25,7 +25,7 @@ import sketch.compiler.ast.core.Program;
 import sketch.compiler.ast.core.Annotation;
 import sketch.compiler.ast.core.NameResolver;
 import sketch.util.datastructures.HashmapList;
-import sketch.compiler.ast.core.exprs.ExprStar.Kind;
+import sketch.compiler.ast.core.exprs.ExprHole.Kind;
 
 import sketch.compiler.ast.core.Package;
 
@@ -6340,7 +6340,7 @@ inputState.guessing--;
 				t1 = LT(1);
 				match(NDVAL);
 				if ( inputState.guessing==0 ) {
-					x = new ExprStar(getContext(t1));
+					x = new ExprHole(getContext(t1));
 				}
 				break;
 			}
@@ -6442,20 +6442,20 @@ inputState.guessing--;
 							if (n2 != null) {
 								Float f2 = n2.getFValue();
 								if (f2 != null) {
-									x = new ExprStar(getContext(t2), f1.floatValue(), f2.floatValue());
+									x = new ExprHole(getContext(t2), f1.floatValue(), f2.floatValue());
 								}
 							}
 						} else {
 						Integer in1 = n1.getIValue();
 						  if(n2 == null){            	  	
-						  	x = new ExprStar(getContext(t2),in1);
+						  	x = new ExprHole(getContext(t2),in1);
 						  }else{
 						  	Integer in2 = n2.getIValue();
-						  	x = new ExprStar(getContext(t2),in1, in2);
+						  	x = new ExprHole(getContext(t2),in1, in2);
 						  } 
 						}
 						}else{
-						  x = new ExprStar(getContext(t2)); 
+						  x = new ExprHole(getContext(t2)); 
 						}
 						
 					
@@ -6467,7 +6467,7 @@ inputState.guessing--;
 				t3 = LT(1);
 				match(NDANGELIC);
 				if ( inputState.guessing==0 ) {
-					x = new ExprStar(getContext(t3), Kind.ANGELIC);
+					x = new ExprHole(getContext(t3), Kind.ANGELIC);
 				}
 				break;
 			}
@@ -6476,7 +6476,7 @@ inputState.guessing--;
 				t4 = LT(1);
 				match(NDVAL2SP);
 				if ( inputState.guessing==0 ) {
-					x = new ExprStar(getContext(t4)); ((ExprStar)x).makeSpecial();
+					x = new ExprHole(getContext(t4)); ((ExprHole)x).makeSpecial();
 				}
 				break;
 			}

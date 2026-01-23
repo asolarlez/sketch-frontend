@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.FENode;
 import sketch.compiler.ast.core.Function;
 import sketch.compiler.ast.core.Parameter;
 import sketch.compiler.ast.core.exprs.ExprSpecialStar;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssert;
 import sketch.compiler.ast.core.stmts.StmtAssume;
@@ -53,8 +53,8 @@ public class NtsbVtype extends IntVtype {
                 return val;
             }
         }
-        if(node instanceof ExprStar){
-            ExprStar star = (ExprStar) node;
+        if(node instanceof ExprHole){
+            ExprHole star = (ExprHole) node;
 
             Type t = star.getType();
             int ssz = 1;
@@ -83,8 +83,8 @@ public class NtsbVtype extends IntVtype {
 				if (star.special() && t.equals(TypePrimitive.inttype)) {
                     head += "SPVAR " + star.upperBound() + " ";
                     head += " $ ";
-                    for (ExprStar es : star.parentHoles()) {
-                        head += es.getSname() + " ";
+                    for (ExprHole es : star.parentHoles()) {
+                        head += es.getHoleName() + " ";
                     }
                     head += " $ ";
                 }

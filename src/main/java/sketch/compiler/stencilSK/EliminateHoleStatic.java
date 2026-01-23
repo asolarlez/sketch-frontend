@@ -22,7 +22,7 @@ import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprFunCall;
 import sketch.compiler.ast.core.exprs.ExprNamedParam;
 import sketch.compiler.ast.core.exprs.ExprNew;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.StmtAssign;
@@ -39,14 +39,14 @@ import sketch.compiler.solvers.constructs.StaticHoleTracker;
 import sketch.util.DebugOut;
 import sketch.util.exceptions.ExceptionAtNode;
 
-public class EliminateStarStatic extends SymbolTableVisitor {
+public class EliminateHoleStatic extends SymbolTableVisitor {
 
     AbstractValueOracle oracle;
-    HashMap<ExprStar, Object> hole_values = new HashMap<ExprStar, Object>();
+    HashMap<ExprHole, Object> hole_values = new HashMap<ExprHole, Object>();
     HashMap<String, HashMap<Integer, String>> idsMap =
             new HashMap<String, HashMap<Integer, String>>();
 
-    public EliminateStarStatic(AbstractValueOracle oracle) {
+    public EliminateHoleStatic(AbstractValueOracle oracle) {
         super(null);
         assert oracle.getHoleNamer() instanceof StaticHoleTracker;
         this.oracle = oracle;
@@ -114,7 +114,7 @@ public class EliminateStarStatic extends SymbolTableVisitor {
         return exp;
     }
 
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         if (star.isAngelicMax()) {
             return star;
         }
@@ -206,7 +206,7 @@ public class EliminateStarStatic extends SymbolTableVisitor {
             VarReplacer vr = new VarReplacer(repl);
 
             final NameResolver lnres = nres;
-            final EliminateStarStatic ths = this;
+            final EliminateHoleStatic ths = this;
 
             FEReplacer elimFuns = new FEReplacer() {
                 @Override
@@ -281,10 +281,10 @@ public class EliminateStarStatic extends SymbolTableVisitor {
 
         out.println("<?xml version=\"1.0\"?>");
         out.println("<hole_values>");
-        for (Entry<ExprStar, Object> ent : hole_values.entrySet()) {
+        for (Entry<ExprHole, Object> ent : hole_values.entrySet()) {
             FEContext ctx = ent.getKey().getContext();
             out.print("    <hole_value line=\"" + ctx.getLineNumber() + "\" col=\"" +
-                    ctx.getColumnNumber() + "\"  name=\"" + ent.getKey().getSname() +
+                    ctx.getColumnNumber() + "\"  name=\"" + ent.getKey().getHoleName() +
                     "\" ");
             if (ent.getKey().getType() instanceof TypeArray) {
                 List<Expression> lst = (List<Expression>) ent.getValue();

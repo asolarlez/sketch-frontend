@@ -2,7 +2,7 @@ package sketch.compiler.passes.preprocessing;
 
 import sketch.compiler.ast.core.FEReplacer;
 import sketch.compiler.ast.core.FieldDecl;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 
 /**
  * disallow any ?? in global fields
@@ -19,7 +19,7 @@ public class ForbidStarsInFieldDecls extends FEReplacer {
 
     public static class ForbidStars extends FEReplacer {
         @Override
-        public Object visitExprStar(ExprStar star) {
+        public Object visitExprStar(ExprHole star) {
             throw new java.lang.IllegalStateException("stars not allowed in field " +
                 star.getContext().toString());
         }

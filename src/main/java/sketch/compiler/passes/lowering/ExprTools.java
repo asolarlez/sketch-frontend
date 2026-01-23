@@ -158,7 +158,7 @@ public class ExprTools {
 				return exp.getExpr ().accept (this);
 			}
 
-			public Object visitExprStar (ExprStar exp) { return 0; }
+			public Object visitExprStar (ExprHole exp) { return 0; }
 
 			public Object visitExprTernary (ExprTernary exp) {
 				return ((Integer) exp.getA ().accept (this))

@@ -69,7 +69,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
     }
 
     @Override
-    public Object visitExprStar(ExprStar exp) {
+    public Object visitExprStar(ExprHole exp) {
         Type t = exp.getType();
         if (t.isStruct()) {
             TypeStructRef ts = (TypeStructRef) t;
@@ -104,7 +104,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
         symtab.registerVar(tempVar, type, decl, SymbolTable.KIND_LOCAL);
         ExprVar ev = new ExprVar(context, tempVar);
 
-        List<ExprStar> depthVars = new ArrayList<ExprStar>();
+        List<ExprHole> depthVars = new ArrayList<ExprHole>();
         getExprTree(ev, type, params, newStmts, gucDepth, depthVars);
         return ev;
     }
@@ -121,11 +121,11 @@ public class RemoveADTHoles extends SymbolTableVisitor {
      * 
      */
     private void getExprTree(ExprVar ev, Type type, List<Expression> params,
-            List<Statement> newStmts, int depth, List<ExprStar> depthHoles)
+            List<Statement> newStmts, int depth, List<ExprHole> depthHoles)
     {
         if (type instanceof TypeStructRef) {
             TypeStructRef tt = (TypeStructRef) type;
-            ExprStar hole = new ExprStar(context);
+            ExprHole hole = new ExprHole(context);
             Expression cond = hole;
             for (int i = 0; i < depthHoles.size(); i++) {
                 cond =
@@ -153,7 +153,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
      * parameters of this unknown constructor are recursively generated expression trees.
      */
     private void createNewAdt(ExprVar ev, TypeStructRef tt, List<Expression> params,
-            List<Statement> newStmts, int depth, boolean recursive, List<ExprStar> depthHoles)
+            List<Statement> newStmts, int depth, boolean recursive, List<ExprHole> depthHoles)
     {
         String name = tt.getName();
         StructDef sd = nres.getStruct(name);
@@ -206,7 +206,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
      */
     private List<ExprNamedParam> createADTParams(String name, List<Statement> stmts,
             Type type, int depth, boolean recursive, List<Expression> params,
-            List<ExprStar> depthHoles)
+            List<ExprHole> depthHoles)
     {
         List<ExprNamedParam> newADTparams = new ArrayList<ExprNamedParam>();
         Map<Type, List<ExprVar>> map = new HashMap<Type, List<ExprVar>>();
@@ -242,7 +242,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
 
     private ExprVar getExprVarForParam(Type t, Map<Type, Integer> count,
             Map<Type, List<ExprVar>> map, String fName, List<Statement> stmts,
-            List<ExprStar> depthHoles, int depth, Type adtType, List<Expression> params)
+            List<ExprHole> depthHoles, int depth, Type adtType, List<Expression> params)
     {
         if (!count.containsKey(t)) {
             count.put(t, 0);
@@ -260,12 +260,12 @@ public class RemoveADTHoles extends SymbolTableVisitor {
             ExprVar ev = new ExprVar(context, tempVar);
             varsForType.add(ev);
 
-            List<ExprStar> newDepths = new ArrayList<ExprStar>();
+            List<ExprHole> newDepths = new ArrayList<ExprHole>();
             for (int i = 0; i < depthHoles.size(); i++) {
                 newDepths.add(depthHoles.get(i));
             }
             if (depth > 2 && t.promotesTo(adtType, nres)) {
-                ExprStar hole = new ExprStar(context, 0, depth - 2, 3);
+                ExprHole hole = new ExprHole(context, 0, depth - 2, 3);
                 hole.makeSpecial(depthHoles);
                 newDepths.add(0, hole);
 
@@ -287,7 +287,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                                         depth, adtType, params);
                         arrelems.add(v);
                     }
-                    ExprStar hole = new ExprStar(context);
+                    ExprHole hole = new ExprHole(context);
                     Expression cond = hole;
                     Statement ifBlock = getBaseExprs(t, params, ev, depth == 1);
                     Statement elseBlock =
@@ -376,7 +376,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                 return new ExprVar(context, tmp);
 
             } else {
-                return new ExprStar(context);
+                return new ExprHole(context);
             }
         } else if (considerNonRec && type instanceof TypeStructRef) {
             boolean rec = true;
@@ -422,7 +422,7 @@ public class RemoveADTHoles extends SymbolTableVisitor {
                     if (!(exp instanceof ExprVar)) {
                         exp = (Expression) (new CloneHoles()).process(exp).accept(this);
                     }
-                    filteredExprs.add(new ExprArrayRange(exp, new ExprStar(exp)));
+                    filteredExprs.add(new ExprArrayRange(exp, new ExprHole(exp)));
                 }
             }
             if (t.promotesTo(tt, nres)) {

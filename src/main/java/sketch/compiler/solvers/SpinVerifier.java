@@ -28,7 +28,7 @@ import sketch.compiler.spin.EliminateDeadParallelCode;
 import sketch.compiler.spin.Executer;
 import sketch.compiler.spin.Preprocessor;
 import sketch.compiler.spin.PromelaCodePrinter;
-import sketch.compiler.stencilSK.EliminateStarStatic;
+import sketch.compiler.stencilSK.EliminateHoleStatic;
 import sketch.util.Misc;
 
 /**
@@ -145,7 +145,7 @@ public class SpinVerifier implements Verifier {
 	 */
 	protected Program spinify (AbstractValueOracle holeVals) {
 		
-		Program p = (Program) prog.accept (new EliminateStarStatic (holeVals));
+		Program p = (Program) prog.accept (new EliminateHoleStatic (holeVals));
 
 		log ("Cleaning up the next candidate.");
 		if (reallyREALLYVerbose ()) {

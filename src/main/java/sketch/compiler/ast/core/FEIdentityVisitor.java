@@ -113,7 +113,7 @@ public class FEIdentityVisitor implements FEVisitor {
         return exp;
     }
 
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
 
         return star;
     }

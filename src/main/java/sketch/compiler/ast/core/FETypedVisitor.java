@@ -127,7 +127,7 @@ public class FETypedVisitor<T> implements FEVisitor {
         throw new FEVisitorException(this, exp);
     }
 
-    public T visitExprStar(ExprStar star) {
+    public T visitExprStar(ExprHole star) {
         throw new FEVisitorException(this, star);
     }
 

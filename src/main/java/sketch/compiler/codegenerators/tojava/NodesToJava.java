@@ -748,7 +748,7 @@ public class NodesToJava extends SymbolTableVisitor
         }
     }
 
-	public Object visitExprStar(ExprStar star) {
+	public Object visitExprStar(ExprHole star) {
 		//throw new UnsupportedOperationException();
         assert star.isAngelicMax() : "all normal stars should have been eliminated!";
         return star.toCode();

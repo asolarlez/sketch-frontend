@@ -2610,7 +2610,7 @@ public final class Regen extends ParserBase {
 
                 int in1 = n1.getIValue();
                 int in2 = n2.getIValue();
-                yyValue = new ExprStar(getCx(),in1, in2);
+                yyValue = new ExprHole(getCx(),in1, in2);
 
                 return new SemanticValue(yyValue, yyIndex, yyError);
               } else {
@@ -2629,7 +2629,7 @@ public final class Regen extends ParserBase {
             yyIndex = yyChoice2 + 1;
 
             int in1 = n1.getIValue();
-            yyValue = new ExprStar(getCx(),in1);
+            yyValue = new ExprHole(getCx(),in1);
 
             return new SemanticValue(yyValue, yyIndex, yyError);
           } else {
@@ -2642,7 +2642,7 @@ public final class Regen extends ParserBase {
 
       // Nested alternative 2.
 
-      yyValue = new ExprStar (getCx ());
+      yyValue = new ExprHole (getCx ());
 
       return new SemanticValue(yyValue, yyChoice1, yyError);
     }

@@ -11,7 +11,7 @@ import sketch.compiler.ast.core.TempVarGen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -122,7 +122,7 @@ public class EliminateInsertBlocks extends FEReplacer {
 										ExprConstant.createConstant (sib, maxVal))
 								), true));
 		headerDecls.add (0,
-				new StmtVarDecl (sib, TypePrimitive.inttype, where, new ExprStar (sib, nBits)));
+				new StmtVarDecl (sib, TypePrimitive.inttype, where, new ExprHole (sib, nBits)));
 
 		List<Statement> newB = new ArrayList<Statement> ();
 		for (int i = 0; i < oldB.size (); ++i) {

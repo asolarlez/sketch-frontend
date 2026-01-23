@@ -112,11 +112,11 @@ public class ConstantReplacer extends FEReplacer {
 			return true;
 		}
         if (type.equals(TypePrimitive.inttype)) {
-            if (init instanceof ExprStar) {
+            if (init instanceof ExprHole) {
                 if (!isFinal(name)) {
                     return false;
                 }
-                constants.put(name, new ExprStar((ExprStar) init, true));
+                constants.put(name, new ExprHole((ExprHole) init, true));
                 // If it is ExprStar, we want to keep around the global variable
                 return false;
             }
@@ -143,7 +143,7 @@ public class ConstantReplacer extends FEReplacer {
 	}
 
     Expression newChoices(Expression cx, List<Expression> clist) {
-        ExprStar es = new ExprStar(cx, Misc.nBitsBinaryRepr(clist.size()), true);
+        ExprHole es = new ExprHole(cx, Misc.nBitsBinaryRepr(clist.size()), true);
         return toConditional(es, clist, 0);
     }
 

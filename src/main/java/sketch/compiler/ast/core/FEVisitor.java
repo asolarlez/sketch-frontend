@@ -75,7 +75,7 @@ public interface FEVisitor
     public Object visitExprFunCall(ExprFunCall exp);
     public Object visitExprParen(ExprParen exp);
     public Object visitExprRegen(ExprRegen exp);
-	public Object visitExprStar(ExprStar star);
+	public Object visitExprStar(ExprHole star);
     public Object visitExprTernary(ExprTernary exp);
     public Object visitExprTypeCast(ExprTypeCast exp);
     public Object visitExprUnary(ExprUnary exp);

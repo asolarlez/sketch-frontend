@@ -6,3 +6,5 @@ src/test/sk/seq/result
 src/experiments/RNA
 target
 tmp-assembly.xml
+.DS_Store
+*.DS_Store

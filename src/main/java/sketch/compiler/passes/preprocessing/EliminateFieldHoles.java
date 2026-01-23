@@ -6,7 +6,7 @@ import java.util.List;
 import sketch.compiler.ast.core.exprs.ExprArrayInit;
 import sketch.compiler.ast.core.exprs.ExprArrayRange;
 import sketch.compiler.ast.core.exprs.ExprField;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.typs.StructDef;
 import sketch.compiler.ast.core.typs.StructDef.StructFieldEnt;
@@ -54,7 +54,7 @@ public class EliminateFieldHoles extends SymbolTableVisitor {
                 } else if (matchedFields.size() == 1) {
                     return matchedFields.get(0);
                 } else {
-                    ExprStar expStar = new ExprStar(exp, 5, TypePrimitive.int32type);
+                    ExprHole expStar = new ExprHole(exp, 5, TypePrimitive.int32type);
                     return new ExprArrayRange(exp, new ExprArrayInit(exp.getContext(),
                             matchedFields), expStar);
                 }

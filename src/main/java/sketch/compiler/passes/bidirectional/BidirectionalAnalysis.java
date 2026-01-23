@@ -621,11 +621,11 @@ public class BidirectionalAnalysis extends SymbolTableVisitor {
             return new ExprRegen(exp, expr);
     }
 
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         if (star.getType() != null) {
             Type t = (Type) star.getType().accept(this);
             if (t != star.getType()) {
-                ExprStar s = new ExprStar(star);
+                ExprHole s = new ExprHole(star);
                 s.setType(t);
                 if (star.special())
                     s.makeSpecial(star.parentHoles());

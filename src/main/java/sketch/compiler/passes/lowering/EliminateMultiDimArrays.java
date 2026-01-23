@@ -16,7 +16,7 @@ import sketch.compiler.ast.core.exprs.ExprArrayRange.RangeLen;
 import sketch.compiler.ast.core.exprs.ExprBinary;
 import sketch.compiler.ast.core.exprs.ExprConstInt;
 import sketch.compiler.ast.core.exprs.ExprConstant;
-import sketch.compiler.ast.core.exprs.ExprStar;
+import sketch.compiler.ast.core.exprs.ExprHole;
 import sketch.compiler.ast.core.exprs.ExprVar;
 import sketch.compiler.ast.core.exprs.Expression;
 import sketch.compiler.ast.core.stmts.Statement;
@@ -250,7 +250,7 @@ public class EliminateMultiDimArrays extends SymbolTableVisitor {
 	}
 	
     @Override
-    public Object visitExprStar(ExprStar star) {
+    public Object visitExprStar(ExprHole star) {
         Type ts = star.getType();
         if (ts instanceof TypeArray) {
             TypeArray tsa = (TypeArray) ts;
